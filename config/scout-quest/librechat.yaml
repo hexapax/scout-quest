@@ -1,6 +1,7 @@
 # ============================================
-# Scout Coach — LibreChat Configuration
+# Scout Quest — LibreChat Configuration
 # ============================================
+# Locked-down instance with curated model presets
 version: 1.2.8
 cache: true
 
@@ -8,8 +9,6 @@ cache: true
 registration:
   socialLogins:
     - google
-    # - github    # uncomment to enable
-    # - discord   # uncomment to enable
 
 # --- Memory (persists facts across conversations) ---
 memory:
@@ -68,9 +67,14 @@ speech:
 #     type: stdio
 #     command: node
 #     args:
-#       - "/app/mcp-servers/scout-quest/index.js"
+#       - "/app/mcp-servers/scout-quest/dist/index.js"
 #     env:
-#       MONGO_URI: "mongodb://mongo:27017/scoutquest"
+#       MONGO_URI: "mongodb://mongodb:27017/scoutquest"
+#       EMAIL_SERVICE: "${EMAIL_SERVICE}"
+#       EMAIL_USERNAME: "${EMAIL_USERNAME}"
+#       EMAIL_PASSWORD: "${EMAIL_PASSWORD}"
+#       EMAIL_FROM: "${EMAIL_FROM}"
+#       EMAIL_FROM_NAME: "${EMAIL_FROM_NAME}"
 #     timeout: 30000
 #     serverInstructions: true
 
@@ -78,7 +82,6 @@ speech:
 endpoints:
   custom:
     # DeepSeek — very cheap, strong reasoning
-    # Get API key: https://platform.deepseek.com/api_keys
     - name: "Deepseek"
       apiKey: "${DEEPSEEK_API_KEY}"
       baseURL: "https://api.deepseek.com/v1"
@@ -92,8 +95,6 @@ endpoints:
       modelDisplayLabel: "Deepseek"
 
     # OpenRouter — gateway to dozens of open models
-    # Get API key: https://openrouter.ai/keys
-    # Browse models: https://openrouter.ai/models
     - name: "OpenRouter"
       apiKey: "${OPENROUTER_KEY}"
       baseURL: "https://openrouter.ai/api/v1"
@@ -112,6 +113,44 @@ endpoints:
       dropParams:
         - "stop"
       modelDisplayLabel: "OpenRouter"
+
+# --- Model Specs (lock UI to curated presets) ---
+modelSpecs:
+  enforce: true
+  prioritize: true
+  list:
+    - name: "Scout Coach (Claude)"
+      label: "Scout Coach"
+      description: "Your AI Scout Coach — best for merit badge help, PC build guidance, and quest planning"
+      preset:
+        endpoint: "anthropic"
+        model: "claude-sonnet-4-5-20250514"
+        temperature: 0.7
+        maxOutputTokens: 4096
+
+    - name: "Quick Chat (DeepSeek)"
+      label: "Quick Chat"
+      description: "Fast and cheap — good for quick questions and brainstorming"
+      preset:
+        endpoint: "Deepseek"
+        model: "deepseek-chat"
+        temperature: 0.7
+
+    - name: "Deep Think (DeepSeek)"
+      label: "Deep Think"
+      description: "Step-by-step reasoning — good for math, logic, and tricky problems"
+      preset:
+        endpoint: "Deepseek"
+        model: "deepseek-reasoner"
+        temperature: 0.3
+
+    - name: "Open Explorer (OpenRouter)"
+      label: "Open Explorer"
+      description: "Try different open-source AI models — Llama, Gemma, Mistral, Qwen"
+      preset:
+        endpoint: "OpenRouter"
+        model: "meta-llama/llama-4-scout"
+        temperature: 0.7
 
 # --- Interface customization ---
 interface:

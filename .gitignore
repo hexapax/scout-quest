@@ -5,10 +5,16 @@ terraform/*.tfstate.backup
 terraform/.terraform.lock.hcl
 terraform/terraform.tfvars
 
-# Secrets
-config/.env
+# Secrets (real .env has keys — only .env.example is tracked)
+config/ai-chat/.env
+config/scout-quest/.env
+!config/**/.env.example
 *.json
 !package.json
+
+# Archives
+*.tar
+*.tar.gz
 
 # OS
 .DS_Store

@@ -1,12 +1,13 @@
 # ============================================
-# Scout Coach — Terraform Variables
+# Scout Quest — Terraform Variables
 # Fill in your values and save as terraform.tfvars
 # ============================================
 
 project_id       = "scout-coach"                           # Your GCP project ID
 region           = "us-east4"                              # Virginia (closest to Atlanta)
 zone             = "us-east4-b"
-domain           = "scout.hexapax.com"                     # Your subdomain
+domain_aichat    = "ai-chat.hexapax.com"                   # Full-access instance
+domain_scout     = "scout-quest.hexapax.com"               # Locked-down scout instance
 credentials_file = "~/.config/gcloud/scout-deployer-key.json"
 
 # Optional: restrict SSH to your IP for security

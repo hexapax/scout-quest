@@ -29,7 +29,8 @@ resource "google_compute_instance" "scout_coach" {
 
   metadata = {
     user-data = templatefile("${path.module}/cloud-init.yaml", {
-      domain = var.domain
+      domain_aichat = var.domain_aichat
+      domain_scout  = var.domain_scout
     })
   }
 

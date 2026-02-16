@@ -32,17 +32,22 @@ runcmd:
   - mkdir -p /opt/scoutcoach
   - chown scoutcoach:scoutcoach /opt/scoutcoach
 
-  # --- Clone LibreChat ---
-  - sudo -u scoutcoach git clone --depth 1 https://github.com/danny-avila/LibreChat.git /opt/scoutcoach/librechat
+  # --- Clone LibreChat (two independent instances) ---
+  - sudo -u scoutcoach git clone --depth 1 https://github.com/danny-avila/LibreChat.git /opt/scoutcoach/ai-chat
+  - sudo -u scoutcoach git clone --depth 1 https://github.com/danny-avila/LibreChat.git /opt/scoutcoach/scout-quest
 
-  # --- Prepare config directory ---
-  - sudo -u scoutcoach mkdir -p /opt/scoutcoach/librechat/mcp-servers/scout-quest
+  # --- Prepare MCP directory (scout-quest only) ---
+  - sudo -u scoutcoach mkdir -p /opt/scoutcoach/scout-quest/mcp-servers/scout-quest
 
-  # --- Write Caddyfile ---
+  # --- Write Caddyfile (two reverse proxy blocks) ---
   - |
     cat > /etc/caddy/Caddyfile << 'EOF'
-    ${domain} {
+    ${domain_aichat} {
         reverse_proxy localhost:3080
+    }
+
+    ${domain_scout} {
+        reverse_proxy localhost:3081
     }
     EOF
   - systemctl restart caddy

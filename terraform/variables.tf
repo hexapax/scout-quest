@@ -21,8 +21,13 @@ variable "credentials_file" {
   default     = "~/.config/gcloud/scout-deployer-key.json"
 }
 
-variable "domain" {
-  description = "Domain for the Scout Coach app (e.g., scout.hexapax.com)"
+variable "domain_aichat" {
+  description = "Domain for the full-access AI Chat instance (e.g., ai-chat.hexapax.com)"
+  type        = string
+}
+
+variable "domain_scout" {
+  description = "Domain for the locked-down Scout Quest instance (e.g., scout-quest.hexapax.com)"
   type        = string
 }
 

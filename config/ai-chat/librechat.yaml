@@ -1,0 +1,74 @@
+# ============================================
+# AI Chat — LibreChat Configuration
+# ============================================
+# Full-access instance — no model restrictions
+version: 1.2.8
+cache: true
+
+# --- Registration ---
+registration:
+  socialLogins:
+    - google
+
+# --- Speech (voice that stays in-context) ---
+speech:
+  stt:
+    openai:
+      apiKey: "${STT_API_KEY}"
+      model: "whisper-1"
+  tts:
+    openai:
+      apiKey: "${TTS_API_KEY}"
+      model: "tts-1"
+      voices:
+        - "nova"
+        - "alloy"
+        - "echo"
+        - "fable"
+        - "onyx"
+        - "shimmer"
+
+# --- Custom Endpoints (cheaper / open-source models) ---
+endpoints:
+  custom:
+    # DeepSeek — very cheap, strong reasoning
+    - name: "Deepseek"
+      apiKey: "${DEEPSEEK_API_KEY}"
+      baseURL: "https://api.deepseek.com/v1"
+      models:
+        default:
+          - "deepseek-chat"
+          - "deepseek-reasoner"
+        fetch: false
+      titleConvo: true
+      titleModel: "deepseek-chat"
+      modelDisplayLabel: "Deepseek"
+
+    # OpenRouter — gateway to dozens of open models
+    - name: "OpenRouter"
+      apiKey: "${OPENROUTER_KEY}"
+      baseURL: "https://openrouter.ai/api/v1"
+      models:
+        default:
+          - "google/gemma-3-27b-it"
+          - "meta-llama/llama-4-scout"
+          - "meta-llama/llama-3.3-70b-instruct"
+          - "mistralai/mistral-small-3.1-24b-instruct"
+          - "qwen/qwen-2.5-72b-instruct"
+        fetch: true
+      titleConvo: true
+      titleModel: "current_model"
+      summarize: false
+      summaryModel: "current_model"
+      dropParams:
+        - "stop"
+      modelDisplayLabel: "OpenRouter"
+
+# --- Interface customization ---
+interface:
+  privacyPolicy:
+    externalUrl: ""
+    openNewTab: true
+  termsOfService:
+    externalUrl: ""
+    openNewTab: true

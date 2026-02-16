@@ -4,19 +4,15 @@ services:
       - type: bind
         source: ./librechat.yaml
         target: /app/librechat.yaml
-      - type: bind
-        source: ./mcp-servers
-        target: /app/mcp-servers
     environment:
       - NODE_ENV=production
     depends_on:
-      - mongo
+      - mongodb
       - redis
 
-  mongo:
+  mongodb:
     volumes:
       - mongo_data:/data/db
-    command: mongod --noauth
 
   redis:
     volumes:
