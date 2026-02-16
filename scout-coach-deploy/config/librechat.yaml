@@ -1,0 +1,123 @@
+# ============================================
+# Scout Coach — LibreChat Configuration
+# ============================================
+version: 1.2.8
+cache: true
+
+# --- Registration ---
+registration:
+  socialLogins:
+    - google
+    # - github    # uncomment to enable
+    # - discord   # uncomment to enable
+
+# --- Memory (persists facts across conversations) ---
+memory:
+  disabled: false
+  validKeys:
+    - "quest_progress"
+    - "personal_preferences"
+    - "learned_facts"
+    - "conversation_context"
+  tokenLimit: 4000
+  charLimit: 15000
+  personalize: true
+  messageWindowSize: 10
+  agent:
+    provider: "anthropic"
+    model: "claude-sonnet-4-5-20250514"
+    instructions: |
+      You are a memory agent for a Boy Scout coaching system called Scout Quest.
+      Store ONLY explicitly stated information in these categories:
+      - quest_progress: merit badge requirements completed, hardware parts purchased/installed,
+        budget amounts earned/spent, chore streak counts, current quest week and phase
+      - personal_preferences: communication style, interests, what motivates the scout,
+        preferred rewards, attention span notes
+      - learned_facts: scout name, age, troop number, counselor names and emails,
+        parent/guardian info, scoutmaster details
+      - conversation_context: current phase of PC build quest, what was discussed last session,
+        pending decisions, upcoming deadlines
+      Be concise. Focus on facts. Delete outdated or corrected information promptly.
+      When a scout completes a requirement or makes a purchase, update quest_progress.
+    model_parameters:
+      temperature: 0.2
+      max_tokens: 2000
+
+# --- Speech (voice that stays in-context) ---
+speech:
+  stt:
+    openai:
+      apiKey: "${STT_API_KEY}"
+      model: "whisper-1"
+  tts:
+    openai:
+      apiKey: "${TTS_API_KEY}"
+      model: "tts-1"
+      voices:
+        - "nova"
+        - "alloy"
+        - "echo"
+        - "fable"
+        - "onyx"
+        - "shimmer"
+
+# --- MCP Servers (Scout Quest MCP added later) ---
+# Uncomment when the custom MCP server is deployed:
+# mcpServers:
+#   scout-quest:
+#     type: stdio
+#     command: node
+#     args:
+#       - "/app/mcp-servers/scout-quest/index.js"
+#     env:
+#       MONGO_URI: "mongodb://mongo:27017/scoutquest"
+#     timeout: 30000
+#     serverInstructions: true
+
+# --- Custom Endpoints (cheaper / open-source models) ---
+endpoints:
+  custom:
+    # DeepSeek — very cheap, strong reasoning
+    # Get API key: https://platform.deepseek.com/api_keys
+    - name: "Deepseek"
+      apiKey: "${DEEPSEEK_API_KEY}"
+      baseURL: "https://api.deepseek.com/v1"
+      models:
+        default:
+          - "deepseek-chat"
+          - "deepseek-reasoner"
+        fetch: false
+      titleConvo: true
+      titleModel: "deepseek-chat"
+      modelDisplayLabel: "Deepseek"
+
+    # OpenRouter — gateway to dozens of open models
+    # Get API key: https://openrouter.ai/keys
+    # Browse models: https://openrouter.ai/models
+    - name: "OpenRouter"
+      apiKey: "${OPENROUTER_KEY}"
+      baseURL: "https://openrouter.ai/api/v1"
+      models:
+        default:
+          - "google/gemma-3-27b-it"
+          - "meta-llama/llama-4-scout"
+          - "meta-llama/llama-3.3-70b-instruct"
+          - "mistralai/mistral-small-3.1-24b-instruct"
+          - "qwen/qwen-2.5-72b-instruct"
+        fetch: true
+      titleConvo: true
+      titleModel: "current_model"
+      summarize: false
+      summaryModel: "current_model"
+      dropParams:
+        - "stop"
+      modelDisplayLabel: "OpenRouter"
+
+# --- Interface customization ---
+interface:
+  privacyPolicy:
+    externalUrl: ""
+    openNewTab: true
+  termsOfService:
+    externalUrl: ""
+    openNewTab: true
