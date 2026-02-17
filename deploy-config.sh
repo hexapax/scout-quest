@@ -8,6 +8,8 @@
 #   ./deploy-config.sh pull              Download .env files from GCS to local
 #   ./deploy-config.sh <VM_IP>           Deploy to VM via direct SSH
 #   ./deploy-config.sh gcloud            Deploy to VM via gcloud SSH
+#   ./deploy-config.sh update [mode]     Push .env to GCS + deploy (default: gcloud)
+#   ./deploy-config.sh upgrade [mode]    Pull latest LibreChat images + restart (default: gcloud)
 #
 # Deploy flow: pulls .env from GCS (secrets), combines with git-tracked
 # librechat.yaml + docker-compose.override.yml, uploads everything to VM.
@@ -209,6 +211,28 @@ deploy() {
   REMOTE_SCRIPT='
 set -e
 
+check_health() {
+  local INSTANCE="$1"
+  local PORT="$2"
+  local MAX_WAIT=60
+  local ELAPSED=0
+
+  echo "  Checking ${INSTANCE} health..."
+  while [ $ELAPSED -lt $MAX_WAIT ]; do
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${PORT}" 2>/dev/null || echo "000")
+    if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
+      echo "  ${INSTANCE} is healthy (HTTP ${HTTP_CODE})"
+      return 0
+    fi
+    sleep 5
+    ELAPSED=$((ELAPSED + 5))
+  done
+  echo "  WARNING: ${INSTANCE} did not return HTTP 200/302 within ${MAX_WAIT}s"
+  echo "  Container status:"
+  cd "/opt/scoutcoach/${INSTANCE}" && sudo -u scoutcoach docker compose ps
+  return 1
+}
+
 setup_instance() {
   local INSTANCE="$1"
   local APP_DIR="/opt/scoutcoach/${INSTANCE}"
@@ -242,12 +266,6 @@ setup_instance() {
   cd "${APP_DIR}"
   sudo -u scoutcoach docker compose pull
   sudo -u scoutcoach docker compose up -d
-
-  echo "  Waiting for containers to be healthy..."
-  sleep 10
-
-  echo "  Container status:"
-  sudo -u scoutcoach docker compose ps
 }
 
 # Set up MCP directory for scout-quest
@@ -258,11 +276,17 @@ sudo -u scoutcoach mkdir -p /opt/scoutcoach/scout-quest/mcp-servers/scout-quest
 setup_instance "ai-chat"
 setup_instance "scout-quest"
 
+# Post-deploy health checks
+echo ""
+echo "  === Health checks ==="
+check_health "ai-chat" 3080
+check_health "scout-quest" 3081
+
 # --- Clean up ---
 rm -rf /tmp/scout-config-ai-chat /tmp/scout-config-scout-quest
 
 echo ""
-echo "  Both LibreChat instances are starting up! ✓"
+echo "  Both LibreChat instances are running!"
 '
 
   if [ "${MODE}" = "gcloud" ]; then
@@ -305,6 +329,73 @@ echo "  Both LibreChat instances are starting up! ✓"
   echo ""
 }
 
+# --- Upgrade LibreChat on VM ---
+upgrade() {
+  local MODE="${1:-gcloud}"
+
+  echo ""
+  echo "============================================"
+  echo "Scout Quest — Upgrade LibreChat"
+  echo "============================================"
+  echo ""
+
+  UPGRADE_SCRIPT='
+set -e
+
+check_health() {
+  local INSTANCE="$1"
+  local PORT="$2"
+  local MAX_WAIT=60
+  local ELAPSED=0
+
+  echo "  Checking ${INSTANCE} health..."
+  while [ $ELAPSED -lt $MAX_WAIT ]; do
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${PORT}" 2>/dev/null || echo "000")
+    if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
+      echo "  ${INSTANCE} is healthy (HTTP ${HTTP_CODE})"
+      return 0
+    fi
+    sleep 5
+    ELAPSED=$((ELAPSED + 5))
+  done
+  echo "  WARNING: ${INSTANCE} did not return HTTP 200/302 within ${MAX_WAIT}s"
+  echo "  Container status:"
+  cd "/opt/scoutcoach/${INSTANCE}" && sudo -u scoutcoach docker compose ps
+  return 1
+}
+
+for INSTANCE in ai-chat scout-quest; do
+  echo "  === Upgrading ${INSTANCE} ==="
+  cd "/opt/scoutcoach/${INSTANCE}"
+  sudo -u scoutcoach git pull
+  sudo -u scoutcoach docker compose pull
+  sudo -u scoutcoach docker compose up -d
+  echo "  ${INSTANCE} upgraded"
+  echo ""
+done
+
+echo "  === Health checks ==="
+check_health "ai-chat" 3080
+check_health "scout-quest" 3081
+
+echo ""
+echo "  Upgrade complete!"
+'
+
+  if [ "${MODE}" = "gcloud" ]; then
+    echo "Using gcloud SSH..."
+    gcloud compute ssh scout-coach-vm --zone=us-east4-b --command="${UPGRADE_SCRIPT}"
+  else
+    echo "Using direct SSH to ${MODE}..."
+    ssh -o StrictHostKeyChecking=no "ubuntu@${MODE}" "${UPGRADE_SCRIPT}"
+  fi
+
+  echo ""
+  echo "============================================"
+  echo "Upgrade complete!"
+  echo "============================================"
+}
+
 # --- Route subcommand ---
 case "${1:-}" in
   push)
@@ -312,6 +403,13 @@ case "${1:-}" in
     ;;
   pull)
     gcs_pull
+    ;;
+  update)
+    gcs_push
+    deploy "${2:-gcloud}"
+    ;;
+  upgrade)
+    upgrade "${2:-gcloud}"
     ;;
   gcloud|*.*.*.*)
     deploy "$1"
@@ -323,6 +421,8 @@ case "${1:-}" in
     echo "  pull              Download .env files from GCS to local"
     echo "  <VM_IP>           Deploy to VM (pulls .env from GCS first)"
     echo "  gcloud            Deploy to VM via gcloud SSH"
+    echo "  update [mode]     Push .env to GCS + deploy (default: gcloud)"
+    echo "  upgrade [mode]    Pull latest LibreChat images + restart (default: gcloud)"
     exit 1
     ;;
   *)

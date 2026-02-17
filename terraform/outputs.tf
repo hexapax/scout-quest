@@ -14,6 +14,11 @@ output "deploy_command" {
 }
 
 output "dns_instructions" {
-  description = "DNS record to create"
-  value       = "Create A record: ${var.domain} → ${google_compute_address.static.address}"
+  description = "DNS records managed by Terraform"
+  value       = "A records created: ${var.domain_aichat} + ${var.domain_scout} → ${google_compute_address.static.address}"
+}
+
+output "dns_nameservers" {
+  description = "Nameservers for hexapax.com (managed in hexapax-web)"
+  value       = data.google_dns_managed_zone.hexapax.name_servers
 }

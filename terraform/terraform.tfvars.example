@@ -8,6 +8,8 @@ region           = "us-east4"                              # Virginia (closest t
 zone             = "us-east4-b"
 domain_aichat    = "ai-chat.hexapax.com"                   # Full-access instance
 domain_scout     = "scout-quest.hexapax.com"               # Locked-down scout instance
+dns_zone_name    = "hexapax-com"                            # Cloud DNS managed zone name
+dns_project_id   = "hexapax-web"                             # Project that owns the DNS zone
 credentials_file = "~/.config/gcloud/scout-deployer-key.json"
 
 # Optional: restrict SSH to your IP for security

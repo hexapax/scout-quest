@@ -42,6 +42,7 @@ gcloud services enable \
   storage.googleapis.com \
   cloudresourcemanager.googleapis.com \
   iam.googleapis.com \
+  dns.googleapis.com \
   --quiet
 
 echo "  APIs enabled ✓"
@@ -73,6 +74,7 @@ ROLES=(
   "roles/compute.admin"        # Create/manage VMs, IPs, firewall
   "roles/storage.admin"        # Terraform state in GCS
   "roles/iam.serviceAccountUser" # Attach SA to VM
+  "roles/dns.admin"            # Manage Cloud DNS zones + records
 )
 
 for ROLE in "${ROLES[@]}"; do
@@ -117,21 +119,17 @@ echo ""
 echo "  2. Edit terraform.tfvars with your values:"
 echo "     - project_id = \"${PROJECT_ID}\""
 echo "     - credentials_file = \"${KEY_PATH}\""
-echo "     - domain = \"scout.hexapax.com\""
 echo ""
-echo "  3. Update the GCS backend bucket name in terraform/main.tf"
-echo "     if your project ID is not 'scout-coach':"
-echo "     backend \"gcs\" { bucket = \"${BUCKET_NAME}\" }"
+echo "  3. Grant DNS access on hexapax-web (for cross-project DNS):"
+echo "     gcloud projects add-iam-policy-binding hexapax-web \\"
+echo "       --member=\"serviceAccount:${SA_EMAIL}\" \\"
+echo "       --role=\"roles/dns.admin\" --condition=None --quiet"
 echo ""
-echo "  4. Run Terraform:"
-echo "     cd terraform"
-echo "     terraform init"
-echo "     terraform plan"
-echo "     terraform apply"
+echo "  4. Import existing DNS records (see terraform/dns.tf for commands)"
 echo ""
-echo "  5. After apply, note the external IP and update DNS:"
-echo "     scout.hexapax.com → <IP from terraform output>"
+echo "  5. Run Terraform:"
+echo "     cd terraform && terraform init && terraform plan && terraform apply"
 echo ""
 echo "  6. Fill in config/.env with your API keys, then run:"
-echo "     ./deploy-config.sh <IP>"
+echo "     ./deploy-config.sh update"
 echo ""

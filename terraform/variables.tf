@@ -43,6 +43,18 @@ variable "disk_size_gb" {
   default     = 30
 }
 
+variable "dns_zone_name" {
+  description = "Cloud DNS managed zone name (e.g., hexapax-com)"
+  type        = string
+  default     = "hexapax-com"
+}
+
+variable "dns_project_id" {
+  description = "GCP project that owns the Cloud DNS zone (hexapax-web)"
+  type        = string
+  default     = "hexapax-web"
+}
+
 variable "ssh_source_ranges" {
   description = "CIDR ranges allowed to SSH (tighten to your IP for security)"
   type        = list(string)

@@ -36,6 +36,9 @@
 │  ┌──────────────┐                                                   │
 │  │ GCS Bucket   │  Terraform state + secret .env files              │
 │  └──────────────┘                                                   │
+│  ┌──────────────┐                                                   │
+│  │ Cloud DNS    │  hexapax.com zone — A records managed by Terraform│
+│  └──────────────┘                                                   │
 └──────────────────────────────────────────────────────────────────────┘
 
 External services:
@@ -82,6 +85,7 @@ VM path: `/opt/scoutcoach/` with subdirectories `ai-chat/` and `scout-quest/`
 **What's live:**
 - Docker Compose stacks: api, mongodb, meilisearch, rag_api, vectordb per instance
 - Caddy reverse proxy handling HTTPS for both domains
+- Cloud DNS: A records for both domains managed by Terraform (`terraform/dns.tf`)
 - Google OAuth working (Testing mode = allowlist-based access control)
 - AI providers: Anthropic (working), OpenAI, DeepSeek, OpenRouter
 - Password sign-up disabled — OAuth only

@@ -55,7 +55,7 @@ Each instance is a fully independent LibreChat stack with its own MongoDB, Redis
 scout-quest/
 ├── README.md                                 ← you are here
 ├── bootstrap.sh                              ← Run first: sets up GCP prerequisites
-├── deploy-config.sh                          ← Manage secrets in GCS + deploy to VM
+├── deploy-config.sh                          ← Manage secrets, deploy, update, upgrade
 ├── .gitignore
 ├── config/
 │   ├── ai-chat/
@@ -68,6 +68,7 @@ scout-quest/
 │       └── docker-compose.override.yml       ← Volume mounts + MCP server mount
 ├── terraform/
 │   ├── main.tf                               ← Provider + state backend
+│   ├── dns.tf                                ← Cloud DNS zone + A records
 │   ├── variables.tf                          ← domain_aichat + domain_scout vars
 │   ├── network.tf                            ← VPC + firewall rules
 │   ├── compute.tf                            ← VM + static IP
@@ -114,13 +115,27 @@ terraform apply
 
 Note the `external_ip` from the output.
 
-### Step 4: Update DNS
+### Step 4: DNS (one-time import)
 
-Create two A records pointing to the same IP:
+DNS is managed by Terraform in the existing Cloud DNS zone in the `hexapax-web` project. All records (root A for CDN, MX, SPF, DKIM, ai-chat, scout-quest) are in `terraform/dns.tf`.
+
+**First time only** — grant cross-project access and import existing records:
+```bash
+# Grant scout-deployer DNS access on hexapax-web
+gcloud projects add-iam-policy-binding hexapax-web \
+  --member="serviceAccount:scout-deployer@scout-coach.iam.gserviceaccount.com" \
+  --role="roles/dns.admin" --condition=None --quiet
+
+# Import existing records (see terraform/dns.tf header for full list)
+cd terraform
+terraform import google_dns_record_set.root        hexapax-web/hexapax-com/hexapax.com./A
+terraform import google_dns_record_set.mx          hexapax-web/hexapax-com/hexapax.com./MX
+terraform import google_dns_record_set.spf         hexapax-web/hexapax-com/hexapax.com./TXT
+terraform import google_dns_record_set.dkim        hexapax-web/hexapax-com/google._domainkey.hexapax.com./TXT
+terraform import google_dns_record_set.scout_quest hexapax-web/hexapax-com/scout-quest.hexapax.com./A
 ```
-ai-chat.hexapax.com      →  <external_ip>
-scout-quest.hexapax.com  →  <external_ip>
-```
+
+After import, `terraform plan` should show no changes for existing records and only create the new `ai_chat` A record.
 
 ### Step 5: Set Up Google OAuth (~10 min)
 
@@ -206,22 +221,24 @@ cd /opt/scoutcoach/ai-chat && docker compose restart
 cd /opt/scoutcoach/scout-quest && docker compose restart
 ```
 
-### Update LibreChat
+### Update config (push + deploy in one step)
 ```bash
-cd /opt/scoutcoach/ai-chat && git pull && docker compose pull && docker compose up -d
-cd /opt/scoutcoach/scout-quest && git pull && docker compose pull && docker compose up -d
-```
+# Edit .env or git-tracked configs, then:
+./deploy-config.sh update            # pushes .env to GCS + deploys (via gcloud SSH)
+./deploy-config.sh update 34.85.x.x  # same, via direct SSH
 
-### Update config
-```bash
-# After editing .env files (secrets):
-./deploy-config.sh push           # save to GCS
-./deploy-config.sh gcloud         # deploy (pulls from GCS + git-tracked configs)
-
-# After editing librechat.yaml or docker-compose.override.yml (git-tracked):
-git add . && git commit           # commit changes
-./deploy-config.sh gcloud         # deploy picks up git-tracked files directly
+# Or do it in separate steps:
+./deploy-config.sh push              # upload .env to GCS only
+./deploy-config.sh gcloud            # deploy only (pulls from GCS + git-tracked configs)
 
 # On a new machine:
-./deploy-config.sh pull           # restore .env files from GCS
+./deploy-config.sh pull              # restore .env files from GCS
 ```
+
+### Upgrade LibreChat
+```bash
+./deploy-config.sh upgrade            # pulls latest images + restarts (via gcloud SSH)
+./deploy-config.sh upgrade 34.85.x.x  # same, via direct SSH
+```
+
+This SSHes into the VM, runs `git pull && docker compose pull && docker compose up -d` on both instances, then runs health checks.
