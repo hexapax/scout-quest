@@ -119,11 +119,12 @@ Will earns money through daily chores to "unlock" PC components while simultaneo
 - **Transport:** stdio (LibreChat spawns as child process)
 - **Build:** tsc → `dist/` directory
 - **Runtime:** Node.js (whatever version is in LibreChat's API container)
+- **Push notifications:** [ntfy.sh](https://ntfy.sh) — simple HTTP POST to send push notifications to Will's iPad
 
 ### File Structure
 
 ```
-/opt/scoutcoach/librechat/mcp-servers/scout-quest/
+/opt/scoutcoach/scout-quest/mcp-servers/scout-quest/
 ├── package.json
 ├── tsconfig.json
 ├── src/
@@ -139,7 +140,8 @@ Will earns money through daily chores to "unlock" PC components while simultaneo
 │       ├── logChore.ts
 │       ├── getChoreStreak.ts
 │       ├── checkReminders.ts
-│       └── searchHardware.ts
+│       ├── searchHardware.ts
+│       └── sendNotification.ts
 ├── dist/                     # compiled output
 └── build.sh                  # npm install && npx tsc
 ```
@@ -409,7 +411,7 @@ const WILL_DEFAULT = {
 
 ---
 
-## MCP Tools (8 total)
+## MCP Tools (9 total)
 
 ### 1. `get_quest_state`
 
@@ -503,6 +505,8 @@ BUILD STATUS: CPU + RAM + Cooler ready for mobo install!
 
 **YPT ENFORCEMENT:** The tool ALWAYS adds Jeremy's email to CC. If the AI somehow doesn't include it, the tool adds it. This is a hard safety rule.
 
+**iPad workflow:** On Will's iPad, tapping the `mailto:` link opens Mail.app with all fields pre-filled. Will reviews and taps Send. For out-of-session reminders (e.g., "log your chores"), ntfy push notifications are used instead — see `send_notification` tool below.
+
 ---
 
 ### 5. `log_chore`
@@ -557,6 +561,7 @@ BUILD STATUS: CPU + RAM + Cooler ready for mobo install!
 
 **Params:**
 - `scout_name` (string, optional)
+- `push` (boolean, optional) — if true, also send overdue reminders as ntfy push notifications
 
 **Returns:** Array of reminder objects, each with:
 - `type`, `message`, `urgency` ("info" | "warning" | "urgent")
@@ -582,6 +587,92 @@ BUILD STATUS: CPU + RAM + Cooler ready for mobo install!
 **Returns:**
 - For V1: Return static price estimates from the hardware list with a note: "These are estimated prices from [date]. Ask me to web search for current prices if you want the latest."
 - Future: Actually scrape/cache prices.
+
+---
+
+### 9. `send_notification`
+
+**Purpose:** Send a push notification to Will's iPad via ntfy.sh. Used for out-of-session reminders, celebration alerts, and deadline warnings.
+
+**Params:**
+- `message` (string) — notification body text
+- `title` (string, optional) — notification title (defaults to "Scout Quest")
+- `priority` (number, optional) — 1-5, default 3. Use 4-5 for urgent items like streak-about-to-break
+- `tags` (string[], optional) — emoji tags for the notification (e.g., `["fire", "trophy"]`)
+
+**Returns:** Confirmation that notification was sent, or error if NTFY_TOPIC is not configured.
+
+**Implementation:** Simple HTTP POST to `https://ntfy.sh/${NTFY_TOPIC}` with JSON body:
+```typescript
+await fetch(`https://ntfy.sh/${process.env.NTFY_TOPIC}`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    topic: process.env.NTFY_TOPIC,
+    title: title || "Scout Quest",
+    message,
+    priority: priority || 3,
+    tags: tags || []
+  })
+});
+```
+
+**When to use:** The AI should use this when:
+- Will completes a major milestone (Loot Drop, streak milestone) and Jeremy should know
+- A reminder is urgent and Will isn't in a chat session
+- Celebrating achievements that deserve a push notification
+
+---
+
+## Reminder Cron (Sidecar)
+
+A lightweight sidecar script that runs on a timer to check for overdue items and send ntfy notifications, even when nobody is chatting with Scout Coach.
+
+### Design: `scripts/reminder-cron.js`
+
+```javascript
+// Runs as a standalone Node.js script (not inside LibreChat)
+// Triggered by systemd timer every 4 hours
+//
+// 1. Connect to MongoDB (same scoutquest DB)
+// 2. Query reminders collection for active reminders past next_trigger
+// 3. Query scouts collection for overdue items:
+//    - Chore streak at risk (no log today after 6pm)
+//    - Budget update overdue (quest_week > req2.week_count)
+//    - Diary entry missing during PM Req 8
+// 4. POST to ntfy.sh for each overdue item
+// 5. Update reminder.last_triggered timestamps
+```
+
+### systemd timer
+
+```ini
+# /etc/systemd/system/scout-reminder.service
+[Unit]
+Description=Scout Quest reminder check
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/node /opt/scoutcoach/scout-quest/scripts/reminder-cron.js
+Environment=MONGO_URI=mongodb://localhost:27017/scoutquest
+Environment=NTFY_TOPIC=scout-quest-will
+```
+
+```ini
+# /etc/systemd/system/scout-reminder.timer
+[Unit]
+Description=Run Scout Quest reminders every 4 hours
+
+[Timer]
+OnCalendar=*-*-* 06,10,14,18:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+```
+
+This is a Phase 2 enhancement — the MCP `send_notification` tool ships first, cron sidecar follows.
 
 ---
 
@@ -630,6 +721,9 @@ WHEN TO USE EACH TOOL:
 - get_chore_streak: Quick streak check without loading full state
 - check_reminders: Start of session and when discussing what to do next
 - search_hardware: When discussing prices or making purchase decisions
+- send_notification: Send push notifications to Will's iPad for celebrations or
+  urgent reminders. Use sparingly — only for milestone celebrations (Loot Drops,
+  streak milestones) and urgent alerts (streak at risk, deadline approaching)
 
 IMPORTANT RULES:
 - NEVER write complete emails for Will. Help him build the email piece by piece,
@@ -729,7 +823,7 @@ export async function getRemindersCollection() {
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -755,11 +849,9 @@ mcpServers:
       - "/app/mcp-servers/scout-quest/dist/index.js"
     env:
       MONGO_URI: "mongodb://mongodb:27017/scoutquest"
-      SMTP_HOST: "smtp.gmail.com"
-      SMTP_PORT: "587"
-      SMTP_USER: "${EMAIL_USERNAME}"
-      SMTP_PASS: "${EMAIL_PASSWORD}"
-      SMTP_FROM: "${EMAIL_FROM}"
+      NTFY_TOPIC: "${NTFY_TOPIC}"
+      # No SMTP needed — compose_email generates mailto: links only.
+      # Out-of-session reminders use ntfy push notifications.
     timeout: 30000
     serverInstructions: true
 ```
@@ -769,11 +861,11 @@ mcpServers:
 ## Build & Deploy
 
 ```bash
-# On VM, in /opt/scoutcoach/librechat/mcp-servers/scout-quest/
+# On VM, in /opt/scoutcoach/scout-quest/mcp-servers/scout-quest/
 npm install
 npm run build
 # Then restart LibreChat API container to pick up the new MCP server:
-cd /opt/scoutcoach/librechat
+cd /opt/scoutcoach/scout-quest
 sudo -u scoutcoach docker compose restart api
 ```
 
@@ -781,7 +873,7 @@ sudo -u scoutcoach docker compose restart api
 
 ## Deployment Checklist
 
-1. [ ] Create `/opt/scoutcoach/librechat/mcp-servers/scout-quest/` directory
+1. [ ] Create `/opt/scoutcoach/scout-quest/mcp-servers/scout-quest/` directory
 2. [ ] Write all source files (`package.json`, `tsconfig.json`, `src/*.ts`)
 3. [ ] `npm install && npm run build` inside that directory
 4. [ ] Update `librechat.yaml` to add the `mcpServers.scout-quest` section

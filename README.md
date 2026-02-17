@@ -55,7 +55,7 @@ Each instance is a fully independent LibreChat stack with its own MongoDB, Redis
 scout-quest/
 ├── README.md                                 ← you are here
 ├── bootstrap.sh                              ← Run first: sets up GCP prerequisites
-├── deploy-config.sh                          ← Run after terraform: pushes config to VM
+├── deploy-config.sh                          ← Manage secrets in GCS + deploy to VM
 ├── .gitignore
 ├── config/
 │   ├── ai-chat/
@@ -77,7 +77,8 @@ scout-quest/
 │   └── terraform.tfvars.example              ← Copy to terraform.tfvars and edit
 └── docs/
     ├── architecture.md
-    └── mcp-server-design.md
+    ├── mcp-server-design.md
+    └── future-research.md
 ```
 
 ## Deployment Steps
@@ -147,7 +148,18 @@ Edit each `.env` file — fill in at minimum:
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (different for each!)
 - `ANTHROPIC_API_KEY`
 - `OPENAI_API_KEY`
-- Email settings
+- `NTFY_TOPIC` (scout-quest only — pick a unique topic name)
+
+Then push secrets to GCS:
+```bash
+./deploy-config.sh push
+```
+
+### Step 6b: Set Up ntfy Notifications
+
+1. Install the [ntfy app](https://ntfy.sh) on Will's iPad
+2. Subscribe to the topic you chose for `NTFY_TOPIC` (e.g., `scout-quest-will`)
+3. That's it — notifications will arrive when the MCP server or cron sends them
 
 ### Step 7: Deploy (~5 min)
 
@@ -156,7 +168,7 @@ Edit each `.env` file — fill in at minimum:
 # Or: ./deploy-config.sh gcloud
 ```
 
-This uploads both configs, generates security keys, pulls Docker images, and starts both stacks.
+This pulls `.env` from GCS, combines with git-tracked configs, uploads to VM, generates security keys, pulls Docker images, and starts both stacks.
 
 ### Step 8: Register Accounts
 
@@ -165,7 +177,9 @@ This uploads both configs, generates security keys, pulls Docker images, and sta
 3. Add scout emails as test users in the GCP OAuth consent screen
 4. Have scouts sign in on `scout-quest.hexapax.com`
 5. Set `ALLOW_REGISTRATION=false` in both `.env` files
-6. Re-run `./deploy-config.sh` to apply
+6. Push and re-deploy: `./deploy-config.sh push && ./deploy-config.sh gcloud`
+
+**Note:** Password sign-up is disabled (`ALLOW_PASSWORD_SIGN_UP=false`). All users must sign in via Google OAuth. Only emails added as test users in the GCP OAuth consent screen can access the app.
 
 ## Day-to-Day Operations
 
@@ -198,7 +212,16 @@ cd /opt/scoutcoach/ai-chat && git pull && docker compose pull && docker compose 
 cd /opt/scoutcoach/scout-quest && git pull && docker compose pull && docker compose up -d
 ```
 
-### Update config (after editing locally)
+### Update config
 ```bash
-./deploy-config.sh <ip>    # re-uploads both configs and restarts
+# After editing .env files (secrets):
+./deploy-config.sh push           # save to GCS
+./deploy-config.sh gcloud         # deploy (pulls from GCS + git-tracked configs)
+
+# After editing librechat.yaml or docker-compose.override.yml (git-tracked):
+git add . && git commit           # commit changes
+./deploy-config.sh gcloud         # deploy picks up git-tracked files directly
+
+# On a new machine:
+./deploy-config.sh pull           # restore .env files from GCS
 ```

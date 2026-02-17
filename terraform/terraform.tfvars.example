@@ -13,3 +13,6 @@ credentials_file = "~/.config/gcloud/scout-deployer-key.json"
 # Optional: restrict SSH to your IP for security
 # Find your IP: curl ifconfig.me
 # ssh_source_ranges = ["YOUR.IP.HERE/32"]
+
+# GCS secret storage: .env files are stored in gs://${project_id}-tfstate/config/
+# Use deploy-config.sh push/pull to sync. See README for workflow.

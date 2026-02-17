@@ -70,11 +70,9 @@ speech:
 #       - "/app/mcp-servers/scout-quest/dist/index.js"
 #     env:
 #       MONGO_URI: "mongodb://mongodb:27017/scoutquest"
-#       EMAIL_SERVICE: "${EMAIL_SERVICE}"
-#       EMAIL_USERNAME: "${EMAIL_USERNAME}"
-#       EMAIL_PASSWORD: "${EMAIL_PASSWORD}"
-#       EMAIL_FROM: "${EMAIL_FROM}"
-#       EMAIL_FROM_NAME: "${EMAIL_FROM_NAME}"
+#       NTFY_TOPIC: "${NTFY_TOPIC}"
+#       # No SMTP needed — compose_email generates mailto: links only.
+#       # Out-of-session reminders use ntfy push notifications.
 #     timeout: 30000
 #     serverInstructions: true
 
