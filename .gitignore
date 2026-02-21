@@ -23,3 +23,10 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# Worktrees
+.worktrees/
+
+# MCP Server build artifacts
+mcp-servers/scout-quest/node_modules/
+mcp-servers/scout-quest/dist/
