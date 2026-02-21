@@ -66,6 +66,19 @@ LibreChat has **native xAI support** (not just custom endpoint). It can be confi
 | Scout Admin | `anthropic` (native) | claude-sonnet-4-6 | scout-admin | Configured |
 | Scout Admin (GPT) | `openAI` (native) | gpt-4.1 | scout-admin | Configured |
 
+### Known Issue: Memory Agent + Claude Sonnet 4.6 Temperature
+
+**Last updated:** 2026-02-21
+
+LibreChat's memory agent (configured in `librechat.yaml`) throws `temperature is not supported when thinking is enabled` when using `claude-sonnet-4-6`. LibreChat appears to auto-enable extended thinking for Claude 4.x models, which conflicts with the temperature parameter. The memory agent still processes most requests but logs this error intermittently.
+
+**Workaround options:**
+1. Remove temperature from `model_parameters` (already done — LibreChat may still apply a default)
+2. Switch memory agent to a non-thinking model (e.g., `claude-haiku-4-5-20251001`)
+3. Wait for LibreChat to fix the temperature+thinking conflict
+
+**Status:** Non-blocking — memory agent works despite the error.
+
 ### Agents Endpoint (Best MCP Support)
 
 The Agents endpoint offers superior tool integration:
