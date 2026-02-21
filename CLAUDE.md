@@ -70,7 +70,10 @@ Terraform manages DNS records in the `hexapax-com` zone owned by the `hexapax-we
 - `config/ai-chat/` — Full-access instance config (librechat.yaml, docker-compose.override.yml, .env.example)
 - `config/scout-quest/` — Locked-down instance config (model presets enforced, memory agent enabled)
 - `terraform/` — GCP infrastructure: VM, VPC, firewall, static IP, Cloud DNS, GCS backup bucket
-- `docs/` — Architecture rationale, MCP server design spec, future research notes
+- `docs/` — Architecture, designs, research, and requirements
+- `docs/future-research.md` — **Research store: constraints, cost analysis, dead ends. Read before pursuing new integrations or model changes.**
+- `docs/plans/` — Design specs and implementation plans
+- `mcp-servers/scout-quest/` — MCP server source (TypeScript, two entry points)
 
 ## Conventions
 
@@ -82,4 +85,12 @@ Terraform manages DNS records in the `hexapax-com` zone owned by the `hexapax-we
 
 ## MCP Server
 
-A TypeScript MCP server in `mcp-servers/scout-quest/` provides quest state management, chore tracking, email composition (YPT-compliant), reminders, and ntfy push notifications. Two entry points: `dist/scout.js` (scout-facing, registered on scout-quest instance) and `dist/admin.js` (admin-facing, registered on ai-chat instance). Runs as stdio subprocess inside the LibreChat API container, connecting to shared MongoDB. Build with `cd mcp-servers/scout-quest && bash build.sh`. Design spec in `docs/mcp-server-design.md`.
+A TypeScript MCP server in `mcp-servers/scout-quest/` provides quest state management, chore tracking, email composition (YPT-compliant), reminders, and ntfy push notifications. Two entry points: `dist/scout.js` (scout-facing, registered on scout-quest instance) and `dist/admin.js` (admin-facing, registered on ai-chat instance). Runs as stdio subprocess inside the LibreChat API container, connecting to shared MongoDB. Build with `cd mcp-servers/scout-quest && bash build.sh`. Design spec in `docs/plans/2026-02-21-mcp-server-redesign.md`.
+
+## Research & Multi-Session Protocol
+
+- **Before pursuing new integrations, model strategies, or endpoint changes:** read `docs/future-research.md` — it contains evaluated options, known constraints, and dead ends
+- **Update findings immediately** — when a session discovers a constraint or evaluates an option, update `docs/future-research.md` before the session ends
+- **Dead ends must include:** why it failed, source links, and a "Revisit if:" condition
+- **Key constraint:** MCP tools only work on native LibreChat endpoints (`openAI`, `anthropic`, `google`, `bedrock`). Custom endpoints (OpenRouter, DeepSeek) cannot use MCP tools. See `docs/future-research.md` for details.
+- **Multi-session safety:** check `git status` before editing shared config files — another session may have uncommitted changes. Use git worktrees for parallel implementation work.
