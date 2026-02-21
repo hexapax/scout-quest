@@ -36,7 +36,7 @@ mcpServers:
     args:
       - "/app/mcp-servers/scout-quest/dist/admin.js"
     env:
-      MONGO_URI: "mongodb://scout-quest-mongodb-1:27017/scoutquest"
+      MONGO_URI: "mongodb://scout-quest-mongodb:27017/scoutquest"
       ADMIN_EMAIL: "{{user.email}}"
     timeout: 30000
     serverInstructions: true
