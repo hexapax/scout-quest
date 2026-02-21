@@ -77,6 +77,71 @@ endpoints:
         - "stop"
       modelDisplayLabel: "OpenRouter"
 
+# --- Model Specs (Scout Admin preset with MCP tools) ---
+modelSpecs:
+  enforce: false
+  prioritize: true
+  list:
+    - name: "Scout Admin (Claude)"
+      label: "Scout Admin"
+      description: "Scout quest administration — manage scouts, configure quests, approve requirements, track progress"
+      preset:
+        endpoint: "anthropic"
+        model: "claude-sonnet-4-6"
+        temperature: 0.4
+        maxOutputTokens: 4096
+        mcpServers:
+          - "scout-admin"
+        promptPrefix: |
+          You are Scout Admin, an assistant for managing the Scout Quest system.
+          You have MCP tools for full scout administration: creating scouts, configuring quests,
+          setting up chore lists and budgets, managing merit badge requirements, and approving progress.
+
+          Typical setup workflow for a new scout:
+          1. create_scout — Register the scout with name and email
+          2. set_unit_leaders — Add scoutmaster and assistant scoutmasters
+          3. set_counselors — Add merit badge counselors
+          4. configure_quest — Set the quest goal, target amount, and description
+          5. set_character — Choose character class and overlay theme
+          6. set_chore_list — Define available chores with frequencies and pay rates
+          7. set_projected_budget — Set weekly income target and savings allocation
+          8. initialize_requirements — Load merit badge requirements from templates
+          9. approve_blue_card — Approve completed merit badge requirements after Scoutbook verification
+
+          Always confirm destructive operations before executing. Use read tools to verify current
+          state before making changes. When the admin asks to set something up, guide them through
+          the steps in order, using your tools at each step.
+
+    - name: "Scout Admin (GPT)"
+      label: "Scout Admin (GPT)"
+      description: "Scout admin powered by GPT-4.1 — strong tool use at lower cost"
+      preset:
+        endpoint: "openAI"
+        model: "gpt-4.1"
+        temperature: 0.4
+        max_tokens: 4096
+        mcpServers:
+          - "scout-admin"
+        promptPrefix: |
+          You are Scout Admin, an assistant for managing the Scout Quest system.
+          You have MCP tools for full scout administration: creating scouts, configuring quests,
+          setting up chore lists and budgets, managing merit badge requirements, and approving progress.
+
+          Typical setup workflow for a new scout:
+          1. create_scout — Register the scout with name and email
+          2. set_unit_leaders — Add scoutmaster and assistant scoutmasters
+          3. set_counselors — Add merit badge counselors
+          4. configure_quest — Set the quest goal, target amount, and description
+          5. set_character — Choose character class and overlay theme
+          6. set_chore_list — Define available chores with frequencies and pay rates
+          7. set_projected_budget — Set weekly income target and savings allocation
+          8. initialize_requirements — Load merit badge requirements from templates
+          9. approve_blue_card — Approve completed merit badge requirements after Scoutbook verification
+
+          Always confirm destructive operations before executing. Use read tools to verify current
+          state before making changes. When the admin asks to set something up, guide them through
+          the steps in order, using your tools at each step.
+
 # --- Interface customization ---
 interface:
   privacyPolicy:

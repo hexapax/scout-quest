@@ -24,7 +24,7 @@ memory:
   messageWindowSize: 10
   agent:
     provider: "anthropic"
-    model: "claude-sonnet-4-5-20250514"
+    model: "claude-sonnet-4-6"
     instructions: |
       You are a memory agent for a Boy Scout coaching system called Scout Quest.
       Store ONLY explicitly stated information in these categories:
@@ -120,9 +120,54 @@ modelSpecs:
       description: "Your AI Scout Coach — best for merit badge help, PC build guidance, and quest planning"
       preset:
         endpoint: "anthropic"
-        model: "claude-sonnet-4-5-20250514"
+        model: "claude-sonnet-4-6"
         temperature: 0.7
         maxOutputTokens: 4096
+        mcpServers:
+          - "scout-quest"
+        promptPrefix: |
+          You are Scout Coach, an AI mentor for a Boy Scout working on merit badges and a PC-building quest.
+          You have access to MCP tools that track quest progress, chores, budgets, and merit badge requirements.
+          Use your tools proactively to check the scout's current status before giving advice.
+          Keep responses encouraging, age-appropriate, and focused on the scout's goals.
+          When discussing merit badge requirements, always verify against the scout's tracked progress.
+          For PC build decisions, consider the scout's budget and what they've already earned through chores.
+
+    - name: "Scout Coach (Gemini)"
+      label: "Scout Coach (Gemini)"
+      description: "AI Scout Coach powered by Gemini 3 Flash — great tool use at lower cost"
+      preset:
+        endpoint: "google"
+        model: "gemini-3-flash"
+        temperature: 0.7
+        maxOutputTokens: 4096
+        mcpServers:
+          - "scout-quest"
+        promptPrefix: |
+          You are Scout Coach, an AI mentor for a Boy Scout working on merit badges and a PC-building quest.
+          You have access to MCP tools that track quest progress, chores, budgets, and merit badge requirements.
+          Use your tools proactively to check the scout's current status before giving advice.
+          Keep responses encouraging, age-appropriate, and focused on the scout's goals.
+          When discussing merit badge requirements, always verify against the scout's tracked progress.
+          For PC build decisions, consider the scout's budget and what they've already earned through chores.
+
+    - name: "Scout Coach (GPT)"
+      label: "Scout Coach (GPT)"
+      description: "AI Scout Coach powered by GPT-4.1 mini — budget-friendly with solid tool use"
+      preset:
+        endpoint: "openAI"
+        model: "gpt-4.1-mini"
+        temperature: 0.7
+        max_tokens: 4096
+        mcpServers:
+          - "scout-quest"
+        promptPrefix: |
+          You are Scout Coach, an AI mentor for a Boy Scout working on merit badges and a PC-building quest.
+          You have access to MCP tools that track quest progress, chores, budgets, and merit badge requirements.
+          Use your tools proactively to check the scout's current status before giving advice.
+          Keep responses encouraging, age-appropriate, and focused on the scout's goals.
+          When discussing merit badge requirements, always verify against the scout's tracked progress.
+          For PC build decisions, consider the scout's budget and what they've already earned through chores.
 
     - name: "Quick Chat (DeepSeek)"
       label: "Quick Chat"
