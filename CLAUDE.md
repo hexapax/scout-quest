@@ -7,7 +7,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Scout Quest deploys **two independent LibreChat instances** on a single GCP VM:
 
 - **ai-chat** (`ai-chat.hexapax.com`, port 3080) — Full-access AI chat for the admin
-- **scout-quest** (`scout-quest.hexapax.com`, port 3081) — Locked-down instance with curated model presets, memory agent, and upcoming MCP server for a Boy Scout quest system
+- **scout-quest** (`scout-quest.hexapax.com`, port 3081) — Locked-down instance with curated model presets, memory agent, and MCP server for a Boy Scout quest system
+- **admin** (`admin.hexapax.com`, port 3082) — AdminJS web panel for MongoDB visibility and system observability
 
 ## Common Commands
 
@@ -29,19 +30,29 @@ terraform apply         # Apply infrastructure changes
 ./deploy-config.sh <VM_IP>           # Deploy config to VM via direct SSH
 ./deploy-config.sh update [mode]     # Push .env to GCS + deploy (default: gcloud)
 ./deploy-config.sh upgrade [mode]    # Pull latest Docker images + restart (default: gcloud)
+./scripts/deploy-admin.sh [gcloud]   # Build + deploy admin app to VM
+./scripts/update-caddyfile.sh        # Update Caddy reverse proxy rules on VM
 ```
 
 Deploy flow: pulls `.env` from GCS (secrets), combines with git-tracked `librechat.yaml` + `docker-compose.override.yml`, uploads to VM, runs `docker compose up -d`, then HTTP health checks.
 
+### Helper Scripts
+
+```bash
+./scripts/nvm-run.sh <cmd> [args]    # Run any command with nvm Node.js 24
+./scripts/build-admin.sh [--docker]  # Build admin app (TS compile, optional Docker)
+./scripts/deploy-admin.sh [gcloud]   # Full admin deploy: build, SCP, Docker, start
+./scripts/ssh-vm.sh "command"        # Run a command on the VM via gcloud SSH
+./scripts/update-caddyfile.sh        # Update Caddy with all three reverse proxy rules
+```
+
 ### VM Operations (via SSH)
 
 ```bash
-gcloud compute ssh scoutcoach@scout-coach-vm --zone=us-east4-b
-# Logs
-docker compose -f /opt/scoutcoach/ai-chat/docker-compose.yml logs -f
-docker compose -f /opt/scoutcoach/scout-quest/docker-compose.yml logs -f
-# Restart
-docker compose -f /opt/scoutcoach/<instance>/docker-compose.yml restart
+./scripts/ssh-vm.sh "docker compose -f /opt/scoutcoach/ai-chat/docker-compose.yml logs -f"
+./scripts/ssh-vm.sh "docker compose -f /opt/scoutcoach/scout-quest/docker-compose.yml logs -f"
+./scripts/ssh-vm.sh "docker compose -f /opt/scoutcoach/admin/docker-compose.yml logs -f"
+./scripts/ssh-vm.sh "cd /opt/scoutcoach/<instance> && docker compose restart"
 ```
 
 ## Architecture
@@ -69,6 +80,9 @@ Terraform manages DNS records in the `hexapax-com` zone owned by the `hexapax-we
 
 - `config/ai-chat/` — Full-access instance config (librechat.yaml, docker-compose.override.yml, .env.example)
 - `config/scout-quest/` — Locked-down instance config (model presets enforced, memory agent enabled)
+- `config/admin/` — Admin panel deployment config (docker-compose.yml, .env.example)
+- `admin/` — Admin panel source (AdminJS + Express + Mongoose, TypeScript)
+- `scripts/` — Helper bash scripts for building, deploying, and VM operations
 - `terraform/` — GCP infrastructure: VM, VPC, firewall, static IP, Cloud DNS, GCS backup bucket
 - `docs/` — Architecture, designs, research, and requirements
 - `docs/future-research.md` — **Research store: constraints, cost analysis, dead ends. Read before pursuing new integrations or model changes.**
@@ -86,6 +100,23 @@ Terraform manages DNS records in the `hexapax-com` zone owned by the `hexapax-we
 ## MCP Server
 
 A TypeScript MCP server in `mcp-servers/scout-quest/` provides quest state management, chore tracking, email composition (YPT-compliant), reminders, and ntfy push notifications. Two entry points: `dist/scout.js` (scout-facing, registered on scout-quest instance) and `dist/admin.js` (admin-facing, registered on ai-chat instance). Runs as stdio subprocess inside the LibreChat API container, connecting to shared MongoDB. Build with `cd mcp-servers/scout-quest && bash build.sh`. Design spec in `docs/plans/2026-02-21-mcp-server-redesign.md`.
+
+## Admin Panel
+
+An AdminJS-based web admin panel in `admin/` provides CRUD visibility into Scout Quest MongoDB, read-only access to LibreChat MongoDB, and a dashboard with system health widgets. Design doc: `docs/plans/2026-02-21-admin-app-design.md`. Implementation plan: `docs/plans/2026-02-21-admin-app-implementation.md`.
+
+## Bash Command Conventions
+
+**Use helper scripts for complex commands.** Claude Code's permission system has a known bug with commands containing quotes, `$()` substitutions, and array syntax like `@()`. To avoid permission prompts:
+
+1. **Write a bash script in `scripts/`** instead of running complex inline commands
+2. **Use `./scripts/nvm-run.sh`** to wrap any command that needs nvm/Node.js 24
+3. **Use `./scripts/ssh-vm.sh "command"`** instead of inline `gcloud compute ssh` with complex commands
+4. **Never use `@()` array syntax** in inline Bash tool calls — it triggers permission bugs
+5. **Prefer heredocs in scripts** over inline heredocs in Bash tool calls
+6. **For git commits** use `git commit -m "simple message"` — avoid heredocs in commit messages when possible
+
+When a command would require quotes-within-quotes or shell expansions that trip the permission system, create a temporary script in `scripts/` and run it with `bash scripts/my-script.sh`.
 
 ## Research & Multi-Session Protocol
 
