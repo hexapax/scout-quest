@@ -88,7 +88,6 @@ modelSpecs:
       preset:
         endpoint: "anthropic"
         model: "claude-sonnet-4-6"
-        temperature: 0.4
         maxOutputTokens: 4096
         mcpServers:
           - "scout-admin"
