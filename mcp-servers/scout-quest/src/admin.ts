@@ -1,6 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { getUserRoles } from "./auth.js";
 import { registerAdminResources } from "./resources/index.js";
 import { registerAdminTools } from "./tools/admin/index.js";
 
@@ -50,13 +49,12 @@ if (!adminEmail) {
   process.exit(1);
 }
 
-const roles = await getUserRoles(adminEmail);
 registerAdminResources(server);
 
-const canWrite = roles.some(r => r.type === "superuser" || r.type === "admin");
-if (canWrite) {
-  registerAdminTools(server);
-}
+// Always register admin tools — auth is enforced per-call, not at startup.
+// Without this, bootstrapping fails: no roles exist until the first scout is created,
+// but you can't create a scout without tools being registered.
+registerAdminTools(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

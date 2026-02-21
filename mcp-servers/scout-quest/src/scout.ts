@@ -1,6 +1,5 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { getUserRoles } from "./auth.js";
 import { registerScoutResources } from "./resources/index.js";
 import { registerScoutTools } from "./tools/scout/index.js";
 
@@ -67,16 +66,12 @@ if (!scoutEmail) {
   process.exit(1);
 }
 
-// Check roles and register appropriate tools/resources
-const roles = await getUserRoles(scoutEmail);
 registerScoutResources(server, scoutEmail);
 
-const isScout = roles.some(r =>
-  r.type === "scout" || r.type === "test_scout" || r.type === "superuser",
-);
-if (isScout) {
-  registerScoutTools(server, scoutEmail);
-}
+// Always register scout tools — auth is enforced per-call, not at startup.
+// Without this, bootstrapping fails: no roles exist until the admin creates
+// the scout, but LibreChat needs tools registered at MCP init time.
+registerScoutTools(server, scoutEmail);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
