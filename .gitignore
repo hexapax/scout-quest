@@ -11,6 +11,8 @@ config/scout-quest/.env
 !config/**/.env.example
 *.json
 !package.json
+!package-lock.json
+!tsconfig.json
 
 # Archives
 *.tar
