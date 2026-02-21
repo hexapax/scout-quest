@@ -4,7 +4,7 @@
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│                      GCP Project: scout-coach                        │
+│                      GCP Project: scout-assistant-487523                        │
 ├──────────────────────────────────────────────────────────────────────┤
 │                                                                      │
 │  ┌────────────────────────────────────────────────────────────────┐  │
@@ -102,8 +102,8 @@ VM path: `/opt/scoutcoach/` with subdirectories `ai-chat/` and `scout-quest/`
 `.env` files contain API keys and OAuth secrets — they must NOT be in git. They're stored in GCS:
 
 ```
-gs://scout-coach-tfstate/config/ai-chat/.env
-gs://scout-coach-tfstate/config/scout-quest/.env
+gs://scout-assistant-487523-tfstate/config/ai-chat/.env
+gs://scout-assistant-487523-tfstate/config/scout-quest/.env
 ```
 
 Workflow:

@@ -22,7 +22,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 INSTANCES=("ai-chat" "scout-quest")
-PROJECT_ID="${PROJECT_ID:-scout-coach}"
+PROJECT_ID="${PROJECT_ID:-scout-assistant-487523}"
 GCS_BUCKET="gs://${PROJECT_ID}-tfstate"
 GCS_CONFIG_PREFIX="config"
 

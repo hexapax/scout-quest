@@ -13,7 +13,7 @@
 #   - A GCP project already created in hexapax.com console
 #
 # Usage: ./bootstrap.sh <PROJECT_ID>
-# Example: ./bootstrap.sh scout-coach
+# Example: ./bootstrap.sh scout-assistant-487523
 
 set -euo pipefail
 

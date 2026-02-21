@@ -88,7 +88,7 @@ scout-quest/
 
 ```bash
 chmod +x bootstrap.sh deploy-config.sh
-./bootstrap.sh scout-coach    # replace with your project ID
+./bootstrap.sh scout-assistant-487523    # replace with your project ID
 ```
 
 ### Step 2: Configure Terraform (~1 min)
@@ -99,7 +99,7 @@ cp terraform/terraform.tfvars.example terraform/terraform.tfvars
 
 Edit `terraform/terraform.tfvars`:
 ```hcl
-project_id    = "scout-coach"
+project_id    = "scout-assistant-487523"
 domain_aichat = "ai-chat.hexapax.com"
 domain_scout  = "scout-quest.hexapax.com"
 ```
@@ -123,7 +123,7 @@ DNS is managed by Terraform in the existing Cloud DNS zone in the `hexapax-web` 
 ```bash
 # Grant scout-deployer DNS access on hexapax-web
 gcloud projects add-iam-policy-binding hexapax-web \
-  --member="serviceAccount:scout-deployer@scout-coach.iam.gserviceaccount.com" \
+  --member="serviceAccount:scout-deployer@scout-assistant-487523.iam.gserviceaccount.com" \
   --role="roles/dns.admin" --condition=None --quiet
 
 # Import existing records (see terraform/dns.tf header for full list)

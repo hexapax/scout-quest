@@ -10,7 +10,7 @@ terraform {
 
   # State stored in GCS. Create the bucket first with bootstrap.sh
   backend "gcs" {
-    bucket = "scout-coach-tfstate"
+    bucket = "scout-assistant-487523-tfstate"
     prefix = "terraform/state"
   }
 }

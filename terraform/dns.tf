@@ -8,7 +8,7 @@
 # FIRST TIME SETUP:
 #   1. Grant scout-deployer dns.admin on hexapax-web:
 #      gcloud projects add-iam-policy-binding hexapax-web \
-#        --member="serviceAccount:scout-deployer@scout-coach.iam.gserviceaccount.com" \
+#        --member="serviceAccount:scout-deployer@scout-assistant-487523.iam.gserviceaccount.com" \
 #        --role="roles/dns.admin" --condition=None --quiet
 #
 #   2. Import existing records into Terraform state:

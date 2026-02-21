@@ -3,7 +3,7 @@
 # Fill in your values and save as terraform.tfvars
 # ============================================
 
-project_id       = "scout-coach"                           # Your GCP project ID
+project_id       = "scout-assistant-487523"                 # Your GCP project ID
 region           = "us-east4"                              # Virginia (closest to Atlanta)
 zone             = "us-east4-b"
 domain_aichat    = "ai-chat.hexapax.com"                   # Full-access instance
