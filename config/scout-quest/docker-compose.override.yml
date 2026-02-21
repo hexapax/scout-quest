@@ -15,8 +15,6 @@ services:
 
   mongodb:
     container_name: scout-quest-mongodb
-    volumes:
-      - mongo_data:/data/db
     networks:
       - default
       - scout-shared
@@ -29,9 +27,6 @@ services:
 
   rag_api:
     container_name: scout-quest-rag-api
-
-volumes:
-  mongo_data:
 
 networks:
   scout-shared:

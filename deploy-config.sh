@@ -189,13 +189,18 @@ deploy() {
   # --- Upload combined config to VM ---
   echo ""
   echo "→ Uploading config files..."
+  # Clean stale temp dirs first to prevent SCP nesting issues
   if [ "${MODE}" = "gcloud" ]; then
+    gcloud compute ssh scout-coach-vm --zone=us-east4-b \
+      --command="rm -rf /tmp/scout-config-ai-chat /tmp/scout-config-scout-quest" 2>/dev/null || true
     for INSTANCE in "${INSTANCES[@]}"; do
       gcloud compute scp --recurse "${TEMP_DIR}/${INSTANCE}" \
         "scout-coach-vm:/tmp/scout-config-${INSTANCE}" --zone=us-east4-b
       echo "  ${INSTANCE} uploaded ✓"
     done
   else
+    ssh -o StrictHostKeyChecking=no "ubuntu@${MODE}" \
+      "rm -rf /tmp/scout-config-ai-chat /tmp/scout-config-scout-quest" 2>/dev/null || true
     for INSTANCE in "${INSTANCES[@]}"; do
       ssh -o StrictHostKeyChecking=no "ubuntu@${MODE}" "mkdir -p /tmp/scout-config-${INSTANCE}"
       scp -o StrictHostKeyChecking=no -r "${TEMP_DIR}/${INSTANCE}/." \
@@ -247,6 +252,13 @@ setup_instance() {
   sudo cp "${SRC_DIR}/docker-compose.override.yml" "${APP_DIR}/docker-compose.override.yml"
   sudo chown -R scoutcoach:scoutcoach "${APP_DIR}/.env" "${APP_DIR}/librechat.yaml" "${APP_DIR}/docker-compose.override.yml"
 
+  # Create data directories with correct ownership (upstream uses bind mounts)
+  echo "  Ensuring data directories exist with correct ownership..."
+  for DIR in data-node meili_data_v1.35.1 images uploads logs; do
+    sudo mkdir -p "${APP_DIR}/${DIR}"
+    sudo chown scoutcoach:scoutcoach "${APP_DIR}/${DIR}"
+  done
+
   # --- Generate security keys if needed ---
   if grep -q "<GENERATE>" "${APP_DIR}/.env"; then
     echo "  Generating security keys..."
@@ -271,6 +283,18 @@ setup_instance() {
 # Set up MCP directory for scout-quest
 echo "  Setting up MCP server directory..."
 sudo -u scoutcoach mkdir -p /opt/scoutcoach/scout-quest/mcp-servers/scout-quest
+
+# Set up MCP directory for ai-chat
+sudo -u scoutcoach mkdir -p /opt/scoutcoach/ai-chat/mcp-servers/scout-quest
+
+# Create shared Docker network (needed for cross-instance MCP access)
+if ! sudo docker network inspect scout-shared >/dev/null 2>&1; then
+  echo "  Creating scout-shared Docker network..."
+  sudo docker network create scout-shared
+  echo "  scout-shared network created ✓"
+else
+  echo "  scout-shared network already exists ✓"
+fi
 
 # Deploy both instances
 setup_instance "ai-chat"
