@@ -1,5 +1,6 @@
 services:
   api:
+    container_name: scout-quest-api
     volumes:
       - type: bind
         source: ./librechat.yaml
@@ -11,22 +12,26 @@ services:
       - NODE_ENV=production
     depends_on:
       - mongodb
-      - redis
 
   mongodb:
+    container_name: scout-quest-mongodb
     volumes:
       - mongo_data:/data/db
     networks:
       - default
       - scout-shared
 
-  redis:
-    volumes:
-      - redis_data:/data
+  meilisearch:
+    container_name: scout-quest-meilisearch
+
+  vectordb:
+    container_name: scout-quest-vectordb
+
+  rag_api:
+    container_name: scout-quest-rag-api
 
 volumes:
   mongo_data:
-  redis_data:
 
 networks:
   scout-shared:

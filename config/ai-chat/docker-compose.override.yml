@@ -1,5 +1,6 @@
 services:
   api:
+    container_name: ai-chat-api
     volumes:
       - type: bind
         source: ./librechat.yaml
@@ -14,19 +15,23 @@ services:
       - scout-shared
     depends_on:
       - mongodb
-      - redis
 
   mongodb:
+    container_name: ai-chat-mongodb
     volumes:
       - mongo_data:/data/db
 
-  redis:
-    volumes:
-      - redis_data:/data
+  meilisearch:
+    container_name: ai-chat-meilisearch
+
+  vectordb:
+    container_name: ai-chat-vectordb
+
+  rag_api:
+    container_name: ai-chat-rag-api
 
 volumes:
   mongo_data:
-  redis_data:
 
 networks:
   scout-shared:
