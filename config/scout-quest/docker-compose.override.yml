@@ -16,6 +16,9 @@ services:
   mongodb:
     volumes:
       - mongo_data:/data/db
+    networks:
+      - default
+      - scout-shared
 
   redis:
     volumes:
@@ -24,3 +27,8 @@ services:
 volumes:
   mongo_data:
   redis_data:
+
+networks:
+  scout-shared:
+    external: true
+    name: scout-shared

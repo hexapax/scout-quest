@@ -60,21 +60,19 @@ speech:
         - "onyx"
         - "shimmer"
 
-# --- MCP Servers (Scout Quest MCP added later) ---
-# Uncomment when the custom MCP server is deployed:
-# mcpServers:
-#   scout-quest:
-#     type: stdio
-#     command: node
-#     args:
-#       - "/app/mcp-servers/scout-quest/dist/index.js"
-#     env:
-#       MONGO_URI: "mongodb://mongodb:27017/scoutquest"
-#       NTFY_TOPIC: "${NTFY_TOPIC}"
-#       # No SMTP needed — compose_email generates mailto: links only.
-#       # Out-of-session reminders use ntfy push notifications.
-#     timeout: 30000
-#     serverInstructions: true
+# --- MCP Servers ---
+mcpServers:
+  scout-quest:
+    type: stdio
+    command: node
+    args:
+      - "/app/mcp-servers/scout-quest/dist/scout.js"
+    env:
+      MONGO_URI: "mongodb://mongodb:27017/scoutquest"
+      NTFY_TOPIC: "${NTFY_TOPIC}"
+      SCOUT_EMAIL: "{{user.email}}"
+    timeout: 30000
+    serverInstructions: true
 
 # --- Custom Endpoints (cheaper / open-source models) ---
 endpoints:

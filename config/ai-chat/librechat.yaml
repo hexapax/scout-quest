@@ -28,6 +28,19 @@ speech:
         - "onyx"
         - "shimmer"
 
+# --- MCP Servers (Scout Quest Admin) ---
+mcpServers:
+  scout-admin:
+    type: stdio
+    command: node
+    args:
+      - "/app/mcp-servers/scout-quest/dist/admin.js"
+    env:
+      MONGO_URI: "mongodb://scout-quest-mongodb-1:27017/scoutquest"
+      ADMIN_EMAIL: "{{user.email}}"
+    timeout: 30000
+    serverInstructions: true
+
 # --- Custom Endpoints (cheaper / open-source models) ---
 endpoints:
   custom:
