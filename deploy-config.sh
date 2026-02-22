@@ -44,7 +44,7 @@ gcs_push() {
     fi
 
     echo "  Uploading ${INSTANCE}/.env → ${GCS_PATH}"
-    gsutil cp "${ENV_FILE}" "${GCS_PATH}"
+    gcloud storage cp "${ENV_FILE}" "${GCS_PATH}"
     echo "  ${INSTANCE} ✓"
   done
 
@@ -65,7 +65,7 @@ gcs_pull() {
     local GCS_PATH="${GCS_BUCKET}/${GCS_CONFIG_PREFIX}/${INSTANCE}/.env"
 
     echo "  Downloading ${GCS_PATH} → ${INSTANCE}/.env"
-    if gsutil cp "${GCS_PATH}" "${ENV_FILE}" 2>/dev/null; then
+    if gcloud storage cp "${GCS_PATH}" "${ENV_FILE}" 2>/dev/null; then
       echo "  ${INSTANCE} ✓"
     else
       echo "  WARNING: ${GCS_PATH} not found in GCS — skipping"
@@ -107,7 +107,7 @@ deploy() {
   for INSTANCE in "${INSTANCES[@]}"; do
     mkdir -p "${TEMP_DIR}/${INSTANCE}"
     local GCS_PATH="${GCS_BUCKET}/${GCS_CONFIG_PREFIX}/${INSTANCE}/.env"
-    if gsutil cp "${GCS_PATH}" "${TEMP_DIR}/${INSTANCE}/.env" 2>/dev/null; then
+    if gcloud storage cp "${GCS_PATH}" "${TEMP_DIR}/${INSTANCE}/.env" 2>/dev/null; then
       echo "  ${INSTANCE}/.env ✓"
     else
       echo "  ERROR: ${GCS_PATH} not found. Run './deploy-config.sh push' first."
