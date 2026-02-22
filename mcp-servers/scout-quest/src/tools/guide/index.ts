@@ -6,8 +6,12 @@ import { registerSetChoreListGuide } from "./setChoreListGuide.js";
 import { registerSetBudgetPlan } from "./setBudgetPlan.js";
 import { registerSetCharacterPreferences } from "./setCharacterPreferences.js";
 import { registerSetSessionLimits } from "./setSessionLimits.js";
+import { registerGetConversationDetail } from "./getConversationDetail.js";
+import { registerFlagConversation } from "./flagConversation.js";
+import { registerSendNotificationGuide } from "./sendNotificationGuide.js";
 
 export function registerGuideTools(server: McpServer, guideEmail: string): void {
+  // Onboarding tools
   registerSetupScoutProfile(server, guideEmail);
   registerSetScoutInterests(server, guideEmail);
   registerSetQuestGoal(server, guideEmail);
@@ -15,4 +19,8 @@ export function registerGuideTools(server: McpServer, guideEmail: string): void 
   registerSetBudgetPlan(server, guideEmail);
   registerSetCharacterPreferences(server, guideEmail);
   registerSetSessionLimits(server, guideEmail);
+  // Monitoring tools
+  registerGetConversationDetail(server, guideEmail);
+  registerFlagConversation(server, guideEmail);
+  registerSendNotificationGuide(server, guideEmail);
 }
