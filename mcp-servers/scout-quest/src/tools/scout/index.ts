@@ -8,6 +8,8 @@ import { registerAdjustTone } from "./adjustTone.js";
 import { registerSetupTimeMgmt } from "./setupTimeMgmt.js";
 import { registerLogDiaryEntry } from "./logDiaryEntry.js";
 import { registerUpdateQuestGoal } from "./updateQuestGoal.js";
+import { registerUpdateQuestPlan } from "./updateQuestPlan.js";
+import { registerLogSessionNotes } from "./logSessionNotes.js";
 
 export function registerScoutTools(server: McpServer, scoutEmail: string): void {
   registerLogChore(server, scoutEmail);
@@ -19,4 +21,6 @@ export function registerScoutTools(server: McpServer, scoutEmail: string): void 
   registerSetupTimeMgmt(server, scoutEmail);
   registerLogDiaryEntry(server, scoutEmail);
   registerUpdateQuestGoal(server, scoutEmail);
+  registerUpdateQuestPlan(server, scoutEmail);
+  registerLogSessionNotes(server, scoutEmail);
 }
