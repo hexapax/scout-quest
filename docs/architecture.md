@@ -52,9 +52,13 @@ External services:
   └── ntfy.sh (push notifications → Will's iPad)
 ```
 
+### Admin Panel
+
+A standalone AdminJS container (`scout-admin`, port 3082) provides CRUD visibility into Scout Quest MongoDB and read-only access to LibreChat MongoDB. It connects to both databases via the `scout-shared` Docker network. Deployed via `scripts/deploy-admin.sh` (build locally, tarball SCP, Docker image on VM).
+
 ### Docker Compose Services (per instance)
 
-Each instance runs 5 containers from the upstream LibreChat `docker-compose.yml`:
+Each LibreChat instance runs 5 containers from the upstream `docker-compose.yml`:
 
 | Service | Container Name Pattern | Purpose |
 |---------|----------------------|---------|
@@ -66,10 +70,11 @@ Each instance runs 5 containers from the upstream LibreChat `docker-compose.yml`
 
 ### Docker Networking
 
-- Each instance has its own default bridge network (`ai-chat_default`, `scout-quest_default`)
-- `scout-shared` is an external bridge network connecting both stacks
-- ai-chat's API container joins `scout-shared` so the admin MCP server can reach scout-quest's MongoDB
-- scout-quest's MongoDB joins `scout-shared` to accept connections from ai-chat
+- Each LibreChat instance has its own default bridge network (`ai-chat_default`, `scout-quest_default`)
+- `scout-shared` is an external bridge network connecting all three stacks
+- ai-chat's API and MongoDB containers join `scout-shared` (API for MCP, MongoDB for admin panel read-only access)
+- scout-quest's MongoDB joins `scout-shared` to accept connections from ai-chat MCP and admin panel
+- The admin container (`scout-admin`) joins `scout-shared` to reach both MongoDB instances
 
 ## Why This Architecture
 
@@ -98,11 +103,12 @@ Each instance runs 5 containers from the upstream LibreChat `docker-compose.yml`
 
 ## Current Deployment State
 
-Both instances are **deployed and running**:
+All three services are **deployed and running**:
 - `https://ai-chat.hexapax.com` — full-access instance (Jeremy)
 - `https://scout-quest.hexapax.com` — locked-down scout instance (Will)
+- `https://admin.hexapax.com` — AdminJS panel (Jeremy, email-allowlist auth)
 
-VM path: `/opt/scoutcoach/` with subdirectories `ai-chat/` and `scout-quest/`
+VM path: `/opt/scoutcoach/` with subdirectories `ai-chat/`, `scout-quest/`, and `admin/`
 VM user: `scoutcoach` (UID=997, GID=986) with Docker group access
 Node.js: v24 via nvm (for MCP server builds — build locally, SCP bundle to VM)
 
@@ -115,9 +121,12 @@ Node.js: v24 via nvm (for MCP server builds — build locally, SCP bundle to VM)
 - Model presets wired to MCP via `modelSpecs` with `mcpServers` field
 - AI providers: Anthropic (Claude), OpenAI (GPT), Google (Gemini), DeepSeek, OpenRouter
 - Password sign-up disabled — OAuth only
-- `scout-shared` Docker network for cross-instance MCP access
+- `scout-shared` Docker network for cross-instance MCP and admin access
+- Admin panel: AdminJS on port 3082, CRUD for Scout Quest + read-only LibreChat MongoDB
 
 **What's not yet deployed:**
+- Admin panel DNS: `admin.hexapax.com` A record defined in Terraform but not yet applied
+- Admin panel auth: Google OAuth wiring (currently email-allowlist with session cookie)
 - ntfy push notification cron sidecar (`send_notification` MCP tool exists, but no background reminder scheduler)
 - Brave Search MCP integration (see `docs/future-research.md`)
 
@@ -169,6 +178,7 @@ MCP tools only work on native LibreChat endpoints (`anthropic`, `openAI`, `googl
 ```
 gs://scout-assistant-487523-tfstate/config/ai-chat/.env
 gs://scout-assistant-487523-tfstate/config/scout-quest/.env
+gs://scout-assistant-487523-tfstate/config/admin/.env
 ```
 
 Individual API keys are also stored in GCP Secret Manager for reference/recovery.
@@ -203,16 +213,18 @@ The deploy script creates a temp dir, pulls `.env` from GCS, copies git-tracked 
 
 ## Feature Mapping
 
-| Feature | ai-chat | scout-quest |
-|---|---|---|
-| All AI providers (Claude, GPT, Gemini, DeepSeek, OpenRouter) | Yes | Via curated presets |
-| Model selection | Unrestricted | Locked (`modelSpecs.enforce: true`) |
-| Voice mode (STT/TTS) | Yes | Yes |
-| Persistent memory | No | Yes (quest progress, preferences) |
-| MCP server | Yes (scout-admin, 11 tools) | Yes (scout-quest, 9 tools) |
-| Google OAuth | Yes | Yes |
-| Password sign-up | Disabled | Disabled |
-| Push notifications (in-session) | No | Yes (ntfy via MCP tool) |
+| Feature | ai-chat | scout-quest | admin |
+|---|---|---|---|
+| All AI providers (Claude, GPT, Gemini, DeepSeek, OpenRouter) | Yes | Via curated presets | N/A |
+| Model selection | Unrestricted | Locked (`modelSpecs.enforce: true`) | N/A |
+| Voice mode (STT/TTS) | Yes | Yes | N/A |
+| Persistent memory | No | Yes (quest progress, preferences) | N/A |
+| MCP server | Yes (scout-admin, 11 tools) | Yes (scout-quest, 9 tools) | N/A |
+| Google OAuth | Yes | Yes | Email allowlist |
+| Password sign-up | Disabled | Disabled | N/A |
+| Push notifications (in-session) | No | Yes (ntfy via MCP tool) | N/A |
+| MongoDB CRUD (Scout Quest) | No | No | Yes |
+| MongoDB read-only (LibreChat) | No | No | Yes |
 
 ---
 

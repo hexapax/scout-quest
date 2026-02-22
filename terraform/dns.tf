@@ -88,3 +88,12 @@ resource "google_dns_record_set" "scout_quest" {
   managed_zone = data.google_dns_managed_zone.hexapax.name
   rrdatas      = [google_compute_address.static.address]
 }
+
+resource "google_dns_record_set" "admin" {
+  project      = var.dns_project_id
+  name         = "${var.domain_admin}."
+  type         = "A"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.hexapax.name
+  rrdatas      = [google_compute_address.static.address]
+}

@@ -1,0 +1,4 @@
+# Override file for admin — placeholder for future customizations
+services:
+  admin:
+    container_name: scout-admin

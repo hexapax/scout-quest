@@ -18,6 +18,9 @@ services:
 
   mongodb:
     container_name: ai-chat-mongodb
+    networks:
+      - default
+      - scout-shared
 
   meilisearch:
     container_name: ai-chat-meilisearch
