@@ -6,6 +6,8 @@ import { registerBudgetSummary } from "./budgetSummary.js";
 import { registerCharacter } from "./character.js";
 import { registerReminders } from "./reminders.js";
 import { registerQuestSummary } from "./questSummary.js";
+import { registerQuestPlan } from "./questPlan.js";
+import { registerLastSession } from "./lastSession.js";
 import { registerAdminScouts } from "./adminScouts.js";
 
 export function registerScoutResources(server: McpServer, scoutEmail: string): void {
@@ -16,6 +18,8 @@ export function registerScoutResources(server: McpServer, scoutEmail: string): v
   registerCharacter(server, scoutEmail);
   registerReminders(server, scoutEmail);
   registerQuestSummary(server, scoutEmail);
+  registerQuestPlan(server, scoutEmail);
+  registerLastSession(server, scoutEmail);
 }
 
 export function registerAdminResources(server: McpServer): void {
