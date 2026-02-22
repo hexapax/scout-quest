@@ -6,6 +6,7 @@
     "build": "tsc",
     "start:scout": "node dist/scout.js",
     "start:admin": "node dist/admin.js",
+    "start:guide": "node dist/guide.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },

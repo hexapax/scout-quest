@@ -9,6 +9,7 @@ import { registerQuestSummary } from "./questSummary.js";
 import { registerQuestPlan } from "./questPlan.js";
 import { registerLastSession } from "./lastSession.js";
 import { registerAdminScouts } from "./adminScouts.js";
+import { registerGuideScouts } from "./guideScouts.js";
 
 export function registerScoutResources(server: McpServer, scoutEmail: string): void {
   registerQuestState(server, scoutEmail);
@@ -24,4 +25,8 @@ export function registerScoutResources(server: McpServer, scoutEmail: string): v
 
 export function registerAdminResources(server: McpServer): void {
   registerAdminScouts(server);
+}
+
+export function registerGuideResources(server: McpServer, guideEmail: string): void {
+  registerGuideScouts(server, guideEmail);
 }
