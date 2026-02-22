@@ -2,7 +2,9 @@ import { MongoClient, Db, Collection } from "mongodb";
 import type {
   UserDocument, ScoutDocument, RequirementDocument,
   ChoreLogEntry, BudgetEntry, TimeMgmtDocument,
-  LoanAnalysisDocument, EmailRecord, ReminderDocument
+  LoanAnalysisDocument, EmailRecord, ReminderDocument,
+  SetupStatusDocument, QuestPlanDocument, SessionNoteDocument,
+  CronLogEntry, PlanChangeLogEntry
 } from "./types.js";
 
 let db: Db | null = null;
@@ -42,4 +44,19 @@ export async function emailsSent(): Promise<Collection<EmailRecord>> {
 }
 export async function reminders(): Promise<Collection<ReminderDocument>> {
   return (await getDb()).collection("reminders");
+}
+export async function setupStatus(): Promise<Collection<SetupStatusDocument>> {
+  return (await getDb()).collection("setup_status");
+}
+export async function questPlans(): Promise<Collection<QuestPlanDocument>> {
+  return (await getDb()).collection("quest_plans");
+}
+export async function sessionNotes(): Promise<Collection<SessionNoteDocument>> {
+  return (await getDb()).collection("session_notes");
+}
+export async function cronLog(): Promise<Collection<CronLogEntry>> {
+  return (await getDb()).collection("cron_log");
+}
+export async function planChangelog(): Promise<Collection<PlanChangeLogEntry>> {
+  return (await getDb()).collection("plan_changelog");
 }

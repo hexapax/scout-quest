@@ -310,3 +310,84 @@ export interface SetupStatusDocument {
   created_at: Date;
   updated_at: Date;
 }
+
+// --- Quest Plans (memory redesign) ---
+
+export interface QuestPlanDocument {
+  _id?: ObjectId;
+  scout_email: string;
+  current_priorities: string[];
+  strategy_notes: string;
+  milestones: {
+    id: string;
+    label: string;
+    category: "savings" | "streak" | "requirement" | "counselor" | "custom";
+    target_metric?: string;
+    target_date?: Date;
+    completed: boolean;
+    completed_date?: Date;
+    celebrated: boolean;
+  }[];
+  next_counselor_session?: {
+    badge: "personal_management" | "family_life";
+    requirements_to_present: string[];
+    prep_notes: string;
+  };
+  scout_observations: {
+    engagement_patterns: string;
+    attention_notes: string;
+    motivation_triggers: string;
+    tone_notes: string;
+  };
+  last_reviewed: Date;
+  updated_at: Date;
+}
+
+// --- Session Notes (memory redesign) ---
+
+export interface SessionNoteDocument {
+  _id?: ObjectId;
+  scout_email: string;
+  session_date: Date;
+  source: "agent" | "cron";
+  topics_discussed: string[];
+  progress_made: string;
+  pending_items: string[];
+  next_session_focus?: string;
+  created_at: Date;
+}
+
+// --- Cron Log (memory redesign) ---
+
+export type CronAction =
+  | "drift_detected"
+  | "session_notes_backfill"
+  | "notification_sent"
+  | "plan_review"
+  | "inactivity_alert"
+  | "milestone_check";
+
+export interface CronLogEntry {
+  _id?: ObjectId;
+  run_date: Date;
+  scout_email: string;
+  action: CronAction;
+  details: string;
+  model_used?: string;
+  changes_made?: string;
+  created_at: Date;
+}
+
+// --- Plan Changelog (memory redesign) ---
+
+export interface PlanChangeLogEntry {
+  _id?: ObjectId;
+  scout_email: string;
+  change_date: Date;
+  source: "agent" | "cron" | "admin";
+  field_changed: string;
+  old_value?: string;
+  new_value: string;
+  reason: string;
+  created_at: Date;
+}
