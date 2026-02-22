@@ -1,5 +1,7 @@
 # Scout Quest MCP Server — Implementation Plan
 
+> **Status:** IMPLEMENTED — MCP server is built and deployed. Further additions (memory redesign, guide endpoint) are in `2026-02-21-combined-implementation.md`.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build the Scout Quest MCP server from the approved redesign spec, delivering a working scout-facing and admin-facing MCP server connected to MongoDB.

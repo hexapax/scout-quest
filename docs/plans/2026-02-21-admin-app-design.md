@@ -1,7 +1,7 @@
 # Scout Quest Admin App — Design Document
 
 **Date:** 2026-02-21
-**Status:** Approved
+**Status:** Partially implemented — admin app scaffolding done, new collections added in `2026-02-21-combined-implementation.md` Task 15
 
 ## Overview
 

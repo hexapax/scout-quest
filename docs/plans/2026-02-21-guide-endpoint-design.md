@@ -1,5 +1,8 @@
 # Scout Guide Endpoint — Design
 
+> **Date:** February 21, 2026
+> **Status:** Approved design — implementation planned in `2026-02-21-combined-implementation.md`
+
 ## Summary
 
 A third MCP server entry point (`guide.js`) on the scout-quest LibreChat instance that serves parents, scoutmasters, and other trusted adults ("guides"). It provides a guided onboarding quest to set up a scout's profile, ongoing monitoring of scout conversations and progress, and coaching that helps guides support their scouts while preserving scout agency.

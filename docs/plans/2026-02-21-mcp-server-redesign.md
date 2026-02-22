@@ -1,7 +1,7 @@
 # Scout Quest MCP Server — Redesign Specification
 
 > **Date:** February 21, 2026
-> **Status:** Approved design — ready for implementation planning
+> **Status:** Implemented — authoritative spec (see `2026-02-21-mcp-server-implementation.md`, now superseded by `2026-02-21-combined-implementation.md`)
 > **Supersedes:** `docs/mcp-server-design.md` (original PC-build-specific design)
 > **Input documents:** `docs/scout-quest-character.md`, `docs/scout-quest-requirements.md`
 

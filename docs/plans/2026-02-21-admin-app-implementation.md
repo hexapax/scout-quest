@@ -1,5 +1,7 @@
 # Scout Quest Admin App — Implementation Plan
 
+> **Status:** Partially implemented — core scaffolding complete. New collection models handled by `2026-02-21-combined-implementation.md` Task 15.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Build an AdminJS-based web admin panel that provides CRUD visibility into Scout Quest MongoDB, read-only access to LibreChat MongoDB, and a dashboard with system health widgets and GCP log links.

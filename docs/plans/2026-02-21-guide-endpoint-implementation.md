@@ -1,5 +1,7 @@
 # Scout Guide Endpoint — Implementation Plan
 
+> **Status:** SUPERSEDED by `2026-02-21-combined-implementation.md` which coordinates guide endpoint with memory redesign and admin app updates.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add a third MCP server entry point (`guide.js`) with parent/leader-facing tools for onboarding scouts, monitoring progress, and coaching guides on how to support their scouts.
