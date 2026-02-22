@@ -14,7 +14,7 @@ export type Role =
   | { type: "superuser" }
   | { type: "admin"; troop: string }
   | { type: "adult_readonly"; troop: string }
-  | { type: "parent"; scout_emails: string[] }
+  | { type: "guide"; scout_emails: string[] }
   | { type: "scout" }
   | { type: "test_scout"; test_account: true };
 
@@ -35,6 +35,11 @@ export interface ScoutDocument {
   age: number;
   troop: string;
   patrol?: string;
+  interests?: {
+    likes: string[];
+    dislikes: string[];
+    motivations: string[];
+  };
 
   quest_state: {
     goal_item: string;
@@ -79,6 +84,7 @@ export interface ScoutDocument {
   };
 
   parent_guardian: ContactInfo;
+  guide_email: string;
 
   blue_card: {
     personal_management: {
@@ -105,6 +111,10 @@ export interface ScoutDocument {
     income_sources: { name: string; weekly_amount: number }[];
     expense_categories: { name: string; weekly_amount: number }[];
     savings_target_weekly: number;
+  };
+  session_limits?: {
+    max_minutes_per_day: number;
+    allowed_days?: string[];
   };
 
   created_at: Date;
@@ -278,4 +288,25 @@ export interface ReminderDocument {
   next_trigger: Date | null;
   active: boolean;
   created_at: Date;
+}
+
+// --- Setup Status (guide onboarding) ---
+
+export type SetupStepStatus = "pending" | "complete" | "skipped" | "delegated_to_scout";
+
+export interface SetupStep {
+  id: string;
+  label: string;
+  status: SetupStepStatus;
+  completed_at?: Date;
+  delegated_at?: Date;
+}
+
+export interface SetupStatusDocument {
+  _id?: ObjectId;
+  scout_email: string;
+  guide_email: string;
+  steps: SetupStep[];
+  created_at: Date;
+  updated_at: Date;
 }

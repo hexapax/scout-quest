@@ -33,8 +33,8 @@ describe("canAccess", () => {
     expect(canAccess(roles, "create_scout", { troop: "2024" })).toBe(false);
   });
 
-  it("parent can view own kids only", () => {
-    const roles: Role[] = [{ type: "parent", scout_emails: ["will@test.com"] }];
+  it("guide can view linked scouts only", () => {
+    const roles: Role[] = [{ type: "guide", scout_emails: ["will@test.com"] }];
     expect(canAccess(roles, "view_scout", { scout_email: "will@test.com" })).toBe(true);
     expect(canAccess(roles, "view_scout", { scout_email: "other@test.com" })).toBe(false);
   });
@@ -47,7 +47,7 @@ describe("canAccess", () => {
 
   it("multi-role user gets union of permissions", () => {
     const roles: Role[] = [
-      { type: "parent", scout_emails: ["will@test.com"] },
+      { type: "guide", scout_emails: ["will@test.com"] },
       { type: "admin", troop: "2024" },
     ];
     expect(canAccess(roles, "view_scout", { scout_email: "will@test.com" })).toBe(true);

@@ -43,7 +43,7 @@ export function registerCreateScout(server: McpServer): void {
         { email: parent_email },
         {
           $set: { updated_at: now },
-          $addToSet: { roles: { type: "parent" as const, scout_emails: [email] } },
+          $addToSet: { roles: { type: "guide" as const, scout_emails: [email] } },
           $setOnInsert: { email: parent_email, created_at: now },
         },
         { upsert: true },
@@ -88,6 +88,7 @@ export function registerCreateScout(server: McpServer): void {
           scoutmaster: { name: "", email: "" },
         },
         parent_guardian: { name: parent_name, email: parent_email },
+        guide_email: parent_email,
         blue_card: {
           personal_management: { requested_date: null, approved_date: null, approved_by: null },
           family_life: { requested_date: null, approved_date: null, approved_by: null },

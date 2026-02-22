@@ -42,7 +42,7 @@ export function canAccess(
       }
     }
 
-    if (role.type === "parent") {
+    if (role.type === "guide") {
       if (READ_ACTIONS.includes(action)) {
         if (context.scout_email && role.scout_emails.includes(context.scout_email)) return true;
       }
