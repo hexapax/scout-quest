@@ -1,7 +1,7 @@
 services:
   admin:
     build:
-      context: ../../admin
+      context: .
       dockerfile: Dockerfile
     container_name: scout-admin
     restart: unless-stopped
