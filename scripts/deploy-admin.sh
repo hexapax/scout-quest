@@ -87,7 +87,7 @@ sudo mkdir -p "$APP_DIR"
 sudo chown scoutcoach:scoutcoach "$APP_DIR"
 
 echo "  Copying admin source..."
-sudo -u scoutcoach cp -r "$SRC_DIR/admin/"* "$APP_DIR/"
+sudo cp -r "$SRC_DIR/admin/"* "$APP_DIR/"
 
 echo "  Copying config..."
 sudo cp "$SRC_DIR/config/.env" "$APP_DIR/.env"
