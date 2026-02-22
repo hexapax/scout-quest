@@ -4,6 +4,8 @@ import { runDailyPipeline } from "./cron/pipeline.js";
 const schedule = process.env.CRON_SCHEDULE || "0 20 * * *";
 const ntfyTopic = process.env.NTFY_TOPIC || "";
 const parentTopic = process.env.NTFY_PARENT_TOPIC;
+const backfillModel = process.env.BACKFILL_MODEL || "claude-3-5-haiku-20241022";
+const reviewModel = process.env.REVIEW_MODEL || "claude-sonnet-4-20250514";
 
 if (!ntfyTopic) {
   console.error("NTFY_TOPIC not set");
@@ -25,6 +27,8 @@ cron.schedule(schedule, async () => {
       },
       ntfy_topic: ntfyTopic,
       parent_topic: parentTopic,
+      backfill_model: backfillModel,
+      review_model: reviewModel,
     });
   } catch (err) {
     console.error("[cron] Pipeline failed:", err);

@@ -1,4 +1,6 @@
 import { runMechanicalChecks } from "./mechanicalChecks.js";
+import { backfillSessionNotes } from "./sessionBackfill.js";
+import { reviewPlan } from "./planReview.js";
 import { sendNotifications } from "./notifications.js";
 import { cronLog } from "../db.js";
 
@@ -10,6 +12,8 @@ interface PipelineConfig {
   };
   ntfy_topic: string;
   parent_topic?: string;
+  backfill_model: string;
+  review_model: string;
 }
 
 export async function runDailyPipeline(config: PipelineConfig): Promise<void> {
@@ -34,8 +38,15 @@ export async function runDailyPipeline(config: PipelineConfig): Promise<void> {
     }
   }
 
-  // Step 2: Session notes backfill (Task 13)
-  // Step 3: Plan review (Task 13)
+  // Step 2: Session notes backfill
+  await backfillSessionNotes(config.backfill_model);
+
+  // Step 3: Plan review for scouts with drift
+  for (const result of results) {
+    if (result.drift_detected) {
+      await reviewPlan(result.scout_email, result.drift_details, config.review_model);
+    }
+  }
 
   // Step 4: Send accumulated notifications
   const allNotifications = results.flatMap(r => r.notifications);
