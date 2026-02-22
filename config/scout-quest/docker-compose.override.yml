@@ -28,6 +28,28 @@ services:
   rag_api:
     container_name: scout-quest-rag-api
 
+  cron:
+    image: node:24-alpine
+    container_name: scout-quest-cron
+    volumes:
+      - ./mcp-servers/scout-quest/dist:/app/dist:ro
+      - ./mcp-servers/scout-quest/node_modules:/app/node_modules:ro
+      - ./mcp-servers/scout-quest/package.json:/app/package.json:ro
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017/scoutquest"
+      LIBRECHAT_MONGO_URI: "mongodb://mongodb:27017/librechat"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+      NTFY_TOPIC: "${NTFY_TOPIC}"
+      CRON_SCHEDULE: "0 20 * * *"
+      INACTIVITY_REMINDER_DAYS: "3"
+      INACTIVITY_PARENT_ALERT_DAYS: "7"
+      PLAN_REVIEW_STALENESS_DAYS: "7"
+    working_dir: /app
+    command: ["node", "/app/dist/cron.js"]
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+
 networks:
   scout-shared:
     external: true
