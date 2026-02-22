@@ -30,12 +30,12 @@ echo "Build complete"
 TEMP_DIR=$(mktemp -d)
 trap "rm -rf '$TEMP_DIR'" EXIT
 
-# Copy admin source for Docker build on VM
+# Copy pre-built admin app for Docker image on VM
+# (npm on VM has auth issues — build locally, copy artifacts)
 mkdir -p "$TEMP_DIR/admin"
-cp -r "$ADMIN_DIR/src" "$TEMP_DIR/admin/src"
+cp -r "$ADMIN_DIR/dist" "$TEMP_DIR/admin/dist"
+cp -r "$ADMIN_DIR/node_modules" "$TEMP_DIR/admin/node_modules"
 cp "$ADMIN_DIR/package.json" "$TEMP_DIR/admin/"
-cp "$ADMIN_DIR/package-lock.json" "$TEMP_DIR/admin/" 2>/dev/null || true
-cp "$ADMIN_DIR/tsconfig.json" "$TEMP_DIR/admin/"
 cp "$ADMIN_DIR/Dockerfile" "$TEMP_DIR/admin/"
 
 # Copy config
