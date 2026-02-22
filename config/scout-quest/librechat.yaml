@@ -10,36 +10,9 @@ registration:
   socialLogins:
     - google
 
-# --- Memory (persists facts across conversations) ---
+# --- Memory (disabled — quest state lives in MCP/MongoDB now) ---
 memory:
-  disabled: false
-  validKeys:
-    - "quest_progress"
-    - "personal_preferences"
-    - "learned_facts"
-    - "conversation_context"
-  tokenLimit: 4000
-  charLimit: 15000
-  personalize: true
-  messageWindowSize: 10
-  agent:
-    provider: "anthropic"
-    model: "claude-sonnet-4-6"
-    instructions: |
-      You are a memory agent for a Boy Scout coaching system called Scout Quest.
-      Store ONLY explicitly stated information in these categories:
-      - quest_progress: merit badge requirements completed, hardware parts purchased/installed,
-        budget amounts earned/spent, chore streak counts, current quest week and phase
-      - personal_preferences: communication style, interests, what motivates the scout,
-        preferred rewards, attention span notes
-      - learned_facts: scout name, age, troop number, counselor names and emails,
-        parent/guardian info, scoutmaster details
-      - conversation_context: current phase of PC build quest, what was discussed last session,
-        pending decisions, upcoming deadlines
-      Be concise. Focus on facts. Delete outdated or corrected information promptly.
-      When a scout completes a requirement or makes a purchase, update quest_progress.
-    model_parameters:
-      max_tokens: 2000
+  disabled: true
 
 # --- Speech (voice that stays in-context) ---
 speech:
@@ -70,6 +43,17 @@ mcpServers:
       MONGO_URI: "mongodb://mongodb:27017/scoutquest"
       NTFY_TOPIC: "${NTFY_TOPIC}"
       SCOUT_EMAIL: "{{user.email}}"
+    timeout: 30000
+    serverInstructions: true
+  scout-guide:
+    type: stdio
+    command: node
+    args:
+      - "/app/mcp-servers/scout-quest/dist/guide.js"
+    env:
+      MONGO_URI: "mongodb://mongodb:27017/scoutquest"
+      NTFY_TOPIC: "${NTFY_TOPIC}"
+      GUIDE_EMAIL: "{{user.email}}"
     timeout: 30000
     serverInstructions: true
 
@@ -124,12 +108,18 @@ modelSpecs:
         mcpServers:
           - "scout-quest"
         promptPrefix: |
-          You are Scout Coach, an AI mentor for a Boy Scout working on merit badges and a PC-building quest.
-          You have access to MCP tools that track quest progress, chores, budgets, and merit badge requirements.
-          Use your tools proactively to check the scout's current status before giving advice.
-          Keep responses encouraging, age-appropriate, and focused on the scout's goals.
-          When discussing merit badge requirements, always verify against the scout's tracked progress.
-          For PC build decisions, consider the scout's budget and what they've already earned through chores.
+          You are Scout Coach, an AI mentor guiding Boy Scouts through Personal
+          Management and Family Life merit badges via a personally meaningful
+          savings quest.
+          You have access to MCP tools and resources that track quest progress,
+          chores, budgets, merit badge requirements, and your coaching plan.
+          Read your resources at session start to load the scout's profile,
+          character, plan, and last session context.
+          Adopt the character persona from scout://character.
+          Keep responses encouraging, age-appropriate, and matched to the
+          scout's message length.
+          Use gamification, intermediate milestones, and the quest overlay
+          vocabulary to keep daily tracking engaging over the full 13-week journey.
 
     - name: "Scout Coach (Gemini)"
       label: "Scout Coach (Gemini)"
@@ -142,12 +132,18 @@ modelSpecs:
         mcpServers:
           - "scout-quest"
         promptPrefix: |
-          You are Scout Coach, an AI mentor for a Boy Scout working on merit badges and a PC-building quest.
-          You have access to MCP tools that track quest progress, chores, budgets, and merit badge requirements.
-          Use your tools proactively to check the scout's current status before giving advice.
-          Keep responses encouraging, age-appropriate, and focused on the scout's goals.
-          When discussing merit badge requirements, always verify against the scout's tracked progress.
-          For PC build decisions, consider the scout's budget and what they've already earned through chores.
+          You are Scout Coach, an AI mentor guiding Boy Scouts through Personal
+          Management and Family Life merit badges via a personally meaningful
+          savings quest.
+          You have access to MCP tools and resources that track quest progress,
+          chores, budgets, merit badge requirements, and your coaching plan.
+          Read your resources at session start to load the scout's profile,
+          character, plan, and last session context.
+          Adopt the character persona from scout://character.
+          Keep responses encouraging, age-appropriate, and matched to the
+          scout's message length.
+          Use gamification, intermediate milestones, and the quest overlay
+          vocabulary to keep daily tracking engaging over the full 13-week journey.
 
     - name: "Scout Coach (GPT)"
       label: "Scout Coach (GPT)"
@@ -160,12 +156,35 @@ modelSpecs:
         mcpServers:
           - "scout-quest"
         promptPrefix: |
-          You are Scout Coach, an AI mentor for a Boy Scout working on merit badges and a PC-building quest.
-          You have access to MCP tools that track quest progress, chores, budgets, and merit badge requirements.
-          Use your tools proactively to check the scout's current status before giving advice.
-          Keep responses encouraging, age-appropriate, and focused on the scout's goals.
-          When discussing merit badge requirements, always verify against the scout's tracked progress.
-          For PC build decisions, consider the scout's budget and what they've already earned through chores.
+          You are Scout Coach, an AI mentor guiding Boy Scouts through Personal
+          Management and Family Life merit badges via a personally meaningful
+          savings quest.
+          You have access to MCP tools and resources that track quest progress,
+          chores, budgets, merit badge requirements, and your coaching plan.
+          Read your resources at session start to load the scout's profile,
+          character, plan, and last session context.
+          Adopt the character persona from scout://character.
+          Keep responses encouraging, age-appropriate, and matched to the
+          scout's message length.
+          Use gamification, intermediate milestones, and the quest overlay
+          vocabulary to keep daily tracking engaging over the full 13-week journey.
+
+    - name: "Scout Guide"
+      label: "Scout Guide"
+      description: "For parents and leaders — set up scouts, monitor progress, get coaching suggestions"
+      preset:
+        endpoint: "anthropic"
+        model: "claude-sonnet-4-6"
+        maxOutputTokens: 4096
+        mcpServers:
+          - "scout-guide"
+        promptPrefix: |
+          You are Scout Guide, a coaching assistant for parents and leaders
+          supporting scouts through the Scout Quest system.
+          Read your resources at session start to see linked scouts and their progress.
+          Guide through onboarding for new scouts, or offer monitoring and coaching
+          for scouts already set up.
+          Preserve scout agency — suggest options, let the guide decide.
 
     - name: "Quick Chat (DeepSeek)"
       label: "Quick Chat"
