@@ -8,3 +8,8 @@ export { LoanAnalysis } from "./loan-analysis.js";
 export { EmailSent } from "./email-sent.js";
 export { Reminder } from "./reminder.js";
 export { AuditLog } from "./audit-log.js";
+export { QuestPlan } from "./quest-plan.js";
+export { SessionNote } from "./session-note.js";
+export { CronLog } from "./cron-log.js";
+export { PlanChangelog } from "./plan-changelog.js";
+export { SetupStatus } from "./setup-status.js";

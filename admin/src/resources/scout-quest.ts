@@ -2,6 +2,7 @@ import type { ResourceWithOptions } from "adminjs";
 import {
   User, Scout, Requirement, ChoreLog, BudgetEntry,
   TimeMgmt, LoanAnalysis, EmailSent, Reminder, AuditLog,
+  QuestPlan, SessionNote, CronLog, PlanChangelog, SetupStatus,
 } from "../models/scout-quest/index.js";
 
 // Valid state transitions from mcp-servers/scout-quest/src/constants.ts
@@ -133,6 +134,59 @@ export const scoutQuestResources: ResourceWithOptions[] = [
         delete: { isAccessible: false },
         new: { isAccessible: false },
       },
+    },
+  },
+  {
+    resource: QuestPlan,
+    options: {
+      navigation: { name: "Scout Quest", icon: "Compass" },
+      listProperties: ["scout_email", "current_priorities", "last_reviewed", "updated_at"],
+    },
+  },
+  {
+    resource: SessionNote,
+    options: {
+      navigation: { name: "Scout Quest", icon: "Compass" },
+      listProperties: ["scout_email", "session_date", "source", "topics_discussed"],
+      filterProperties: ["scout_email", "source", "session_date"],
+      actions: {
+        edit: { isAccessible: false },
+        delete: { isAccessible: false },
+        new: { isAccessible: false },
+      },
+    },
+  },
+  {
+    resource: CronLog,
+    options: {
+      navigation: { name: "System", icon: "Settings" },
+      listProperties: ["run_date", "scout_email", "action", "details", "model_used"],
+      filterProperties: ["scout_email", "action", "run_date"],
+      actions: {
+        edit: { isAccessible: false },
+        delete: { isAccessible: false },
+        new: { isAccessible: false },
+      },
+    },
+  },
+  {
+    resource: PlanChangelog,
+    options: {
+      navigation: { name: "Scout Quest", icon: "Compass" },
+      listProperties: ["scout_email", "change_date", "source", "field_changed", "reason"],
+      filterProperties: ["scout_email", "source"],
+      actions: {
+        edit: { isAccessible: false },
+        delete: { isAccessible: false },
+        new: { isAccessible: false },
+      },
+    },
+  },
+  {
+    resource: SetupStatus,
+    options: {
+      navigation: { name: "Scout Quest", icon: "Compass" },
+      listProperties: ["scout_email", "guide_email", "updated_at"],
     },
   },
 ];
