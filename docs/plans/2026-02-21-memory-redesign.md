@@ -1,7 +1,7 @@
 # Scout Quest — Memory Replacement & Cleanup Design
 
 > **Date:** February 21, 2026
-> **Status:** Approved design — implementation planned in `2026-02-21-combined-implementation.md`
+> **Status:** Implemented (see combined-implementation.md)
 > **Depends on:** `docs/plans/2026-02-21-mcp-server-redesign.md` (MCP server — implemented)
 > **Scope:** Replace LibreChat memory with MCP-based persistence, add cron sidecar, clean up docs and config
 

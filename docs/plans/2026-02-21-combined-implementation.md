@@ -1,5 +1,7 @@
 # Scout Quest — Combined Implementation Plan
 
+> **Status:** Implementation plan — source of truth
+>
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Implement three designs in coordinated order: memory redesign (quest plans, session notes, cron sidecar), guide endpoint (parent/leader-facing MCP entry point), and admin app updates — plus config and doc cleanup.

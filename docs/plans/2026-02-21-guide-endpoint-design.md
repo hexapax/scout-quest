@@ -1,7 +1,7 @@
 # Scout Guide Endpoint — Design
 
 > **Date:** February 21, 2026
-> **Status:** Approved design — implementation planned in `2026-02-21-combined-implementation.md`
+> **Status:** Implemented (see combined-implementation.md)
 
 ## Summary
 

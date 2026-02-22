@@ -117,7 +117,7 @@ Node.js: v24 via nvm (for MCP server builds — build locally, SCP bundle to VM)
 - Caddy reverse proxy handling HTTPS for both domains
 - Cloud DNS: A records for both domains (static IP `136.107.90.113`)
 - Google OAuth working (External + Testing mode = allowlist-based access)
-- MCP servers: scout-quest (9 scout tools) + scout-admin (11 admin tools)
+- MCP servers: scout-quest (11 scout tools) + scout-admin (11 admin tools) + scout-guide (15 guide tools)
 - Model presets wired to MCP via `modelSpecs` with `mcpServers` field
 - AI providers: Anthropic (Claude), OpenAI (GPT), Google (Gemini), DeepSeek, OpenRouter
 - Password sign-up disabled — OAuth only
@@ -127,7 +127,8 @@ Node.js: v24 via nvm (for MCP server builds — build locally, SCP bundle to VM)
 **What's not yet deployed:**
 - Admin panel DNS: `admin.hexapax.com` A record defined in Terraform but not yet applied
 - Admin panel auth: Google OAuth wiring (currently email-allowlist with session cookie)
-- ntfy push notification cron sidecar (`send_notification` MCP tool exists, but no background reminder scheduler)
+- Cron sidecar for background checks and ntfy notifications (implemented, pending deployment)
+- Guide endpoint (`guide.js`) for parent/SM onboarding (implemented, pending deployment)
 - Brave Search MCP integration (see `docs/future-research.md`)
 
 ---
@@ -138,8 +139,13 @@ Two entry points from the same TypeScript codebase (`mcp-servers/scout-quest/`):
 
 | Entry Point | Instance | Tools | Resources | Connects To |
 |-------------|----------|-------|-----------|-------------|
-| `dist/scout.js` | scout-quest | 9 scout tools | 8 resources | Local MongoDB (`mongodb:27017/scoutquest`) |
-| `dist/admin.js` | ai-chat | 11 admin tools | 2 resources | Remote MongoDB (`scout-quest-mongodb:27017/scoutquest`) via scout-shared network |
+| `dist/scout.js` | scout-quest | 11 scout tools | 10 resources | Local MongoDB (`mongodb:27017/scoutquest`) |
+| `dist/admin.js` | ai-chat | 11 admin tools | 5 resources | Remote MongoDB (`scout-quest-mongodb:27017/scoutquest`) via scout-shared network |
+| `dist/guide.js` | scout-quest | 15 guide tools | 5 resources | Local MongoDB (`mongodb:27017/scoutquest`) |
+
+The guide endpoint (`guide.js`) serves parents, scoutmasters, and other trusted adults. It provides guided onboarding to set up a scout's profile, ongoing monitoring of scout progress, and plan adjustment tools.
+
+A **cron sidecar** container runs alongside each LibreChat instance, performing background checks (missed chores, budget gaps, diary reminders) and sending ntfy push notifications. It connects to the same MongoDB and logs all activity to the `cron_log` collection.
 
 MCP servers run as stdio subprocesses inside the LibreChat API container. They are bind-mounted from `./mcp-servers/scout-quest/` on the host into `/app/mcp-servers/scout-quest/` in the container.
 
@@ -218,7 +224,7 @@ The deploy script creates a temp dir, pulls `.env` from GCS, copies git-tracked 
 | All AI providers (Claude, GPT, Gemini, DeepSeek, OpenRouter) | Yes | Via curated presets | N/A |
 | Model selection | Unrestricted | Locked (`modelSpecs.enforce: true`) | N/A |
 | Voice mode (STT/TTS) | Yes | Yes | N/A |
-| Persistent memory | No | Yes (quest progress, preferences) | N/A |
+| Persistent memory | No | Yes (MCP-based: session notes + quest plans) | N/A |
 | MCP server | Yes (scout-admin, 11 tools) | Yes (scout-quest, 9 tools) | N/A |
 | Google OAuth | Yes | Yes | Email allowlist |
 | Password sign-up | Disabled | Disabled | N/A |

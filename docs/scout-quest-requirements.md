@@ -961,221 +961,25 @@ The agent must be prepared for reality:
 Each requirement is tracked through these states:
 
 ```
-NOT_STARTED → IN_PROGRESS → READY_FOR_REVIEW → SUBMITTED_TO_COUNSELOR → SIGNED_OFF
-                  │                                      │
-                  ├── TRACKING (time-based: 90d, 13wk)   ├── NEEDS_REVISION (counselor feedback)
-                  │                                      │
-                  └── BLOCKED (needs approval or prereq) └── back to IN_PROGRESS
+not_started → in_progress → ready_for_review → submitted → signed_off
+                  │                                 │
+                  ├── tracking (time-based: 90d, 13wk)   ├── needs_revision (counselor feedback)
+                  │                                 │
+                  └── blocked (needs approval or prereq) └── back to in_progress
 ```
 
 Additional states:
-- **COMPLETED_PRIOR** — Marked in config as done before quest started. Immutable.
-- **EXCLUDED** — SM/ASM excluded. Agent ignores.
-- **OFFERED** — Agent has offered to help with a non-quest requirement; Scout hasn't started.
-- **NEEDS_APPROVAL** — FL Req 4 specifically: waiting on parent AND counselor approval before work begins.
+- **completed_prior** — Marked in config as done before quest started. Immutable.
+- **excluded** — SM/ASM excluded. Agent ignores.
+- **offered** — Agent has offered to help with a non-quest requirement; Scout hasn't started.
+- **needs_approval** — FL Req 4 specifically: waiting on parent AND counselor approval before work begins.
 
 ---
 
 ## 11. MCP Server Data Model
 
-### 11.1 Scout Profile & Quest State
-
-```yaml
-scout_profile:
-  name: string
-  age: integer
-  troop: string
-  patrol: string
-  
-quest_state:
-  goal_item: string
-  goal_description: string
-  target_budget: decimal
-  savings_capacity: decimal
-  loan_path_active: boolean
-  loan_gap: decimal              # target_budget - savings_capacity (if positive)
-  quest_start_date: date
-  current_savings: decimal       # running total
-  quest_status: enum [active, paused, complete]
-
-counselors:
-  personal_management:
-    name: string
-    email: string
-    preferred_contact: enum [email, phone, text]
-    sessions_completed: integer
-    last_contact_date: date
-  family_life:
-    name: string
-    email: string
-    preferred_contact: enum [email, phone, text]
-    sessions_completed: integer
-    last_contact_date: date
-
-blue_card:
-  personal_management:
-    requested_date: date | null
-    approved_date: date | null
-    approved_by: string | null
-  family_life:
-    requested_date: date | null
-    approved_date: date | null
-    approved_by: string | null
-```
-
-### 11.2 Requirement Tracking
-
-```yaml
-# Per-requirement record (repeated for each req)
-requirement:
-  id: string                     # e.g., "pm_req_1a", "fl_req_3"
-  badge: enum [personal_management, family_life]
-  status: enum [not_started, in_progress, tracking, blocked, 
-                needs_approval, ready_for_review, submitted, 
-                needs_revision, signed_off, completed_prior, excluded, offered]
-  quest_driven: boolean
-  interaction_mode: enum [in_person, video, email, digital_submission, parent_verify]
-  
-  # Tracking fields (for time-based requirements)
-  tracking_start_date: date | null
-  tracking_end_date: date | null     # computed from start + duration
-  tracking_entries: entry[]          # daily/weekly log entries
-  
-  # Approval gates
-  parent_approved: boolean | null
-  counselor_approved: boolean | null
-  
-  # Deliverables
-  documents: document[]              # savings plans, budgets, project plans, etc.
-  
-  # Counselor interaction
-  submitted_to_counselor_date: date | null
-  counselor_feedback: string | null
-  signed_off_date: date | null
-  signed_off_by: string | null
-```
-
-### 11.3 Chore Tracking (FL Req 3)
-
-```yaml
-chore_tracker:
-  chore_list:                        # minimum 5
-    - id: string
-      name: string                   # e.g., "Take out trash"
-      frequency: string              # e.g., "daily", "weekly", "as needed"
-      earns_income: boolean
-      income_amount: decimal | null  # per occurrence
-  
-  start_date: date
-  target_end_date: date              # start + 90 days
-  
-  daily_log:
-    - date: date
-      chores_completed: string[]     # list of chore IDs done that day
-      notes: string | null
-      income_earned: decimal         # sum of income from completed chores
-```
-
-### 11.4 Budget Tracking (PM Req 2)
-
-```yaml
-budget_tracker:
-  projected_budget:
-    income_sources:
-      - name: string               # "allowance", "chore pay", "birthday money"
-        weekly_amount: decimal
-    expense_categories:
-      - name: string               # "snacks", "games", "school supplies"
-        weekly_amount: decimal
-    savings_target_weekly: decimal
-    
-  start_date: date
-  target_end_date: date             # start + 13 weeks
-  
-  weekly_actuals:
-    - week_number: integer          # 1-13
-      week_start: date
-      income:
-        - source: string
-          amount: decimal
-      expenses:
-        - category: string
-          amount: decimal
-          description: string
-      savings_deposited: decimal
-      running_savings_total: decimal
-      notes: string | null
-      
-  comparison:                       # computed after 13 weeks
-    total_projected_income: decimal
-    total_actual_income: decimal
-    total_projected_expenses: decimal
-    total_actual_expenses: decimal
-    total_projected_savings: decimal
-    total_actual_savings: decimal
-    variance_notes: string          # Scout's reflection
-```
-
-### 11.5 Loan Path State (when active)
-
-```yaml
-loan_analysis:
-  active: boolean
-  shortfall: decimal                # target_budget - savings_capacity
-  options_explored:
-    - option: string                # "parent_loan", "save_longer", "cheaper_build", "hybrid"
-      details: string
-      total_cost: decimal
-      timeline: string
-  
-  selected_option: string | null
-  
-  # If parent loan selected:
-  parent_loan:
-    principal: decimal
-    interest_rate: decimal          # APR (even if 0% — discuss why)
-    term_weeks: integer
-    weekly_payment: decimal
-    total_cost_with_interest: decimal
-    proposal_document: document     # Scout's loan proposal to parents
-    parent_approved: boolean
-    repayment_log:
-      - week: integer
-        amount_paid: decimal
-        remaining_balance: decimal
-```
-
-### 11.6 Time Management Exercise (PM Req 8)
-
-```yaml
-time_management:
-  exercise_week_start: date
-  
-  todo_list:
-    - item: string
-      priority: integer             # 1 = most important
-      category: string              # "homework", "chores", "quest", "scouts", "personal"
-  
-  weekly_schedule:
-    - day: string                   # "Monday" through "Sunday"
-      fixed_activities:
-        - time: string
-          activity: string
-      planned_tasks:
-        - time: string
-          todo_item: string
-  
-  daily_diary:
-    - day: string
-      entries:
-        - scheduled_time: string
-          actual_time: string
-          task: string
-          completed: boolean
-          notes: string
-  
-  reflection: string                # Scout's notes on what worked/didn't
-```
+See `docs/plans/2026-02-21-mcp-server-redesign.md` Section 4 for the authoritative
+data model, including all collections, schemas, and the requirement state machine.
 
 ---
 
