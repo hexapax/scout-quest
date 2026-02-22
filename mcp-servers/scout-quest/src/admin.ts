@@ -21,6 +21,9 @@ WORKFLOW — Setting up a new scout:
 RESOURCES:
 - admin://scouts — list all scouts with status summary
 - admin://scouts/{email} — full detail for one scout
+- admin://scouts/{email}/plan — quest plan and coaching strategy
+- admin://scouts/{email}/plan-changelog — plan change history
+- admin://cron-log — recent cron job actions and audit trail
 
 TOOLS:
 - create_scout, configure_quest, set_character, set_counselors,
