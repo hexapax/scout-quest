@@ -32,12 +32,13 @@ export function registerSetBudgetPlan(server: McpServer, guideEmail: string): vo
       // Check hard dependencies
       const statusCol = await setupStatus();
       const status = await statusCol.findOne({ scout_email });
-      if (status) {
-        const questGoalStep = status.steps.find(s => s.id === "quest_goal");
-        const choreListStep = status.steps.find(s => s.id === "chore_list");
-        if (questGoalStep?.status !== "complete" || choreListStep?.status !== "complete") {
-          return { content: [{ type: "text", text: "Error: Quest goal and chore list must be set before the budget plan." }] };
-        }
+      if (!status) {
+        return { content: [{ type: "text", text: "Error: No setup status found. Create scout profile first." }] };
+      }
+      const questGoalStep = status.steps.find(s => s.id === "quest_goal");
+      const choreListStep = status.steps.find(s => s.id === "chore_list");
+      if (questGoalStep?.status !== "complete" || choreListStep?.status !== "complete") {
+        return { content: [{ type: "text", text: "Error: Quest goal and chore list must be set before the budget plan." }] };
       }
 
       const col = await scouts();

@@ -84,15 +84,20 @@ export function registerSetupScoutProfile(server: McpServer, guideEmail: string)
       });
 
       // Create setup status with age defaults
-      const _defaults = getAgeDefaults(age);
+      const defaults = getAgeDefaults(age);
       const statusCol = await setupStatus();
       await statusCol.insertOne({
         scout_email: email,
         guide_email: guideEmail,
         steps: SETUP_STEPS.map(s => ({
           ...s,
-          status: s.id === "profile" ? "complete" as const : "pending" as const,
+          status: s.id === "profile"
+            ? "complete" as const
+            : defaults[s.id] === "delegated"
+              ? "delegated_to_scout" as const
+              : "pending" as const,
           completed_at: s.id === "profile" ? now : undefined,
+          delegated_at: defaults[s.id] === "delegated" ? now : undefined,
         })),
         created_at: now,
         updated_at: now,
