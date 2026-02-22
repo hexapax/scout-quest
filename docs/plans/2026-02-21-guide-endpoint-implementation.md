@@ -2549,46 +2549,193 @@ git commit -m "chore: add start:guide script to package.json"
 
 ---
 
-### Task 14: Reconcile Documentation
+### Task 14: Reconcile Documentation and Admin App Schemas
 
 **Files:**
+- Modify: `admin/src/models/scout-quest/user.ts`
+- Modify: `admin/src/models/scout-quest/scout.ts`
+- Modify: `admin/src/models/scout-quest/index.ts`
+- Create: `admin/src/models/scout-quest/setup-status.ts`
+- Modify: `admin/src/resources/scout-quest.ts`
+- Modify: `docs/architecture.md`
 - Modify: `docs/plans/2026-02-21-mcp-server-redesign.md`
 - Modify: `docs/plans/2026-02-21-admin-app-design.md`
 - Modify: `docs/plans/2026-02-21-admin-app-implementation.md`
 - Modify: `CLAUDE.md`
 
-**Step 1: Update MCP redesign doc**
+#### Part A: Update Admin App Mongoose Schemas
+
+The admin app (merged via `feature/admin-app`) has Mongoose schemas that define the same document shapes as the MCP server's `types.ts`. These must stay aligned.
+
+**Step 1: Rename `parent` → `guide` in User role enum**
+
+In `admin/src/models/scout-quest/user.ts` (line 8), change the role enum:
+
+```typescript
+// Before:
+enum: ["superuser", "admin", "adult_readonly", "parent", "scout", "test_scout"],
+
+// After:
+enum: ["superuser", "admin", "adult_readonly", "guide", "scout", "test_scout"],
+```
+
+**Step 2: Add guide fields to Scout schema**
+
+In `admin/src/models/scout-quest/scout.ts`, add these fields to the `scoutSchema` definition (after `parent_guardian`):
+
+```typescript
+    guide_email: { type: String },  // defaults to parent_guardian.email
+
+    interests: {
+      hobbies: [String],
+      school_subjects: [String],
+      career_interests: [String],
+    },
+
+    session_limits: {
+      max_daily_sessions: { type: Number, default: 3 },
+      max_session_minutes: { type: Number, default: 30 },
+      cool_off_minutes: { type: Number, default: 60 },
+      sessions_today: { type: Number, default: 0 },
+      last_session_start: Date,
+    },
+```
+
+**Step 3: Create SetupStatus Mongoose model**
+
+Create `admin/src/models/scout-quest/setup-status.ts`:
+
+```typescript
+import mongoose, { Schema } from "mongoose";
+
+const stepSchema = new Schema(
+  {
+    step: { type: String, required: true },
+    status: {
+      type: String,
+      enum: ["pending", "in_progress", "completed", "skipped"],
+      default: "pending",
+    },
+    completed_at: Date,
+    completed_by: String,
+    notes: String,
+  },
+  { _id: false }
+);
+
+const setupStatusSchema = new Schema(
+  {
+    scout_email: { type: String, required: true, unique: true, index: true },
+    guide_email: { type: String, required: true, index: true },
+    steps: { type: [stepSchema], default: [] },
+    overall_status: {
+      type: String,
+      enum: ["not_started", "in_progress", "completed"],
+      default: "not_started",
+    },
+  },
+  { timestamps: { createdAt: "created_at", updatedAt: "updated_at" } }
+);
+
+export const SetupStatus = mongoose.model("SetupStatus", setupStatusSchema, "setup_status");
+```
+
+**Step 4: Export SetupStatus from index**
+
+In `admin/src/models/scout-quest/index.ts`, add:
+
+```typescript
+export { SetupStatus } from "./setup-status.js";
+```
+
+**Step 5: Add SetupStatus and guide_email to AdminJS resources**
+
+In `admin/src/resources/scout-quest.ts`:
+
+Add `SetupStatus` to the import:
+
+```typescript
+import {
+  User, Scout, Requirement, ChoreLog, BudgetEntry,
+  TimeMgmt, LoanAnalysis, EmailSent, Reminder, AuditLog,
+  SetupStatus,
+} from "../models/scout-quest/index.js";
+```
+
+Add `guide_email` to Scout's `showProperties` array (after `"patrol"`).
+
+Add the SetupStatus resource config to the `scoutQuestResources` array:
+
+```typescript
+  {
+    resource: SetupStatus,
+    options: {
+      navigation: { name: "Scout Quest", icon: "Compass" },
+      listProperties: ["scout_email", "guide_email", "overall_status", "updated_at"],
+      filterProperties: ["scout_email", "guide_email", "overall_status"],
+    },
+  },
+```
+
+**Step 6: Commit admin app schema updates**
+
+```bash
+git add admin/src/models/scout-quest/ admin/src/resources/scout-quest.ts
+git commit -m "feat(admin): add guide role, guide_email, setup_status to match MCP server types"
+```
+
+#### Part B: Update Architecture and Project Docs
+
+**Step 7: Update `docs/architecture.md`**
+
+In the MCP Server Architecture section (~line 137):
+- Change "Two entry points" → "Three entry points"
+- Add `guide.js` row to the table:
+
+```markdown
+| `dist/guide.js` | scout-quest | 15 guide tools | 8 resources | Local MongoDB (`mongodb:27017/scoutquest`) |
+```
+
+Update the tool count summary (~line 120):
+- Change "scout-quest (9 scout tools) + scout-admin (11 admin tools)" → "scout-quest (9 scout tools) + scout-guide (15 guide tools) + scout-admin (11 admin tools)"
+
+**Step 8: Update MCP redesign doc**
 
 In `docs/plans/2026-02-21-mcp-server-redesign.md`:
 
-- Update architecture diagram to show three entry points (scout.js, admin.js, guide.js)
-- Add `guide.js` to file structure section
-- Update Role type definition: rename `parent` → `guide`
-- Add `guide_email`, `interests`, `session_limits` to ScoutDocument schema
-- Add `setup_status` to collection list
-- Add Section 8.x for guide role access rules
-- Update any references to "parent" role throughout
+- Line 80: Change `(scouts + parents)` → `(scouts + guides)`
+- Line 84: Change "two entry points (`src/scout.ts`, `src/admin.ts`)" → "three entry points (`src/scout.ts`, `src/admin.ts`, `src/guide.ts`)"
+- Line 97: Change "two entry points" → "three entry points"
+- Lines 123-129: Update Role type — rename `parent` → `guide`
+- Lines 547-555: Update authorization matrix — rename `parent` column to `guide`, add write actions for guide
+- Lines 578-590: Update role definitions and multi-role selection for guide
+- Lines 611-612: Add `│   ├── guide.ts` entry point to file structure
+- Add guide tools to the tools directory listing
+- Add `setup_status` collection to Section 4
 
-**Step 2: Update admin app design doc**
+**Step 9: Update admin app design doc**
 
 In `docs/plans/2026-02-21-admin-app-design.md`:
 
-- Add `setup_status` collection to Tier 1 data views table
-- Update `users` collection note: role type is `guide` not `parent`
-- Add `guide_email`, `interests`, `session_limits` to scouts schema note
+- Add `setup_status` row to Tier 1 data views table (line ~56):
 
-**Step 3: Update admin app implementation plan**
+```markdown
+| `setup_status` | Yes | Yes | Onboarding progress per scout |
+```
+
+- Update collection count from "9" to "10"
+
+**Step 10: Update admin app implementation plan**
 
 In `docs/plans/2026-02-21-admin-app-implementation.md`:
 
-- Update the User Mongoose schema in Task 2 to use `guide` instead of `parent` role type
-- Add `guide_email: String` to the Scout Mongoose schema
-- Add `interests` and `session_limits` subdocument schemas
-- Add Task for `SetupStatus` Mongoose schema and AdminJS resource
+- In the User Mongoose schema (Task 2), change `"parent"` to `"guide"` in role enum
+- In the Scout Mongoose schema (Task 2), add `guide_email`, `interests`, `session_limits` fields
+- Add `SetupStatus` Mongoose schema and AdminJS resource to the relevant task
 
-**Step 4: Update CLAUDE.md**
+**Step 11: Update CLAUDE.md**
 
-Add guide endpoint info:
+Change the MCP Server section to:
 
 ```markdown
 ## MCP Server
@@ -2596,9 +2743,12 @@ Add guide endpoint info:
 A TypeScript MCP server in `mcp-servers/scout-quest/` provides quest state management, chore tracking, email composition (YPT-compliant), reminders, and ntfy push notifications. Three entry points: `dist/scout.js` (scout-facing), `dist/admin.js` (admin-facing), and `dist/guide.js` (guide-facing — parents and scout leaders). Runs as stdio subprocess inside the LibreChat API container, connecting to shared MongoDB. Build with `cd mcp-servers/scout-quest && bash build.sh`. Design spec in `docs/plans/2026-02-21-mcp-server-redesign.md`.
 ```
 
-**Step 5: Commit all doc updates**
+Also update Key Directories:
+- Change `mcp-servers/scout-quest/` description from "two entry points" to "three entry points"
+
+**Step 12: Commit all doc updates**
 
 ```bash
-git add docs/plans/ CLAUDE.md
-git commit -m "docs: reconcile all plans and CLAUDE.md with guide endpoint additions"
+git add docs/ CLAUDE.md
+git commit -m "docs: reconcile all plans, architecture, and CLAUDE.md with guide endpoint additions"
 ```
