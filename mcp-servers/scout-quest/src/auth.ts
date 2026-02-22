@@ -8,10 +8,18 @@ const ADMIN_WRITE_ACTIONS = [
   "approve_blue_card",
 ];
 
+const GUIDE_WRITE_ACTIONS = [
+  "setup_scout_profile", "set_scout_interests", "set_quest_goal",
+  "set_chore_list_guide", "set_budget_plan", "set_character_preferences",
+  "set_session_limits", "adjust_scout_profile", "adjust_quest_goal",
+  "adjust_character", "adjust_delegation", "flag_conversation",
+  "get_conversation_detail", "send_notification_guide",
+];
+
 const SCOUT_ACTIONS = [
   "log_chore", "log_budget_entry", "advance_requirement", "compose_email",
   "log_diary_entry", "send_notification", "adjust_tone", "setup_time_mgmt",
-  "update_quest_goal",
+  "update_quest_goal", "update_quest_plan", "log_session_notes",
 ];
 
 const READ_ACTIONS = ["view_scout", "view_requirements", "view_streak", "view_budget"];
@@ -43,7 +51,7 @@ export function canAccess(
     }
 
     if (role.type === "guide") {
-      if (READ_ACTIONS.includes(action)) {
+      if (READ_ACTIONS.includes(action) || GUIDE_WRITE_ACTIONS.includes(action)) {
         if (context.scout_email && role.scout_emails.includes(context.scout_email)) return true;
       }
     }

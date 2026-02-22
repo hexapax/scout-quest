@@ -54,6 +54,30 @@ describe("canAccess", () => {
     expect(canAccess(roles, "create_scout", { troop: "2024" })).toBe(true);
   });
 
+  it("guide can use guide write actions on linked scouts", () => {
+    const roles: Role[] = [{ type: "guide", scout_emails: ["will@test.com"] }];
+    expect(canAccess(roles, "setup_scout_profile", { scout_email: "will@test.com" })).toBe(true);
+    expect(canAccess(roles, "set_scout_interests", { scout_email: "will@test.com" })).toBe(true);
+    expect(canAccess(roles, "adjust_character", { scout_email: "will@test.com" })).toBe(true);
+  });
+
+  it("guide cannot use guide write actions on unlinked scouts", () => {
+    const roles: Role[] = [{ type: "guide", scout_emails: ["will@test.com"] }];
+    expect(canAccess(roles, "setup_scout_profile", { scout_email: "other@test.com" })).toBe(false);
+  });
+
+  it("guide cannot use admin-only actions", () => {
+    const roles: Role[] = [{ type: "guide", scout_emails: ["will@test.com"] }];
+    expect(canAccess(roles, "sign_off_requirement", { scout_email: "will@test.com" })).toBe(false);
+    expect(canAccess(roles, "override_requirement", { scout_email: "will@test.com" })).toBe(false);
+  });
+
+  it("scout can use quest plan actions on own data", () => {
+    const roles: Role[] = [{ type: "scout" }];
+    expect(canAccess(roles, "update_quest_plan", { scout_email: "will@test.com", user_email: "will@test.com" })).toBe(true);
+    expect(canAccess(roles, "log_session_notes", { scout_email: "will@test.com", user_email: "will@test.com" })).toBe(true);
+  });
+
   it("no roles means no access", () => {
     expect(canAccess([], "view_scout", {})).toBe(false);
     expect(canAccess([], "log_chore", {})).toBe(false);
