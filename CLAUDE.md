@@ -85,6 +85,8 @@ Terraform manages DNS records in the `hexapax-com` zone owned by the `hexapax-we
 - `scripts/` — Helper bash scripts for building, deploying, and VM operations
 - `terraform/` — GCP infrastructure: VM, VPC, firewall, static IP, Cloud DNS, GCS backup bucket
 - `docs/` — Architecture, designs, research, and requirements
+- `docs/strategy.md` — **Project vision, goals, and strategic direction. Read first for context on why this project exists and where it's heading.**
+- `docs/development-state.md` — **Current state of every component, critical path to MVP, known issues. Read to understand what's working and what's not.**
 - `docs/future-research.md` — **Research store: constraints, cost analysis, dead ends. Read before pursuing new integrations or model changes.**
 - `docs/plans/` — Design specs and implementation plans
 - `mcp-servers/scout-quest/` — MCP server source (TypeScript, two entry points)
@@ -109,12 +111,14 @@ An AdminJS-based web admin panel in `admin/` provides CRUD visibility into Scout
 
 **Use helper scripts for complex commands.** Claude Code's permission system has a known bug with commands containing quotes, `$()` substitutions, and array syntax like `@()`. To avoid permission prompts:
 
-1. **Write a bash script in `scripts/`** instead of running complex inline commands
-2. **Use `./scripts/nvm-run.sh`** to wrap any command that needs nvm/Node.js 24
-3. **Use `./scripts/ssh-vm.sh "command"`** instead of inline `gcloud compute ssh` with complex commands
-4. **Never use `@()` array syntax** in inline Bash tool calls — it triggers permission bugs
-5. **Prefer heredocs in scripts** over inline heredocs in Bash tool calls
-6. **For git commits** use `git commit -m "simple message"` — avoid heredocs in commit messages when possible
+1. **NEVER use `cd /path && command` compound patterns** — the permission system treats `&&` as a security boundary, so `Bash(cd *)` won't match `cd /path && npx tsc`. Instead use absolute paths: `npx tsc --project /abs/path/tsconfig.json` or `git -C /abs/path status`
+2. **Write a bash script in `scripts/`** instead of running complex inline commands
+3. **Use `./scripts/nvm-run.sh`** to wrap any command that needs nvm/Node.js 24
+4. **Use `./scripts/ssh-vm.sh "command"`** instead of inline `gcloud compute ssh` with complex commands
+5. **Never use `@()` array syntax** in inline Bash tool calls — it triggers permission bugs
+6. **Prefer heredocs in scripts** over inline heredocs in Bash tool calls
+7. **For git commits** use `git commit -m "simple message"` — avoid heredocs in commit messages when possible
+8. **For npx/npm in subdirectories** use `npx --prefix /abs/path <command>` instead of `cd /path && npx <command>`
 
 When a command would require quotes-within-quotes or shell expansions that trip the permission system, create a temporary script in `scripts/` and run it with `bash scripts/my-script.sh`.
 
