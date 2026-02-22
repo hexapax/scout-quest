@@ -9,6 +9,11 @@ import { registerSetSessionLimits } from "./setSessionLimits.js";
 import { registerGetConversationDetail } from "./getConversationDetail.js";
 import { registerFlagConversation } from "./flagConversation.js";
 import { registerSendNotificationGuide } from "./sendNotificationGuide.js";
+import { registerAdjustScoutProfile } from "./adjustScoutProfile.js";
+import { registerAdjustQuestGoal } from "./adjustQuestGoal.js";
+import { registerAdjustCharacter } from "./adjustCharacter.js";
+import { registerAdjustDelegation } from "./adjustDelegation.js";
+import { registerSuggestIntervention } from "./suggestIntervention.js";
 
 export function registerGuideTools(server: McpServer, guideEmail: string): void {
   // Onboarding tools
@@ -23,4 +28,10 @@ export function registerGuideTools(server: McpServer, guideEmail: string): void 
   registerGetConversationDetail(server, guideEmail);
   registerFlagConversation(server, guideEmail);
   registerSendNotificationGuide(server, guideEmail);
+  // Adjustment tools
+  registerAdjustScoutProfile(server, guideEmail);
+  registerAdjustQuestGoal(server, guideEmail);
+  registerAdjustCharacter(server, guideEmail);
+  registerAdjustDelegation(server, guideEmail);
+  registerSuggestIntervention(server, guideEmail);
 }
