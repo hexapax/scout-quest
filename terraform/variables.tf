@@ -31,6 +31,12 @@ variable "domain_scout" {
   type        = string
 }
 
+variable "domain_admin" {
+  description = "Domain for the admin panel (e.g., admin.hexapax.com)"
+  type        = string
+  default     = "admin.hexapax.com"
+}
+
 variable "machine_type" {
   description = "GCE machine type"
   type        = string
