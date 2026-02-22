@@ -1,0 +1,18 @@
+services:
+  admin:
+    build:
+      context: ../../admin
+      dockerfile: Dockerfile
+    container_name: scout-admin
+    restart: unless-stopped
+    ports:
+      - "3082:3082"
+    env_file:
+      - .env
+    networks:
+      - scout-shared
+
+networks:
+  scout-shared:
+    external: true
+    name: scout-shared
