@@ -13,6 +13,7 @@ config/scout-quest/.env
 !package.json
 !package-lock.json
 !tsconfig.json
+!devbox/config/settings.json
 
 # Archives
 *.tar
@@ -35,3 +36,13 @@ firebase-debug.log
 # MCP Server build artifacts
 mcp-servers/scout-quest/node_modules/
 mcp-servers/scout-quest/dist/
+
+# Devbox
+devbox/terraform/.terraform/
+devbox/terraform/*.tfstate
+devbox/terraform/*.tfstate.backup
+devbox/terraform/.terraform.lock.hcl
+devbox/terraform/terraform.tfvars
+devbox/config/.env
+devbox/telegram-bot/node_modules/
+devbox/telegram-bot/dist/

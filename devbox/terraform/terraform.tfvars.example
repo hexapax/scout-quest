@@ -1,0 +1,14 @@
+# ============================================
+# Devbox — Terraform Variables
+# Fill in your values and save as terraform.tfvars
+# ============================================
+
+project_id = "hexapax-devbox"
+region     = "us-east4"
+zone       = "us-east4-b"
+# Auth: uses ADC (gcloud auth application-default login)
+# No credentials_file needed — org policy blocks SA key creation
+
+# Optional: restrict SSH to your IP for security
+# Find your IP: curl ifconfig.me
+# ssh_source_ranges = ["YOUR.IP.HERE/32"]

@@ -1,0 +1,19 @@
+{
+  "name": "devbox-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram C2 bot for autonomous Claude Code dev workstation",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/node-telegram-bot-api": "^0.64.0",
+    "typescript": "^5.7.0"
+  }
+}
