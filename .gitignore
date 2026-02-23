@@ -14,6 +14,7 @@ config/scout-quest/.env
 !package-lock.json
 !tsconfig.json
 !devbox/config/settings.json
+!.devcontainer/devcontainer.json
 
 # Archives
 *.tar
