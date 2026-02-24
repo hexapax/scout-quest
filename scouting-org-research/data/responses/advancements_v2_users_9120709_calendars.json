@@ -1,0 +1,62 @@
+[
+  {
+    "userCalendarId": 5333885,
+    "userId": 9120709,
+    "unitId": 121894,
+    "denId": null,
+    "patrolId": null,
+    "color": "#c2c0c0",
+    "showCalendar": true,
+    "calendarCode": "UnitID121894"
+  },
+  {
+    "userCalendarId": 5333886,
+    "userId": 9120709,
+    "unitId": 121894,
+    "denId": null,
+    "patrolId": 175529,
+    "color": "#c2c0c0",
+    "showCalendar": true,
+    "calendarCode": "PatrolID175529"
+  },
+  {
+    "userCalendarId": 5333887,
+    "userId": 9120709,
+    "unitId": 121894,
+    "denId": null,
+    "patrolId": 175672,
+    "color": "#c2c0c0",
+    "showCalendar": true,
+    "calendarCode": "PatrolID175672"
+  },
+  {
+    "userCalendarId": 5333888,
+    "userId": 9120709,
+    "unitId": 121894,
+    "denId": null,
+    "patrolId": 145820,
+    "color": "#c2c0c0",
+    "showCalendar": true,
+    "calendarCode": "PatrolID145820"
+  },
+  {
+    "userCalendarId": 5333889,
+    "userId": 9120709,
+    "unitId": 121894,
+    "denId": null,
+    "patrolId": 175671,
+    "color": "#c2c0c0",
+    "showCalendar": true,
+    "calendarCode": "PatrolID175671"
+  },
+  {
+    "userCalendarId": 5333890,
+    "userId": 9120709,
+    "unitId": 121894,
+    "denId": null,
+    "patrolId": 145821,
+    "color": "#c2c0c0",
+    "showCalendar": true,
+    "calendarCode": "PatrolID145821"
+  }
+]

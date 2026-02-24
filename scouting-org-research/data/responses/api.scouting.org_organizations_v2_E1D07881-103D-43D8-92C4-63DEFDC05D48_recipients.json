@@ -1,0 +1,1354 @@
+{
+  "leaders": [
+    {
+      "firstName": "Colleen",
+      "lastName": "McDaid",
+      "personGuid": "A72196EF-7FA6-4F63-A8B3-26309F1223EA",
+      "memberId": 13796645,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Nicole",
+      "lastName": "Allen",
+      "personGuid": "E27D740F-6909-4B6D-9E70-5418D462E60C",
+      "memberId": 128282458,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Daniel",
+      "lastName": "Haggman",
+      "personGuid": "08AA7FE1-1FA8-4426-A9B0-921145026D65",
+      "memberId": 131200244,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Julie",
+      "lastName": "Goldstrom",
+      "personGuid": "956943E0-F123-42EF-8C9C-58057CD436B7",
+      "memberId": 137114840,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Blake",
+      "lastName": "Shirley",
+      "personGuid": "2DF3CEC0-9102-4BDE-9408-DB9EEDC3DEDC",
+      "memberId": 14870376,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Chris",
+      "lastName": "Spires",
+      "personGuid": "3B072C42-87AD-4F23-B5CD-462884474552",
+      "memberId": 132675606,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Frederick",
+      "lastName": "Assaf",
+      "personGuid": "1930FE65-62E3-4CA1-B134-FDE3B1BC0B19",
+      "memberId": 125502199,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Jeremy",
+      "lastName": "Bramwell",
+      "personGuid": "B7EBE1E7-38E9-4B2D-9D51-32244DA6C037",
+      "memberId": 131200255,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Eric",
+      "lastName": "Buffenbarger",
+      "personGuid": "09BC6961-2C67-4313-8B2C-8D6AA1F3C1C3",
+      "memberId": 125502191,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "David",
+      "lastName": "Baddley",
+      "personGuid": "5E34E5B6-AEB7-4F8D-B4DF-98CCEAA126B1",
+      "memberId": 13814040,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Jenny",
+      "lastName": "Beauchamp",
+      "personGuid": "F12FCF3B-20CC-44EF-B5B4-8424B87F94BE",
+      "memberId": 13767933,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Todd",
+      "lastName": "Beauchamp",
+      "personGuid": "7738565F-26DC-4BCB-8955-43742984BE7E",
+      "memberId": 132490877,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Anthony",
+      "lastName": "Burnett",
+      "personGuid": "8EE5DF1F-6034-44BE-A7CE-D2283450B88B",
+      "memberId": 137114849,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Doug",
+      "lastName": "Flaum",
+      "personGuid": "B7568933-DB60-49C8-A649-B604CABA0D6E",
+      "memberId": 141515911,
+      "hasEmail": true,
+      "noEmails": false
+    },
+    {
+      "firstName": "Dennis",
+      "lastName": "McDaid",
+      "personGuid": "48551D0F-26BD-44F8-B273-E66C05F9C6E5",
+      "memberId": 14142553,
+      "hasEmail": true,
+      "noEmails": false
+    }
+  ],
+  "youths": [
+    {
+      "firstName": "Henry",
+      "lastName": "Baddley",
+      "personGuid": "1DA4DFFC-7631-4736-A913-FF47808F3A50",
+      "memberId": 137276167,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "DAvid",
+          "lastName": "Baddley",
+          "personGuid": "82CC259A-6BC3-4F33-A5C1-474A6780570A",
+          "memberId": 137276168,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Davis",
+      "lastName": "Beauchamp",
+      "personGuid": "F129BA11-B9A6-423D-9606-1CF811262C2E",
+      "memberId": 132490876,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Todd",
+          "lastName": "Beauchamp",
+          "personGuid": "7738565F-26DC-4BCB-8955-43742984BE7E",
+          "memberId": 132490877,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Benjamin",
+      "lastName": "Bramwell",
+      "personGuid": "9CAF4811-51A5-4437-B47B-A2CD93505D02",
+      "memberId": 14892085,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Jeremy",
+          "lastName": "Bramwell",
+          "personGuid": "B7EBE1E7-38E9-4B2D-9D51-32244DA6C037",
+          "memberId": 131200255,
+          "hasEmail": true,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Anna",
+          "lastName": "Bramwell",
+          "personGuid": "F965AE01-79DB-466E-9666-3117425C9E3E",
+          "memberId": 141989319,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "William",
+      "lastName": "Bramwell",
+      "personGuid": "9F9C46DD-6766-4E2A-A732-6BFF24D85B85",
+      "memberId": 141634365,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Jeremy",
+          "lastName": "Bramwell",
+          "personGuid": "B7EBE1E7-38E9-4B2D-9D51-32244DA6C037",
+          "memberId": 131200255,
+          "hasEmail": true,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Anna",
+          "lastName": "Bramwell",
+          "personGuid": "F965AE01-79DB-466E-9666-3117425C9E3E",
+          "memberId": 141989319,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Charles",
+      "lastName": "Brunt",
+      "personGuid": "9CC1AA32-2D3A-41F6-AE84-A12C5370BC97",
+      "memberId": 133873283,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Benjamin",
+          "lastName": "Brunt",
+          "personGuid": "8709A38F-2D6A-4735-9005-415C02BA1408",
+          "memberId": 12413918,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Graeme",
+      "lastName": "Buffenbarger",
+      "personGuid": "9FD31694-9AC7-48E5-998F-222B6F17E1B2",
+      "memberId": 14107098,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Eric",
+          "lastName": "Buffenbarger",
+          "personGuid": "09BC6961-2C67-4313-8B2C-8D6AA1F3C1C3",
+          "memberId": 125502191,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Markus",
+      "lastName": "Burnett",
+      "personGuid": "0E7D0FDE-728A-4212-A099-7E868003CE49",
+      "memberId": 137114848,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Anthony",
+          "lastName": "Burnett",
+          "personGuid": "8EE5DF1F-6034-44BE-A7CE-D2283450B88B",
+          "memberId": 137114849,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Mikah",
+      "lastName": "Burnett",
+      "personGuid": "C61FDBF1-3312-459B-BC7F-97663C77D4E5",
+      "memberId": 135886410,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "James",
+          "lastName": "Burnett",
+          "personGuid": "B2EA57A5-69CA-4CD3-A7DC-3F106048C5D2",
+          "memberId": 135886411,
+          "hasEmail": false,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Anthony",
+          "lastName": "Burnett",
+          "personGuid": "8EE5DF1F-6034-44BE-A7CE-D2283450B88B",
+          "memberId": 137114849,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Noah",
+      "lastName": "Eisenman",
+      "personGuid": "27D7A99D-579A-453F-B601-54B60D3FE09C",
+      "memberId": 132963126,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Brian",
+          "lastName": "Eisenman",
+          "personGuid": "F061DFAE-8EBB-42AD-8F4D-5D3BC14B8F59",
+          "memberId": 132963127,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Claude",
+      "lastName": "Elkins",
+      "personGuid": "476A3249-550B-4720-9559-E1AC3663CDF7",
+      "memberId": 14846323,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Claude",
+          "lastName": "Elkins",
+          "personGuid": "7B6126E3-6A9B-4B1D-B8B9-745FCF619566",
+          "memberId": 14848738,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Jackson",
+      "lastName": "Fields",
+      "personGuid": "44D1CAFA-A3AE-48F7-AB2E-9C15842A95E5",
+      "memberId": 140909700,
+      "hasEmail": false,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Elaine",
+          "lastName": "Fields",
+          "personGuid": "11D1666F-4322-4728-BCDF-8C2162BAE7AA",
+          "memberId": 140909699,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Jack",
+      "lastName": "Flaum",
+      "personGuid": "EFC328A2-C180-473F-9C7C-88B6F8FF41A7",
+      "memberId": 141515912,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Doug",
+          "lastName": "Flaum",
+          "personGuid": "B7568933-DB60-49C8-A649-B604CABA0D6E",
+          "memberId": 141515911,
+          "hasEmail": true,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "ABBEY",
+          "lastName": "FLAUM",
+          "personGuid": "7319905F-3D68-48D3-8BB2-5B5CBAD15323",
+          "memberId": 141989334,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Connor",
+      "lastName": "Goldstrom",
+      "personGuid": "91153B0B-DB6E-4A8E-A17C-BE88C3A2BFE0",
+      "memberId": 132490749,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Seth",
+          "lastName": "Goldstrom",
+          "personGuid": "EC5E87F9-879D-4772-92C2-0E54191F41F9",
+          "memberId": 132490750,
+          "hasEmail": false,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Julie",
+          "lastName": "Goldstrom",
+          "personGuid": "956943E0-F123-42EF-8C9C-58057CD436B7",
+          "memberId": 137114840,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Thomas",
+      "lastName": "Goldstrom",
+      "personGuid": "BB1FD11C-B925-45F9-98E9-42D0EA73337C",
+      "memberId": 137114839,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Julie",
+          "lastName": "Goldstrom",
+          "personGuid": "956943E0-F123-42EF-8C9C-58057CD436B7",
+          "memberId": 137114840,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "William",
+      "lastName": "Grabowski",
+      "personGuid": "332BE1D3-CA72-4E56-A2AB-E05CED387D4E",
+      "memberId": 131200385,
+      "hasEmail": false,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Matthew",
+          "lastName": "Grabowski",
+          "personGuid": "00BA082A-2596-4D53-9F04-8D9ADD129AFC",
+          "memberId": 131200386,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Jacob",
+      "lastName": "Haggman",
+      "personGuid": "A128C303-E21B-4A5A-B3E0-7508B4F4E1E3",
+      "memberId": 131200243,
+      "hasEmail": false,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Daniel",
+          "lastName": "Haggman",
+          "personGuid": "08AA7FE1-1FA8-4426-A9B0-921145026D65",
+          "memberId": 131200244,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Iliyan",
+      "lastName": "Hajiani",
+      "personGuid": "B75F3AC8-C12E-4F83-87A1-EFF5677C0206",
+      "memberId": 132963109,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Amin",
+          "lastName": "Hajiani",
+          "personGuid": "73EBF75F-CD6B-4240-BCA8-52C860645FEE",
+          "memberId": 132963110,
+          "hasEmail": false,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Shehla",
+          "lastName": "Hajiani",
+          "personGuid": "E2B14E8E-6E41-486A-A3A6-2D7587E09A8E",
+          "memberId": 14281556,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Erich",
+      "lastName": "Heilman",
+      "personGuid": "28956F31-E029-4EEA-A797-B1682C0063C5",
+      "memberId": 140310990,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "david",
+          "lastName": "heilman",
+          "personGuid": "8C3F5A15-2A70-4786-992F-D52754C534A5",
+          "memberId": 140310988,
+          "hasEmail": true,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "chaffee",
+          "lastName": "heilman",
+          "personGuid": "AEC8E479-702B-45CC-A7E8-432DBA7B81C0",
+          "memberId": 141895175,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Klaus",
+      "lastName": "Heilman",
+      "personGuid": "EFA9C46F-232B-429C-B43B-1736C81106C8",
+      "memberId": 142152979,
+      "hasEmail": false,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "david",
+          "lastName": "heilman",
+          "personGuid": "8C3F5A15-2A70-4786-992F-D52754C534A5",
+          "memberId": 140310988,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Thomas",
+      "lastName": "Konradt",
+      "personGuid": "3829FE62-1B90-4717-9DF4-E117502EFAFE",
+      "memberId": 131200351,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "John",
+          "lastName": "Konradt",
+          "personGuid": "D6EDB5AC-953F-4389-922D-D07E81A2D7A9",
+          "memberId": 131200352,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Orlyn",
+      "lastName": "Lockard",
+      "personGuid": "D64B2129-1172-44C3-8114-3057062CEFB7",
+      "memberId": 135886425,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Orlyn",
+          "lastName": "Lockard",
+          "personGuid": "0A57D6F4-3997-4B77-850C-7AE20B913580",
+          "memberId": 135886426,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "John",
+      "lastName": "McDaid",
+      "personGuid": "5EFB5E5E-1313-4CF3-8126-8EE73EB59CBA",
+      "memberId": 135072517,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Dennis",
+          "lastName": "McDaid",
+          "personGuid": "48551D0F-26BD-44F8-B273-E66C05F9C6E5",
+          "memberId": 14142553,
+          "hasEmail": true,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Colleen",
+          "lastName": "McDaid",
+          "personGuid": "A72196EF-7FA6-4F63-A8B3-26309F1223EA",
+          "memberId": 13796645,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "William",
+      "lastName": "McDaid",
+      "personGuid": "6EB6A829-AA08-473A-81B9-590D61D9FFF5",
+      "memberId": 132490934,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Dennis",
+          "lastName": "McDaid",
+          "personGuid": "48551D0F-26BD-44F8-B273-E66C05F9C6E5",
+          "memberId": 14142553,
+          "hasEmail": true,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Colleen",
+          "lastName": "McDaid",
+          "personGuid": "A72196EF-7FA6-4F63-A8B3-26309F1223EA",
+          "memberId": 13796645,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Jacob",
+      "lastName": "McMurtry",
+      "personGuid": "122CA34C-16FD-472D-8E03-7A9866821755",
+      "memberId": 135885035,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Ricky",
+          "lastName": "McMurtry",
+          "personGuid": "647C374C-4B35-446F-B113-E9EA6DE4103D",
+          "memberId": 135885036,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Owen",
+      "lastName": "Sebel ",
+      "personGuid": "15537C14-D825-42DA-9F44-799CD794B9C9",
+      "memberId": 14872296,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Melissa ",
+          "lastName": "Sebel ",
+          "personGuid": "627E4C47-D193-4185-A67A-47DFD0794415",
+          "memberId": 14872295,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "John",
+      "lastName": "Shirley",
+      "personGuid": "D3CFDA79-4C96-44E1-A6A1-D646BD341463",
+      "memberId": 14870375,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Blake",
+          "lastName": "Shirley",
+          "personGuid": "2DF3CEC0-9102-4BDE-9408-DB9EEDC3DEDC",
+          "memberId": 14870376,
+          "hasEmail": true,
+          "noEmails": null
+        },
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Blake",
+          "lastName": "Shirley",
+          "personGuid": "20C53264-7AE8-472D-8330-34A2049A815C",
+          "memberId": 14873705,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Paine",
+      "lastName": "Spires",
+      "personGuid": "1AB15B9C-5588-4B6E-BF26-245B77BF2F01",
+      "memberId": 132675605,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Chris",
+          "lastName": "Spires",
+          "personGuid": "3B072C42-87AD-4F23-B5CD-462884474552",
+          "memberId": 132675606,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    },
+    {
+      "firstName": "Cullen",
+      "lastName": "Williams",
+      "personGuid": "2EDA0972-A454-4132-B83D-04FABE6DAC6D",
+      "memberId": 14881671,
+      "hasEmail": true,
+      "noEmails": false,
+      "hasParentGuardianEmail": true,
+      "relationships": [
+        {
+          "relationshipType": "Parent/Guardian",
+          "firstName": "Alison",
+          "lastName": "Williams",
+          "personGuid": "6A1FA69A-9CBD-45C8-88DC-3E6BE589E45A",
+          "memberId": 14881670,
+          "hasEmail": true,
+          "noEmails": null
+        }
+      ]
+    }
+  ],
+  "parents": [
+    {
+      "firstName": "DAvid",
+      "lastName": "Baddley",
+      "personGuid": "82CC259A-6BC3-4F33-A5C1-474A6780570A",
+      "memberId": 137276168,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Henry",
+          "lastName": "Baddley",
+          "personGuid": "1DA4DFFC-7631-4736-A913-FF47808F3A50",
+          "memberId": 137276167,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Todd",
+      "lastName": "Beauchamp",
+      "personGuid": "7738565F-26DC-4BCB-8955-43742984BE7E",
+      "memberId": 132490877,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Davis",
+          "lastName": "Beauchamp",
+          "personGuid": "F129BA11-B9A6-423D-9606-1CF811262C2E",
+          "memberId": 132490876,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Jeremy",
+      "lastName": "Bramwell",
+      "personGuid": "B7EBE1E7-38E9-4B2D-9D51-32244DA6C037",
+      "memberId": 131200255,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Benjamin",
+          "lastName": "Bramwell",
+          "personGuid": "9CAF4811-51A5-4437-B47B-A2CD93505D02",
+          "memberId": 14892085,
+          "noEmails": false
+        },
+        {
+          "firstName": "William",
+          "lastName": "Bramwell",
+          "personGuid": "9F9C46DD-6766-4E2A-A732-6BFF24D85B85",
+          "memberId": 141634365,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Anna",
+      "lastName": "Bramwell",
+      "personGuid": "F965AE01-79DB-466E-9666-3117425C9E3E",
+      "memberId": 141989319,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Benjamin",
+          "lastName": "Bramwell",
+          "personGuid": "9CAF4811-51A5-4437-B47B-A2CD93505D02",
+          "memberId": 14892085,
+          "noEmails": false
+        },
+        {
+          "firstName": "William",
+          "lastName": "Bramwell",
+          "personGuid": "9F9C46DD-6766-4E2A-A732-6BFF24D85B85",
+          "memberId": 141634365,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Benjamin",
+      "lastName": "Brunt",
+      "personGuid": "8709A38F-2D6A-4735-9005-415C02BA1408",
+      "memberId": 12413918,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Charles",
+          "lastName": "Brunt",
+          "personGuid": "9CC1AA32-2D3A-41F6-AE84-A12C5370BC97",
+          "memberId": 133873283,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Eric",
+      "lastName": "Buffenbarger",
+      "personGuid": "09BC6961-2C67-4313-8B2C-8D6AA1F3C1C3",
+      "memberId": 125502191,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Graeme",
+          "lastName": "Buffenbarger",
+          "personGuid": "9FD31694-9AC7-48E5-998F-222B6F17E1B2",
+          "memberId": 14107098,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Anthony",
+      "lastName": "Burnett",
+      "personGuid": "8EE5DF1F-6034-44BE-A7CE-D2283450B88B",
+      "memberId": 137114849,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Markus",
+          "lastName": "Burnett",
+          "personGuid": "0E7D0FDE-728A-4212-A099-7E868003CE49",
+          "memberId": 137114848,
+          "noEmails": false
+        },
+        {
+          "firstName": "Mikah",
+          "lastName": "Burnett",
+          "personGuid": "C61FDBF1-3312-459B-BC7F-97663C77D4E5",
+          "memberId": 135886410,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "James",
+      "lastName": "Burnett",
+      "personGuid": "B2EA57A5-69CA-4CD3-A7DC-3F106048C5D2",
+      "memberId": 135886411,
+      "hasEmail": false,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Mikah",
+          "lastName": "Burnett",
+          "personGuid": "C61FDBF1-3312-459B-BC7F-97663C77D4E5",
+          "memberId": 135886410,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Brian",
+      "lastName": "Eisenman",
+      "personGuid": "F061DFAE-8EBB-42AD-8F4D-5D3BC14B8F59",
+      "memberId": 132963127,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Noah",
+          "lastName": "Eisenman",
+          "personGuid": "27D7A99D-579A-453F-B601-54B60D3FE09C",
+          "memberId": 132963126,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Claude",
+      "lastName": "Elkins",
+      "personGuid": "7B6126E3-6A9B-4B1D-B8B9-745FCF619566",
+      "memberId": 14848738,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Claude",
+          "lastName": "Elkins",
+          "personGuid": "476A3249-550B-4720-9559-E1AC3663CDF7",
+          "memberId": 14846323,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Elaine",
+      "lastName": "Fields",
+      "personGuid": "11D1666F-4322-4728-BCDF-8C2162BAE7AA",
+      "memberId": 140909699,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Jackson",
+          "lastName": "Fields",
+          "personGuid": "44D1CAFA-A3AE-48F7-AB2E-9C15842A95E5",
+          "memberId": 140909700,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Doug",
+      "lastName": "Flaum",
+      "personGuid": "B7568933-DB60-49C8-A649-B604CABA0D6E",
+      "memberId": 141515911,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Jack",
+          "lastName": "Flaum",
+          "personGuid": "EFC328A2-C180-473F-9C7C-88B6F8FF41A7",
+          "memberId": 141515912,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "ABBEY",
+      "lastName": "FLAUM",
+      "personGuid": "7319905F-3D68-48D3-8BB2-5B5CBAD15323",
+      "memberId": 141989334,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Jack",
+          "lastName": "Flaum",
+          "personGuid": "EFC328A2-C180-473F-9C7C-88B6F8FF41A7",
+          "memberId": 141515912,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Seth",
+      "lastName": "Goldstrom",
+      "personGuid": "EC5E87F9-879D-4772-92C2-0E54191F41F9",
+      "memberId": 132490750,
+      "hasEmail": false,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Connor",
+          "lastName": "Goldstrom",
+          "personGuid": "91153B0B-DB6E-4A8E-A17C-BE88C3A2BFE0",
+          "memberId": 132490749,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Julie",
+      "lastName": "Goldstrom",
+      "personGuid": "956943E0-F123-42EF-8C9C-58057CD436B7",
+      "memberId": 137114840,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Connor",
+          "lastName": "Goldstrom",
+          "personGuid": "91153B0B-DB6E-4A8E-A17C-BE88C3A2BFE0",
+          "memberId": 132490749,
+          "noEmails": false
+        },
+        {
+          "firstName": "Thomas",
+          "lastName": "Goldstrom",
+          "personGuid": "BB1FD11C-B925-45F9-98E9-42D0EA73337C",
+          "memberId": 137114839,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Matthew",
+      "lastName": "Grabowski",
+      "personGuid": "00BA082A-2596-4D53-9F04-8D9ADD129AFC",
+      "memberId": 131200386,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "William",
+          "lastName": "Grabowski",
+          "personGuid": "332BE1D3-CA72-4E56-A2AB-E05CED387D4E",
+          "memberId": 131200385,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Daniel",
+      "lastName": "Haggman",
+      "personGuid": "08AA7FE1-1FA8-4426-A9B0-921145026D65",
+      "memberId": 131200244,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Jacob",
+          "lastName": "Haggman",
+          "personGuid": "A128C303-E21B-4A5A-B3E0-7508B4F4E1E3",
+          "memberId": 131200243,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Amin",
+      "lastName": "Hajiani",
+      "personGuid": "73EBF75F-CD6B-4240-BCA8-52C860645FEE",
+      "memberId": 132963110,
+      "hasEmail": false,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Iliyan",
+          "lastName": "Hajiani",
+          "personGuid": "B75F3AC8-C12E-4F83-87A1-EFF5677C0206",
+          "memberId": 132963109,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Shehla",
+      "lastName": "Hajiani",
+      "personGuid": "E2B14E8E-6E41-486A-A3A6-2D7587E09A8E",
+      "memberId": 14281556,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Iliyan",
+          "lastName": "Hajiani",
+          "personGuid": "B75F3AC8-C12E-4F83-87A1-EFF5677C0206",
+          "memberId": 132963109,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "david",
+      "lastName": "heilman",
+      "personGuid": "8C3F5A15-2A70-4786-992F-D52754C534A5",
+      "memberId": 140310988,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Erich",
+          "lastName": "Heilman",
+          "personGuid": "28956F31-E029-4EEA-A797-B1682C0063C5",
+          "memberId": 140310990,
+          "noEmails": false
+        },
+        {
+          "firstName": "Klaus",
+          "lastName": "Heilman",
+          "personGuid": "EFA9C46F-232B-429C-B43B-1736C81106C8",
+          "memberId": 142152979,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "chaffee",
+      "lastName": "heilman",
+      "personGuid": "AEC8E479-702B-45CC-A7E8-432DBA7B81C0",
+      "memberId": 141895175,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Erich",
+          "lastName": "Heilman",
+          "personGuid": "28956F31-E029-4EEA-A797-B1682C0063C5",
+          "memberId": 140310990,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "John",
+      "lastName": "Konradt",
+      "personGuid": "D6EDB5AC-953F-4389-922D-D07E81A2D7A9",
+      "memberId": 131200352,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Thomas",
+          "lastName": "Konradt",
+          "personGuid": "3829FE62-1B90-4717-9DF4-E117502EFAFE",
+          "memberId": 131200351,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Orlyn",
+      "lastName": "Lockard",
+      "personGuid": "0A57D6F4-3997-4B77-850C-7AE20B913580",
+      "memberId": 135886426,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Orlyn",
+          "lastName": "Lockard",
+          "personGuid": "D64B2129-1172-44C3-8114-3057062CEFB7",
+          "memberId": 135886425,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Dennis",
+      "lastName": "McDaid",
+      "personGuid": "48551D0F-26BD-44F8-B273-E66C05F9C6E5",
+      "memberId": 14142553,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "John",
+          "lastName": "McDaid",
+          "personGuid": "5EFB5E5E-1313-4CF3-8126-8EE73EB59CBA",
+          "memberId": 135072517,
+          "noEmails": false
+        },
+        {
+          "firstName": "William",
+          "lastName": "McDaid",
+          "personGuid": "6EB6A829-AA08-473A-81B9-590D61D9FFF5",
+          "memberId": 132490934,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Colleen",
+      "lastName": "McDaid",
+      "personGuid": "A72196EF-7FA6-4F63-A8B3-26309F1223EA",
+      "memberId": 13796645,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "John",
+          "lastName": "McDaid",
+          "personGuid": "5EFB5E5E-1313-4CF3-8126-8EE73EB59CBA",
+          "memberId": 135072517,
+          "noEmails": false
+        },
+        {
+          "firstName": "William",
+          "lastName": "McDaid",
+          "personGuid": "6EB6A829-AA08-473A-81B9-590D61D9FFF5",
+          "memberId": 132490934,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Ricky",
+      "lastName": "McMurtry",
+      "personGuid": "647C374C-4B35-446F-B113-E9EA6DE4103D",
+      "memberId": 135885036,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Jacob",
+          "lastName": "McMurtry",
+          "personGuid": "122CA34C-16FD-472D-8E03-7A9866821755",
+          "memberId": 135885035,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Melissa ",
+      "lastName": "Sebel ",
+      "personGuid": "627E4C47-D193-4185-A67A-47DFD0794415",
+      "memberId": 14872295,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Owen",
+          "lastName": "Sebel ",
+          "personGuid": "15537C14-D825-42DA-9F44-799CD794B9C9",
+          "memberId": 14872296,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Blake",
+      "lastName": "Shirley",
+      "personGuid": "2DF3CEC0-9102-4BDE-9408-DB9EEDC3DEDC",
+      "memberId": 14870376,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "John",
+          "lastName": "Shirley",
+          "personGuid": "D3CFDA79-4C96-44E1-A6A1-D646BD341463",
+          "memberId": 14870375,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Blake",
+      "lastName": "Shirley",
+      "personGuid": "20C53264-7AE8-472D-8330-34A2049A815C",
+      "memberId": 14873705,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "John",
+          "lastName": "Shirley",
+          "personGuid": "D3CFDA79-4C96-44E1-A6A1-D646BD341463",
+          "memberId": 14870375,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Chris",
+      "lastName": "Spires",
+      "personGuid": "3B072C42-87AD-4F23-B5CD-462884474552",
+      "memberId": 132675606,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Paine",
+          "lastName": "Spires",
+          "personGuid": "1AB15B9C-5588-4B6E-BF26-245B77BF2F01",
+          "memberId": 132675605,
+          "noEmails": false
+        }
+      ]
+    },
+    {
+      "firstName": "Alison",
+      "lastName": "Williams",
+      "personGuid": "6A1FA69A-9CBD-45C8-88DC-3E6BE589E45A",
+      "memberId": 14881670,
+      "hasEmail": true,
+      "noEmails": null,
+      "youths": [
+        {
+          "firstName": "Cullen",
+          "lastName": "Williams",
+          "personGuid": "2EDA0972-A454-4132-B83D-04FABE6DAC6D",
+          "memberId": 14881671,
+          "noEmails": false
+        }
+      ]
+    }
+  ]
+}

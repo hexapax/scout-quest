@@ -1,0 +1,131 @@
+{
+  "ResponseCode": "1",
+  "Reports": [
+    {
+      "ReportName": "Merit Badge In-Progress Report",
+      "ReportCode": "SBInProgressMBReport",
+      "ReportGroupName": "Membership",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBInProgressMBReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Advancements",
+      "ReportCode": "SBReportBuilderOutput",
+      "ReportGroupName": "Quick Export",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBReportBuilderOutput&api=PrintEXP&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Scout/Members",
+      "ReportCode": "SBRosterBuilderReport",
+      "ReportGroupName": "Quick Export",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBRosterBuilderReport&api=PrintEXP&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48&Scope=scouts"
+    },
+    {
+      "ReportName": "Leaders & Parents",
+      "ReportCode": "SBRosterBuilderReport",
+      "ReportGroupName": "Quick Export",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBRosterBuilderReport&api=PrintEXP&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48&Scope=adults"
+    },
+    {
+      "ReportName": "Activity Log Report",
+      "ReportCode": "SBALActivityLogReport",
+      "ReportGroupName": "Activity",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBALActivityLogReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Activity Log Report",
+      "ReportCode": "SBALActivityLogReport",
+      "ReportGroupName": "Quick Export",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBALActivityLogReport&api=PrintEXP&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48&Scope=All"
+    },
+    {
+      "ReportName": "Audit Log Report",
+      "ReportCode": "SBAuditLogReport",
+      "ReportGroupName": "Unit",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBAuditLogReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Scouts BSA Individual Advancement Record",
+      "ReportCode": "SBIARReport",
+      "ReportGroupName": "Advancement",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBIARReport&api=UserDataPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Scouts BSA History Report",
+      "ReportCode": "SBSBSAHistoryReport",
+      "ReportGroupName": "Advancement",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBSBSAHistoryReport&api=UserDataPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Payment Log Report",
+      "ReportCode": "SBPLPaymentLogReport",
+      "ReportGroupName": "Finance",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBPLPaymentLogReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48&Scope=All"
+    },
+    {
+      "ReportName": "Payment Log Report",
+      "ReportCode": "SBPLPaymentLogReport",
+      "ReportGroupName": "Quick Export",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBPLPaymentLogReport&api=PrintEXP&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48&Scope=All"
+    },
+    {
+      "ReportName": "Attendance Report",
+      "ReportCode": "SBAttendanceReport",
+      "ReportGroupName": "Calendar",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBAttendanceReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "OA Eligibility Report",
+      "ReportCode": "SBOAEligibilityReport",
+      "ReportGroupName": "Activity",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBOAEligibilityReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Troop Recognition Report",
+      "ReportCode": "SBTroopRecognitionReport",
+      "ReportGroupName": "Advancement",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBTroopRecognitionReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Activities Summary Report (includes Service Projects)",
+      "ReportCode": "SBLActivitiesSummaryReport",
+      "ReportGroupName": "Activity",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBLActivitiesSummaryReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Initiative Activities Summary Report",
+      "ReportCode": "SBLInitiativeActivitiesSummary",
+      "ReportGroupName": "Activity",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBLInitiativeActivitiesSummary&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Most Recent Activities Summary Report",
+      "ReportCode": "SBLMostRecentActivitiesSummaryReport",
+      "ReportGroupName": "Activity",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBLMostRecentActivitiesSummaryReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "My Roster Report",
+      "ReportCode": "SBLMyRosterReport",
+      "ReportGroupName": "",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBLMyRosterReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Unit Roster Lite Report",
+      "ReportCode": "SBLUnitRosterLiteReport",
+      "ReportGroupName": "Unit",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBLUnitRosterLiteReport&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Scouts BSA Council Advancement Report",
+      "ReportCode": "OLRCouncilAdvancementReportScoutsBSA",
+      "ReportGroupName": "",
+      "ReportURI": "https://my.scouting.org/mystrpt/webreport/output/proxy.aspx?Method=LoadReportPage&ReportCode=OLRCouncilAdvancementReportScoutsBSA&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    },
+    {
+      "ReportName": "Advancement History report",
+      "ReportCode": "SBLUnitAdvancementSummary",
+      "ReportGroupName": "Advancement",
+      "ReportURI": "https://reportspd.scouting.org/advancements/webscript/output/sbreports.aspx?method=ExecuteContainerAPI&container=SBLUnitAdvancementSummary&api=ReportPresentation&OrganizationGUID=E1D07881-103D-43D8-92C4-63DEFDC05D48"
+    }
+  ]
+}

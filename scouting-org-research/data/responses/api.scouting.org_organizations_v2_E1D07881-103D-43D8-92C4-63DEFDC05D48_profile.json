@@ -1,0 +1,131 @@
+{
+  "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+  "id": 349437,
+  "nodeId": 339218,
+  "name": "Troop 2024",
+  "number": "2024",
+  "organizationFullName": "Troop 2024 PACE ACADEMY",
+  "program": "Boy Scouting",
+  "sbOrganizationId": 121894,
+  "specialInterestTypeId": 59,
+  "specialInterestTypeCode": "0413",
+  "specialInterestType": "TRADITIONAL PROGRAM",
+  "type": "Troop",
+  "typeId": 2,
+  "organizationTypeId": 6,
+  "organizationType": "unit",
+  "councilStructureType": "",
+  "tinyUrl": "https://my.scouting.org/VES/OnlineReg/1.0.0/?tu=UF-MB-092taa2024",
+  "isLDS": false,
+  "isCouncilPaid": false,
+  "tenure": 116,
+  "unitedWayName": null,
+  "affiliateOrganizationGuid": null,
+  "affiliateName": null,
+  "isComingSoon": false,
+  "districtGuid": "39F0EFA0-44BA-40A3-BEC9-972AC2734D1E",
+  "districtNumber": "23",
+  "districtName": "Phoenix",
+  "councilGuid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+  "councilName": "Atlanta Area Council",
+  "territoryGuid": "E899B2A4-2438-4990-87F0-C8706107D05B",
+  "territoryName": "Service Territory 14",
+  "territoryNumber": "14",
+  "acceptGender": "BT",
+  "unitTimeZoneCode": "America/New_York",
+  "unitTimeZoneLastUpdated": "2023-04-13T15:39:10",
+  "lat": 33.849153,
+  "long": -84.417147,
+  "isUnitGrowthExecutivesFlag": false,
+  "charter": {
+    "id": 2980787,
+    "term": 12,
+    "originalEffectiveDt": null,
+    "effectiveDate": "2026-01-01",
+    "expiryDate": "2026-12-31",
+    "communityOrganizationName": "PACE ACADEMY",
+    "organizationGUID": "25576929-D679-405E-A650-0ACD8735FAE7",
+    "skCommOrgTypeCD": 88,
+    "fkCommOrgTypeId": 88,
+    "programId": 3,
+    "programName": "Scouts BSA",
+    "isActive": true,
+    "isCurrentCharter": true
+  },
+  "nonUnitOrgMembersExpireMonth": null,
+  "effectiveDt": null,
+  "expiryDt": null,
+  "webContact": [],
+  "key3": [
+    {
+      "positionId": 170245284,
+      "position": "Chartered Organization Rep.",
+      "personFullName": "Daniel Haggman",
+      "firstName": "Daniel",
+      "lastName": "Haggman",
+      "suffix": ""
+    },
+    {
+      "positionId": 169022281,
+      "position": "Committee Chair",
+      "personFullName": "Julie Goldstrom",
+      "firstName": "Julie",
+      "lastName": "Goldstrom",
+      "suffix": ""
+    },
+    {
+      "positionId": 170341673,
+      "position": "Scoutmaster",
+      "personFullName": "Jeremy Bramwell",
+      "firstName": "Jeremy",
+      "lastName": "Bramwell",
+      "suffix": ""
+    }
+  ],
+  "executiveOfficer": {
+    "personFullName": "Frederick George Assaf",
+    "firstName": "Frederick",
+    "middleName": "George",
+    "lastName": "Assaf",
+    "suffix": ""
+  },
+  "primaryAddress": {
+    "addressLine1": "966 W Paces Ferry Rd NW",
+    "addressLine2": "",
+    "addressLine3": "",
+    "city": "Atlanta",
+    "state": "GA",
+    "zip5": "30327",
+    "zip4": "2648",
+    "country": "US",
+    "county": "Fulton"
+  },
+  "primaryPhone": {
+    "countryCode": null,
+    "areaCode": "404",
+    "prefix": "895",
+    "lineNumber": "7070",
+    "extension": null
+  },
+  "unitMeetingInformation": {
+    "addressLine1": "966 W Paces Ferry Rd NW",
+    "addressLine2": "",
+    "city": "Atlanta",
+    "zip5": "30327",
+    "stateShort": "GA",
+    "meetingLocation": "",
+    "meetingTime": ""
+  },
+  "advancementEligibility": {
+    "adventures": false,
+    "meritBadges": true,
+    "ranks": true,
+    "awards": true
+  },
+  "unitForums": [
+    {
+      "discourseCategoryId": 6480,
+      "discourseCategorySlug": "council-092-troop-2024-349437"
+    }
+  ]
+}

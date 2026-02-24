@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1899,
+    "name": "Does not know how to swim",
+    "short": "Nonswimmer",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1900,
+    "name": "Beginner level swimming skills",
+    "short": "Beginner",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1901,
+    "name": "Knows how to swim",
+    "short": "Swimmer",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  }
+]

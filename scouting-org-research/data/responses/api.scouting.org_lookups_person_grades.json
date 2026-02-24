@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1,
+    "gradeName": "First Grade",
+    "displayOrder": 2
+  },
+  {
+    "id": 2,
+    "gradeName": "Second Grade",
+    "displayOrder": 3
+  },
+  {
+    "id": 3,
+    "gradeName": "Third Grade",
+    "displayOrder": 4
+  },
+  {
+    "id": 4,
+    "gradeName": "Fourth Grade",
+    "displayOrder": 5
+  },
+  {
+    "id": 5,
+    "gradeName": "Fifth Grade",
+    "displayOrder": 6
+  },
+  {
+    "id": 6,
+    "gradeName": "Sixth Grade",
+    "displayOrder": 7
+  },
+  {
+    "id": 7,
+    "gradeName": "Seventh Grade",
+    "displayOrder": 8
+  },
+  {
+    "id": 8,
+    "gradeName": "Eighth Grade",
+    "displayOrder": 9
+  },
+  {
+    "id": 9,
+    "gradeName": "Ninth Grade",
+    "displayOrder": 10
+  },
+  {
+    "id": 10,
+    "gradeName": "Tenth Grade",
+    "displayOrder": 11
+  },
+  {
+    "id": 11,
+    "gradeName": "Eleventh Grade",
+    "displayOrder": 12
+  },
+  {
+    "id": 12,
+    "gradeName": "Twelfth Grade",
+    "displayOrder": 13
+  },
+  {
+    "id": 13,
+    "gradeName": "Graduated High School",
+    "displayOrder": 14
+  },
+  {
+    "id": 14,
+    "gradeName": "Kindergarten / Grade Prior to the First Grade",
+    "displayOrder": 1
+  },
+  {
+    "id": 15,
+    "gradeName": "Other",
+    "displayOrder": 15
+  }
+]

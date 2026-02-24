@@ -1,0 +1,149 @@
+[
+  {
+    "id": 1878,
+    "name": "AT&T",
+    "short": "AT&T",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1879,
+    "name": "Boostmobile",
+    "short": "Boostmobile",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1880,
+    "name": "C Spire",
+    "short": "C Spire",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1881,
+    "name": "CellCom",
+    "short": "CellCom",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1882,
+    "name": "ConsumerCellular",
+    "short": "ConsumerCellular",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1883,
+    "name": "Credo Mobile",
+    "short": "Credo Mobile",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1884,
+    "name": "Cricket",
+    "short": "Cricket",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1885,
+    "name": "GCI",
+    "short": "GCI",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1886,
+    "name": "Google Voice",
+    "short": "Google Voice",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1887,
+    "name": "GoogleFi",
+    "short": "GoogleFi",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1888,
+    "name": "Metro PCS",
+    "short": "Metro PCS",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1889,
+    "name": "Republic Wireless",
+    "short": "Republic Wireless",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1890,
+    "name": "Spectrum Mobile",
+    "short": "Spectrum Mobile",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1891,
+    "name": "Sprint",
+    "short": "Sprint",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1892,
+    "name": "T-Mobile",
+    "short": "T-Mobile",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1893,
+    "name": "Ting",
+    "short": "Ting",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1894,
+    "name": "US Cellular",
+    "short": "US Cellular",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1895,
+    "name": "Verizon",
+    "short": "Verizon",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1896,
+    "name": "Viaero",
+    "short": "Viaero",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1897,
+    "name": "Virgin Mobile",
+    "short": "Virgin Mobile",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  },
+  {
+    "id": 1898,
+    "name": "Xfinity Mobile",
+    "short": "Xfinity Mobile",
+    "effectiveDt": "2010-01-01",
+    "expiryDt": null
+  }
+]

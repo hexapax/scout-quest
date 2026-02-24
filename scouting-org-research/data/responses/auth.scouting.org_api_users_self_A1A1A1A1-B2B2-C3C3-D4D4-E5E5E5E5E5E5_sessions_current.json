@@ -1,0 +1,29 @@
+{
+  "sessionToken": "E42780E52F79461BB919837631199632F1D9320288A04921A83E127415187836",
+  "personGuid": "B7EBE1E7-38E9-4B2D-9D51-32244DA6C037",
+  "userGuid": "FD9653EC-B3E5-49E4-9114-B69AE5777808",
+  "membership": {
+    "memberId": 131200255,
+    "email": "jebramwell@gmail.com",
+    "isDelete": null
+  },
+  "account": {
+    "username": "B1FAF7B95AE746D096E1064836992607",
+    "userId": 9120709
+  },
+  "profile": {
+    "firstName": "Jeremy",
+    "middleName": "Edward",
+    "lastName": "Bramwell",
+    "gender": "M",
+    "prefix": null,
+    "suffix": null,
+    "dateOfBirth": "1978-02-28"
+  },
+  "userProfile": null,
+  "token": "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJzdGsiOiJFNDI3ODBFNTJGNzk0NjFCQjkxOTgzNzYzMTE5OTYzMkYxRDkzMjAyODhBMDQ5MjFBODNFMTI3NDE1MTg3ODM2IiwidXNlciI6IkIxRkFGN0I5NUFFNzQ2RDA5NkUxMDY0ODM2OTkyNjA3Iiwic2NvcGUiOlsiYnNhLWNvcmUiXSwidWlkIjo5MTIwNzA5LCJtaWQiOiIxMzEyMDAyNTUiLCJ1Z3UiOiJGRDk2NTNFQy1CM0U1LTQ5RTQtOTExNC1CNjlBRTU3Nzc4MDgiLCJwZ3UiOiJCN0VCRTFFNy0zOEU5LTRCMkQtOUQ1MS0zMjI0NERBNkMwMzciLCJvcmlnIjp7InVyaSI6Imh0dHBzOi8vYWR2YW5jZW1lbnRzLnNjb3V0aW5nLm9yZyJ9LCJkZXN0Ijp7InVyaSI6WyJodHRwczovL2F1dGguc2NvdXRpbmcub3JnIiwiaHR0cHM6Ly9hcGkuc2NvdXRpbmcub3JnIiwiaHR0cHM6Ly9hZHZhbmNlbWVudHMuc2NvdXRpbmcub3JnIl19LCJhbXIiOlsic29jIl0sImlhdCI6MTc3MTc3MDk1OCwiZXhwIjoxNzcxNzk5NzU4LCJhdWQiOiJic2EiLCJpc3MiOiJsb2dpbi1hcGkiLCJzdWIiOiJjcmVkZW50aWFscyIsImp0aSI6IjgyM2Y0ZmU1ZWUxMGNlZTQwYmFjOWY5NTExOTMxYzljIn0.vOwdIbIDlVNeoVSEUi5m6U8YWCxVzk_MHormlsTeSztX1mKEsZmlOLRbczcy_fb6",
+  "hasMasqueradeRole": false,
+  "grantType": "credentials-bsa-jwt",
+  "isMfaSignedUp": false,
+  "mfaDeliveryMethods": []
+}

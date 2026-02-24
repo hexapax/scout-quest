@@ -1,0 +1,326 @@
+[
+  {
+    "timezoneCode": "Pacific/Honolulu"
+  },
+  {
+    "timezoneCode": "Pacific/Marquesas"
+  },
+  {
+    "timezoneCode": "America/Anchorage"
+  },
+  {
+    "timezoneCode": "America/Los_Angeles"
+  },
+  {
+    "timezoneCode": "America/Phoenix"
+  },
+  {
+    "timezoneCode": "America/Mazatlan"
+  },
+  {
+    "timezoneCode": "America/Denver"
+  },
+  {
+    "timezoneCode": "America/El_Salvador"
+  },
+  {
+    "timezoneCode": "America/Chicago"
+  },
+  {
+    "timezoneCode": "Pacific/Easter"
+  },
+  {
+    "timezoneCode": "America/Mexico_City"
+  },
+  {
+    "timezoneCode": "America/Winnipeg"
+  },
+  {
+    "timezoneCode": "America/Bogota"
+  },
+  {
+    "timezoneCode": "America/New_York"
+  },
+  {
+    "timezoneCode": "America/Havana"
+  },
+  {
+    "timezoneCode": "America/Toronto"
+  },
+  {
+    "timezoneCode": "America/Halifax"
+  },
+  {
+    "timezoneCode": "America/Caracas"
+  },
+  {
+    "timezoneCode": "America/Cuiaba"
+  },
+  {
+    "timezoneCode": "America/La_Paz"
+  },
+  {
+    "timezoneCode": "America/Santiago"
+  },
+  {
+    "timezoneCode": "America/St_Johns"
+  },
+  {
+    "timezoneCode": "America/Araguaina"
+  },
+  {
+    "timezoneCode": "America/Cayenne"
+  },
+  {
+    "timezoneCode": "America/Argentina/Buenos_Aires"
+  },
+  {
+    "timezoneCode": "America/Montevideo"
+  },
+  {
+    "timezoneCode": "America/Bahia"
+  },
+  {
+    "timezoneCode": "Atlantic/Azores"
+  },
+  {
+    "timezoneCode": "Atlantic/Cape_Verde"
+  },
+  {
+    "timezoneCode": "Etc/UTC"
+  },
+  {
+    "timezoneCode": "Europe/London"
+  },
+  {
+    "timezoneCode": "Africa/Monrovia"
+  },
+  {
+    "timezoneCode": "Africa/Sao_Tome"
+  },
+  {
+    "timezoneCode": "Europe/Berlin"
+  },
+  {
+    "timezoneCode": "Europe/Belgrade"
+  },
+  {
+    "timezoneCode": "Europe/Warsaw"
+  },
+  {
+    "timezoneCode": "Asia/Amman"
+  },
+  {
+    "timezoneCode": "Europe/Athens"
+  },
+  {
+    "timezoneCode": "Asia/Beirut"
+  },
+  {
+    "timezoneCode": "Africa/Cairo"
+  },
+  {
+    "timezoneCode": "Europe/Chisinau"
+  },
+  {
+    "timezoneCode": "Asia/Damascus"
+  },
+  {
+    "timezoneCode": "Asia/Gaza"
+  },
+  {
+    "timezoneCode": "Africa/Harare"
+  },
+  {
+    "timezoneCode": "Europe/Helsinki"
+  },
+  {
+    "timezoneCode": "Asia/Jerusalem"
+  },
+  {
+    "timezoneCode": "Europe/Kaliningrad"
+  },
+  {
+    "timezoneCode": "Africa/Khartoum"
+  },
+  {
+    "timezoneCode": "Africa/Tripoli"
+  },
+  {
+    "timezoneCode": "Asia/Baghdad"
+  },
+  {
+    "timezoneCode": "Europe/Istanbul"
+  },
+  {
+    "timezoneCode": "Asia/Riyadh"
+  },
+  {
+    "timezoneCode": "Europe/Minsk"
+  },
+  {
+    "timezoneCode": "Europe/Moscow"
+  },
+  {
+    "timezoneCode": "Africa/Nairobi"
+  },
+  {
+    "timezoneCode": "Asia/Tehran"
+  },
+  {
+    "timezoneCode": "Europe/Astrakhan"
+  },
+  {
+    "timezoneCode": "Asia/Baku"
+  },
+  {
+    "timezoneCode": "Europe/Samara"
+  },
+  {
+    "timezoneCode": "Indian/Mauritius"
+  },
+  {
+    "timezoneCode": "Europe/Saratov"
+  },
+  {
+    "timezoneCode": "Asia/Tbilisi"
+  },
+  {
+    "timezoneCode": "Europe/Volgograd"
+  },
+  {
+    "timezoneCode": "Asia/Yerevan"
+  },
+  {
+    "timezoneCode": "Asia/Kabul"
+  },
+  {
+    "timezoneCode": "Asia/Ashgabat"
+  },
+  {
+    "timezoneCode": "Asia/Karachi"
+  },
+  {
+    "timezoneCode": "Asia/Qyzylorda"
+  },
+  {
+    "timezoneCode": "Asia/Kathmandu"
+  },
+  {
+    "timezoneCode": "Asia/Dhaka"
+  },
+  {
+    "timezoneCode": "Asia/Omsk"
+  },
+  {
+    "timezoneCode": "Asia/Rangoon"
+  },
+  {
+    "timezoneCode": "Asia/Bangkok"
+  },
+  {
+    "timezoneCode": "Asia/Hovd"
+  },
+  {
+    "timezoneCode": "Asia/Krasnoyarsk"
+  },
+  {
+    "timezoneCode": "Asia/Novosibirsk"
+  },
+  {
+    "timezoneCode": "Europe/Brussels"
+  },
+  {
+    "timezoneCode": "Asia/Tomsk"
+  },
+  {
+    "timezoneCode": "Asia/Irkutsk"
+  },
+  {
+    "timezoneCode": "Asia/Singapore"
+  },
+  {
+    "timezoneCode": "Australia/Perth"
+  },
+  {
+    "timezoneCode": "Asia/Taipei"
+  },
+  {
+    "timezoneCode": "Asia/Ulaanbaatar"
+  },
+  {
+    "timezoneCode": "Australia/Eucla"
+  },
+  {
+    "timezoneCode": "Asia/Chita"
+  },
+  {
+    "timezoneCode": "Asia/Tokyo"
+  },
+  {
+    "timezoneCode": "Asia/Pyongyang"
+  },
+  {
+    "timezoneCode": "Asia/Seoul"
+  },
+  {
+    "timezoneCode": "Asia/Yakutsk"
+  },
+  {
+    "timezoneCode": "Australia/Adelaide"
+  },
+  {
+    "timezoneCode": "Australia/Darwin"
+  },
+  {
+    "timezoneCode": "Australia/Brisbane"
+  },
+  {
+    "timezoneCode": "Australia/Sydney"
+  },
+  {
+    "timezoneCode": "Pacific/Guam"
+  },
+  {
+    "timezoneCode": "Australia/Hobart"
+  },
+  {
+    "timezoneCode": "Asia/Vladivostok"
+  },
+  {
+    "timezoneCode": "Australia/Lord_Howe"
+  },
+  {
+    "timezoneCode": "Pacific/Bougainville"
+  },
+  {
+    "timezoneCode": "Asia/Magadan"
+  },
+  {
+    "timezoneCode": "Pacific/Norfolk"
+  },
+  {
+    "timezoneCode": "Asia/Sakhalin"
+  },
+  {
+    "timezoneCode": "Pacific/Guadalcanal"
+  },
+  {
+    "timezoneCode": "Asia/Anadyr"
+  },
+  {
+    "timezoneCode": "Pacific/Auckland"
+  },
+  {
+    "timezoneCode": "Pacific/Fiji"
+  },
+  {
+    "timezoneCode": "Pacific/Chatham"
+  },
+  {
+    "timezoneCode": "Pacific/Apia"
+  },
+  {
+    "timezoneCode": "Pacific/Kiritimati"
+  }
+]

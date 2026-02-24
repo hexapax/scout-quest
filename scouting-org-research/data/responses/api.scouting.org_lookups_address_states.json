@@ -1,0 +1,317 @@
+[
+  {
+    "name": "AA-APO AA",
+    "short": "AA",
+    "id": "1"
+  },
+  {
+    "name": "AE-APO AE",
+    "short": "AE",
+    "id": "2"
+  },
+  {
+    "name": "AK-ALASKA",
+    "short": "AK",
+    "id": "3"
+  },
+  {
+    "name": "AL-ALABAMA",
+    "short": "AL",
+    "id": "4"
+  },
+  {
+    "name": "AP-APO AP",
+    "short": "AP",
+    "id": "5"
+  },
+  {
+    "name": "AR-ARKANSAS",
+    "short": "AR",
+    "id": "6"
+  },
+  {
+    "name": "AS-AMERICAN SOMOA",
+    "short": "AS",
+    "id": "7"
+  },
+  {
+    "name": "AZ-ARIZONA",
+    "short": "AZ",
+    "id": "8"
+  },
+  {
+    "name": "CA-CALIFORNIA",
+    "short": "CA",
+    "id": "9"
+  },
+  {
+    "name": "CO-COLORADO",
+    "short": "CO",
+    "id": "10"
+  },
+  {
+    "name": "CT-CONNECTICUT",
+    "short": "CT",
+    "id": "11"
+  },
+  {
+    "name": "DC-DISTRICT OF COLUMBIA",
+    "short": "DC",
+    "id": "12"
+  },
+  {
+    "name": "DE-DELAWARE",
+    "short": "DE",
+    "id": "13"
+  },
+  {
+    "name": "FL-FLORIDA",
+    "short": "FL",
+    "id": "14"
+  },
+  {
+    "name": "FM-FED ST MICRONESIA",
+    "short": "FM",
+    "id": "15"
+  },
+  {
+    "name": "GA-GEORGIA",
+    "short": "GA",
+    "id": "16"
+  },
+  {
+    "name": "GU-GUAM",
+    "short": "GU",
+    "id": "17"
+  },
+  {
+    "name": "HI-HAWAII",
+    "short": "HI",
+    "id": "18"
+  },
+  {
+    "name": "IA-IOWA",
+    "short": "IA",
+    "id": "19"
+  },
+  {
+    "name": "ID-IDAHO",
+    "short": "ID",
+    "id": "20"
+  },
+  {
+    "name": "IL-ILLINOIS",
+    "short": "IL",
+    "id": "21"
+  },
+  {
+    "name": "IN-INDIANA",
+    "short": "IN",
+    "id": "22"
+  },
+  {
+    "name": "KS-KANSAS",
+    "short": "KS",
+    "id": "23"
+  },
+  {
+    "name": "KY-KENTUCKY",
+    "short": "KY",
+    "id": "24"
+  },
+  {
+    "name": "LA-LOUISIANA",
+    "short": "LA",
+    "id": "25"
+  },
+  {
+    "name": "MA-MASSACHUSETTS",
+    "short": "MA",
+    "id": "26"
+  },
+  {
+    "name": "MD-MARYLAND",
+    "short": "MD",
+    "id": "27"
+  },
+  {
+    "name": "ME-MAINE",
+    "short": "ME",
+    "id": "28"
+  },
+  {
+    "name": "MH-MARSHALL ISLANDS",
+    "short": "MH",
+    "id": "29"
+  },
+  {
+    "name": "MI-MICHIGAN",
+    "short": "MI",
+    "id": "30"
+  },
+  {
+    "name": "MN-MINNESOTA",
+    "short": "MN",
+    "id": "31"
+  },
+  {
+    "name": "MO-MISSOURI",
+    "short": "MO",
+    "id": "32"
+  },
+  {
+    "name": "MP-NORTHERN MARIANA IS",
+    "short": "MP",
+    "id": "33"
+  },
+  {
+    "name": "MS-MISSISSIPPI",
+    "short": "MS",
+    "id": "34"
+  },
+  {
+    "name": "MT-MONTANA",
+    "short": "MT",
+    "id": "35"
+  },
+  {
+    "name": "NC-NORTH CAROLINA",
+    "short": "NC",
+    "id": "36"
+  },
+  {
+    "name": "ND-NORTH DAKOTA",
+    "short": "ND",
+    "id": "37"
+  },
+  {
+    "name": "NE-NEBRASKA",
+    "short": "NE",
+    "id": "38"
+  },
+  {
+    "name": "NH-NEW HAMPSHIRE",
+    "short": "NH",
+    "id": "39"
+  },
+  {
+    "name": "NJ-NEW JERSEY",
+    "short": "NJ",
+    "id": "40"
+  },
+  {
+    "name": "NM-NEW MEXICO",
+    "short": "NM",
+    "id": "41"
+  },
+  {
+    "name": "NV-NEVADA",
+    "short": "NV",
+    "id": "42"
+  },
+  {
+    "name": "NY-NEW YORK",
+    "short": "NY",
+    "id": "43"
+  },
+  {
+    "name": "OH-OHIO",
+    "short": "OH",
+    "id": "44"
+  },
+  {
+    "name": "OK-OKLAHOMA",
+    "short": "OK",
+    "id": "45"
+  },
+  {
+    "name": "OR-OREGON",
+    "short": "OR",
+    "id": "46"
+  },
+  {
+    "name": "PA-PENNSYLVANIA",
+    "short": "PA",
+    "id": "47"
+  },
+  {
+    "name": "PR-PUERTO RICO",
+    "short": "PR",
+    "id": "48"
+  },
+  {
+    "name": "PW-PALAU ISLAND",
+    "short": "PW",
+    "id": "49"
+  },
+  {
+    "name": "RI-RHODE ISLAND",
+    "short": "RI",
+    "id": "50"
+  },
+  {
+    "name": "SC-SOUTH CAROLINA",
+    "short": "SC",
+    "id": "51"
+  },
+  {
+    "name": "SD-SOUTH DAKOTA",
+    "short": "SD",
+    "id": "52"
+  },
+  {
+    "name": "TN-TENNESSEE",
+    "short": "TN",
+    "id": "53"
+  },
+  {
+    "name": "TT-TRUST TERRITORIES",
+    "short": "TT",
+    "id": "54"
+  },
+  {
+    "name": "TX-TEXAS",
+    "short": "TX",
+    "id": "55"
+  },
+  {
+    "name": "UT-UTAH",
+    "short": "UT",
+    "id": "56"
+  },
+  {
+    "name": "VA-VIRGINIA",
+    "short": "VA",
+    "id": "57"
+  },
+  {
+    "name": "VI-VIRGIN ISLANDS",
+    "short": "VI",
+    "id": "58"
+  },
+  {
+    "name": "VT-VERMONT",
+    "short": "VT",
+    "id": "59"
+  },
+  {
+    "name": "WA-WASHINGTON",
+    "short": "WA",
+    "id": "60"
+  },
+  {
+    "name": "WI-WISCONSIN",
+    "short": "WI",
+    "id": "61"
+  },
+  {
+    "name": "WV-WEST VIRGINIA",
+    "short": "WV",
+    "id": "62"
+  },
+  {
+    "name": "WY-WYOMING",
+    "short": "WY",
+    "id": "63"
+  }
+]

@@ -1,0 +1,135 @@
+[
+  {
+    "id": "1",
+    "classificationId": "3",
+    "name": "Home Email",
+    "short": "EMAL",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "2",
+    "classificationId": "2",
+    "name": "URL",
+    "short": "URL",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "3",
+    "classificationId": "1",
+    "name": "Home ",
+    "short": "H",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "4",
+    "classificationId": "1",
+    "name": "Mobile ",
+    "short": "M",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "5",
+    "classificationId": "1",
+    "name": "Work ",
+    "short": "W",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "6",
+    "classificationId": "1",
+    "name": "Fax ",
+    "short": "F",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "7",
+    "classificationId": "1",
+    "name": "Direct ",
+    "short": "D",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "8",
+    "classificationId": "1",
+    "name": "Business ",
+    "short": "B",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "9",
+    "classificationId": "1",
+    "name": "Pager ",
+    "short": "P",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "10",
+    "classificationId": "1",
+    "name": "Mobile (SMS)",
+    "short": "TXT",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "11",
+    "classificationId": "3",
+    "name": "NESA Email Address",
+    "short": "NESA",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "12",
+    "classificationId": "3",
+    "name": "Business Email",
+    "short": "BMAL",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "13",
+    "classificationId": "2",
+    "name": "Home Page",
+    "short": "HOME",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "14",
+    "classificationId": "4",
+    "name": "Twitter",
+    "short": "TWT",
+    "doNotDisplay": "True"
+  },
+  {
+    "id": "15",
+    "classificationId": "4",
+    "name": "Facebook",
+    "short": "FB",
+    "doNotDisplay": "True"
+  },
+  {
+    "id": "16",
+    "classificationId": "2",
+    "name": "Web Site",
+    "short": "WEBS",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "17",
+    "classificationId": "4",
+    "name": "Linkedin",
+    "short": "LNKD",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "18",
+    "classificationId": "4",
+    "name": "Other",
+    "short": "Oth",
+    "doNotDisplay": "False"
+  },
+  {
+    "id": "19",
+    "classificationId": "4",
+    "name": "Instagram",
+    "short": "IG",
+    "doNotDisplay": "True"
+  }
+]

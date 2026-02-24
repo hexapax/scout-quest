@@ -8,9 +8,11 @@ terraform/terraform.tfvars
 # Secrets (real .env has keys — only .env.example is tracked)
 config/ai-chat/.env
 config/scout-quest/.env
+config/admin/.env
 !config/**/.env.example
 *.json
 !package.json
+!scouting-org-research/**/*.json
 !package-lock.json
 !tsconfig.json
 !devbox/config/settings.json

@@ -1,0 +1,32 @@
+{
+  "completed": {
+    "ranks": 0,
+    "meritBadges": 0,
+    "awards": 0,
+    "adventures": 0,
+    "requirements": {
+      "ranks": 9,
+      "meritBadges": 992,
+      "awards": 0,
+      "adventures": 8
+    }
+  },
+  "notPurchased": {
+    "ranks": 1,
+    "meritBadges": 14,
+    "awards": 0,
+    "adventures": 0
+  },
+  "purchasedNotAwarded": {
+    "ranks": 0,
+    "meritBadges": 0,
+    "awards": 0,
+    "adventures": 0
+  },
+  "awarded": {
+    "ranks": 167,
+    "meritBadges": 366,
+    "awards": 11,
+    "adventures": 46
+  }
+}

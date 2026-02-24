@@ -1,0 +1,20 @@
+{
+  "memberId": "14892085",
+  "fullName": "Benjamin Allen Bramwell",
+  "campingLogs": {
+    "totalNumberOfDays": 7,
+    "totalNumberOfNights": 8,
+    "percentCompleteTowardGoal": 0.4
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 2,
+    "percentCompleteTowardGoal": 0.13
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

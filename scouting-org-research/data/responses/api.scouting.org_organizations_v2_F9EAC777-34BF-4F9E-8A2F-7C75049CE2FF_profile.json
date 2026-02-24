@@ -1,0 +1,135 @@
+{
+  "organizationGuid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+  "id": 7,
+  "nodeId": 154,
+  "name": "Atlanta Area Council 092",
+  "number": "092",
+  "organizationFullName": "Atlanta Area Council 092",
+  "sbOrganizationId": "",
+  "specialInterestTypeId": null,
+  "specialInterestTypeCode": "",
+  "specialInterestType": "",
+  "type": "",
+  "typeId": null,
+  "organizationTypeId": 4,
+  "organizationType": "council",
+  "councilStructureType": "",
+  "tinyUrl": "https://my.scouting.org/VES/OnlineReg/1.0.0/?tu=UF-MB-092",
+  "isLDS": false,
+  "isCouncilPaid": false,
+  "tenure": null,
+  "unitedWayName": null,
+  "affiliateOrganizationGuid": null,
+  "affiliateName": null,
+  "isComingSoon": false,
+  "districtGuid": "",
+  "districtNumber": "",
+  "districtName": "",
+  "councilGuid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+  "councilName": "Atlanta Area Council 092",
+  "territoryGuid": "E899B2A4-2438-4990-87F0-C8706107D05B",
+  "territoryName": "Service Territory 14",
+  "territoryNumber": "14",
+  "acceptGender": null,
+  "unitTimeZoneCode": null,
+  "unitTimeZoneLastUpdated": null,
+  "lat": 33.893041,
+  "long": -84.465029,
+  "isUnitGrowthExecutivesFlag": null,
+  "charter": null,
+  "nonUnitOrgMembersExpireMonth": 12,
+  "effectiveDt": "1997-07-01",
+  "expiryDt": null,
+  "webContact": [
+    {
+      "id": 2123113,
+      "contact": "http://www.atlantabsa.org",
+      "typeId": 4,
+      "type": "WEBS",
+      "classificationId": 2
+    },
+    {
+      "id": 44117576,
+      "contact": null,
+      "typeId": 4,
+      "type": "F",
+      "classificationId": 1
+    },
+    {
+      "id": 44117577,
+      "contact": null,
+      "typeId": 4,
+      "type": "F",
+      "classificationId": 1
+    }
+  ],
+  "key3": [
+    {
+      "positionId": 170151349,
+      "position": "Council Commissioner",
+      "personFullName": "Brett DeVore",
+      "firstName": "Brett",
+      "lastName": "DeVore",
+      "suffix": ""
+    },
+    {
+      "positionId": 170805285,
+      "position": "District Executive",
+      "personFullName": "Julian Fitts",
+      "firstName": "Julian",
+      "lastName": "Fitts",
+      "suffix": ""
+    },
+    {
+      "positionId": 167789828,
+      "position": "Scout Executive",
+      "personFullName": "Tracy Techau",
+      "firstName": "Tracy",
+      "lastName": "Techau",
+      "suffix": ""
+    },
+    {
+      "positionId": 170398542,
+      "position": "Unit Growth Executive",
+      "personFullName": "Erika Fields",
+      "firstName": "Erika",
+      "lastName": "Fields",
+      "suffix": ""
+    }
+  ],
+  "executiveOfficer": {},
+  "primaryAddress": {
+    "addressLine1": "1800 Circle 75 Pkwy SE",
+    "addressLine2": "",
+    "addressLine3": "",
+    "city": "Atlanta",
+    "state": "GA",
+    "zip5": "30339",
+    "zip4": "3055",
+    "country": "US",
+    "county": "Cobb"
+  },
+  "primaryPhone": {
+    "countryCode": "US",
+    "areaCode": "770",
+    "prefix": "989",
+    "lineNumber": "8820",
+    "extension": null
+  },
+  "unitMeetingInformation": {
+    "addressLine1": "",
+    "addressLine2": "",
+    "city": "",
+    "zip5": "",
+    "stateShort": "",
+    "meetingLocation": "",
+    "meetingTime": ""
+  },
+  "advancementEligibility": {
+    "adventures": null,
+    "meritBadges": null,
+    "ranks": null,
+    "awards": null
+  },
+  "unitForums": []
+}

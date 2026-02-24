@@ -1,0 +1,20 @@
+{
+  "memberId": "140310990",
+  "fullName": "Erich Heilman",
+  "campingLogs": {
+    "totalNumberOfDays": 0,
+    "totalNumberOfNights": 1,
+    "percentCompleteTowardGoal": 0.05
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

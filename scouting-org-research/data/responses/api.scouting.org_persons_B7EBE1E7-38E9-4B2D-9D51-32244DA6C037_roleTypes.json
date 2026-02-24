@@ -1,0 +1,695 @@
+[
+  {
+    "roleId": "576",
+    "sbRoleId": "246",
+    "role": "Key 3 Delegate",
+    "effectiveDate": "",
+    "expireDate": "",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "programTypeId": "15",
+    "programType": "Boy Scouts",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Council Lead Management"
+      },
+      {
+        "roleType": "Council Registration Inquiry"
+      },
+      {
+        "roleType": "Council Registration Settings"
+      },
+      {
+        "roleType": "District Lead Inquiry"
+      },
+      {
+        "roleType": "District Lead Management"
+      },
+      {
+        "roleType": "District Registration Inquiry"
+      },
+      {
+        "roleType": "EDIT UNIT ADULT LEADERSHIP"
+      },
+      {
+        "roleType": "Key 3 Delegate"
+      },
+      {
+        "roleType": "myorganization"
+      },
+      {
+        "roleType": "myorganization_persons"
+      },
+      {
+        "roleType": "myorghierarchy"
+      },
+      {
+        "roleType": "myorghierarchy_persons"
+      },
+      {
+        "roleType": "Stem Council Level"
+      },
+      {
+        "roleType": "Stem District Level"
+      },
+      {
+        "roleType": "Stem unit level"
+      },
+      {
+        "roleType": "Unit Key 3"
+      },
+      {
+        "roleType": "Unit Lead Management"
+      },
+      {
+        "roleType": "Unit Registration Inquiry"
+      },
+      {
+        "roleType": "Unit Registration Settings"
+      },
+      {
+        "roleType": "Unit Youth Registration Acceptance"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      }
+    ]
+  },
+  {
+    "roleId": "398",
+    "sbRoleId": "76",
+    "role": "Merit Badge Counselor",
+    "effectiveDate": "",
+    "expireDate": "",
+    "organizationGuid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "organizationName": "Atlanta Area Council",
+    "organizationNumber": "092",
+    "organizationTypeId": "4",
+    "organizationType": "councils",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "programTypeId": "",
+    "programType": "",
+    "programId": "",
+    "charterOrgName": "",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Council Registered"
+      },
+      {
+        "roleType": "UnitMemberSearchCouncilLevel"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      }
+    ]
+  },
+  {
+    "roleId": "",
+    "sbRoleId": "103",
+    "role": "Parent/Guardian",
+    "effectiveDate": "",
+    "expireDate": "",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "programTypeId": "",
+    "programType": "",
+    "programId": "",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Parent"
+      }
+    ]
+  },
+  {
+    "roleId": "40",
+    "sbRoleId": "31",
+    "role": "Unit Training Chair",
+    "effectiveDate": "",
+    "expireDate": "",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "programTypeId": "15",
+    "programType": "Boy Scouts",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "IA View Profile"
+      }
+    ]
+  },
+  {
+    "roleId": "482",
+    "sbRoleId": "1",
+    "role": "Scoutmaster",
+    "effectiveDate": "",
+    "expireDate": "",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "programTypeId": "15",
+    "programType": "Boy Scouts",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "BeAScout"
+      },
+      {
+        "roleType": "EDIT UNIT ADULT LEADERSHIP"
+      },
+      {
+        "roleType": "JTE Reports"
+      },
+      {
+        "roleType": "Key 3"
+      },
+      {
+        "roleType": "Lead Management"
+      },
+      {
+        "roleType": "Membership Registration Service"
+      },
+      {
+        "roleType": "myorganization"
+      },
+      {
+        "roleType": "myorganization_persons"
+      },
+      {
+        "roleType": "myorghierarchy"
+      },
+      {
+        "roleType": "myorghierarchy_persons"
+      },
+      {
+        "roleType": "Tour and Activity Plan"
+      },
+      {
+        "roleType": "Unit Key 3"
+      },
+      {
+        "roleType": "Unit Lead Management"
+      },
+      {
+        "roleType": "Unit Registered Positions"
+      },
+      {
+        "roleType": "Unit Registration Settings"
+      },
+      {
+        "roleType": "Unit Youth Registration Acceptance"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      },
+      {
+        "roleType": "View Personal Profile"
+      },
+      {
+        "roleType": "YPT and Trained Leader Report"
+      }
+    ]
+  },
+  {
+    "roleId": "509",
+    "sbRoleId": "46",
+    "role": "Youth Protection Champion",
+    "effectiveDate": "",
+    "expireDate": "",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "programTypeId": "15",
+    "programType": "Boy Scouts",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Area Adult"
+      },
+      {
+        "roleType": "Council Adult"
+      },
+      {
+        "roleType": "CREATE MESSAGES"
+      },
+      {
+        "roleType": "District Adult"
+      },
+      {
+        "roleType": "IA View Profile"
+      },
+      {
+        "roleType": "National Adult"
+      },
+      {
+        "roleType": "Region Adult"
+      },
+      {
+        "roleType": "Training"
+      },
+      {
+        "roleType": "Unit Adult"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      }
+    ]
+  },
+  {
+    "roleId": "",
+    "sbRoleId": "154",
+    "role": "Troop Admin",
+    "effectiveDate": "",
+    "expireDate": "",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "programTypeId": "",
+    "programType": "",
+    "programId": "",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Internet Advancement"
+      },
+      {
+        "roleType": "IA Advancement POs"
+      },
+      {
+        "roleType": "IA Edit Activity"
+      },
+      {
+        "roleType": "IA Edit Payment Log"
+      },
+      {
+        "roleType": "IA Search MBC List"
+      },
+      {
+        "roleType": "UnitMemberSearch"
+      }
+    ]
+  },
+  {
+    "roleId": "576",
+    "role": "Key 3 Delegate",
+    "effectiveDate": "2026-01-01",
+    "expireDate": "2026-12-31",
+    "status": "active",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "Units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "acceptGender": "BT",
+    "programTypeId": "3",
+    "programType": "Scouts BSA",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Council Lead Management"
+      },
+      {
+        "roleType": "Council Registration Inquiry"
+      },
+      {
+        "roleType": "Council Registration Settings"
+      },
+      {
+        "roleType": "District Lead Inquiry"
+      },
+      {
+        "roleType": "District Lead Management"
+      },
+      {
+        "roleType": "District Registration Inquiry"
+      },
+      {
+        "roleType": "EDIT UNIT ADULT LEADERSHIP"
+      },
+      {
+        "roleType": "Key 3 Delegate"
+      },
+      {
+        "roleType": "myorganization"
+      },
+      {
+        "roleType": "myorganization_persons"
+      },
+      {
+        "roleType": "myorghierarchy"
+      },
+      {
+        "roleType": "myorghierarchy_persons"
+      },
+      {
+        "roleType": "Stem Council Level"
+      },
+      {
+        "roleType": "Stem District Level"
+      },
+      {
+        "roleType": "Stem unit level"
+      },
+      {
+        "roleType": "Unit Key 3"
+      },
+      {
+        "roleType": "Unit Lead Management"
+      },
+      {
+        "roleType": "Unit Registration Inquiry"
+      },
+      {
+        "roleType": "Unit Registration Settings"
+      },
+      {
+        "roleType": "Unit Youth Registration Acceptance"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      }
+    ]
+  },
+  {
+    "roleId": "398",
+    "role": "Merit Badge Counselor",
+    "effectiveDate": "2026-01-01",
+    "expireDate": "2026-12-31",
+    "status": "active",
+    "organizationGuid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "organizationName": "Atlanta Area Council 092",
+    "organizationNumber": "092",
+    "organizationTypeId": "4",
+    "organizationType": "Councils",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "acceptGender": "",
+    "programTypeId": "",
+    "programType": "",
+    "programId": "",
+    "charterOrgName": "",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Council Registered"
+      },
+      {
+        "roleType": "UnitMemberSearchCouncilLevel"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      }
+    ]
+  },
+  {
+    "roleId": "40",
+    "role": "Unit Training Chair",
+    "effectiveDate": "2026-01-01",
+    "expireDate": "2026-12-31",
+    "status": "active",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "Units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "acceptGender": "BT",
+    "programTypeId": "3",
+    "programType": "Scouts BSA",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "CREATE MESSAGES"
+      },
+      {
+        "roleType": "IA View Profile"
+      },
+      {
+        "roleType": "Training"
+      },
+      {
+        "roleType": "Unit Adult"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      }
+    ]
+  },
+  {
+    "roleId": "509",
+    "role": "Youth Protection Champion",
+    "effectiveDate": "2026-01-01",
+    "expireDate": "2026-12-31",
+    "status": "active",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "Units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "acceptGender": "BT",
+    "programTypeId": "3",
+    "programType": "Scouts BSA",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Area Adult"
+      },
+      {
+        "roleType": "Council Adult"
+      },
+      {
+        "roleType": "CREATE MESSAGES"
+      },
+      {
+        "roleType": "District Adult"
+      },
+      {
+        "roleType": "IA View Profile"
+      },
+      {
+        "roleType": "National Adult"
+      },
+      {
+        "roleType": "Region Adult"
+      },
+      {
+        "roleType": "Training"
+      },
+      {
+        "roleType": "Unit Adult"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      }
+    ]
+  },
+  {
+    "roleId": "482",
+    "role": "Scoutmaster",
+    "effectiveDate": "2026-01-01",
+    "expireDate": "2026-12-31",
+    "status": "active",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "Units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "acceptGender": "BT",
+    "programTypeId": "3",
+    "programType": "Scouts BSA",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "BeAScout"
+      },
+      {
+        "roleType": "EDIT UNIT ADULT LEADERSHIP"
+      },
+      {
+        "roleType": "JTE Reports"
+      },
+      {
+        "roleType": "Key 3"
+      },
+      {
+        "roleType": "Lead Management"
+      },
+      {
+        "roleType": "Membership Registration Service"
+      },
+      {
+        "roleType": "myorganization"
+      },
+      {
+        "roleType": "myorganization_persons"
+      },
+      {
+        "roleType": "myorghierarchy"
+      },
+      {
+        "roleType": "myorghierarchy_persons"
+      },
+      {
+        "roleType": "Tour and Activity Plan"
+      },
+      {
+        "roleType": "Unit Key 3"
+      },
+      {
+        "roleType": "Unit Lead Management"
+      },
+      {
+        "roleType": "Unit Registered Positions"
+      },
+      {
+        "roleType": "Unit Registration Settings"
+      },
+      {
+        "roleType": "Unit Youth Registration Acceptance"
+      },
+      {
+        "roleType": "UnitMemberSearchUnitLevel"
+      },
+      {
+        "roleType": "View Personal Profile"
+      },
+      {
+        "roleType": "YPT and Trained Leader Report"
+      }
+    ]
+  },
+  {
+    "roleId": "633",
+    "role": "Registration Inquiry",
+    "effectiveDate": "2026-01-01",
+    "expireDate": "2026-12-31",
+    "status": "active",
+    "organizationGuid": "E1D07881-103D-43D8-92C4-63DEFDC05D48",
+    "organizationName": "Troop 2024",
+    "organizationNumber": "2024",
+    "organizationTypeId": "6",
+    "organizationType": "Units",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "acceptGender": "BT",
+    "programTypeId": "3",
+    "programType": "Scouts BSA",
+    "programId": "3",
+    "charterOrgName": "PACE ACADEMY",
+    "councilguid": "F9EAC777-34BF-4F9E-8A2F-7C75049CE2FF",
+    "roleTypes": [
+      {
+        "roleType": "Council Lead Inquiry"
+      },
+      {
+        "roleType": "Council Registration Inquiry"
+      },
+      {
+        "roleType": "District Registration Inquiry"
+      },
+      {
+        "roleType": "IA Edit Profile"
+      },
+      {
+        "roleType": "Lead Management View Only"
+      },
+      {
+        "roleType": "Membership Registration Service View Only"
+      },
+      {
+        "roleType": "Stem Council Level"
+      },
+      {
+        "roleType": "Stem District Level"
+      },
+      {
+        "roleType": "Unit Lead Inquiry"
+      },
+      {
+        "roleType": "Unit Registration Inquiry"
+      }
+    ]
+  },
+  {
+    "roleId": "",
+    "role": "",
+    "dateStarted": "",
+    "dateEnded": "",
+    "unitApproved": null,
+    "approved": null,
+    "defaultPosition": null,
+    "available": null,
+    "rosterPending": null,
+    "denDetails": {},
+    "organizationGuid": "",
+    "organizationName": "",
+    "organizationNumber": "",
+    "organizationTypeId": "",
+    "organizationType": "",
+    "councilStructureTypeId": "",
+    "councilStructureTypeLong": "",
+    "programTypeId": "",
+    "programType": "",
+    "charterOrgName": "",
+    "roleTypes": [
+      {
+        "roleType": "Parent"
+      }
+    ]
+  }
+]

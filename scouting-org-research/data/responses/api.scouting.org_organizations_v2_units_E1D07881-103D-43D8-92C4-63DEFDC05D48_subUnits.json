@@ -1,0 +1,57 @@
+[
+  {
+    "subUnitId": 145820,
+    "subUnitName": "Flaming Tortillas",
+    "denTypeId": null,
+    "denType": null,
+    "isApproved": true,
+    "isForumEnabled": false,
+    "showDlEvents": null,
+    "unitId": 121894,
+    "dateCreated": "2023-01-05"
+  },
+  {
+    "subUnitId": 145821,
+    "subUnitName": "Old Men",
+    "denTypeId": null,
+    "denType": null,
+    "isApproved": true,
+    "isForumEnabled": false,
+    "showDlEvents": null,
+    "unitId": 121894,
+    "dateCreated": "2023-01-05"
+  },
+  {
+    "subUnitId": 175529,
+    "subUnitName": "Alumni",
+    "denTypeId": null,
+    "denType": null,
+    "isApproved": true,
+    "isForumEnabled": false,
+    "showDlEvents": null,
+    "unitId": 121894,
+    "dateCreated": "2025-09-08"
+  },
+  {
+    "subUnitId": 175671,
+    "subUnitName": "New Scouts",
+    "denTypeId": null,
+    "denType": null,
+    "isApproved": true,
+    "isForumEnabled": false,
+    "showDlEvents": null,
+    "unitId": 121894,
+    "dateCreated": "2025-09-11"
+  },
+  {
+    "subUnitId": 175672,
+    "subUnitName": "Dear Leaders",
+    "denTypeId": null,
+    "denType": null,
+    "isApproved": true,
+    "isForumEnabled": false,
+    "showDlEvents": null,
+    "unitId": 121894,
+    "dateCreated": "2025-09-11"
+  }
+]

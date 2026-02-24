@@ -1,0 +1,20 @@
+{
+  "memberId": "131200243",
+  "fullName": "Jacob William Haggman",
+  "campingLogs": {
+    "totalNumberOfDays": 0,
+    "totalNumberOfNights": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 1,
+    "percentCompleteTowardGoal": 0.07
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}
