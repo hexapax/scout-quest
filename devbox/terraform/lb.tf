@@ -43,7 +43,9 @@ resource "google_compute_health_check" "devbox_http" {
   }
 }
 
-# --- Backend Service (IAP enabled) ---
+# --- Backend Service (IAP enabled, Google-managed OAuth client) ---
+# google-beta required: GA provider v5.x still requires explicit OAuth creds,
+# but google-beta v5.x supports Google-managed OAuth (iap { enabled = true }).
 resource "google_compute_backend_service" "devbox" {
   provider = google-beta
   name     = "devbox-backend-service"
