@@ -1,0 +1,85 @@
+# ============================================
+# Devbox LibreChat — Configuration
+# ============================================
+# Copy to ~/LibreChat/librechat.yaml on the VM.
+# Minimal dev-focused setup with Claude Code + browser MCP.
+
+version: 1.2.1
+cache: true
+
+interface:
+  endpointsMenu: true
+
+# --- MCP Servers ---
+mcpServers:
+  claude-code:
+    type: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@steipete/claude-code-mcp@latest"
+    env:
+      CLAUDE_WORK_DIR: /home/devuser/scout-quest
+    timeout: 300000
+
+  browser:
+    type: stdio
+    command: npx
+    args:
+      - "@playwright/mcp@latest"
+      - "--headless"
+    timeout: 60000
+
+# --- Endpoints ---
+endpoints:
+  anthropic:
+    titleModel: "claude-haiku-4-5-20251001"
+
+  openAI:
+    titleModel: "gpt-4.1-mini"
+
+# --- Model Specs ---
+modelSpecs:
+  enforce: false
+  prioritize: true
+  list:
+    - name: "Claude Sonnet"
+      label: "Claude Sonnet 4.6"
+      description: "Primary coding assistant with Claude Code and browser tools"
+      preset:
+        endpoint: "anthropic"
+        model: "claude-sonnet-4-6"
+        modelLabel: "Claude Sonnet"
+        mcpServers:
+          - "claude-code"
+          - "browser"
+
+    - name: "Claude Haiku"
+      label: "Claude Haiku 4.5"
+      description: "Fast and cheap with Claude Code and browser tools"
+      preset:
+        endpoint: "anthropic"
+        model: "claude-haiku-4-5-20251001"
+        modelLabel: "Claude Haiku"
+        mcpServers:
+          - "claude-code"
+          - "browser"
+
+    - name: "GPT-4.1"
+      label: "GPT-4.1"
+      description: "OpenAI with 1M context, Claude Code and browser tools"
+      preset:
+        endpoint: "openAI"
+        model: "gpt-4.1"
+        modelLabel: "GPT-4.1"
+        mcpServers:
+          - "claude-code"
+          - "browser"
+
+    - name: "Quick Chat"
+      label: "Quick Chat"
+      description: "Fast chat, no tools"
+      preset:
+        endpoint: "anthropic"
+        model: "claude-haiku-4-5-20251001"
+        modelLabel: "Quick Chat"
