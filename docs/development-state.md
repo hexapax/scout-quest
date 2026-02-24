@@ -35,19 +35,20 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
 - [x] deploy-config.sh for config deployment
 - [x] GCS bucket for secrets management
 
-### Devbox / Remote Development (Deployed, Semi-Functional)
+### Devbox / Remote Development (Deployed, Working)
 - [x] GCP VM (e2-standard-4, us-east4-b) in hexapax-devbox project
 - [x] IAP-protected HTTPS at devbox.hexapax.com (Google-managed OAuth, jeremy@hexapax.com)
-- [x] HTTPS LB with managed SSL cert (auto-provisioned)
+- [x] HTTPS LB with managed SSL cert (auto-provisioned, ACTIVE)
 - [x] LibreChat v0.8.3-rc1 running natively (systemd service, port 3080)
 - [x] MongoDB + Redis running as Docker containers on VM
 - [x] claude-code-mcp providing Claude Code as MCP tool (1 tool: `claude_code`)
 - [x] @playwright/mcp providing headless browser automation (22 tools)
-- [x] Cross-project IAM: devbox SA has editor on scout-assistant, dns.admin on hexapax-web, storage.admin on scout-assistant
+- [x] Cross-project IAM verified: devbox SA has editor on scout-assistant, dns.admin on hexapax-web, storage.admin on scout-assistant
 - [x] Claude Code CLI authenticated (jebramwell@gmail.com Max plan, `--dangerously-skip-permissions` accepted)
 - [x] API keys configured (Anthropic, OpenAI, Google — copied from scout-assistant, to be replaced with devbox-specific keys)
 - [x] Secrets stored in GCS (`gs://hexapax-devbox-tfstate/config/devbox/.env`)
 - [x] Terraform provider upgraded to google/google-beta v6.50.0 (required for IAP Google-managed OAuth)
+- [x] Smoke tests passed: cross-project DNS and compute access from service account
 - [ ] **First MCP call is slow** (~5 min) — Claude Code CLI init + prompt cache warmup. Subsequent calls faster.
 - [ ] **LibreChat config version outdated** — librechat.yaml is v1.2.1, latest is v1.3.4 (cosmetic warning)
 - [ ] **No model-as-approver hooks** — future enhancement where a cheap model reviews Claude Code tool calls via PreToolUse hooks
