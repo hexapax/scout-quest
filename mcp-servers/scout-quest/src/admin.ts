@@ -31,6 +31,26 @@ TOOLS:
   sign_off_requirement, set_chore_list, set_projected_budget,
   approve_blue_card
 
+SCOUTBOOK SYNC TOOLS:
+- scoutbook_sync_all — Full sync: roster + all scout advancement + events.
+  Use when you need fresh data from Scoutbook (e.g., first setup, weekly refresh,
+  or when advancement data seems stale). Takes several minutes for a full troop.
+- scoutbook_sync_roster — Sync just the troop roster (youth, adults, parents).
+- scoutbook_sync_scout — Sync advancement for a single scout by BSA userId.
+- scoutbook_sync_events — Sync upcoming calendar events (default: next 90 days).
+- scoutbook_sync_status — Check when data was last synced and whether it succeeded.
+  Use this first to see if data is current before running a full sync.
+- scoutbook_get_scout_advancement — Query locally synced data for a scout's ranks,
+  merit badges, awards, and individual requirements. Use this to answer questions
+  like "What does Scout X still need for First Class?" or "How far along is Scout X
+  on Camping merit badge?" Does NOT call the Scoutbook API — reads from MongoDB,
+  so it's fast. If data is missing, run scoutbook_sync_scout first.
+
+SCOUTBOOK WORKFLOW:
+1. Check scoutbook_sync_status to see if data is current
+2. If stale or missing, run scoutbook_sync_all (or scoutbook_sync_scout for one scout)
+3. Use scoutbook_get_scout_advancement to answer advancement questions
+
 RULES:
 - Only superuser and admin roles can use write tools.
 - adult_readonly users see resources but cannot modify.

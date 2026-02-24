@@ -8,6 +8,7 @@
     "start:admin": "node dist/admin.js",
     "start:guide": "node dist/guide.js",
     "start:cron": "node dist/cron.js",
+    "scoutbook-sync": "node dist/scoutbook/cli.js",
     "test": "vitest run",
     "test:watch": "vitest"
   },

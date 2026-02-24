@@ -10,6 +10,7 @@ import { registerSignOffRequirement } from "./signOffRequirement.js";
 import { registerSetChoreList } from "./setChoreList.js";
 import { registerSetProjectedBudget } from "./setProjectedBudget.js";
 import { registerApproveBlueCard } from "./approveBlueCard.js";
+import { registerScoutbookSyncTools } from "./scoutbookSync.js";
 
 export function registerAdminTools(server: McpServer): void {
   registerCreateScout(server);
@@ -23,4 +24,5 @@ export function registerAdminTools(server: McpServer): void {
   registerSetChoreList(server);
   registerSetProjectedBudget(server);
   registerApproveBlueCard(server);
+  registerScoutbookSyncTools(server);
 }
