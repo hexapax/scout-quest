@@ -32,6 +32,9 @@ scp_cmd "$REPO_ROOT/config/devbox/librechat.yaml" "/tmp/librechat.yaml"
 echo "=== Step 2: Run setup script as devuser ==="
 ssh_cmd "chmod +x /tmp/setup-librechat.sh && sudo -u $REMOTE_USER bash /tmp/setup-librechat.sh"
 
+echo "=== Step 2b: Install Playwright system deps (requires root) ==="
+ssh_cmd "source /home/$REMOTE_USER/.nvm/nvm.sh && npx playwright install-deps chromium" || echo "WARNING: Playwright deps install failed (non-fatal)"
+
 echo "=== Step 3: Copy librechat.yaml ==="
 ssh_cmd "sudo -u $REMOTE_USER cp /tmp/librechat.yaml /home/$REMOTE_USER/LibreChat/librechat.yaml"
 

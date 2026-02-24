@@ -68,7 +68,8 @@ fi
 
 # --- Install Playwright + Chromium ---
 echo "=== Installing Playwright browser ==="
-npx playwright install --with-deps chromium
+# System deps (apt packages) must be installed separately as root — see deploy script
+npx playwright install chromium
 
 # --- Install claude-code-mcp globally ---
 echo "=== Installing claude-code-mcp ==="
