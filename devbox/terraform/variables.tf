@@ -38,3 +38,33 @@ variable "ssh_pub_key_path" {
   type        = string
   default     = "~/.ssh/id_rsa.pub"
 }
+
+variable "dns_zone_name" {
+  description = "Cloud DNS managed zone name"
+  type        = string
+  default     = "hexapax-com"
+}
+
+variable "dns_project_id" {
+  description = "GCP project that owns the Cloud DNS zone"
+  type        = string
+  default     = "hexapax-web"
+}
+
+variable "domain_devbox" {
+  description = "Domain for the devbox LibreChat instance"
+  type        = string
+  default     = "devbox.hexapax.com"
+}
+
+variable "iap_admin_email" {
+  description = "Email address allowed through IAP"
+  type        = string
+  default     = "jeremy@hexapax.com"
+}
+
+variable "scout_project_id" {
+  description = "Scout Quest GCP project ID for cross-project IAM"
+  type        = string
+  default     = "scout-assistant-487523"
+}

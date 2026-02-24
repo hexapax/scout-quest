@@ -6,9 +6,12 @@ terraform {
       source  = "hashicorp/google"
       version = "~> 5.0"
     }
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 5.0"
+    }
   }
 
-  # State stored in GCS. Create the bucket first with bootstrap.sh
   backend "gcs" {
     bucket = "hexapax-devbox-tfstate"
     prefix = "terraform/state"
@@ -18,6 +21,9 @@ terraform {
 provider "google" {
   project = var.project_id
   region  = var.region
-  # Uses Application Default Credentials (gcloud auth application-default login)
-  # No SA key needed — org policy blocks key creation
+}
+
+provider "google-beta" {
+  project = var.project_id
+  region  = var.region
 }
