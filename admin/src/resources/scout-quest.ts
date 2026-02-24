@@ -4,6 +4,7 @@ import {
   TimeMgmt, LoanAnalysis, EmailSent, Reminder, AuditLog,
   QuestPlan, SessionNote, CronLog, PlanChangelog, SetupStatus,
 } from "../models/scout-quest/index.js";
+import { exportActions } from "./export.js";
 
 // Valid state transitions from mcp-servers/scout-quest/src/constants.ts
 const VALID_TRANSITIONS: Record<string, string[]> = {
@@ -21,6 +22,8 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   excluded: ["in_progress"],
 };
 
+const exports = exportActions();
+
 export const scoutQuestResources: ResourceWithOptions[] = [
   {
     resource: Scout,
@@ -33,6 +36,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
         "parent_guardian", "blue_card", "chore_list", "budget_projected",
         "created_at", "updated_at",
       ],
+      actions: { ...exports },
     },
   },
   {
@@ -42,6 +46,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       listProperties: ["scout_email", "req_id", "badge", "status", "updated_at"],
       filterProperties: ["scout_email", "badge", "status", "quest_driven"],
       actions: {
+        ...exports,
         edit: {
           before: async (request, context) => {
             // Validate status transitions
@@ -68,6 +73,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       listProperties: ["scout_email", "date", "chores_completed", "income_earned", "created_at"],
       filterProperties: ["scout_email", "date"],
       actions: {
+        ...exports,
         delete: { isAccessible: false }, // Financial records — no deletion
       },
     },
@@ -79,6 +85,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       listProperties: ["scout_email", "week_number", "week_start", "savings_deposited", "running_savings_total"],
       filterProperties: ["scout_email", "week_number"],
       actions: {
+        ...exports,
         delete: { isAccessible: false }, // Financial records — no deletion
       },
     },
@@ -88,6 +95,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
     options: {
       navigation: { name: "Scout Quest", icon: "Compass" },
       listProperties: ["scout_email", "exercise_week_start"],
+      actions: { ...exports },
     },
   },
   {
@@ -95,6 +103,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
     options: {
       navigation: { name: "Scout Quest", icon: "Compass" },
       listProperties: ["scout_email", "shortfall", "selected_option"],
+      actions: { ...exports },
     },
   },
   {
@@ -103,6 +112,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       navigation: { name: "Scout Quest", icon: "Compass" },
       listProperties: ["scout_email", "date", "to", "subject"],
       actions: {
+        ...exports,
         edit: { isAccessible: false },   // Audit trail — read-only
         delete: { isAccessible: false },
         new: { isAccessible: false },
@@ -115,6 +125,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       navigation: { name: "Scout Quest", icon: "Compass" },
       listProperties: ["scout_email", "type", "message", "active", "next_trigger"],
       filterProperties: ["scout_email", "type", "active"],
+      actions: { ...exports },
     },
   },
   {
@@ -122,6 +133,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
     options: {
       navigation: { name: "Scout Quest", icon: "Compass" },
       listProperties: ["email", "roles", "created_at"],
+      actions: { ...exports },
     },
   },
   {
@@ -130,6 +142,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       navigation: { name: "System", icon: "Settings" },
       listProperties: ["admin_email", "action", "resource", "record_id", "timestamp"],
       actions: {
+        ...exports,
         edit: { isAccessible: false },
         delete: { isAccessible: false },
         new: { isAccessible: false },
@@ -141,6 +154,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
     options: {
       navigation: { name: "Scout Quest", icon: "Compass" },
       listProperties: ["scout_email", "current_priorities", "last_reviewed", "updated_at"],
+      actions: { ...exports },
     },
   },
   {
@@ -150,6 +164,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       listProperties: ["scout_email", "session_date", "source", "topics_discussed"],
       filterProperties: ["scout_email", "source", "session_date"],
       actions: {
+        ...exports,
         edit: { isAccessible: false },
         delete: { isAccessible: false },
         new: { isAccessible: false },
@@ -163,6 +178,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       listProperties: ["run_date", "scout_email", "action", "details", "model_used"],
       filterProperties: ["scout_email", "action", "run_date"],
       actions: {
+        ...exports,
         edit: { isAccessible: false },
         delete: { isAccessible: false },
         new: { isAccessible: false },
@@ -176,6 +192,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
       listProperties: ["scout_email", "change_date", "source", "field_changed", "reason"],
       filterProperties: ["scout_email", "source"],
       actions: {
+        ...exports,
         edit: { isAccessible: false },
         delete: { isAccessible: false },
         new: { isAccessible: false },
@@ -187,6 +204,7 @@ export const scoutQuestResources: ResourceWithOptions[] = [
     options: {
       navigation: { name: "Scout Quest", icon: "Compass" },
       listProperties: ["scout_email", "guide_email", "updated_at"],
+      actions: { ...exports },
     },
   },
 ];

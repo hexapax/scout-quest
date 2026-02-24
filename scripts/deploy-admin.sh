@@ -43,7 +43,7 @@ echo "  Tarball created: $(du -h "$TARBALL" | cut -f1)"
 echo ""
 echo "=== Pulling admin .env from GCS ==="
 GCS_PATH="gs://scout-assistant-487523-tfstate/config/admin/.env"
-if gsutil cp "$GCS_PATH" "$TEMP_DIR/admin.env" 2>/dev/null; then
+if gcloud storage cp "$GCS_PATH" "$TEMP_DIR/admin.env" 2>/dev/null; then
   echo "  admin/.env pulled from GCS"
 else
   echo "  WARNING: No admin .env in GCS yet. Copy config/admin/.env.example to config/admin/.env, fill it in, then run:"

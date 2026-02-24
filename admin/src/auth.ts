@@ -1,3 +1,6 @@
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "")
   .split(",")
   .map((e) => e.trim().toLowerCase())
@@ -7,23 +10,50 @@ if (ADMIN_EMAILS.length === 0) {
   console.warn("WARNING: ADMIN_EMAILS is empty — no one can log in");
 }
 
-/**
- * AdminJS authenticate function.
- * AdminJS v7 with @adminjs/express shows a login form by default.
- * We'll use a custom approach: redirect to Google OAuth,
- * then validate the returned email against the allowlist.
- */
+export interface AdminUser {
+  email: string;
+  name: string;
+}
+
 export function isAllowedAdmin(email: string): boolean {
   return ADMIN_EMAILS.includes(email.toLowerCase());
 }
 
-/**
- * For AdminJS buildAuthenticatedRouter — called with form email/password.
- * Since we want OAuth, we'll handle auth differently in the main app.
- * This is a placeholder that always rejects form logins.
- */
-export async function authenticate(email: string, password: string): Promise<Record<string, unknown> | null> {
-  // Form-based login is not used — we use Google OAuth
-  // Return null to reject form login attempts
-  return null;
-}
+// Serialize the user object into the session
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+// Deserialize the user object from the session
+passport.deserializeUser((user: AdminUser, done) => {
+  done(null, user);
+});
+
+// Configure Google OAuth strategy
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || "/auth/google/callback",
+    },
+    (_accessToken, _refreshToken, profile, done) => {
+      const email = profile.emails?.[0]?.value;
+      if (!email) {
+        return done(new Error("No email returned from Google"));
+      }
+
+      if (!isAllowedAdmin(email)) {
+        return done(new Error(`Email ${email} is not authorized`));
+      }
+
+      const user: AdminUser = {
+        email: email.toLowerCase(),
+        name: profile.displayName || email,
+      };
+      return done(null, user);
+    }
+  )
+);
+
+export { passport };

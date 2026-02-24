@@ -8,6 +8,7 @@ const messageSchema = new Schema(
     parentMessageId: String,
     sender: String,
     text: String,
+    content: [{ type: { type: String }, text: String }],
     isCreatedByUser: Boolean,
     model: String,
     endpoint: String,
