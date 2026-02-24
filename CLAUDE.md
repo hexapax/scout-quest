@@ -46,6 +46,15 @@ Deploy flow: pulls `.env` from GCS (secrets), combines with git-tracked `librech
 ./scripts/update-caddyfile.sh        # Update Caddy with all three reverse proxy rules
 ```
 
+### Devbox (remote development)
+
+```bash
+terraform -chdir=devbox/terraform plan      # Preview devbox infra changes
+terraform -chdir=devbox/terraform apply     # Apply devbox infra changes
+bash devbox/scripts/deploy-librechat.sh     # Deploy LibreChat to devbox VM
+gcloud compute ssh devbox-vm --zone=us-east4-b --project=hexapax-devbox --tunnel-through-iap  # SSH into devbox
+```
+
 ### VM Operations (via SSH)
 
 ```bash

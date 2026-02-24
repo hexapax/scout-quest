@@ -1,6 +1,6 @@
 # Scout Quest — Development State
 
-**Last updated:** 2026-02-22
+**Last updated:** 2026-02-24
 
 ## Current Architecture
 
@@ -13,6 +13,12 @@ Internet → Caddy (auto-HTTPS)
 Each instance: LibreChat + MongoDB + Redis
 MCP servers: scout.js (scout-facing), guide.js (parent-facing), admin.js (admin)
 Scoutbook sync: in-progress (feat/scoutbook-sync branch)
+
+Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
+  └── LibreChat (native Node.js, :3080)
+        ├── MongoDB + Redis (Docker)
+        ├── MCP: claude-code-mcp → Claude Code CLI
+        └── MCP: @playwright/mcp → headless Chromium
 ```
 
 ## Component Status
@@ -24,6 +30,15 @@ Scoutbook sync: in-progress (feat/scoutbook-sync branch)
 - [x] Docker Compose stacks with isolated databases
 - [x] deploy-config.sh for config deployment
 - [x] GCS bucket for secrets management
+
+### Devbox / Remote Development (Deploying)
+- [x] GCP VM (e2-standard-4, us-east4-b) in hexapax-devbox project
+- [ ] IAP-protected web access at devbox.hexapax.com (Terraform ready, needs apply)
+- [ ] LibreChat running natively with MongoDB + Redis (Docker)
+- [ ] claude-code-mcp providing Claude Code as an MCP tool
+- [ ] @playwright/mcp providing headless browser automation
+- [ ] Cross-project IAM: can manage scout-assistant and hexapax-web infra
+- [ ] Claude Code OAuth token (needs manual `claude login`)
 
 ### LibreChat Instances (Working, Needs Refinement)
 - [x] ai-chat instance running with full access
