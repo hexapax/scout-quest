@@ -1,0 +1,19 @@
+# /etc/systemd/system/librechat.service
+# LibreChat on devbox — runs as devuser with nvm Node.js
+[Unit]
+Description=LibreChat (devbox)
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=devuser
+Group=devuser
+WorkingDirectory=/home/devuser/LibreChat
+Environment=NVM_DIR=/home/devuser/.nvm
+ExecStart=/bin/bash -c 'source $NVM_DIR/nvm.sh && npm run backend'
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
