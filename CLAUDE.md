@@ -67,8 +67,11 @@ gcloud compute ssh devbox-vm --zone=us-east4-b --project=hexapax-devbox --tunnel
 ## Architecture
 
 ```
-Internet → Caddy (auto-HTTPS) → ai-chat:3080 / scout-quest:3081
-                                 Each instance: LibreChat + MongoDB + Redis
+Internet → Caddy (auto-HTTPS)
+  ├── ai-chat:3080      — Full-access LibreChat (admin)
+  ├── scout-quest:3081   — Locked-down LibreChat (scouts/parents/scouters)
+  └── admin:3082         — AdminJS panel (system visibility)
+Each LibreChat instance: LibreChat + MongoDB + Redis
 ```
 
 **Dual-instance on one VM** — separate Docker Compose stacks with isolated databases. Docker Compose derives project names from directory names, so no container conflicts.
@@ -110,7 +113,7 @@ Terraform manages DNS records in the `hexapax-com` zone owned by the `hexapax-we
 
 ## MCP Server
 
-A TypeScript MCP server in `mcp-servers/scout-quest/` provides quest state management, chore tracking, email composition (YPT-compliant), reminders, and ntfy push notifications. Two entry points: `dist/scout.js` (scout-facing, registered on scout-quest instance) and `dist/admin.js` (admin-facing, registered on ai-chat instance). Runs as stdio subprocess inside the LibreChat API container, connecting to shared MongoDB. Build with `cd mcp-servers/scout-quest && bash build.sh`. Design spec in `docs/plans/2026-02-21-mcp-server-redesign.md`.
+A TypeScript MCP server in `mcp-servers/scout-quest/` provides quest state management, chore tracking, email composition (YPT-compliant), reminders, and ntfy push notifications. Five entry points: `dist/scout.js` (scout-facing), `dist/guide.js` (parent/scouter-facing), `dist/admin.js` (admin-facing), `dist/cron.js` (scheduled tasks), and `dist/scoutbook/cli.js` (Scoutbook sync CLI). The scout and guide servers are registered on the scout-quest LibreChat instance; admin is registered on ai-chat. All run as stdio subprocesses inside the LibreChat API container, connecting to shared MongoDB. Build with `cd mcp-servers/scout-quest && bash build.sh`. Design spec in `docs/plans/2026-02-21-mcp-server-redesign.md`.
 
 ## Admin Panel
 
