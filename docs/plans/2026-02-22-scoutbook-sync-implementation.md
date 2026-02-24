@@ -2,15 +2,17 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Build a Scoutbook sync tool that pulls scout profiles, parent contacts, and advancement data from BSA's API into MongoDB, with both CLI and MCP admin tool interfaces.
+**Goal:** Build a Scoutbook sync system that pulls roster, advancement, calendar/events, and activity data from BSA's API into MongoDB, with CLI, MCP admin tool, and cron interfaces. This is the data backbone of the Scout Quest system.
 
-**Architecture:** Shared API client library inside the existing `mcp-servers/scout-quest` package. Six `scoutbook_*` MongoDB collections for mirrored data. CLI entry point for manual/cron use. Three new MCP admin tools for ai-chat integration. Quest initialization bridge maps Scoutbook advancement to quest requirement statuses.
+**Architecture:** Shared API client library inside the existing `mcp-servers/scout-quest` package. Nine `scoutbook_*` MongoDB collections for mirrored data. Smart rate limiter with human-like burst patterns. CLI entry point for manual/cron use. Five MCP admin tools for ai-chat integration. Quest initialization bridge maps Scoutbook advancement to quest requirement statuses. Cron-based periodic sync with per-data-type intervals.
 
 **Tech Stack:** TypeScript, MongoDB (via existing `mongodb` driver), Node.js fetch API (no new deps), vitest for tests.
 
 **Design spec:** `docs/plans/2026-02-22-scoutbook-sync-design.md`
 **API reference:** `scouting-org-research/api-reference.md`
 **Sample responses:** `scouting-org-research/data/responses/` (52+ JSON files)
+
+**Task status:** Tasks 1-3 implemented on `feat/scoutbook-sync` branch. Tasks 4-12 are original scope. Tasks 13-17 are v2 additions (calendar/events, smart rate limiting, cron sync).
 
 ---
 
@@ -346,7 +348,7 @@ export interface ScoutbookRequirementDoc {
 
 export interface ScoutbookSyncLogDoc {
   timestamp: Date;
-  operation: "roster" | "scout" | "all" | "auth_test";
+  operation: "roster" | "scout" | "all" | "events" | "dashboards" | "auth_test";
   orgGuid?: string;
   userId?: string;
   result: "success" | "partial" | "error";
@@ -2284,12 +2286,496 @@ git commit -m "docs: add Scoutbook sync implementation plan"
 
 ---
 
+## v2 Tasks — Calendar, Events, Rate Limiting, Cron
+
+These tasks extend the original 12-task plan with calendar/events sync, smart rate limiting, and cron-based periodic sync. They depend on Tasks 1-4 being complete (types, collections, API client infrastructure).
+
+---
+
+### Task 13: Smart Rate Limiter
+
+**Files:**
+- Create: `mcp-servers/scout-quest/src/scoutbook/rate-limiter.ts`
+- Modify: `mcp-servers/scout-quest/src/scoutbook/api-client.ts`
+- Create: `mcp-servers/scout-quest/src/__tests__/scoutbook-rate-limiter.test.ts`
+
+**Context:** Replace the simple `RATE_LIMIT_MS = 1000` in `api-client.ts` with a burst-pattern rate limiter that mimics human browsing behavior. See the Rate Limiting Strategy section in the design spec for full details. The rate limiter groups requests into randomized bursts (3-8 requests at 100-400ms intervals) separated by longer pauses (3-10s), with a hard cap of 30 requests/minute.
+
+**Step 1: Write the rate limiter**
+
+```typescript
+// rate-limiter.ts
+export interface RateLimiterConfig {
+  burstSize: [number, number];        // [min, max] requests per burst (default: [3, 8])
+  burstDelayMs: [number, number];     // [min, max] delay within burst (default: [100, 400])
+  interBurstDelayMs: [number, number]; // [min, max] delay between bursts (default: [3000, 10000])
+  maxRequestsPerMinute: number;       // Hard cap (default: 30)
+}
+
+export class BurstRateLimiter {
+  private config: RateLimiterConfig;
+  private requestTimestamps: number[] = [];
+  private burstCount = 0;
+  private currentBurstSize = 0;
+
+  constructor(config?: Partial<RateLimiterConfig>) { /* merge with defaults */ }
+  async waitForSlot(): Promise<void> { /* enforce burst pattern + hard cap */ }
+  private randomInRange(min: number, max: number): number { /* uniform random */ }
+  private pruneTimestamps(): void { /* remove entries older than 60s */ }
+}
+```
+
+Key behaviors to test:
+- Requests within a burst are separated by 100-400ms (randomized)
+- After `burstSize` requests, a longer inter-burst delay (3-10s) is inserted
+- No more than 30 requests in any sliding 60-second window
+- All delays have ±30% jitter
+
+**Step 2: Write tests**
+
+Test that:
+- First request in a burst has no delay
+- Requests within a burst are spaced by burstDelayMs range
+- After a full burst, next request waits interBurstDelayMs range
+- Hard cap is respected (31st request in 60s window waits)
+
+**Step 3: Replace rate limiting in api-client.ts**
+
+Replace the `rateLimit()` method's simple `RATE_LIMIT_MS` logic with `BurstRateLimiter.waitForSlot()`. The client should create a `BurstRateLimiter` in its constructor.
+
+**Step 4: Run all tests**
+
+Run: `cd mcp-servers/scout-quest && npx vitest run`
+Expected: All tests PASS.
+
+**Step 5: Commit**
+
+```bash
+git add mcp-servers/scout-quest/src/scoutbook/rate-limiter.ts mcp-servers/scout-quest/src/scoutbook/api-client.ts mcp-servers/scout-quest/src/__tests__/scoutbook-rate-limiter.test.ts
+git commit -m "feat(scoutbook): add burst-pattern rate limiter"
+```
+
+---
+
+### Task 14: Calendar/Events Types and Collections
+
+**Files:**
+- Modify: `mcp-servers/scout-quest/src/scoutbook/types.ts`
+- Modify: `mcp-servers/scout-quest/src/scoutbook/collections.ts`
+
+**Context:** Add API response types and MongoDB document types for events, calendars, and dashboards. Add 3 new collection accessors. See the design spec for the full type definitions and the sample responses in `scouting-org-research/data/responses/POST_advancements_events.json` and `api.scouting.org_advancements_v2_users_9120709_calendars.json`.
+
+**Step 1: Add API response types to types.ts**
+
+```typescript
+// --- Calendar/Events responses ---
+
+export interface CalendarSubscription {
+  userCalendarId: number;
+  userId: number;
+  unitId: number;
+  denId: number | null;
+  patrolId: number | null;
+  color: string;
+  showCalendar: boolean;
+  calendarCode: string;
+}
+
+export interface EventDetail {
+  id: number;
+  userId: number;          // creator userId
+  firstName: string;       // creator first name
+  lastName: string;        // creator last name
+  dateCreated: string;
+  eventType: string;
+  startDate: string;
+  endDate: string;
+  name: string;
+  location: string;
+  mapUrl: string;
+  description: string;     // may contain HTML
+  notes: string;
+  rsvp: boolean;
+  isActivityMeeting: boolean;
+  activityTypeId: number | null;
+  activityType: string;
+  serviceProject: boolean;
+  outdoorActivity: boolean;
+  isAdvancementMeeting: boolean;
+  units: EventUnit[];
+  invitedUsers: EventRsvp[];
+  recurringEvent: Record<string, unknown>;
+  linkedActivities: unknown[];
+  linkedAdvancements: unknown[];
+}
+
+export interface EventUnit {
+  id: number;
+  unitId: number;
+  unitFullName: string;
+  unitTypeId: number;
+  patrolId: number | null;
+  patrolName: string;
+}
+
+export interface EventRsvp {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  nickName: string;
+  rsvp: string;            // "" or "True"
+  rsvpCode: string;        // "Y" | "N" | "M" | ""
+  attended: boolean;
+  primaryLeader: boolean;
+  isAdult: boolean;
+  canTakeAttendance: boolean;
+}
+
+// --- Dashboard responses ---
+
+export interface AdvancementDashboard {
+  completed: DashboardCategory;
+  notPurchased: DashboardCategory;
+  purchasedNotAwarded: DashboardCategory;
+  awarded: DashboardCategory;
+}
+
+interface DashboardCategory {
+  ranks: number;
+  meritBadges: number;
+  awards: number;
+  adventures: number;
+  requirements?: { ranks: number; meritBadges: number; awards: number; adventures: number };
+}
+
+export interface UnitActivitiesDashboard {
+  CampOuts: { Campouts: number; NightsCamped: number; DaysCamped: number };
+  ServiceProjects: { ServiceProjects: number; ServiceHours: number; ConservationHours: number };
+  Hikes: { Hikes: number };
+}
+```
+
+**Step 2: Add MongoDB document types to types.ts**
+
+```typescript
+export interface ScoutbookEventDoc {
+  eventId: number;
+  unitId: number;
+  name: string;
+  eventType: string;
+  startDate: string;
+  endDate: string;
+  location?: string;
+  description?: string;
+  notes?: string;
+  rsvpEnabled: boolean;
+  createdBy: { userId: number; firstName: string; lastName: string };
+  dateCreated: string;
+  isActivityMeeting: boolean;
+  activityType?: string;
+  serviceProject: boolean;
+  outdoorActivity: boolean;
+  invitedUsers: {
+    userId: number;
+    firstName: string;
+    lastName: string;
+    isAdult: boolean;
+    rsvpCode: string;
+    attended: boolean;
+    primaryLeader: boolean;
+  }[];
+  units: { unitId: number; unitFullName: string; patrolId?: number; patrolName?: string }[];
+  syncedAt: Date;
+}
+
+export interface ScoutbookCalendarDoc {
+  userCalendarId: number;
+  userId: number;
+  unitId: number;
+  patrolId?: number;
+  calendarCode: string;
+  color: string;
+  showCalendar: boolean;
+  syncedAt: Date;
+}
+
+export interface ScoutbookDashboardDoc {
+  orgGuid: string;
+  type: "advancement" | "activities";
+  data: Record<string, unknown>;
+  syncedAt: Date;
+}
+```
+
+**Step 3: Add collection accessors to collections.ts**
+
+```typescript
+export async function scoutbookEvents(): Promise<Collection<ScoutbookEventDoc>> {
+  return (await getDb()).collection("scoutbook_events");
+}
+
+export async function scoutbookCalendars(): Promise<Collection<ScoutbookCalendarDoc>> {
+  return (await getDb()).collection("scoutbook_calendars");
+}
+
+export async function scoutbookDashboards(): Promise<Collection<ScoutbookDashboardDoc>> {
+  return (await getDb()).collection("scoutbook_dashboards");
+}
+```
+
+**Step 4: Verify it compiles**
+
+Run: `cd mcp-servers/scout-quest && npx tsc --noEmit`
+Expected: No errors.
+
+**Step 5: Commit**
+
+```bash
+git add mcp-servers/scout-quest/src/scoutbook/types.ts mcp-servers/scout-quest/src/scoutbook/collections.ts
+git commit -m "feat(scoutbook): add calendar/events/dashboard types and collections"
+```
+
+---
+
+### Task 15: API Client — Calendar/Events/Dashboard Methods
+
+**Files:**
+- Modify: `mcp-servers/scout-quest/src/scoutbook/api-client.ts`
+- Modify: `mcp-servers/scout-quest/src/__tests__/scoutbook-api-client.test.ts`
+
+**Context:** Add typed methods for the 4 new endpoints. The events endpoint is a POST with a body (unlike the rest which are GETs). Add a `post()` method to the client alongside the existing `get()`.
+
+**Step 1: Add a `post<T>()` method to the client**
+
+Same pattern as `get<T>()` but with `method: "POST"` and a `body` parameter.
+
+**Step 2: Add calendar/events/dashboard methods**
+
+```typescript
+  async getUserCalendars(userId: string): Promise<CalendarSubscription[]> {
+    return this.get<CalendarSubscription[]>(`/advancements/v2/users/${userId}/calendars`);
+  }
+
+  async getEvents(unitId: number, fromDate: string, toDate: string): Promise<EventDetail[]> {
+    return this.post<EventDetail[]>("/advancements/events", {
+      unitId,
+      fromDate,
+      toDate,
+      showDLEvents: true,
+    });
+  }
+
+  async getAdvancementDashboard(orgGuid: string): Promise<AdvancementDashboard> {
+    return this.get<AdvancementDashboard>(`/organizations/v2/${orgGuid}/advancementDashboard`);
+  }
+
+  async getUnitActivitiesDashboard(orgGuid: string): Promise<UnitActivitiesDashboard> {
+    return this.get<UnitActivitiesDashboard>(
+      `/organizations/v2/${orgGuid}/unitActivitiesDashboard?completedActivities=true`,
+    );
+  }
+```
+
+**Step 3: Write tests for the new methods**
+
+Test that `getEvents` calls POST with the correct body, and that the other methods call the correct GET endpoints.
+
+**Step 4: Run all tests**
+
+Run: `cd mcp-servers/scout-quest && npx vitest run`
+Expected: All tests PASS.
+
+**Step 5: Commit**
+
+```bash
+git add mcp-servers/scout-quest/src/scoutbook/api-client.ts mcp-servers/scout-quest/src/__tests__/scoutbook-api-client.test.ts
+git commit -m "feat(scoutbook): add calendar, events, and dashboard API methods"
+```
+
+---
+
+### Task 16: Sync Orchestration — Events and Dashboards
+
+**Files:**
+- Modify: `mcp-servers/scout-quest/src/scoutbook/sync.ts`
+- Modify: `mcp-servers/scout-quest/src/__tests__/scoutbook-sync.test.ts`
+
+**Context:** Add `syncEvents(client, unitId, monthsAhead?, monthsBehind?)` and `syncDashboards(client, orgGuid)`. Update `syncAll` to call them after roster and advancement syncs.
+
+**Step 1: Implement `syncEvents`**
+
+- Calculate date range: `monthsBehind` months ago to `monthsAhead` months from now (defaults: 1 back, 2 ahead)
+- Call `client.getEvents(unitId, fromDate, toDate)`
+- Map each `EventDetail` to `ScoutbookEventDoc`, trimming `invitedUsers` to just the fields we store
+- Upsert into `scoutbook_events` keyed on `eventId`
+- Log to `scoutbook_sync_log` with operation `"events"` and count of events synced
+
+**Step 2: Implement `syncDashboards`**
+
+- Call `client.getAdvancementDashboard(orgGuid)` and `client.getUnitActivitiesDashboard(orgGuid)`
+- Upsert into `scoutbook_dashboards` keyed on `{ orgGuid, type }`
+- Log to `scoutbook_sync_log` with operation `"dashboards"`
+
+**Step 3: Update `syncAll`**
+
+Add `syncEvents` and `syncDashboards` calls after the per-scout advancement sync. `syncAll` signature changes to `syncAll(client, orgGuid, unitId)`.
+
+**Step 4: Write tests**
+
+Test `syncEvents` maps events correctly, stores RSVP data, and handles empty event lists. Test `syncDashboards` upserts both dashboard types. Test `syncAll` calls all four sync functions.
+
+**Step 5: Run all tests**
+
+Run: `cd mcp-servers/scout-quest && npx vitest run`
+Expected: All tests PASS.
+
+**Step 6: Commit**
+
+```bash
+git add mcp-servers/scout-quest/src/scoutbook/sync.ts mcp-servers/scout-quest/src/__tests__/scoutbook-sync.test.ts
+git commit -m "feat(scoutbook): add syncEvents, syncDashboards, expand syncAll"
+```
+
+---
+
+### Task 17: CLI and MCP Tools — Events and Dashboards Commands
+
+**Files:**
+- Modify: `mcp-servers/scout-quest/src/scoutbook/cli.ts`
+- Modify: `mcp-servers/scout-quest/src/tools/admin/scoutbookSync.ts`
+- Modify: `mcp-servers/scout-quest/src/tools/admin/index.ts`
+- Modify: `mcp-servers/scout-quest/src/admin.ts`
+- Modify: `config/ai-chat/.env.example`
+
+**Context:** Add `events` and `dashboards` CLI commands. Add `scoutbook_sync_events` and `scoutbook_sync_dashboards` MCP admin tools. Update the admin server instructions. Add `SCOUTBOOK_UNIT_ID` env var.
+
+**Step 1: Add CLI commands**
+
+Add `"events"` and `"dashboards"` to the `COMMANDS` array. Implement handlers:
+
+```typescript
+  if (command === "events") {
+    const unitId = parseInt(process.argv[3] || process.env.SCOUTBOOK_UNIT_ID || "");
+    if (!unitId) { console.error("Error: unitId required (arg or SCOUTBOOK_UNIT_ID env)"); process.exit(1); }
+    console.log(`Syncing events for unit ${unitId}...`);
+    const result = await syncEvents(client, unitId);
+    console.log(`Done: ${result.events} events synced`);
+    return;
+  }
+
+  if (command === "dashboards") {
+    if (!orgGuid) { console.error("Error: orgGuid required"); process.exit(1); }
+    console.log(`Syncing dashboards for ${orgGuid}...`);
+    await syncDashboards(client, orgGuid);
+    console.log("Done: advancement and activity dashboards synced");
+    return;
+  }
+```
+
+Update the `all` command to pass `unitId` to `syncAll`.
+
+**Step 2: Add MCP admin tools**
+
+Register `scoutbook_sync_events` and `scoutbook_sync_dashboards` in `scoutbookSync.ts`:
+
+```typescript
+export function registerScoutbookSyncEvents(server: McpServer): void {
+  server.registerTool("scoutbook_sync_events", {
+    title: "Scoutbook: Sync Events",
+    description: "Pull calendar events with RSVP and attendance data from Scoutbook.",
+    inputSchema: {
+      unitId: z.number().optional().describe("Unit ID (defaults to SCOUTBOOK_UNIT_ID env)"),
+      monthsAhead: z.number().optional().default(2),
+      monthsBehind: z.number().optional().default(1),
+    },
+  }, async ({ unitId, monthsAhead, monthsBehind }) => { /* ... */ });
+}
+
+export function registerScoutbookSyncDashboards(server: McpServer): void {
+  server.registerTool("scoutbook_sync_dashboards", {
+    title: "Scoutbook: Sync Dashboards",
+    description: "Pull unit-level advancement and activity dashboards from Scoutbook.",
+    inputSchema: {
+      orgGuid: z.string().optional(),
+    },
+  }, async ({ orgGuid }) => { /* ... */ });
+}
+```
+
+**Step 3: Register in admin index.ts and update admin instructions**
+
+Add the two new registrations. Update `ADMIN_INSTRUCTIONS` in `admin.ts` to include:
+
+```
+- scoutbook_sync_events — pull calendar events with RSVP and attendance data
+- scoutbook_sync_dashboards — pull unit-level advancement and activity dashboards
+```
+
+**Step 4: Add SCOUTBOOK_UNIT_ID to .env.example**
+
+Add to both `config/ai-chat/.env.example` and `config/scout-quest/.env.example`:
+
+```
+SCOUTBOOK_UNIT_ID=121894
+```
+
+**Step 5: Verify build and tests**
+
+Run: `cd mcp-servers/scout-quest && npx tsc --noEmit && npx vitest run`
+Expected: All pass.
+
+**Step 6: Commit**
+
+```bash
+git add mcp-servers/scout-quest/src/scoutbook/cli.ts mcp-servers/scout-quest/src/tools/admin/scoutbookSync.ts mcp-servers/scout-quest/src/tools/admin/index.ts mcp-servers/scout-quest/src/admin.ts config/ai-chat/.env.example
+git commit -m "feat(scoutbook): add events and dashboards CLI commands and MCP admin tools"
+```
+
+---
+
+### Task 18: Full Build and Final Verification (v2)
+
+**Files:** None new — verification only.
+
+**Step 1: Full build**
+
+Run: `cd mcp-servers/scout-quest && bash build.sh`
+Expected: "Build complete. Outputs in dist/"
+
+**Step 2: Verify all entry points exist**
+
+Run: `ls -la mcp-servers/scout-quest/dist/scoutbook/cli.js mcp-servers/scout-quest/dist/scout.js mcp-servers/scout-quest/dist/guide.js mcp-servers/scout-quest/dist/admin.js`
+Expected: All files exist.
+
+**Step 3: Run all tests**
+
+Run: `cd mcp-servers/scout-quest && npx vitest run`
+Expected: All tests PASS.
+
+**Step 4: Verify TypeScript has no errors**
+
+Run: `cd mcp-servers/scout-quest && npx tsc --noEmit`
+Expected: No errors.
+
+**Step 5: Commit updated plan**
+
+```bash
+git add docs/plans/2026-02-22-scoutbook-sync-implementation.md
+git commit -m "docs: update Scoutbook sync implementation plan with v2 tasks (calendar/events/rate limiting)"
+```
+
+---
+
 ## Notes for the Implementer
 
 - **Sample API responses** are in `scouting-org-research/data/responses/` — use these to verify your types match the actual API shapes.
 - **API reference** is in `scouting-org-research/api-reference.md` — complete endpoint documentation.
-- **Rate limiting is critical** — BSA production servers, 1 req/sec max. The API client enforces this.
+- **Rate limiting is critical** — BSA production servers, no documented limits but we must be conservative. Use the burst-pattern rate limiter (Task 13), not flat delays. Hard cap: 30 req/min.
+- **The events endpoint is a POST** — unlike most other endpoints which are GETs. The body is `{ unitId, fromDate, toDate, showDLEvents: true }`. Response is a top-level array of events.
+- **Events contain full RSVP data** — each event's `invitedUsers` array has every troop member with `rsvpCode` (Y/N/M/empty) and `attended` (boolean). ~41 members per event for Troop 2024.
 - **The `getRankRequirements` response** wraps requirements inside the rank object (see `advancements_v2_youth_12352438_ranks_1_requirements.json`). The top-level has rank metadata, and a `requirements` array inside it.
 - **Parent roster is flat** — each entry links one parent to one youth. Multiple entries for the same parent (one per child) must be aggregated by `parentUserId`.
 - **Quest requirement IDs** (`pm_1a`, `fl_3`, etc.) don't directly map to Scoutbook requirement IDs. The init quest tool uses MB-level status (Awarded/Started) rather than trying to cross-reference individual requirements. This is a deliberate simplification — per-requirement mapping can be added later.
 - **Credentials:** Jeremy's Scoutbook credentials are `jebramwell` / `Down112358!3` — these go in `.env`, never in code.
+- **Unit ID for Troop 2024:** `121894` — this is the numeric unit ID used in the events endpoint, distinct from the org GUID.
+- **Observed API timing:** Events endpoint ~500ms, roster ~450ms, calendars ~150ms. Budget 5-8 minutes for a full sync of 27 scouts.

@@ -97,7 +97,7 @@ Both instances connect to the **same MongoDB** (`scoutquest` database). The scou
 | Codebase structure | Single package, two entry points | Shared types/validation prevent drift. Process-level isolation via separate LibreChat instances. |
 | Scout identity | Gmail address (Google OAuth email) | Matches LibreChat's existing Google OAuth. Unique key in MongoDB. |
 | Character state | MCP-managed in MongoDB | Enables cringe recovery, SM calibration reviews, tone persistence across sessions. |
-| Admin interface | ai-chat LibreChat instance | Jeremy's full-access instance. SM/ASM creates scouts here. No separate admin app needed. |
+| Admin interface | ai-chat LibreChat instance + AdminJS panel | **Superseded:** Admin panel (admin.hexapax.com:3082) was added for MongoDB visibility. ai-chat is still used for admin MCP tools. |
 | Multi-scout | Supported from V1 | Data model is multi-scout. Tools accept/infer scout identity from email. |
 | Test harness | Standalone runner (separate from MCP server) | Keeps MCP server clean. Test runner creates test accounts, simulates conversations, scores transcripts. |
 
