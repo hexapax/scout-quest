@@ -40,3 +40,21 @@ resource "google_compute_router_nat" "nat" {
   nat_ip_allocate_option             = "AUTO_ONLY"
   source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
 }
+
+# --- Firewall: Allow GCP health checks + LB to reach LibreChat ---
+resource "google_compute_firewall" "allow_lb_health_check" {
+  name    = "devbox-allow-lb-health-check"
+  network = google_compute_network.vpc.id
+
+  allow {
+    protocol = "tcp"
+    ports    = ["3080"]
+  }
+
+  source_ranges = [
+    "130.211.0.0/22",   # GCP health checks
+    "35.191.0.0/16",    # GCP health checks
+    "35.235.240.0/20",  # IAP
+  ]
+  target_tags = ["devbox"]
+}
