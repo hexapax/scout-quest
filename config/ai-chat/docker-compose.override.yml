@@ -8,6 +8,8 @@ services:
       - type: bind
         source: ./mcp-servers
         target: /app/mcp-servers
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
     networks:

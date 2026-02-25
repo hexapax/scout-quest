@@ -24,11 +24,11 @@ echo "Tarball: /tmp/mcp-bundle.tar.gz"
 
 echo ""
 echo "=== Uploading to VM ==="
-gcloud compute scp /tmp/mcp-bundle.tar.gz scout-coach-vm:/tmp/mcp-bundle.tar.gz --zone=us-east4-b
+gcloud compute scp /tmp/mcp-bundle.tar.gz scout-coach-vm:/tmp/mcp-bundle.tar.gz --zone=us-east4-b --project=scout-assistant-487523
 
 echo ""
 echo "=== Extracting and restarting ==="
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --command="
+gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=scout-assistant-487523 --command="
 set -e
 for INSTANCE in ai-chat scout-quest; do
   MCP_PATH=/opt/scoutcoach/\$INSTANCE/mcp-servers/scout-quest
@@ -52,7 +52,7 @@ sleep 10
 
 echo ""
 echo "=== Checking MCP initialization ==="
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --command="
+gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=scout-assistant-487523 --command="
 cd /opt/scoutcoach/ai-chat && sudo -u scoutcoach docker compose logs api --tail=20 2>&1 | grep -E 'MCP|tools|error' || true
 echo '---'
 cd /opt/scoutcoach/scout-quest && sudo -u scoutcoach docker compose logs api --tail=20 2>&1 | grep -E 'MCP|tools|error' || true

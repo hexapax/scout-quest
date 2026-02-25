@@ -100,7 +100,10 @@ export class ScoutbookApiClient {
     const url = `${AUTH_BASE}/${encodeURIComponent(this.username)}/authenticate`;
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json; version=2",
+      },
       body: JSON.stringify({ password: this.password }),
     });
     if (!res.ok) {
@@ -155,7 +158,7 @@ export class ScoutbookApiClient {
       Origin: "https://advancements.scouting.org",
       Referer: "https://advancements.scouting.org/",
       "Content-Type": "application/json",
-      Accept: "application/json",
+      Accept: "application/json; version=2",
     };
   }
 
