@@ -3,6 +3,10 @@ import { z } from "zod";
 import { ScoutbookApiClient } from "../../scoutbook/api-client.js";
 import { syncRoster, syncScout, syncAll, syncEvents } from "../../scoutbook/sync.js";
 import {
+  initQuestFromScoutbook,
+  formatInitQuestResult,
+} from "../../scoutbook/questBridge.js";
+import {
   scoutbookSyncLog,
   scoutbookAdvancement,
   scoutbookRequirements,
@@ -386,6 +390,69 @@ export function registerScoutbookSyncTools(server: McpServer): void {
             {
               type: "text",
               text: `Failed to get advancement for userId ${userId}: ${err instanceof Error ? err.message : String(err)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // ---- scoutbook_init_quest ----
+  server.registerTool(
+    "scoutbook_init_quest",
+    {
+      title: "Scoutbook: Initialize Quest Profiles",
+      description:
+        "Create quest-ready scout profiles from synced Scoutbook data. " +
+        "Reads scoutbook_scouts, scoutbook_parents, and scoutbook_advancement to create " +
+        "user accounts, scout profiles, and requirement documents in the quest system. " +
+        "Maps Scoutbook merit badge status to quest requirement statuses " +
+        '(Awarded → completed_prior, otherwise → not_started). ' +
+        "Can target a specific scout by name or scoutId, or process all scouts. " +
+        "Use dry_run to preview without making changes.",
+      inputSchema: {
+        scout_name: z
+          .string()
+          .optional()
+          .describe(
+            'Partial name match to target a specific scout (e.g. "Will" matches "Will Bramwell"). Case-insensitive.',
+          ),
+        scout_id: z
+          .string()
+          .optional()
+          .describe("BSA userId to target a specific scout"),
+        scout_email: z
+          .string()
+          .email()
+          .optional()
+          .describe(
+            "Gmail address for the scout's quest login. Required when targeting a single scout. " +
+            "When processing all scouts, scouts without a Scoutbook email will be skipped.",
+          ),
+        dry_run: z
+          .boolean()
+          .optional()
+          .default(false)
+          .describe("Preview what would be created without making changes"),
+      },
+    },
+    async ({ scout_name, scout_id, scout_email, dry_run }) => {
+      try {
+        const initResult = await initQuestFromScoutbook({
+          scoutName: scout_name,
+          scoutId: scout_id,
+          scoutEmail: scout_email,
+          dryRun: dry_run,
+        });
+        const text = formatInitQuestResult(initResult);
+        return { content: [{ type: "text", text }] };
+      } catch (err) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Quest initialization failed: ${err instanceof Error ? err.message : String(err)}`,
             },
           ],
           isError: true,

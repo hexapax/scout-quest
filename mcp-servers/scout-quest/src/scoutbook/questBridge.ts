@@ -1,17 +1,16 @@
-import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import { users, scouts, requirements } from "../../db.js";
+import { users, scouts, requirements } from "../db.js";
 import {
   scoutbookScouts,
   scoutbookParents,
   scoutbookAdvancement,
-} from "../../scoutbook/collections.js";
-import { REQUIREMENT_DEFINITIONS } from "../../constants.js";
-import type { RequirementStatus, InteractionMode } from "../../types.js";
-import type { ScoutbookScoutDoc, ScoutbookAdvancementDoc } from "../../scoutbook/types.js";
+  scoutbookSyncLog,
+} from "./collections.js";
+import { REQUIREMENT_DEFINITIONS } from "../constants.js";
+import type { RequirementStatus, InteractionMode } from "../types.js";
+import type { ScoutbookScoutDoc, ScoutbookAdvancementDoc, ScoutbookSyncLogDoc } from "./types.js";
 
 // ---------------------------------------------------------------------------
-// Advancement → Quest status mapping
+// Advancement -> Quest status mapping
 // ---------------------------------------------------------------------------
 
 const PM_BADGE_NAMES = ["personal management"];
@@ -26,11 +25,8 @@ function isMeritBadgeMatch(adv: ScoutbookAdvancementDoc, names: string[]): boole
 
 /**
  * Map a Scoutbook merit badge advancement status to quest requirement statuses.
- * - "Awarded" → completed_prior (the scout already earned this badge)
- * - Anything else → not_started (admin can override individually later)
- *
- * Per design: we use MB-level status, not per-requirement cross-referencing,
- * because Scoutbook requirement IDs don't map directly to quest req_ids.
+ * - "Awarded" -> completed_prior (the scout already earned this badge)
+ * - Anything else -> not_started (admin can override individually later)
  */
 export function mapAdvancementToQuestStatus(
   advancements: ScoutbookAdvancementDoc[],
@@ -44,16 +40,17 @@ export function mapAdvancementToQuestStatus(
 }
 
 // ---------------------------------------------------------------------------
-// Init one scout
+// Types
 // ---------------------------------------------------------------------------
 
-interface InitScoutInput {
-  sbScout: ScoutbookScoutDoc;
-  scoutEmail: string;
+export interface InitQuestOptions {
+  scoutName?: string;
+  scoutId?: string;
+  scoutEmail?: string;
   dryRun: boolean;
 }
 
-interface InitScoutResult {
+export interface InitScoutResult {
   name: string;
   scoutEmail: string;
   userId: string;
@@ -67,6 +64,23 @@ interface InitScoutResult {
   flStatus: RequirementStatus;
   parentName: string | null;
   parentEmail: string | null;
+}
+
+export interface InitQuestResult {
+  results: InitScoutResult[];
+  skipped: string[];
+  dryRun: boolean;
+  durationMs: number;
+}
+
+// ---------------------------------------------------------------------------
+// Init one scout (internal)
+// ---------------------------------------------------------------------------
+
+interface InitScoutInput {
+  sbScout: ScoutbookScoutDoc;
+  scoutEmail: string;
+  dryRun: boolean;
 }
 
 async function initOneScout({
@@ -166,7 +180,7 @@ async function initOneScout({
     );
     result.scoutProfileUpdated = true;
   } else {
-    // Create new scout profile with defaults (mirrors createScout pattern)
+    // Create new scout profile with defaults
     await scoutsCol.insertOne({
       email: scoutEmail,
       name: scoutName,
@@ -249,10 +263,111 @@ async function initOneScout({
 }
 
 // ---------------------------------------------------------------------------
-// Format results
+// Main entry point
 // ---------------------------------------------------------------------------
 
-function formatResult(results: InitScoutResult[], dryRun: boolean): string {
+export async function initQuestFromScoutbook(
+  options: InitQuestOptions,
+): Promise<InitQuestResult> {
+  const start = Date.now();
+  const { scoutName, scoutId, scoutEmail, dryRun } = options;
+  const log = await scoutbookSyncLog();
+
+  try {
+    const sbScoutsCol = await scoutbookScouts();
+    let targetScouts: ScoutbookScoutDoc[];
+
+    if (scoutId) {
+      const doc = await sbScoutsCol.findOne({ userId: scoutId });
+      if (!doc) {
+        throw new Error(
+          `No Scoutbook scout found with userId "${scoutId}". Run scoutbook_sync_roster first.`,
+        );
+      }
+      targetScouts = [doc];
+    } else if (scoutName) {
+      const regex = new RegExp(scoutName, "i");
+      targetScouts = await sbScoutsCol
+        .find({
+          $or: [
+            { firstName: { $regex: regex } },
+            { lastName: { $regex: regex } },
+          ],
+        })
+        .toArray();
+      if (targetScouts.length === 0) {
+        throw new Error(
+          `No Scoutbook scouts found matching name "${scoutName}". Run scoutbook_sync_roster first.`,
+        );
+      }
+    } else {
+      targetScouts = await sbScoutsCol.find({}).toArray();
+      if (targetScouts.length === 0) {
+        throw new Error(
+          "No scouts found in scoutbook_scouts. Run scoutbook_sync_roster first.",
+        );
+      }
+    }
+
+    // Process each scout
+    const results: InitScoutResult[] = [];
+    const skipped: string[] = [];
+
+    for (const sbScout of targetScouts) {
+      let email = scoutEmail;
+      if (!email) {
+        email = sbScout.email || undefined;
+      }
+      if (!email) {
+        skipped.push(
+          `${sbScout.firstName} ${sbScout.lastName} (userId ${sbScout.userId}) — no email`,
+        );
+        continue;
+      }
+
+      const initResult = await initOneScout({
+        sbScout,
+        scoutEmail: email,
+        dryRun,
+      });
+      results.push(initResult);
+    }
+
+    const durationMs = Date.now() - start;
+
+    // Log to scoutbook_sync_log
+    const logEntry: Omit<ScoutbookSyncLogDoc, "_id"> = {
+      timestamp: new Date(),
+      operation: "quest_init" as ScoutbookSyncLogDoc["operation"],
+      result: "success",
+      counts: {
+        scouts: results.length,
+      },
+      durationMs,
+    };
+    await log.insertOne(logEntry as ScoutbookSyncLogDoc);
+
+    return { results, skipped, dryRun, durationMs };
+  } catch (err) {
+    const durationMs = Date.now() - start;
+    const logEntry: Omit<ScoutbookSyncLogDoc, "_id"> = {
+      timestamp: new Date(),
+      operation: "quest_init" as ScoutbookSyncLogDoc["operation"],
+      result: "error",
+      error: err instanceof Error ? err.message : String(err),
+      durationMs,
+    };
+    await log.insertOne(logEntry as ScoutbookSyncLogDoc).catch(() => {});
+    throw err;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Format results for display
+// ---------------------------------------------------------------------------
+
+export function formatInitQuestResult(initResult: InitQuestResult): string {
+  const { results, skipped, dryRun } = initResult;
   const prefix = dryRun ? "[DRY RUN] " : "";
   const lines: string[] = [`${prefix}Quest initialization results:`];
 
@@ -283,7 +398,7 @@ function formatResult(results: InitScoutResult[], dryRun: boolean): string {
         `- Scout profile: ${r.scoutProfileCreated ? "created" : r.scoutProfileUpdated ? "updated" : "unchanged"}`,
       );
       if (r.requirementsSkipped) {
-        lines.push(`- Requirements: skipped (${r.requirementsCreated} already exist)`);
+        lines.push(`- Requirements: skipped (already exist)`);
       } else {
         lines.push(`- Requirements: ${r.requirementsCreated} created`);
       }
@@ -297,155 +412,12 @@ function formatResult(results: InitScoutResult[], dryRun: boolean): string {
     `---\n${prefix}Summary: ${results.length} scouts processed, ${totalCreated} profiles created, ${totalUpdated} updated.`,
   );
 
+  if (skipped.length > 0) {
+    lines.push(
+      `\nSkipped (no email — provide scout_email parameter):\n` +
+      skipped.map((s) => `- ${s}`).join("\n"),
+    );
+  }
+
   return lines.join("\n");
-}
-
-// ---------------------------------------------------------------------------
-// MCP Tool Registration
-// ---------------------------------------------------------------------------
-
-export function registerScoutbookInitQuest(server: McpServer): void {
-  server.registerTool(
-    "scoutbook_init_quest",
-    {
-      title: "Scoutbook: Initialize Quest Profiles",
-      description:
-        "Create quest-ready scout profiles from synced Scoutbook data. " +
-        "Reads scoutbook_scouts, scoutbook_parents, and scoutbook_advancement to create " +
-        "user accounts, scout profiles, and requirement documents in the quest system. " +
-        "Maps Scoutbook merit badge status to quest requirement statuses " +
-        '(Awarded → completed_prior, otherwise → not_started). ' +
-        "Can target a specific scout by name or scoutId, or process all scouts. " +
-        "Use dry_run to preview without making changes.",
-      inputSchema: {
-        scout_name: z
-          .string()
-          .optional()
-          .describe(
-            'Partial name match to target a specific scout (e.g. "Will" matches "Will Bramwell"). Case-insensitive.',
-          ),
-        scout_id: z
-          .string()
-          .optional()
-          .describe("BSA userId to target a specific scout"),
-        scout_email: z
-          .string()
-          .email()
-          .optional()
-          .describe(
-            "Gmail address for the scout's quest login. Required when targeting a single scout. " +
-            "When processing all scouts, scouts without a Scoutbook email will be skipped.",
-          ),
-        dry_run: z
-          .boolean()
-          .optional()
-          .default(false)
-          .describe("Preview what would be created without making changes"),
-      },
-    },
-    async ({ scout_name, scout_id, scout_email, dry_run }) => {
-      try {
-        const sbScoutsCol = await scoutbookScouts();
-        let targetScouts: ScoutbookScoutDoc[];
-
-        if (scout_id) {
-          // Target by BSA userId
-          const doc = await sbScoutsCol.findOne({ userId: scout_id });
-          if (!doc) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `No Scoutbook scout found with userId "${scout_id}". Run scoutbook_sync_roster first.`,
-                },
-              ],
-              isError: true,
-            };
-          }
-          targetScouts = [doc];
-        } else if (scout_name) {
-          // Target by name (partial, case-insensitive)
-          const regex = new RegExp(scout_name, "i");
-          targetScouts = await sbScoutsCol
-            .find({
-              $or: [
-                { firstName: { $regex: regex } },
-                { lastName: { $regex: regex } },
-              ],
-            })
-            .toArray();
-          if (targetScouts.length === 0) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: `No Scoutbook scouts found matching name "${scout_name}". Run scoutbook_sync_roster first.`,
-                },
-              ],
-              isError: true,
-            };
-          }
-        } else {
-          // All scouts
-          targetScouts = await sbScoutsCol.find({}).toArray();
-          if (targetScouts.length === 0) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: "No scouts found in scoutbook_scouts. Run scoutbook_sync_roster first.",
-                },
-              ],
-              isError: true,
-            };
-          }
-        }
-
-        // Resolve email for each scout
-        const results: InitScoutResult[] = [];
-        const skipped: string[] = [];
-
-        for (const sbScout of targetScouts) {
-          // Determine the email for this scout's quest login
-          let email = scout_email;
-          if (!email) {
-            // Use Scoutbook email if available
-            email = sbScout.email || undefined;
-          }
-          if (!email) {
-            skipped.push(
-              `${sbScout.firstName} ${sbScout.lastName} (userId ${sbScout.userId}) — no email`,
-            );
-            continue;
-          }
-
-          const initResult = await initOneScout({
-            sbScout,
-            scoutEmail: email,
-            dryRun: dry_run,
-          });
-          results.push(initResult);
-        }
-
-        let text = formatResult(results, dry_run);
-        if (skipped.length > 0) {
-          text +=
-            `\n\nSkipped (no email — provide scout_email parameter):\n` +
-            skipped.map((s) => `- ${s}`).join("\n");
-        }
-
-        return { content: [{ type: "text", text }] };
-      } catch (err) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Quest initialization failed: ${err instanceof Error ? err.message : String(err)}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-    },
-  );
 }

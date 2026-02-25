@@ -11,7 +11,6 @@ import { registerSetChoreList } from "./setChoreList.js";
 import { registerSetProjectedBudget } from "./setProjectedBudget.js";
 import { registerApproveBlueCard } from "./approveBlueCard.js";
 import { registerScoutbookSyncTools } from "./scoutbookSync.js";
-import { registerScoutbookInitQuest } from "./scoutbookInitQuest.js";
 
 export function registerAdminTools(server: McpServer): void {
   registerCreateScout(server);
@@ -26,5 +25,4 @@ export function registerAdminTools(server: McpServer): void {
   registerSetProjectedBudget(server);
   registerApproveBlueCard(server);
   registerScoutbookSyncTools(server);
-  registerScoutbookInitQuest(server);
 }
