@@ -1,6 +1,6 @@
 # Scout Quest — Development State
 
-**Last updated:** 2026-02-24
+**Last updated:** 2026-02-25
 
 ## Current Architecture
 
@@ -90,21 +90,19 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
 - [ ] **All Scout Quest resources are empty** — no data has been created yet
 - [ ] **Dense CSS not rendering** — dashboard still shows default AdminJS styling
 
-### Scoutbook Sync (In Progress — Expanding Scope)
+### Scoutbook Sync (v2 Complete — All 18 Tasks Done)
 - [x] Design spec approved (`docs/plans/2026-02-22-scoutbook-sync-design.md`)
-- [x] Implementation plan with 12 tasks (roster + advancement)
+- [x] Implementation plan with 18 tasks (roster + advancement + events + dashboards + calendars)
 - [x] API client with auth, rate limiting, and tests (committed on feat/scoutbook-sync)
-- [x] MongoDB collection accessors for scoutbook_* collections
-- [x] BSA API response types and MongoDB doc types
+- [x] MongoDB collection accessors for all 9 scoutbook_* collections
+- [x] BSA API response types and MongoDB doc types (all v2 types)
 - [x] 79 API endpoints cataloged across 9 categories
-- [ ] **Core sync orchestration** — not yet implemented
-- [ ] **CLI entry point** — not yet built
-- [ ] **MCP admin tools** — not yet wired up
-- [ ] **Calendar/events sync** — `POST /advancements/events` returns events with full invitedUsers + RSVP status. Design expanding to include this.
-- [ ] **Calendar subscriptions** — `GET /advancements/v2/users/{userId}/calendars` returns unit + patrol calendar codes
-- [ ] **Activity dashboard sync** — unit-level advancement stats and camping/hiking/service aggregates
+- [x] Core sync orchestration — syncRoster, syncScout, syncEvents, syncDashboards, syncCalendars, syncAll
+- [x] MCP admin tools — 9 tools: sync_roster, sync_scout, sync_all, sync_events, sync_status, get_scout_advancement, init_quest, sync_dashboards, sync_calendars
+- [x] Calendar/events sync — events with invitedUsers + RSVP, calendar subscriptions per user
+- [x] Activity dashboard sync — advancement + activities dashboards upserted to scoutbook_dashboards
+- [x] Quest bridge — initQuestFromScoutbook creates quest profiles from synced data
 - [ ] **Smart rate limiting** — randomized burst patterns to avoid scraping signatures (~0.5 req/sec avg, 30 req/min hard cap, human-like timing)
-- [ ] **Roster-to-scout mapping** — need to connect scoutbook_scouts to the quest system's scouts collection
 - [ ] **Shared email detection** — families using same email for parent and scout accounts
 - [ ] **Cron-based periodic sync** — automated background sync with configurable intervals per data type
 

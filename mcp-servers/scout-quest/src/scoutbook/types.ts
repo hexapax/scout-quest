@@ -1003,7 +1003,7 @@ export interface ScoutbookDashboardDoc {
 export interface ScoutbookSyncLogDoc {
   _id?: ObjectId;
   timestamp: Date;
-  operation: "roster" | "scout" | "all" | "events" | "dashboards" | "auth_test" | "quest_init";
+  operation: "roster" | "scout" | "all" | "events" | "dashboards" | "calendars" | "auth_test" | "quest_init";
   orgGuid?: string;
   userId?: string;
   result: "success" | "partial" | "error";

@@ -1,7 +1,7 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { ScoutbookApiClient } from "../../scoutbook/api-client.js";
-import { syncRoster, syncScout, syncAll, syncEvents } from "../../scoutbook/sync.js";
+import { syncRoster, syncScout, syncAll, syncEvents, syncDashboards, syncCalendars } from "../../scoutbook/sync.js";
 import {
   initQuestFromScoutbook,
   formatInitQuestResult,
@@ -11,6 +11,7 @@ import {
   scoutbookAdvancement,
   scoutbookRequirements,
   scoutbookScouts,
+  scoutbookAdults,
 } from "../../scoutbook/collections.js";
 
 // ---------------------------------------------------------------------------
@@ -132,6 +133,14 @@ export function registerScoutbookSyncTools(server: McpServer): void {
 
         if (result.events) {
           text += `\n\nEvents:\n- Events synced: ${result.events.events}`;
+        }
+
+        if (result.dashboards) {
+          text += `\n\nDashboards:\n- Advancement: ${result.dashboards.advancement ? "synced" : "skipped"}\n- Activities: ${result.dashboards.activities ? "synced" : "skipped"}`;
+        }
+
+        if (result.calendars) {
+          text += `\n\nCalendars:\n- Subscriptions synced: ${result.calendars.calendars}`;
         }
 
         if (failed > 0) {
@@ -453,6 +462,115 @@ export function registerScoutbookSyncTools(server: McpServer): void {
             {
               type: "text",
               text: `Quest initialization failed: ${err instanceof Error ? err.message : String(err)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // ---- scoutbook_sync_dashboards ----
+  server.registerTool(
+    "scoutbook_sync_dashboards",
+    {
+      title: "Scoutbook: Sync Dashboards",
+      description:
+        "Sync unit-level advancement and activities dashboards from Scoutbook. " +
+        "Fetches advancement stats (ranks, merit badges, awards completion) and " +
+        "activity stats (campouts, service projects, hikes) for the unit.",
+      inputSchema: {},
+    },
+    async () => {
+      try {
+        const client = createClient();
+        const result = await syncDashboards(client);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Dashboards sync complete in ${(result.durationMs / 1000).toFixed(1)}s.\n` +
+                `- Advancement dashboard: ${result.advancement ? "synced" : "skipped"}\n` +
+                `- Activities dashboard: ${result.activities ? "synced" : "skipped"}`,
+            },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Dashboards sync failed: ${err instanceof Error ? err.message : String(err)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // ---- scoutbook_sync_calendars ----
+  server.registerTool(
+    "scoutbook_sync_calendars",
+    {
+      title: "Scoutbook: Sync Calendars",
+      description:
+        "Sync calendar subscriptions for a user from Scoutbook. " +
+        "Fetches unit and patrol calendar subscription codes. " +
+        "If no user_id is provided, syncs calendars for all adults in the roster.",
+      inputSchema: {
+        user_id: z
+          .string()
+          .optional()
+          .describe("BSA userId to sync calendars for. If omitted, syncs all adults."),
+      },
+    },
+    async ({ user_id }) => {
+      try {
+        const client = createClient();
+
+        if (user_id) {
+          const result = await syncCalendars(client, user_id);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Calendar sync complete for userId ${user_id} in ${(result.durationMs / 1000).toFixed(1)}s.\n` +
+                  `- Subscriptions synced: ${result.calendars}`,
+              },
+            ],
+          };
+        }
+
+        // No user_id — sync all adults
+        const adultsCol = await scoutbookAdults();
+        const allAdults = await adultsCol.find({}, { projection: { userId: 1 } }).toArray();
+        let totalCalendars = 0;
+        const start = Date.now();
+        for (const adult of allAdults) {
+          try {
+            const r = await syncCalendars(client, adult.userId);
+            totalCalendars += r.calendars;
+          } catch {
+            // Individual failures are non-fatal
+          }
+        }
+        const durationMs = Date.now() - start;
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Calendar sync complete for ${allAdults.length} adults in ${(durationMs / 1000).toFixed(1)}s.\n` +
+                `- Total subscriptions synced: ${totalCalendars}`,
+            },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Calendar sync failed: ${err instanceof Error ? err.message : String(err)}`,
             },
           ],
           isError: true,

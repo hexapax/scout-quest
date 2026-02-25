@@ -12,6 +12,8 @@ import type {
   ScoutbookAdvancementDoc,
   ScoutbookRequirementDoc,
   ScoutbookEventDoc,
+  ScoutbookCalendarDoc,
+  ScoutbookDashboardDoc,
   ScoutbookSyncLogDoc,
 } from "./types.js";
 import {
@@ -21,6 +23,8 @@ import {
   scoutbookAdvancement,
   scoutbookRequirements,
   scoutbookEvents,
+  scoutbookCalendars,
+  scoutbookDashboards,
   scoutbookSyncLog,
 } from "./collections.js";
 
@@ -49,10 +53,23 @@ export interface SyncEventsResult {
   durationMs: number;
 }
 
+export interface SyncDashboardsResult {
+  advancement: boolean;
+  activities: boolean;
+  durationMs: number;
+}
+
+export interface SyncCalendarsResult {
+  calendars: number;
+  durationMs: number;
+}
+
 export interface SyncAllResult {
   roster: SyncRosterResult;
   scoutResults: { userId: string; success: boolean; error?: string }[];
   events: SyncEventsResult | null;
+  dashboards: SyncDashboardsResult | null;
+  calendars: SyncCalendarsResult | null;
   totalDurationMs: number;
 }
 
@@ -605,6 +622,147 @@ export async function syncEvents(
 }
 
 // ---------------------------------------------------------------------------
+// syncDashboards
+// ---------------------------------------------------------------------------
+
+export async function syncDashboards(
+  client: ScoutbookApiClient,
+): Promise<SyncDashboardsResult> {
+  const start = Date.now();
+  const log = await scoutbookSyncLog();
+
+  try {
+    const [advDashboard, actDashboard] = await Promise.all([
+      client.getAdvancementDashboard(),
+      client.getUnitActivitiesDashboard(),
+    ]);
+
+    const col = await scoutbookDashboards();
+
+    // Upsert advancement dashboard
+    const advDoc: Omit<ScoutbookDashboardDoc, "_id"> = {
+      orgGuid: client.orgGuid,
+      type: "advancement",
+      data: advDashboard as unknown as Record<string, unknown>,
+      syncedAt: new Date(),
+    };
+    await col.updateOne(
+      { orgGuid: client.orgGuid, type: "advancement" },
+      { $set: advDoc },
+      { upsert: true },
+    );
+
+    // Upsert activities dashboard
+    const actDoc: Omit<ScoutbookDashboardDoc, "_id"> = {
+      orgGuid: client.orgGuid,
+      type: "activities",
+      data: actDashboard as unknown as Record<string, unknown>,
+      syncedAt: new Date(),
+    };
+    await col.updateOne(
+      { orgGuid: client.orgGuid, type: "activities" },
+      { $set: actDoc },
+      { upsert: true },
+    );
+
+    const durationMs = Date.now() - start;
+    const result: SyncDashboardsResult = {
+      advancement: true,
+      activities: true,
+      durationMs,
+    };
+
+    const logEntry: Omit<ScoutbookSyncLogDoc, "_id"> = {
+      timestamp: new Date(),
+      operation: "dashboards",
+      orgGuid: client.orgGuid,
+      result: "success",
+      durationMs,
+    };
+    await log.insertOne(logEntry as ScoutbookSyncLogDoc);
+
+    return result;
+  } catch (err) {
+    const durationMs = Date.now() - start;
+    const logEntry: Omit<ScoutbookSyncLogDoc, "_id"> = {
+      timestamp: new Date(),
+      operation: "dashboards",
+      orgGuid: client.orgGuid,
+      result: "error",
+      error: err instanceof Error ? err.message : String(err),
+      durationMs,
+    };
+    await log.insertOne(logEntry as ScoutbookSyncLogDoc).catch(() => {});
+    throw err;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// syncCalendars
+// ---------------------------------------------------------------------------
+
+export async function syncCalendars(
+  client: ScoutbookApiClient,
+  userId: string,
+): Promise<SyncCalendarsResult> {
+  const start = Date.now();
+  const log = await scoutbookSyncLog();
+
+  try {
+    const subscriptions = await client.getCalendarSubscriptions(userId);
+
+    const col = await scoutbookCalendars();
+    for (const sub of subscriptions) {
+      const doc: Omit<ScoutbookCalendarDoc, "_id"> = {
+        userCalendarId: sub.userCalendarId,
+        userId: sub.userId,
+        unitId: sub.unitId,
+        patrolId: sub.patrolId ?? undefined,
+        calendarCode: sub.calendarCode,
+        color: sub.color,
+        showCalendar: sub.showCalendar,
+        syncedAt: new Date(),
+      };
+      await col.updateOne(
+        { userCalendarId: sub.userCalendarId },
+        { $set: doc },
+        { upsert: true },
+      );
+    }
+
+    const durationMs = Date.now() - start;
+    const result: SyncCalendarsResult = {
+      calendars: subscriptions.length,
+      durationMs,
+    };
+
+    const logEntry: Omit<ScoutbookSyncLogDoc, "_id"> = {
+      timestamp: new Date(),
+      operation: "calendars",
+      userId,
+      result: "success",
+      counts: { events: subscriptions.length },
+      durationMs,
+    };
+    await log.insertOne(logEntry as ScoutbookSyncLogDoc);
+
+    return result;
+  } catch (err) {
+    const durationMs = Date.now() - start;
+    const logEntry: Omit<ScoutbookSyncLogDoc, "_id"> = {
+      timestamp: new Date(),
+      operation: "calendars",
+      userId,
+      result: "error",
+      error: err instanceof Error ? err.message : String(err),
+      durationMs,
+    };
+    await log.insertOne(logEntry as ScoutbookSyncLogDoc).catch(() => {});
+    throw err;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // syncAll
 // ---------------------------------------------------------------------------
 
@@ -646,6 +804,38 @@ export async function syncAll(client: ScoutbookApiClient): Promise<SyncAllResult
     );
   }
 
+  // Step 4: Sync dashboards
+  let dashboardsResult: SyncDashboardsResult | null = null;
+  try {
+    dashboardsResult = await syncDashboards(client);
+  } catch (err) {
+    console.error(
+      `syncAll: failed to sync dashboards: ${err instanceof Error ? err.message : err}`,
+    );
+  }
+
+  // Step 5: Sync calendars for all adults (they own calendar subscriptions)
+  let calendarsResult: SyncCalendarsResult | null = null;
+  try {
+    const adultsCol = await scoutbookAdults();
+    const allAdults = await adultsCol.find({}, { projection: { userId: 1 } }).toArray();
+    let totalCalendars = 0;
+    const calStart = Date.now();
+    for (const adult of allAdults) {
+      try {
+        const r = await syncCalendars(client, adult.userId);
+        totalCalendars += r.calendars;
+      } catch {
+        // Individual calendar sync failures are non-fatal
+      }
+    }
+    calendarsResult = { calendars: totalCalendars, durationMs: Date.now() - calStart };
+  } catch (err) {
+    console.error(
+      `syncAll: failed to sync calendars: ${err instanceof Error ? err.message : err}`,
+    );
+  }
+
   const totalDurationMs = Date.now() - totalStart;
   const successCount = scoutResults.filter((r) => r.success).length;
   const failCount = scoutResults.filter((r) => !r.success).length;
@@ -673,6 +863,8 @@ export async function syncAll(client: ScoutbookApiClient): Promise<SyncAllResult
     roster,
     scoutResults,
     events: eventsResult,
+    dashboards: dashboardsResult,
+    calendars: calendarsResult,
     totalDurationMs,
   };
 }

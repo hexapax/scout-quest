@@ -1,7 +1,7 @@
 # Scoutbook Sync — Detailed Implementation Plan
 
 **Date:** 2026-02-24
-**Status:** Ready to implement
+**Status:** All 18 tasks complete
 **Goal:** Build Scoutbook sync so that ai-chat.hexapax.com can query Scoutbook advancement data to prepare for tonight's scout meeting.
 
 ## Prerequisites
@@ -193,39 +193,32 @@
 - **`BurstRateLimiter`:** Groups requests into randomized bursts (3-8) with 100-400ms intervals, 3-10s between bursts, 30 req/min hard cap, ±30% jitter on all delays
 - **Replaces:** Simple `RATE_LIMIT_MS = 1000` in api-client.ts
 
-### Task 14: Calendar/Events Types and Collections (v2)
-- **Modify:** `mcp-servers/scout-quest/src/scoutbook/types.ts`
-- **Modify:** `mcp-servers/scout-quest/src/scoutbook/collections.ts`
-- **Depends on:** Tasks 1, 2
-- **Complexity:** Low
-- **Adds:** `CalendarSubscription`, `EventDetail`, `EventUnit`, `EventRsvp`, `AdvancementDashboard`, `UnitActivitiesDashboard` API types; `ScoutbookEventDoc`, `ScoutbookCalendarDoc`, `ScoutbookDashboardDoc` MongoDB types; 3 new collection accessors
+### Task 14: Calendar/Events Types and Collections (v2) — DONE
+- **Status:** Complete (implemented earlier with Tasks 1-3)
+- All v2 types (`CalendarSubscription`, `EventDetail`, `EventUnit`, `EventRsvp`, `AdvancementDashboard`, `UnitActivitiesDashboard`) and MongoDB doc types (`ScoutbookEventDoc`, `ScoutbookCalendarDoc`, `ScoutbookDashboardDoc`) were added alongside initial types.
+- 3 collection accessors (`scoutbookEvents`, `scoutbookCalendars`, `scoutbookDashboards`) in collections.ts.
 
-### Task 15: API Client — Calendar/Events/Dashboard Methods (v2)
-- **Modify:** `mcp-servers/scout-quest/src/scoutbook/api-client.ts`
-- **Modify:** `mcp-servers/scout-quest/src/__tests__/scoutbook-api-client.test.ts`
-- **Depends on:** Tasks 3, 14
-- **Complexity:** Low-Medium
-- **Adds:** `post<T>()` method (events endpoint is POST), `getUserCalendars`, `getEvents`, `getAdvancementDashboard`, `getUnitActivitiesDashboard`
-- **Note:** Events POST body: `{ unitId, fromDate, toDate, showDLEvents: true }`
+### Task 15: API Client — Calendar/Events/Dashboard Methods (v2) — DONE
+- **Status:** Complete (implemented earlier with Task 3)
+- API methods: `getEvents()`, `getCalendarSubscriptions()`, `getAdvancementDashboard()`, `getUnitActivitiesDashboard()` in api-client.ts.
+- `post<T>()` method for events endpoint.
 
-### Task 16: Sync Orchestration — Events and Dashboards (v2)
-- **Modify:** `mcp-servers/scout-quest/src/scoutbook/sync.ts`
-- **Modify:** `mcp-servers/scout-quest/src/__tests__/scoutbook-sync.test.ts`
-- **Depends on:** Tasks 5, 14, 15
-- **Complexity:** Medium
-- **Adds:** `syncEvents(client, unitId, monthsAhead?, monthsBehind?)` and `syncDashboards(client, orgGuid)`
-- **Updates:** `syncAll` signature to `syncAll(client, orgGuid, unitId)` and calls events+dashboards after advancement sync
+### Task 16: Sync Orchestration — Events, Dashboards, and Calendars (v2) — DONE
+- **Status:** Complete (2026-02-25)
+- `syncEvents()` — fetches events for next N days, upserts to scoutbook_events
+- `syncDashboards()` — fetches advancement + activities dashboards, upserts to scoutbook_dashboards
+- `syncCalendars()` — fetches calendar subscriptions per user, upserts to scoutbook_calendars
+- `syncAll()` — now calls syncDashboards + syncCalendars after events sync
 
-### Task 17: CLI and MCP Tools — Events and Dashboards (v2)
-- **Modify:** CLI, scoutbookSync.ts, admin index.ts, admin.ts, .env.example
-- **Depends on:** Task 16
-- **Complexity:** Low
-- **Adds:** `events` and `dashboards` CLI commands; `scoutbook_sync_events` and `scoutbook_sync_dashboards` MCP tools; `SCOUTBOOK_UNIT_ID` env var
+### Task 17: MCP Tools — Dashboards and Calendars (v2) — DONE
+- **Status:** Complete (2026-02-25)
+- `scoutbook_sync_dashboards` — syncs unit advancement + activities dashboards
+- `scoutbook_sync_calendars` — syncs calendar subscriptions (optional user_id, defaults to all adults)
+- `syncAll` tool output updated to include dashboard + calendar results
 
-### Task 18: Full v2 Build Verification
-- **No new files**
-- **Depends on:** All v2 tasks
-- **Steps:** Same as Task 12 but verifying all v2 additions
+### Task 18: Full v2 Build Verification — DONE
+- **Status:** Complete (2026-02-25)
+- TypeScript build passes with no errors. All 9 MCP tools registered. All 18 tasks complete.
 
 ---
 
