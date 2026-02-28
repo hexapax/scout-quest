@@ -81,7 +81,7 @@ deploy() {
   local MODE="$1"
 
   if [ "${MODE}" = "gcloud" ]; then
-    SSH_CMD="gcloud compute ssh scout-coach-vm --zone=us-east4-b --command"
+    SSH_CMD="gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=${PROJECT_ID} --command"
     SCP_CMD="gcloud compute scp"
     VM_TARGET="scout-coach-vm"
     echo "Using gcloud SSH..."
@@ -163,7 +163,7 @@ deploy() {
   MAX_ATTEMPTS=30
   while true; do
     if [ "${MODE}" = "gcloud" ]; then
-      READY=$(gcloud compute ssh scout-coach-vm --zone=us-east4-b \
+      READY=$(gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=${PROJECT_ID} \
         --command="test -f /opt/scoutcoach/.cloud-init-complete && echo yes || echo no" 2>/dev/null || echo "no")
     else
       READY=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 "ubuntu@${MODE}" \
@@ -191,11 +191,11 @@ deploy() {
   echo "→ Uploading config files..."
   # Clean stale temp dirs first to prevent SCP nesting issues
   if [ "${MODE}" = "gcloud" ]; then
-    gcloud compute ssh scout-coach-vm --zone=us-east4-b \
+    gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=${PROJECT_ID} \
       --command="rm -rf /tmp/scout-config-ai-chat /tmp/scout-config-scout-quest" 2>/dev/null || true
     for INSTANCE in "${INSTANCES[@]}"; do
       gcloud compute scp --recurse "${TEMP_DIR}/${INSTANCE}" \
-        "scout-coach-vm:/tmp/scout-config-${INSTANCE}" --zone=us-east4-b
+        "scout-coach-vm:/tmp/scout-config-${INSTANCE}" --zone=us-east4-b --project=${PROJECT_ID}
       echo "  ${INSTANCE} uploaded ✓"
     done
   else
@@ -314,7 +314,7 @@ echo "  Both LibreChat instances are running!"
 '
 
   if [ "${MODE}" = "gcloud" ]; then
-    gcloud compute ssh scout-coach-vm --zone=us-east4-b --command="${REMOTE_SCRIPT}"
+    gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=${PROJECT_ID} --command="${REMOTE_SCRIPT}"
   else
     ssh -o StrictHostKeyChecking=no "ubuntu@${MODE}" "${REMOTE_SCRIPT}"
   fi
@@ -408,7 +408,7 @@ echo "  Upgrade complete!"
 
   if [ "${MODE}" = "gcloud" ]; then
     echo "Using gcloud SSH..."
-    gcloud compute ssh scout-coach-vm --zone=us-east4-b --command="${UPGRADE_SCRIPT}"
+    gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=${PROJECT_ID} --command="${UPGRADE_SCRIPT}"
   else
     echo "Using direct SSH to ${MODE}..."
     ssh -o StrictHostKeyChecking=no "ubuntu@${MODE}" "${UPGRADE_SCRIPT}"

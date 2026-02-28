@@ -11,4 +11,4 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --command="$1"
+gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=scout-assistant-487523 --command="$1"
