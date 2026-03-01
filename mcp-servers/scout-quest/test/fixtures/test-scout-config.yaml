@@ -1,0 +1,62 @@
+# Test Scout Profile Configuration
+# Used by the test harness for seeding MongoDB.
+# See test/fixtures/profiles.ts for the TypeScript equivalent.
+
+scout:
+  email: test-scout@scoutquest.test
+  name: Test Scout Will
+  age: 14
+  troop: T999
+  patrol: Eagles
+
+quest_state:
+  goal_item: Gaming PC
+  goal_description: Build a custom gaming PC with RTX 4070 and Ryzen 7
+  target_budget: 800
+  savings_capacity: 50
+  loan_path_active: false
+  current_savings: 120
+  quest_status: active
+
+character:
+  base: pathfinder
+  quest_overlay: gamer_hardware
+  tone_dial: 3
+  domain_intensity: 3
+  tone_min: 1
+  tone_max: 5
+  domain_min: 1
+  domain_max: 5
+  avoid:
+    - cringe memes
+    - excessive emoji
+
+chore_list:
+  - id: dishes
+    name: Wash dishes
+    frequency: daily
+    earns_income: true
+    income_amount: 2
+  - id: trash
+    name: Take out trash
+    frequency: daily
+    earns_income: false
+  - id: laundry
+    name: Do laundry
+    frequency: weekly
+    earns_income: true
+    income_amount: 5
+
+counselors:
+  personal_management:
+    name: Mr. Chen
+    email: chen@example.com
+  family_life:
+    name: Mrs. Johnson
+    email: johnson@example.com
+
+parent_guardian:
+  name: Sarah Thompson
+  email: parent@example.com
+
+guide_email: test-guide@scoutquest.test
