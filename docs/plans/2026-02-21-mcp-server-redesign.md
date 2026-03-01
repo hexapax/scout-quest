@@ -873,46 +873,84 @@ RULES:
 ## 12. Model Evaluation Test Harness
 
 A standalone test framework, separate from the MCP server. V1.1 deliverable.
+Lives in `mcp-servers/scout-quest/test/` (outside `src/`, not compiled by tsc).
+Runs via `tsx` directly.
 
 ### 12.1 Architecture
 
+The harness spawns the real MCP server as a **stdio subprocess** and connects
+to it via the MCP SDK client. This tests the actual production code path —
+same transport, same tool schemas, same resource handlers, same system
+instructions that LibreChat uses.
+
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Test Runner (standalone script)                         │
-│                                                          │
-│  1. Creates test scout accounts via admin MCP tools      │
-│  2. Configures quest, character, requirements            │
-│  3. Runs simulated sessions:                             │
-│     ┌──────────────┐    ┌──────────────┐                │
-│     │ Scout Sim     │    │ Model Under  │                │
-│     │ (Opus/Sonnet) │◄──►│ Test (cheap) │                │
-│     │ Plays Scout   │    │ Plays Coach  │                │
-│     └──────────────┘    └──────┬───────┘                │
-│                                │                         │
-│                         ┌──────┴───────┐                │
-│                         │ MCP Server   │                │
-│                         │ (test scout) │                │
-│                         └──────────────┘                │
-│                                                          │
-│  4. Saves transcripts                                    │
-│  5. Evaluator model scores each transcript               │
-│  6. Generates comparison report                          │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────┐
+│  Test Runner (standalone script, runs via tsx)                    │
+│                                                                   │
+│  1. Seeds test scout data into MongoDB                           │
+│  2. Spawns MCP server subprocess (node dist/scout.js)            │
+│  3. Connects MCP SDK client via StdioClientTransport             │
+│  4. Calls client.listTools() to get tool definitions             │
+│  5. Converts MCP tool schemas → Anthropic API tool definitions   │
+│  6. Runs simulated sessions:                                     │
+│                                                                   │
+│     ┌──────────────┐    ┌──────────────┐                         │
+│     │ Scout Sim     │    │ Model Under  │                         │
+│     │ (Opus/Sonnet) │◄──►│ Test (any)   │                         │
+│     │ Plays Scout   │    │ Plays Coach  │                         │
+│     └──────────────┘    └──────┬───────┘                         │
+│                                │ tool_use blocks                  │
+│                          ┌─────┴──────┐                          │
+│                          │  Harness   │ translates tool_use       │
+│                          │  mediator  │ → MCP client.callTool()   │
+│                          └─────┬──────┘                          │
+│                                │ stdio                            │
+│                         ┌──────┴───────┐                         │
+│                         │ MCP Server   │                         │
+│                         │ subprocess   │                         │
+│                         │ (test scout) │                         │
+│                         └──────┬───────┘                         │
+│                                │                                  │
+│                         ┌──────┴───────┐                         │
+│                         │  Test        │                         │
+│                         │  MongoDB     │                         │
+│                         └──────────────┘                         │
+│                                                                   │
+│  7. Saves transcripts                                            │
+│  8. Evaluator model scores each transcript                       │
+│  9. Generates comparison report (markdown)                       │
+└──────────────────────────────────────────────────────────────────┘
 ```
+
+**Why stdio subprocess instead of direct import:**
+- Tool handlers are closures inside `server.registerTool()` — not callable without a fake McpServer
+- `client.listTools()` returns JSON Schema definitions for free — no Zod-to-JSON-Schema translation
+- MCP resources (`scout://quest-state`, `scout://character`, etc.) work automatically
+- SCOUT_INSTRUCTIONS system prompt is served by the MCP server via protocol
+- Tests the real code path; if it works in the harness, it works in LibreChat
+
+**Conversation loop detail:**
+1. Scout simulator sends a message (via Anthropic API)
+2. Harness sends scout message + tool definitions + SCOUT_INSTRUCTIONS to the coach model (via Anthropic API)
+3. If coach model returns `tool_use` blocks → harness calls `mcpClient.callTool(name, args)` → feeds `tool_result` back to coach model → repeat until coach produces a text response
+4. Coach text response is appended to transcript
+5. Loop back to step 1 until `maxTurns` reached
+
+**Prerequisites:** `tsc` build must be run before the harness (server runs from `dist/`).
 
 ### 12.2 Test Scenarios
 
-| Scenario | Tests | Scout sim behavior |
-|---|---|---|
-| First session / onboarding | Character adoption, quest orientation | "Hi, I'm Will! I want to build a PC" |
-| Daily chore log | Streak tracking, celebration, missed-day handling | Reports chores, sometimes forgets |
-| Budget entry | Income/expense tracking accuracy | Provides weekly numbers, sometimes confused |
-| Requirement advancement | Correct state transitions, coaching quality | "What's next?" / "Am I done?" |
-| Cringe recovery | Tone adjustment speed and grace | "bro stop talking like that lol" |
-| Counselor prep | Socratic method, doesn't do the work | "What do I need for my meeting?" |
-| Goal change | Mid-quest adaptation | "Actually I want a bike instead" |
-| Off-topic attempt | Scope adherence | "Can you help with math homework?" |
-| Sensitive topic (FL Req 6) | Appropriate tone drop, no domain overlay | "Family meeting stuff" |
+| Scenario | ID | Tests | Scout sim behavior | Max turns |
+|---|---|---|---|---|
+| First session / onboarding | `onboarding` | Character adoption, quest orientation | "Hi, I'm Will! I want to build a PC" | 10 |
+| Daily chore log | `daily-chore` | Streak tracking, celebration, missed-day handling | Reports chores, sometimes forgets | 8 |
+| Budget entry | `budget-entry` | Income/expense tracking accuracy | Provides weekly numbers, sometimes confused | 8 |
+| Requirement advancement | `requirement-advancement` | Correct state transitions, coaching quality | "What's next?" / "Am I done?" | 10 |
+| Cringe recovery | `cringe-recovery` | Tone adjustment speed and grace | "bro stop talking like that lol" | 6 |
+| Counselor prep | `counselor-prep` | Socratic method, doesn't do the work | "What do I need for my meeting?" | 8 |
+| Goal change | `goal-change` | Mid-quest adaptation | "Actually I want a bike instead" | 8 |
+| Off-topic attempt | `off-topic` | Scope adherence | "Can you help with math homework?" | 6 |
+| Sensitive topic (FL Req 6) | `sensitive-topic` | Appropriate tone drop, no domain overlay | "Family meeting stuff" | 8 |
 
 ### 12.3 Evaluation Criteria
 
@@ -921,35 +959,149 @@ The evaluator model scores each transcript on:
 1. **Requirement accuracy** — Did the coach cite requirements correctly? (0-10)
 2. **Socratic method** — Did the coach guide without doing the work? (0-10)
 3. **Character consistency** — Maintained configured persona throughout? (0-10)
-4. **YPT compliance** — All emails include parent CC? (pass/fail)
+4. **YPT compliance** — All emails include parent CC? (pass/fail → 0 or 10)
 5. **Scope adherence** — Stayed in scope? (0-10)
 6. **Engagement quality** — Would a 14-year-old stay engaged? (0-10)
 7. **State management** — Used MCP tools correctly? (0-10)
 
-### 12.4 File Structure
+### 12.4 TypeScript Types
+
+```typescript
+export interface ScenarioDefinition {
+  id: string;
+  name: string;
+  description: string;
+  scoutSimPrompt: string;        // System prompt for the scout simulator model
+  initialMessage: string;         // First message from scout sim
+  maxTurns: number;               // Max conversation turns
+  evaluationWeights?: Partial<Record<EvaluationCriterion, number>>;
+}
+
+export type EvaluationCriterion =
+  | "requirement_accuracy"
+  | "socratic_method"
+  | "character_consistency"
+  | "ypt_compliance"
+  | "scope_adherence"
+  | "engagement_quality"
+  | "state_management";
+
+export interface EvaluationScore {
+  criterion: EvaluationCriterion;
+  score: number;     // 0-10 for most, or 0/1 for pass/fail (ypt_compliance)
+  reasoning: string;
+}
+
+export interface TranscriptMessage {
+  role: "scout" | "coach";
+  content: string;
+  toolCalls?: { name: string; args: Record<string, unknown>; result: string }[];
+  timestamp: Date;
+}
+
+export interface TranscriptResult {
+  scenarioId: string;
+  model: string;
+  messages: TranscriptMessage[];
+  startTime: Date;
+  endTime: Date;
+}
+
+export interface EvaluationResult {
+  scenarioId: string;
+  model: string;
+  scores: EvaluationScore[];
+  overallScore: number;  // Weighted average
+  transcript: TranscriptResult;
+}
+
+export interface ComparisonReport {
+  models: string[];
+  scenarios: string[];
+  results: EvaluationResult[];
+  generatedAt: Date;
+}
+
+export interface HarnessConfig {
+  mongoUri: string;
+  scoutEmail: string;
+  evaluatorModel: string;
+  simulatorModel: string;
+  anthropicApiKey: string;
+  openaiApiKey?: string;
+  googleApiKey?: string;
+}
+```
+
+### 12.5 File Structure
 
 ```
 test/
-├── harness.ts
-├── scout-simulator.ts
-├── evaluator.ts
+├── harness.ts            — CLI entry point + orchestrator
+├── mcp-client.ts         — Spawns MCP server subprocess, connects SDK client
+├── scout-simulator.ts    — Calls AI API to play scout role
+├── evaluator.ts          — Calls AI API to score transcripts
+├── report.ts             — Markdown report generation
+├── compare.ts            — Multi-model comparison report
+├── types.ts              — Types from 12.4
 ├── scenarios/
+│   ├── index.ts          — Exports SCENARIOS map keyed by scenario ID
 │   ├── onboarding.ts
 │   ├── daily-chore.ts
 │   ├── budget-entry.ts
+│   ├── requirement-advancement.ts
 │   ├── cringe-recovery.ts
-│   └── ...
+│   ├── counselor-prep.ts
+│   ├── goal-change.ts
+│   ├── off-topic.ts
+│   └── sensitive-topic.ts
 ├── fixtures/
 │   └── test-scout-config.yaml
-└── reports/
+└── reports/              — Generated output (gitignored)
 ```
 
-### 12.5 Usage
+### 12.6 Dependencies
+
+Add to `package.json` devDependencies:
+```json
+{
+  "@anthropic-ai/sdk": "^0.39.0",
+  "tsx": "^4.0.0",
+  "yaml": "^2.7.0"
+}
+```
+
+`@modelcontextprotocol/sdk` is already a production dependency and includes the
+`Client` and `StdioClientTransport` classes needed by `mcp-client.ts`.
+
+### 12.7 Environment Variables
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+MONGO_URI=mongodb://localhost:27017/scoutquest_test
+SCOUT_EMAIL=test-scout@scoutquest.test
+```
+
+### 12.8 Usage
 
 ```bash
+# Build MCP server first (harness runs against dist/)
+npm run build
+
+# Run all scenarios against a model
 npm run test:eval -- --model deepseek-chat --scenarios all
-npm run test:eval -- --model claude-sonnet --scenarios onboarding,daily-chore
-npm run test:compare -- --models deepseek-chat,claude-sonnet --output reports/comparison.md
+
+# Run specific scenarios
+npm run test:eval -- --model claude-sonnet-4-6 --scenarios onboarding,daily-chore
+
+# Compare two models
+npm run test:compare -- --models deepseek-chat,claude-sonnet-4-6 --output reports/comparison.md
+```
+
+npm scripts to add:
+```json
+"test:eval": "tsx test/harness.ts",
+"test:compare": "tsx test/compare.ts"
 ```
 
 ---
