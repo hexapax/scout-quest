@@ -17,6 +17,7 @@ config/admin/.env
 !tsconfig.json
 !devbox/config/settings.json
 !.devcontainer/devcontainer.json
+!.mcp.json
 
 # Archives
 *.tar
