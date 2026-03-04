@@ -24,6 +24,7 @@ You are working on the **scout-quest** project. Read the project's CLAUDE.md for
 4. **Run tests** before committing when possible.
 5. **Don't modify deployment configs** (.env files, docker-compose, terraform) without approval.
 6. **Don't install new system packages** without approval.
+7. **MCP Server Availability:** If a tool call fails or the MCP server is unavailable, NEVER fabricate or hallucinate results. Immediately tell the user: 'The MCP server appears to be offline — I cannot execute this operation. Please check that the MCP server is enabled and try again.' Do not proceed, do not guess at results, do not simulate what the output might have been.
 
 ## Git Workflow
 
