@@ -21,7 +21,7 @@ CONVERSATION FLOW:
 
 Generate ONLY the scout's next message. No commentary.`,
   initialMessage: "I need to log my budget for this week. It's week 5.",
-  maxTurns: 8,
+  maxTurns: 10,
   expectedTools: ["log_budget_entry"],
   evaluationWeights: {
     state_management: 0.30,

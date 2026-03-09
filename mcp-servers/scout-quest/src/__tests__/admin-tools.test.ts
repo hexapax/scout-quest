@@ -29,10 +29,11 @@ afterAll(async () => {
 describe("admin tools (integration)", () => {
   beforeEach(async () => {
     if (!mongoAvailable || !db) return;
-    const collections = await db.listCollections().toArray();
-    for (const col of collections) {
-      await db.collection(col.name).deleteMany({});
-    }
+    // Only clean up emails used by this file (avoid cross-file interference in parallel runs)
+    const emails = ["test@scout.com", "dupe@scout.com", "quest@scout.com", "reqs@scout.com", "signoff@scout.com", "blue@scout.com"];
+    await db.collection("scouts").deleteMany({ email: { $in: emails } });
+    await db.collection("users").deleteMany({ email: { $in: emails } });
+    await db.collection("requirements").deleteMany({ scout_email: { $in: emails } });
   });
 
   describe("createScout", () => {

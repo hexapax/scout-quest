@@ -26,10 +26,10 @@ afterAll(async () => {
 describe("logChore (integration)", () => {
   beforeEach(async () => {
     if (!mongoAvailable || !db) return;
-    const collections = await db.listCollections().toArray();
-    for (const col of collections) {
-      await db.collection(col.name).deleteMany({});
-    }
+    // Only clean up emails used by this file (avoid cross-file interference in parallel runs)
+    const emails = ["chore@scout.com", "dupe@scout.com"];
+    await db.collection("scouts").deleteMany({ email: { $in: emails } });
+    await db.collection("chore_logs").deleteMany({ scout_email: { $in: emails } });
   });
 
   it("creates chore log entry with income", async ({ skip }) => {

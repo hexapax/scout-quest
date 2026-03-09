@@ -23,7 +23,7 @@ CONVERSATION FLOW:
 
 Generate ONLY the scout's next message. No commentary.`,
   initialMessage: "Hey! I'm Will. So this is the scout quest thing? What do I do here?",
-  maxTurns: 10,
+  maxTurns: 14,
   expectedTools: ["log_session_notes"],
   expectedResources: [
     "scout://quest-state",

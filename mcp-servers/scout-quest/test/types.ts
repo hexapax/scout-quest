@@ -132,6 +132,10 @@ export interface HarnessConfig {
   budgetPerScenario: number;
   /** Max cost per run in USD */
   budgetPerRun: number;
+  /** Enable extended thinking for the model-under-test */
+  thinkingEnabled: boolean;
+  /** Token budget for extended thinking */
+  thinkingBudget: number;
 }
 
 // ---------------------------------------------------------------------------

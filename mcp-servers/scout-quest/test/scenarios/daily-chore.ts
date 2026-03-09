@@ -21,7 +21,7 @@ CONVERSATION FLOW:
 
 Generate ONLY the scout's next message. No commentary.`,
   initialMessage: "hey I did my chores today",
-  maxTurns: 8,
+  maxTurns: 10,
   expectedTools: ["log_chore"],
   evaluationWeights: {
     state_management: 0.30,

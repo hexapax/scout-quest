@@ -14,30 +14,48 @@
 
 import type { HallucinationRecord, TranscriptMessage } from "./types.js";
 
-// Action verb patterns that indicate the model claims to have done something
+// Action verb patterns that indicate the model claims to have COMPLETED an action.
+// These must use past-tense or present-perfect forms to avoid matching future intent
+// like "let's get those logged" or "I'll log that now".
 const ACTION_PATTERNS: { pattern: RegExp; tool: string }[] = [
-  { pattern: /\b(logged|recorded|tracked)\b.*\bchore/i, tool: "log_chore" },
-  { pattern: /\b(logged|recorded|tracked)\b.*\bbudget/i, tool: "log_budget_entry" },
-  { pattern: /\b(advanced|moved|updated)\b.*\brequirement/i, tool: "advance_requirement" },
-  { pattern: /\b(composed|drafted|created)\b.*\bemail/i, tool: "compose_email" },
-  { pattern: /\b(sent|pushed)\b.*\bnotification/i, tool: "send_notification" },
-  { pattern: /\b(adjusted|changed|lowered|raised)\b.*\btone/i, tool: "adjust_tone" },
-  { pattern: /\b(set up|created|initialized)\b.*\btime management/i, tool: "setup_time_mgmt" },
-  { pattern: /\b(logged|recorded)\b.*\bdiary/i, tool: "log_diary_entry" },
-  { pattern: /\b(updated|changed)\b.*\bquest goal/i, tool: "update_quest_goal" },
-  { pattern: /\b(updated|revised)\b.*\bquest plan/i, tool: "update_quest_plan" },
-  { pattern: /\b(logged|captured|saved)\b.*\bsession notes/i, tool: "log_session_notes" },
-  // Generic patterns for definitive claim language
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:logged|recorded|tracked)\b.*\bchore/i, tool: "log_chore" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:logged|recorded|tracked)\b.*\bbudget/i, tool: "log_budget_entry" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:advanced|moved|updated)\b.*\brequirement/i, tool: "advance_requirement" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:composed|drafted|created)\b.*\bemail/i, tool: "compose_email" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:sent|pushed)\b.*\bnotification/i, tool: "send_notification" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:adjusted|changed|lowered|raised)\b.*\btone/i, tool: "adjust_tone" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:set up|created|initialized)\b.*\btime management/i, tool: "setup_time_mgmt" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:logged|recorded)\b.*\bdiary/i, tool: "log_diary_entry" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:updated|changed)\b.*\bquest goal/i, tool: "update_quest_goal" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:updated|revised)\b.*\bquest plan/i, tool: "update_quest_plan" },
+  { pattern: /\b(?:I(?:'ve| have)?|already|just|successfully)\s+(?:logged|captured|saved)\b.*\bsession notes/i, tool: "log_session_notes" },
+  // Definitive past-tense claims (e.g., "Done! Chores logged." / "I've logged your chores")
   { pattern: /\bI've (?:logged|recorded|updated|saved|created|sent|advanced|adjusted)/i, tool: "__generic__" },
   { pattern: /\bDone!?\s.*(?:logged|recorded|saved)/i, tool: "__generic__" },
+  // "your chores are logged" / "chores have been logged"
+  { pattern: /\b(?:chores?|budget|requirement)\b.*\b(?:are|have been|were)\s+(?:logged|recorded|tracked|updated)/i, tool: "__generic__" },
 ];
 
-// Fabrication patterns — claims about specific data that must come from a tool
+// Fabrication patterns — claims about specific DYNAMIC data that must come from
+// a tool call, not from the static scout profile. Profile data (goal_item,
+// target_budget, current_savings at session start) is embedded in the system
+// prompt and is NOT fabricated.
+//
+// These patterns are deliberately narrow to avoid false positives:
+// - Static requirement rules ("you need 90 days") are NOT fabrication
+// - Phrases like "let's get week 5 logged" are intent, not claims
+// - Only match definitive claims about current dynamic state
 const FABRICATION_PATTERNS: RegExp[] = [
-  /streak.*?(\d+)\s*day/i,
-  /saved.*?\$[\d,.]+/i,
-  /week\s+\d+.*?logged/i,
+  // "your streak is 15 days" / "current streak: 15 days" — dynamic count claims
+  // Does NOT match "you need 90 days" (that's a requirement rule, not a streak claim)
+  /(?:your |current |a )\s*streak\s+(?:is|of|:)\s*(\d+)\s*day/i,
+  // "week 5 has been logged" / "week 5 is logged" — definitive past-tense claims
+  // Does NOT match "let's get week 5 logged" (that's intent)
+  /week\s+\d+\s+(?:has been|is|was)\s+logged/i,
+  // Requirement transition claims must come from advance_requirement
   /requirement.*?→.*?(tracking|in_progress|ready_for_review|submitted)/i,
+  // Specific earned/income amounts this session (not profile's current_savings)
+  /(?:you |you've )?earned.*?\$[\d,.]+\s*(?:today|this session)/i,
 ];
 
 /**

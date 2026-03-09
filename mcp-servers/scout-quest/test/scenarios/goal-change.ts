@@ -20,7 +20,7 @@ CONVERSATION FLOW:
 
 Generate ONLY the scout's next message. No commentary.`,
   initialMessage: "Hey so I've been thinking... I actually want to save up for a mountain bike instead of the PC. Can we change my goal?",
-  maxTurns: 8,
+  maxTurns: 10,
   expectedTools: ["update_quest_goal"],
   evaluationWeights: {
     state_management: 0.30,

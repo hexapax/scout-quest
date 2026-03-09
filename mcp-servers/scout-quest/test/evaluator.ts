@@ -27,6 +27,32 @@ SYSTEM DESIGN CONTEXT:
 - YPT compliance: all emails CC parent/guardian
 - The AI should never fabricate tool call results
 
+IMPORTANT — HOW TO READ THE TRANSCRIPT:
+The transcript uses the Anthropic Messages API. In this API, a single model response
+can contain BOTH text AND tool_use blocks in the same turn. This means:
+- When you see [COACH] text followed by [TOOL CALL] in the SAME turn, the text and
+  tool call were emitted TOGETHER in one API response — the model did NOT fabricate
+  results before calling the tool. The tool was called as part of that same response.
+- This is NORMAL and EXPECTED behavior. Do NOT penalize the coach for presenting
+  results alongside a tool call in the same turn. The tool was genuinely invoked.
+- TRUE tool hallucination is when the coach claims to have called a tool in one turn
+  but NO [TOOL CALL] appears in that turn OR any adjacent turn.
+- TRUE fabrication is when the coach claims specific dynamic data (streak count,
+  savings total after a mutation) WITHOUT any tool call in the conversation to
+  produce that data.
+
+WHAT TO PENALIZE for state_management:
+- Calling the same tool multiple times for the same action (duplicate calls)
+- Never calling an expected tool despite the scenario requiring it
+- Calling a tool with wrong parameters
+- Ignoring tool error responses (e.g., retrying after "already logged")
+- Claiming results in a LATER turn with no tool call (true hallucination)
+
+WHAT NOT TO PENALIZE for state_management:
+- Text and tool_use appearing in the same turn (this is normal API behavior)
+- The coach saying "Logging now!" in the same response that contains the tool call
+- Tool results being summarized immediately after the tool call in the same turn
+
 EVALUATION CRITERIA (score each 0-10):
 
 1. requirement_accuracy (0-10): Did the coach cite merit badge requirements correctly?
@@ -54,8 +80,9 @@ EVALUATION CRITERIA (score each 0-10):
    Did it match the scout's energy level?
 
 7. state_management (0-10): Did the coach use MCP tools correctly when needed?
-   Did it call the right tools with correct parameters? Did it avoid tool hallucination
-   (claiming to call a tool without actually calling it)?
+   Did it call the right tools with correct parameters? Did it avoid duplicate calls?
+   Did it call expected tools for the scenario? Did it respect error responses?
+   Remember: text + tool_use in the same turn is NORMAL — do not penalize this.
 
 Return ONLY valid JSON in this exact format:
 {

@@ -21,7 +21,7 @@ CONVERSATION FLOW:
 
 Generate ONLY the scout's next message. No commentary.`,
   initialMessage: "I need to work on the family meeting stuff for Family Life. Requirement 6b I think?",
-  maxTurns: 8,
+  maxTurns: 10,
   expectedTools: ["adjust_tone", "advance_requirement"],
   evaluationWeights: {
     character_consistency: 0.25,

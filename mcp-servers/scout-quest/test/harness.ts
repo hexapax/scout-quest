@@ -51,21 +51,26 @@ const SCOUT_INSTRUCTIONS = `SCOUT QUEST MCP — SESSION PROTOCOL
 You have access to the Scout Quest system for guiding scouts through
 Personal Management and Family Life merit badges.
 
-IMPORTANT — TOOL USE RULES:
-- You MUST actually call the MCP tools and read the MCP resources listed below.
-- NEVER simulate, fake, or pretend to call a tool. If a tool call fails, report
-  the error honestly. If no profile is found, say so — do not fabricate data.
-- If you need data, READ the resource. If you need to record something, CALL the tool.
+TOOL DISCIPLINE — READ THIS FIRST:
+1. CONFIRM before you act. Ask the scout what they did BEFORE calling any tool.
+   Do NOT assume or guess — get explicit confirmation of the details first.
+2. Call each tool ONCE per action. If you already called log_chore this session
+   and it succeeded, do NOT call it again — chores are done for today.
+3. If a tool returns an error (e.g., "already logged", "duplicate"), STOP.
+   Tell the scout what happened and move on. NEVER retry a failed tool call.
+4. TRACK what you've already done. Before calling any tool, ask yourself:
+   "Did I already call this tool for this action in this conversation?"
+   If yes, do NOT call it again. The data is already recorded.
+5. Read the tool result carefully. The tool response contains the real data
+   (streak count, savings total, etc.). Use THAT data in your reply — do not
+   make up numbers or ignore what the tool returned.
+6. NEVER simulate, fake, or pretend to call a tool. If a tool call fails,
+   report the error honestly. If no profile is found, say so.
+7. If you need data, READ the resource. If you need to record something,
+   CALL the tool. One call, then use the result.
 
-SESSION START:
-1. Read scout://quest-state to load the scout's profile and character config
-2. Read scout://reminders for urgent items
-3. Read scout://quest-plan to load your coaching strategy and milestones
-4. Read scout://last-session for conversation continuity
-5. ADOPT the character persona: base character, overlay, tone level, domain intensity
-
-TOOLS (mutations — you MUST call these, never simulate):
-- log_chore — when scout reports completing chores. Celebrate streaks!
+TOOLS (mutations — call ONCE per action, never retry on error):
+- log_chore — when scout confirms which chores they completed. ASK FIRST, log ONCE.
 - log_budget_entry — weekly budget tracking
 - advance_requirement — move requirements through states
 - compose_email — generate mailto: links. ALWAYS includes parent CC (YPT)
@@ -77,6 +82,25 @@ TOOLS (mutations — you MUST call these, never simulate):
 - update_quest_plan — when your coaching strategy changes
 - log_session_notes — capture what happened this session
 
+TOOL CALL FLOW (follow this for every mutation):
+1. LISTEN — let the scout tell you what they did or want
+2. CLARIFY — ask if anything is unclear ("Which chores?" / "How much?")
+3. CONFIRM — repeat back what you'll log ("So dishes and trash today?")
+4. CALL — make ONE tool call with the confirmed details
+5. REPORT — share the tool result with the scout (streak, savings, etc.)
+If the tool returns an error, explain it and ask what to do next. Do NOT retry.
+
+CHARACTER — THIS IS NOT OPTIONAL:
+- The scout's profile below defines your persona.
+- base character: your core personality (Guide, Pathfinder, or Trailblazer)
+- quest overlay: your domain vocabulary (e.g., gamer_hardware, outdoor_gear).
+  USE domain terms naturally in conversation. At domain_intensity 3+, weave
+  in 1-2 domain references per response (e.g., "nice combo — that's like
+  upgrading your RAM and GPU in the same build").
+- tone_dial: 1=minimal personality, 5=maximum personality. Match this level.
+- avoid list: NEVER use words/phrases on the avoid list.
+- Stay in character for the ENTIRE session. Don't drop it mid-conversation.
+
 CRITICAL RULES:
 - NEVER do the scout's work for them. Guide with questions, templates, review.
 - NEVER write emails, budgets, or plans FOR the scout. Help them build it.
@@ -84,8 +108,7 @@ CRITICAL RULES:
 - compose_email ALWAYS CCs the parent/guardian (YPT — automatic).
 - Requirements must be met "as stated — no more and no less."
 - Only counselors sign off requirements (you cannot mark signed_off).
-- ADOPT the character from the scout's profile. Stay consistent.
-- If the scout signals cringe, use adjust_tone immediately.
+- If the scout signals cringe, use adjust_tone immediately, then keep going.
 - Celebrate milestones. Daily chore logs are a grind — make them worth it.
 - For sensitive Family Life topics (Req 6b), drop tone to level 2 automatically.
 - Match the scout's message length. Don't write paragraphs for "yeah."
@@ -107,7 +130,10 @@ const { values: args } = parseArgs({
     "dry-run": { type: "boolean", default: false },
     "skip-eval": { type: "boolean", default: false },
     "mongo-uri": { type: "string", default: "" },
+    thinking: { type: "boolean", default: false },
+    "thinking-budget": { type: "string", default: "10000" },
   },
+  allowPositionals: true,
 });
 
 // ---------------------------------------------------------------------------
@@ -153,6 +179,8 @@ async function main(): Promise<void> {
     modelUnderTest: args.model!,
     budgetPerScenario: 0.50,
     budgetPerRun: 10.00,
+    thinkingEnabled: args.thinking!,
+    thinkingBudget: parseInt(args["thinking-budget"]!, 10),
   };
 
   if (!config.anthropicApiKey) {
@@ -162,6 +190,9 @@ async function main(): Promise<void> {
 
   console.log(`Simulator model:  ${config.simulatorModel}`);
   console.log(`Evaluator model:  ${config.evaluatorModel}`);
+  if (config.thinkingEnabled) {
+    console.log(`Thinking:         enabled (budget: ${config.thinkingBudget} tokens)`);
+  }
   console.log(`MongoDB:          ${config.mongoUri}`);
   console.log(`Output:           ${args.output}`);
   console.log();
@@ -297,11 +328,19 @@ async function runScenario(
       transcript,
       db,
       config.scoutEmail,
+      config.thinkingEnabled ? { enabled: true, budget: config.thinkingBudget } : undefined,
     );
 
+    if (coachResponse.thinkingText) {
+      const thinkingPreview = coachResponse.thinkingText.substring(0, 150).replace(/\n/g, " ");
+      console.log(`  [THINK] ${thinkingPreview}${coachResponse.thinkingText.length > 150 ? "..." : ""}`);
+    }
     console.log(`  [COACH] ${coachResponse.content.substring(0, 120)}${coachResponse.content.length > 120 ? "..." : ""}`);
     if (coachResponse.toolCalls.length > 0) {
       console.log(`  [TOOLS] ${coachResponse.toolCalls.map((tc) => tc.name).join(", ")}`);
+    }
+    if (coachResponse.usage && config.thinkingEnabled) {
+      console.log(`  [USAGE] in=${coachResponse.usage.inputTokens} out=${coachResponse.usage.outputTokens} think≈${coachResponse.usage.thinkingTokens}`);
     }
 
     transcript.push({
@@ -368,6 +407,8 @@ async function runScenario(
 interface CoachResponse {
   content: string;
   toolCalls: ToolCallRecord[];
+  thinkingText?: string;
+  usage?: { inputTokens: number; outputTokens: number; thinkingTokens: number };
 }
 
 async function callModelUnderTest(
@@ -377,15 +418,56 @@ async function callModelUnderTest(
   transcript: TranscriptMessage[],
   db: Db,
   scoutEmail: string,
+  thinkingConfig?: { enabled: boolean; budget: number },
 ): Promise<CoachResponse> {
-  // Build message history for the API
-  const messages: Anthropic.MessageParam[] = transcript.map((msg) => ({
-    role: msg.role === "scout" ? "user" : "assistant",
-    content: msg.content,
-  }));
+  // Build message history for the API, preserving tool_use and tool_result
+  // blocks so the model can see its own prior tool calls and results.
+  const messages: Anthropic.MessageParam[] = [];
+  for (const msg of transcript) {
+    if (msg.role === "scout") {
+      messages.push({ role: "user", content: msg.content });
+    } else {
+      // Coach message: reconstruct content blocks including tool_use
+      const contentBlocks: Anthropic.ContentBlock[] = [];
+      if (msg.content) {
+        contentBlocks.push({ type: "text", text: msg.content });
+      }
+      if (msg.toolCalls && msg.toolCalls.length > 0) {
+        for (let i = 0; i < msg.toolCalls.length; i++) {
+          const tc = msg.toolCalls[i];
+          const toolUseId = `prev_${messages.length}_${i}`;
+          contentBlocks.push({
+            type: "tool_use",
+            id: toolUseId,
+            name: tc.name,
+            input: tc.args,
+          });
+        }
+      }
+      messages.push({ role: "assistant", content: contentBlocks as Anthropic.ContentBlock[] });
+
+      // Add tool results as a user message (Anthropic API convention)
+      if (msg.toolCalls && msg.toolCalls.length > 0) {
+        const toolResults: Anthropic.ToolResultBlockParam[] = msg.toolCalls.map((tc, i) => ({
+          type: "tool_result" as const,
+          tool_use_id: `prev_${messages.length - 1}_${i}`,
+          content: tc.result,
+        }));
+        messages.push({ role: "user", content: toolResults });
+      }
+    }
+  }
 
   const toolCalls: ToolCallRecord[] = [];
   let finalContent = "";
+  let thinkingText = "";
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
+  let totalThinkingTokens = 0;
+
+  // Build request params — extended thinking changes the API shape
+  const useThinking = thinkingConfig?.enabled ?? false;
+  const thinkingBudget = thinkingConfig?.budget ?? 10000;
 
   // Recursive tool-use loop: keep calling until model stops requesting tools
   let iterations = 0;
@@ -394,20 +476,50 @@ async function callModelUnderTest(
   while (iterations < maxIterations) {
     iterations++;
 
-    const response = await client.messages.create({
+    // Extended thinking requires higher max_tokens and uses a different param shape
+    const requestParams: Record<string, unknown> = {
       model,
-      max_tokens: 1500,
       system: systemPrompt,
       messages,
-      tools: SCOUT_TOOL_DEFINITIONS as Anthropic.Tool[],
-    });
+      tools: SCOUT_TOOL_DEFINITIONS,
+    };
+
+    if (useThinking) {
+      // max_tokens must be strictly greater than thinking budget
+      requestParams.max_tokens = thinkingBudget + 4000;
+      requestParams.thinking = {
+        type: "enabled",
+        budget_tokens: thinkingBudget,
+      };
+    } else {
+      requestParams.max_tokens = 1500;
+    }
+
+    const response = await client.messages.create(requestParams as Parameters<typeof client.messages.create>[0]);
+
+    // Accumulate token usage
+    const usage = response.usage as { input_tokens?: number; output_tokens?: number } | undefined;
+    if (usage) {
+      totalInputTokens += usage.input_tokens || 0;
+      totalOutputTokens += usage.output_tokens || 0;
+    }
+    // Count thinking tokens from content blocks
+    for (const block of response.content) {
+      if (block.type === "thinking") {
+        const thinkingBlock = block as { type: "thinking"; thinking: string };
+        // Rough estimate: ~4 chars per token for thinking text
+        totalThinkingTokens += Math.ceil(thinkingBlock.thinking.length / 4);
+      }
+    }
 
     // Process response content blocks
     let hasToolUse = false;
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
 
     for (const block of response.content) {
-      if (block.type === "text") {
+      if (block.type === "thinking") {
+        thinkingText += (block as { type: "thinking"; thinking: string }).thinking + "\n";
+      } else if (block.type === "text") {
         finalContent += block.text;
       } else if (block.type === "tool_use") {
         hasToolUse = true;
@@ -446,7 +558,12 @@ async function callModelUnderTest(
     });
   }
 
-  return { content: finalContent, toolCalls };
+  return {
+    content: finalContent,
+    toolCalls,
+    thinkingText: thinkingText || undefined,
+    usage: { inputTokens: totalInputTokens, outputTokens: totalOutputTokens, thinkingTokens: totalThinkingTokens },
+  };
 }
 
 // ---------------------------------------------------------------------------

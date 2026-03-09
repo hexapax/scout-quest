@@ -24,10 +24,10 @@ afterAll(async () => {
 describe("resources (integration)", () => {
   beforeEach(async () => {
     if (!mongoAvailable || !db) return;
-    const collections = await db.listCollections().toArray();
-    for (const col of collections) {
-      await db.collection(col.name).deleteMany({});
-    }
+    // Only clean up emails used by this file (avoid cross-file interference in parallel runs)
+    const emails = ["streak@scout.com", "gap@scout.com", "budget@scout.com"];
+    await db.collection("chore_logs").deleteMany({ scout_email: { $in: emails } });
+    await db.collection("budget_entries").deleteMany({ scout_email: { $in: emails } });
   });
 
   describe("chore streak calculation", () => {

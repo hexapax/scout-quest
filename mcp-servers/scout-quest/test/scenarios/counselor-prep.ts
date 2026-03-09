@@ -21,7 +21,7 @@ CONVERSATION FLOW:
 
 Generate ONLY the scout's next message. No commentary.`,
   initialMessage: "I have a meeting with Mr. Chen next week for Personal Management. What do I need to bring?",
-  maxTurns: 8,
+  maxTurns: 12,
   expectedTools: ["compose_email", "update_quest_plan"],
   evaluationWeights: {
     requirement_accuracy: 0.25,

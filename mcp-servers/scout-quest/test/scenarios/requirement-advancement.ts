@@ -21,7 +21,7 @@ CONVERSATION FLOW:
 
 Generate ONLY the scout's next message. No commentary.`,
   initialMessage: "I finished my budget plan! Can we mark requirement 2a as done?",
-  maxTurns: 10,
+  maxTurns: 14,
   expectedTools: ["advance_requirement"],
   evaluationWeights: {
     state_management: 0.25,
