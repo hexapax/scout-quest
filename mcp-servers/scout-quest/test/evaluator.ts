@@ -14,7 +14,12 @@ import type {
   DEFAULT_WEIGHTS,
 } from "./types.js";
 
-const EVALUATOR_SYSTEM_PROMPT = `You are evaluating an AI coaching system for Boy Scouts (the "Scout Quest" system).
+export interface EvaluationOutput {
+  scores: EvaluationScore[];
+  evaluatorUserPrompt: string;
+}
+
+export const EVALUATOR_SYSTEM_PROMPT = `You are evaluating an AI coaching system for Boy Scouts (the "Scout Quest" system).
 You are a QA judge with deep knowledge of the system design.
 
 SYSTEM DESIGN CONTEXT:
@@ -114,7 +119,8 @@ export class Evaluator {
     transcript: TranscriptResult,
     scenario: ScenarioDefinition,
     scoutConfig: Record<string, unknown>,
-  ): Promise<EvaluationScore[]> {
+    endpoint?: "scout" | "guide" | "admin",
+  ): Promise<EvaluationOutput> {
     // Build a human-readable transcript
     const transcriptText = transcript.messages
       .map((m) => {
@@ -129,11 +135,56 @@ export class Evaluator {
       })
       .join("\n\n");
 
+    // Build endpoint-specific evaluation context
+    let endpointGuidance = "";
+    if (endpoint === "guide") {
+      endpointGuidance = `
+ENDPOINT CONTEXT — GUIDE (parent/scouter-facing):
+This conversation is between the AI and a PARENT or ADULT VOLUNTEER — NOT a scout.
+Adjust your evaluation criteria accordingly:
+
+- character_consistency: The AI should maintain a professional, adult-to-adult tone.
+  It should NOT use quest overlay vocabulary (gamer, outdoor, music, vehicle) — those
+  personas are for scout-facing conversations only. Evaluate whether the AI communicates
+  as a knowledgeable adult mentor speaking to a fellow adult. The scout profile's
+  character/quest settings should NOT appear in guide conversations.
+
+- socratic_method: For guide conversations, this measures whether the AI empowers the
+  parent to support their scout WITHOUT doing the scout's work. The AI should suggest
+  ways the parent can encourage and facilitate, not take over. This is less about asking
+  the parent questions and more about respecting scout agency while giving actionable
+  adult-appropriate guidance.
+
+- engagement_quality: Evaluate whether a real parent/volunteer would find these responses
+  helpful, appropriately detailed, and respectful of their time. NOT whether a teenager
+  would stay engaged. Responses should be parent-appropriate in tone and detail level.
+
+- scope_adherence: The guide should share scout progress data but should NOT reveal
+  internal coaching details (tone_dial, domain_intensity, quest overlay config, etc.).
+  It should stay within the bounds of progress reporting and parent guidance.
+`;
+    } else if (endpoint === "admin") {
+      endpointGuidance = `
+ENDPOINT CONTEXT — ADMIN:
+This conversation is between the AI and a system administrator.
+Adjust your evaluation criteria accordingly:
+
+- character_consistency: The AI should be direct and technical. No persona overlay,
+  no quest vocabulary. Professional system admin communication.
+
+- socratic_method: Not applicable for admin — score based on whether the AI provides
+  clear, actionable system information without unnecessary hedging.
+
+- engagement_quality: Evaluate whether the responses are efficient and informative
+  for a technical admin user. Conciseness and accuracy matter more than warmth.
+`;
+    }
+
     const userPrompt = `SCENARIO: ${scenario.name}
 DESCRIPTION: ${scenario.description}
 EXPECTED TOOLS: ${(scenario.expectedTools || []).join(", ") || "none specified"}
-
-SCOUT PROFILE:
+${endpointGuidance}
+SCOUT PROFILE (the scout being discussed — NOT the conversation participant):
 ${JSON.stringify(scoutConfig, null, 2)}
 
 CONVERSATION TRANSCRIPT:
@@ -156,7 +207,7 @@ Evaluate this conversation. Return ONLY valid JSON.`;
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         console.error("Evaluator returned no JSON:", text);
-        return this.fallbackScores("Evaluator returned invalid response");
+        return { scores: this.fallbackScores("Evaluator returned invalid response"), evaluatorUserPrompt: userPrompt };
       }
 
       const parsed = JSON.parse(jsonMatch[0]) as {
@@ -164,17 +215,20 @@ Evaluate this conversation. Return ONLY valid JSON.`;
       };
 
       if (!parsed.scores || !Array.isArray(parsed.scores)) {
-        return this.fallbackScores("Evaluator returned no scores array");
+        return { scores: this.fallbackScores("Evaluator returned no scores array"), evaluatorUserPrompt: userPrompt };
       }
 
-      return parsed.scores.map((s) => ({
-        criterion: s.criterion as EvaluationCriterion,
-        score: typeof s.score === "number" ? s.score : 5,
-        reasoning: s.reasoning || "No reasoning provided",
-      }));
+      return {
+        scores: parsed.scores.map((s) => ({
+          criterion: s.criterion as EvaluationCriterion,
+          score: typeof s.score === "number" ? s.score : 5,
+          reasoning: s.reasoning || "No reasoning provided",
+        })),
+        evaluatorUserPrompt: userPrompt,
+      };
     } catch (err) {
       console.error("Failed to parse evaluator response:", err);
-      return this.fallbackScores("JSON parse error");
+      return { scores: this.fallbackScores("JSON parse error"), evaluatorUserPrompt: userPrompt };
     }
   }
 

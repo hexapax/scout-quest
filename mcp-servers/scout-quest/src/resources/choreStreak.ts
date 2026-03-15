@@ -1,5 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { choreLogs, requirements } from "../db.js";
+import { choreLogs, requirements, scouts } from "../db.js";
 
 export function registerChoreStreak(server: McpServer, scoutEmail: string): void {
   server.registerResource(
@@ -12,6 +12,8 @@ export function registerChoreStreak(server: McpServer, scoutEmail: string): void
     },
     async (uri) => {
       const col = await choreLogs();
+      const scoutsCol = await scouts();
+      const scout = await scoutsCol.findOne({ email: scoutEmail });
       const logs = await col.find({ scout_email: scoutEmail }).sort({ date: -1 }).toArray();
 
       // Calculate current streak
@@ -58,6 +60,15 @@ export function registerChoreStreak(server: McpServer, scoutEmail: string): void
       const fl3Progress = flReq3?.tracking_progress ?? 0;
       const fl3DaysRemaining = Math.max(0, 90 - fl3Progress);
 
+      // Include the scout's configured chore list so the coach knows valid IDs
+      const choreList = (scout?.chore_list || []).map((c: { id: string; name: string; frequency: string; earns_income: boolean; income_amount: number | null }) => ({
+        id: c.id,
+        name: c.name,
+        frequency: c.frequency,
+        earns_income: c.earns_income ?? false,
+        income_amount: c.income_amount ?? 0,
+      }));
+
       return {
         contents: [{
           uri: uri.href,
@@ -67,6 +78,7 @@ export function registerChoreStreak(server: McpServer, scoutEmail: string): void
             total_earned: Math.round(totalEarned * 100) / 100,
             logged_today: loggedToday,
             total_log_entries: logs.length,
+            available_chores: choreList,
             fl_req_3: {
               days_completed: fl3Progress,
               days_remaining: fl3DaysRemaining,

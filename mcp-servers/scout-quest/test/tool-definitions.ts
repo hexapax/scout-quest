@@ -9,6 +9,12 @@
 
 import { MongoClient, Db } from "mongodb";
 import type { AnthropicToolDef, ToolCallRecord } from "./types.js";
+import { REQUIREMENT_DEFINITIONS } from "../src/constants.js";
+
+/** Lookup map: req_id → { name, description } from static definitions. */
+const REQ_TEXT = new Map(
+  REQUIREMENT_DEFINITIONS.map(d => [d.req_id, { name: d.name, description: d.description }]),
+);
 
 // ---------------------------------------------------------------------------
 // Anthropic-format tool definitions (mirroring MCP Zod schemas)
@@ -17,7 +23,7 @@ import type { AnthropicToolDef, ToolCallRecord } from "./types.js";
 export const SCOUT_TOOL_DEFINITIONS: AnthropicToolDef[] = [
   {
     name: "log_chore",
-    description: "Record completed chores for today (or a recent date). Updates savings, chore streak, and FL Req 3 progress.",
+    description: "Record completed chores for today (or a recent date). Pass ALL chore IDs completed today — if chores were already logged today, this replaces the entry with the new list. Use read_chore_streak to see available chores and their IDs. Updates savings, chore streak, and FL Req 3 progress.",
     input_schema: {
       type: "object",
       properties: {
@@ -229,6 +235,45 @@ export const SCOUT_TOOL_DEFINITIONS: AnthropicToolDef[] = [
       required: ["topics_discussed", "progress_made"],
     },
   },
+
+  // =========================================================================
+  // READ TOOLS — mirror MCP resources for test harness
+  // =========================================================================
+  {
+    name: "read_quest_state",
+    description: "Read the scout's quest state: goal, savings, target budget, progress percentage.",
+    input_schema: { type: "object", properties: {}, required: [] },
+  },
+  {
+    name: "read_requirements",
+    description: "Read all Personal Management and Family Life requirements with current status (not_started, in_progress, tracking, ready_for_review, signed_off).",
+    input_schema: {
+      type: "object",
+      properties: {
+        req_id: { type: "string", description: "Optional: fetch a single requirement by ID (e.g. pm_2a)" },
+      },
+    },
+  },
+  {
+    name: "read_budget_summary",
+    description: "Read budget tracking summary: weeks tracked, weeks remaining, projected vs actual income/expenses/savings, savings toward goal.",
+    input_schema: { type: "object", properties: {}, required: [] },
+  },
+  {
+    name: "read_chore_streak",
+    description: "Read chore streak info: current streak, longest streak, total earned, whether today is logged, FL Req 3 progress.",
+    input_schema: { type: "object", properties: {}, required: [] },
+  },
+  {
+    name: "read_last_session",
+    description: "Read the most recent session notes: topics discussed, progress made, pending items, next session focus.",
+    input_schema: { type: "object", properties: {}, required: [] },
+  },
+  {
+    name: "read_quest_plan",
+    description: "Read the coaching plan: current priorities, strategy notes, milestones, scout observations, next counselor session prep.",
+    input_schema: { type: "object", properties: {}, required: [] },
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -271,15 +316,27 @@ export async function dispatchToolCall(
 
       const nextDay = new Date(choreDate);
       nextDay.setDate(nextDay.getDate() + 1);
-      const existing = await choreLogs.findOne({ scout_email: scoutEmail, date: { $gte: choreDate, $lt: nextDay } });
-      if (existing) return `Error: Chores already logged for ${choreDate.toISOString().split("T")[0]}.`;
-
       const choresCompleted = args.chores_completed as string[];
       let income = 0;
       const choreMap = new Map((scout.chore_list || []).map((c: Record<string, unknown>) => [c.id, c]));
       for (const id of choresCompleted) {
         const chore = choreMap.get(id) as Record<string, unknown> | undefined;
         if (chore?.earns_income && chore.income_amount) income += chore.income_amount as number;
+      }
+
+      // Check for existing entry — update if found (allows adding chores to today's log)
+      const existing = await choreLogs.findOne({ scout_email: scoutEmail, date: { $gte: choreDate, $lt: nextDay } });
+      if (existing) {
+        const prevIncome = (existing.income_earned as number) || 0;
+        const incomeDiff = income - prevIncome;
+        await choreLogs.updateOne(
+          { _id: existing._id },
+          { $set: { chores_completed: choresCompleted, income_earned: income, notes: args.notes || null, updated_at: new Date() } },
+        );
+        if (incomeDiff !== 0) {
+          await scouts.updateOne({ email: scoutEmail }, { $inc: { "quest_state.current_savings": incomeDiff } });
+        }
+        return `Chores updated for ${choreDate.toISOString().split("T")[0]}: ${choresCompleted.length} chore(s). Earned: $${income.toFixed(2)} (updated from $${prevIncome.toFixed(2)}).`;
       }
 
       await choreLogs.insertOne({ scout_email: scoutEmail, date: choreDate, chores_completed: choresCompleted, income_earned: income, notes: args.notes || null, created_at: new Date() });
@@ -453,6 +510,179 @@ export async function dispatchToolCall(
     case "send_notification": {
       // In test harness, we don't actually send notifications
       return `Notification sent: ${args.title || args.message}`;
+    }
+
+    // =====================================================================
+    // READ TOOLS — mirror MCP resources
+    // =====================================================================
+
+    case "read_quest_state": {
+      const scout = await scouts.findOne({ email: scoutEmail });
+      if (!scout) return JSON.stringify({ error: "Scout not found" });
+
+      const qs = scout.quest_state;
+      const daysSinceStart = qs.quest_start_date
+        ? Math.floor((Date.now() - new Date(qs.quest_start_date).getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
+      const budgetRemaining = qs.target_budget - qs.current_savings;
+
+      return JSON.stringify({
+        goal_item: qs.goal_item,
+        goal_description: qs.goal_description,
+        target_budget: qs.target_budget,
+        current_savings: qs.current_savings,
+        quest_status: qs.quest_status,
+        days_since_start: daysSinceStart,
+        budget_remaining: Math.max(0, budgetRemaining),
+        progress_percent: qs.target_budget > 0
+          ? Math.round((qs.current_savings / qs.target_budget) * 100)
+          : 0,
+      });
+    }
+
+    case "read_requirements": {
+      if (args.req_id) {
+        const req = await reqs.findOne({ scout_email: scoutEmail, req_id: args.req_id as string });
+        if (!req) return JSON.stringify({ error: `Requirement ${args.req_id} not found` });
+        const { _id, ...rest } = req;
+        const def = REQ_TEXT.get(args.req_id as string);
+        return JSON.stringify({ ...rest, name: def?.name ?? req.req_id, description: def?.description ?? "" });
+      }
+
+      const allReqs = await reqs.find({ scout_email: scoutEmail }).sort({ req_id: 1 }).toArray();
+      return JSON.stringify(allReqs.map(r => {
+        const def = REQ_TEXT.get(r.req_id);
+        return {
+          req_id: r.req_id,
+          badge: r.badge,
+          name: def?.name ?? r.req_id,
+          description: def?.description ?? "",
+          status: r.status,
+          quest_driven: r.quest_driven,
+          interaction_mode: r.interaction_mode,
+          tracking_progress: r.tracking_progress,
+          tracking_duration: r.tracking_duration,
+        };
+      }));
+    }
+
+    case "read_budget_summary": {
+      const scout = await scouts.findOne({ email: scoutEmail });
+      const projected = scout?.budget_projected;
+
+      const entries = await budgetEntries.find({ scout_email: scoutEmail }).sort({ week_number: 1 }).toArray();
+
+      const actualIncome = entries.reduce((s, e) => s + (e.income as Array<{amount: number}>).reduce((si, i) => si + i.amount, 0), 0);
+      const actualExpenses = entries.reduce((s, e) => s + (e.expenses as Array<{amount: number}>).reduce((se, ex) => se + ex.amount, 0), 0);
+      const actualSavings = entries.reduce((s, e) => s + (e.savings_deposited as number), 0);
+
+      const projectedWeeklyIncome = projected?.income_sources?.reduce((s: number, i: {weekly_amount: number}) => s + i.weekly_amount, 0) ?? 0;
+      const projectedWeeklyExpenses = projected?.expense_categories?.reduce((s: number, e: {weekly_amount: number}) => s + e.weekly_amount, 0) ?? 0;
+
+      return JSON.stringify({
+        weeks_tracked: entries.length,
+        weeks_remaining: Math.max(0, 13 - entries.length),
+        projected: projected ? {
+          weekly_income: projectedWeeklyIncome,
+          weekly_expenses: projectedWeeklyExpenses,
+          weekly_savings_target: projected.savings_target_weekly,
+        } : null,
+        actual: {
+          total_income: Math.round(actualIncome * 100) / 100,
+          total_expenses: Math.round(actualExpenses * 100) / 100,
+          total_savings: Math.round(actualSavings * 100) / 100,
+        },
+        savings_toward_goal: scout?.quest_state?.current_savings ?? 0,
+        goal_target: scout?.quest_state?.target_budget ?? 0,
+      });
+    }
+
+    case "read_chore_streak": {
+      const scout = await scouts.findOne({ email: scoutEmail });
+      const logs = await choreLogs.find({ scout_email: scoutEmail }).sort({ date: -1 }).toArray();
+
+      let currentStreak = 0;
+      let longestStreak = 0;
+      let totalEarned = 0;
+      let loggedToday = false;
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (logs.length > 0) {
+        const latestDate = new Date(logs[0].date as Date);
+        latestDate.setHours(0, 0, 0, 0);
+        loggedToday = latestDate.getTime() === today.getTime();
+
+        let expectedDate = loggedToday ? today : new Date(today.getTime() - 86400000);
+        let streak = 0;
+
+        for (const log of logs) {
+          const logDate = new Date(log.date as Date);
+          logDate.setHours(0, 0, 0, 0);
+          totalEarned += (log.income_earned as number) || 0;
+
+          if (logDate.getTime() === expectedDate.getTime()) {
+            streak++;
+            expectedDate = new Date(expectedDate.getTime() - 86400000);
+          } else if (logDate.getTime() < expectedDate.getTime()) {
+            if (streak > longestStreak) longestStreak = streak;
+            break;
+          }
+        }
+        currentStreak = streak;
+        if (currentStreak > longestStreak) longestStreak = currentStreak;
+      }
+
+      const flReq3 = await reqs.findOne({ scout_email: scoutEmail, req_id: "fl_3" });
+
+      // Include the scout's configured chore list so the coach knows valid IDs
+      const choreList = (scout?.chore_list || []).map((c: Record<string, unknown>) => ({
+        id: c.id,
+        name: c.name,
+        frequency: c.frequency,
+        earns_income: c.earns_income ?? false,
+        income_amount: c.income_amount ?? 0,
+      }));
+
+      return JSON.stringify({
+        current_streak: currentStreak,
+        longest_streak: longestStreak,
+        total_earned: Math.round(totalEarned * 100) / 100,
+        logged_today: loggedToday,
+        total_log_entries: logs.length,
+        available_chores: choreList,
+        fl_req_3: {
+          days_completed: flReq3?.tracking_progress ?? 0,
+          days_remaining: Math.max(0, 90 - (flReq3?.tracking_progress ?? 0)),
+          status: flReq3?.status ?? "not_started",
+        },
+      });
+    }
+
+    case "read_last_session": {
+      const lastSession = await sessionNotes.findOne(
+        { scout_email: scoutEmail },
+        { sort: { session_date: -1 } },
+      );
+      if (!lastSession) return JSON.stringify({ status: "no_sessions" });
+
+      return JSON.stringify({
+        session_date: lastSession.session_date,
+        source: lastSession.source,
+        topics_discussed: lastSession.topics_discussed,
+        progress_made: lastSession.progress_made,
+        pending_items: lastSession.pending_items,
+        next_session_focus: lastSession.next_session_focus,
+      });
+    }
+
+    case "read_quest_plan": {
+      const plan = await questPlans.findOne({ scout_email: scoutEmail });
+      if (!plan) return JSON.stringify({ status: "no_plan" });
+
+      const { _id, scout_email: _, ...rest } = plan;
+      return JSON.stringify(rest);
     }
 
     // -----------------------------------------------------------------------

@@ -9,7 +9,7 @@ export function registerLogChore(server: McpServer, scoutEmail: string): void {
     "log_chore",
     {
       title: "Log Chores",
-      description: "Record completed chores for today (or a recent date). Updates savings, chore streak, and FL Req 3 progress.",
+      description: "Record completed chores for today (or a recent date). Pass ALL chore IDs completed today — if chores were already logged today, this replaces the entry with the new list. Read chore_streak resource to see available chores and their IDs. Updates savings, chore streak, and FL Req 3 progress.",
       inputSchema: {
         chores_completed: z.array(z.string()).min(1).describe("IDs of chores completed from the scout's chore list"),
         notes: z.string().optional().describe("Optional notes about today's chores"),
@@ -31,18 +31,6 @@ export function registerLogChore(server: McpServer, scoutEmail: string): void {
         return { content: [{ type: "text", text: "Error: Can only log chores for today or up to 3 days ago." }] };
       }
 
-      // Check for duplicate day entry
-      const choreCol = await choreLogs();
-      const nextDay = new Date(choreDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const existing = await choreCol.findOne({
-        scout_email: scoutEmail,
-        date: { $gte: choreDate, $lt: nextDay },
-      });
-      if (existing) {
-        return { content: [{ type: "text", text: `Error: Chores already logged for ${choreDate.toISOString().split("T")[0]}. One entry per day.` }] };
-      }
-
       // Calculate income from completed chores
       let incomeEarned = 0;
       const choreMap = new Map(scout.chore_list.map(c => [c.id, c]));
@@ -53,7 +41,31 @@ export function registerLogChore(server: McpServer, scoutEmail: string): void {
         }
       }
 
-      // Insert chore log
+      // Check for existing entry — update if found (allows adding chores to today's log)
+      const choreCol = await choreLogs();
+      const nextDay = new Date(choreDate);
+      nextDay.setDate(nextDay.getDate() + 1);
+      const existing = await choreCol.findOne({
+        scout_email: scoutEmail,
+        date: { $gte: choreDate, $lt: nextDay },
+      });
+      if (existing) {
+        const prevIncome = existing.income_earned || 0;
+        const incomeDiff = incomeEarned - prevIncome;
+        await choreCol.updateOne(
+          { _id: existing._id },
+          { $set: { chores_completed, income_earned: incomeEarned, notes, updated_at: new Date() } },
+        );
+        if (incomeDiff !== 0) {
+          await scoutsCol.updateOne(
+            { email: scoutEmail },
+            { $inc: { "quest_state.current_savings": incomeDiff } },
+          );
+        }
+        return { content: [{ type: "text", text: `Chores updated for ${choreDate.toISOString().split("T")[0]}: ${chores_completed.length} chore(s). Earned: $${incomeEarned.toFixed(2)} (updated from $${prevIncome.toFixed(2)}).` }] };
+      }
+
+      // Insert new chore log
       await choreCol.insertOne({
         scout_email: scoutEmail,
         date: choreDate,

@@ -68,10 +68,18 @@ export interface ToolCallRecord {
   result: string;
 }
 
+export interface TurnTokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+  thinkingTokens: number;
+}
+
 export interface TranscriptMessage {
   role: "scout" | "coach";
   content: string;
   toolCalls?: ToolCallRecord[];
+  thinkingText?: string;
+  tokenUsage?: TurnTokenUsage;
   timestamp: Date;
 }
 
@@ -149,5 +157,118 @@ export interface AnthropicToolDef {
     type: "object";
     properties: Record<string, unknown>;
     required?: string[];
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Session chains (multi-session progression tests)
+// ---------------------------------------------------------------------------
+
+/** Snapshot of relevant DB collections for diff comparison. */
+export interface DBSnapshot {
+  scout: Record<string, unknown> | null;
+  requirements: Record<string, unknown>[];
+  choreLogCount: number;
+  budgetEntryCount: number;
+  budgetRunningTotal: number;
+  sessionNotes: Record<string, unknown>[];
+  questPlan: Record<string, unknown> | null;
+}
+
+/** A single step in a session chain. */
+export interface ChainStep {
+  /** Step ID (e.g., "ask-status", "log-budget-5") */
+  id: string;
+  /** Human-readable description of what this step tests */
+  description: string;
+  /** System prompt for the scout simulator */
+  scoutSimPrompt: string;
+  /** First message from the scout */
+  initialMessage: string;
+  /** Max conversation turns for this step */
+  maxTurns: number;
+  /** Expected tool calls */
+  expectedTools?: string[];
+  /** Override evaluation weights */
+  evaluationWeights?: Partial<Record<EvaluationCriterion, number>>;
+  /** Additional context for the evaluator about this step */
+  evaluatorContext?: string;
+  /** DB mutations expected after this step (for human review) */
+  expectedMutations?: string[];
+  /**
+   * DB mutations to apply BEFORE this step runs.
+   * Simulates external events (e.g., counselor signs off a requirement).
+   * Each entry: { collection, filter, update } passed to MongoDB updateOne/insertOne.
+   */
+  preStepMutations?: Array<{
+    collection: string;
+    filter: Record<string, unknown>;
+    update: Record<string, unknown>;
+  }>;
+}
+
+/** An ordered sequence of steps that share DB state. */
+export interface SessionChain {
+  id: string;
+  name: string;
+  description: string;
+  /** Which MCP endpoint this chain tests. Defaults to "scout". */
+  endpoint?: "scout" | "guide" | "admin";
+  steps: ChainStep[];
+}
+
+/** Result of a single chain step. */
+export interface ChainStepResult {
+  stepId: string;
+  evaluation: EvaluationResult;
+  capture: TestRunCapture;
+  dbBefore: DBSnapshot;
+  dbAfter: DBSnapshot;
+}
+
+/** Result of a full chain run. */
+export interface ChainRunResult {
+  chainId: string;
+  chainName: string;
+  steps: ChainStepResult[];
+  overallScore: number;
+  startTime: string;
+  endTime: string;
+  durationMs: number;
+}
+
+// ---------------------------------------------------------------------------
+// Full test run capture (JSON output format)
+// ---------------------------------------------------------------------------
+
+export interface TestRunCapture {
+  /** Schema version for forward compatibility */
+  version: 1;
+  capturedAt: string;
+  config: {
+    modelUnderTest: string;
+    simulatorModel: string;
+    evaluatorModel: string;
+    thinkingEnabled: boolean;
+    thinkingBudget: number;
+  };
+  scenario: ScenarioDefinition;
+  scoutProfile: Record<string, unknown>;
+  systemPrompt: string;
+  toolDefinitions: AnthropicToolDef[];
+  evaluator: {
+    systemPrompt: string;
+    userPrompt: string;
+  };
+  transcript: TranscriptMessage[];
+  evaluation: {
+    scores: EvaluationScore[];
+    overallScore: number;
+    hallucinations: HallucinationRecord[];
+  };
+  timing: {
+    startTime: string;
+    endTime: string;
+    durationMs: number;
   };
 }

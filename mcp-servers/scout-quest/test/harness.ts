@@ -22,16 +22,26 @@ import type {
   ToolCallRecord,
   HallucinationRecord,
   EvaluationCriterion,
+  TestRunCapture,
+  AnthropicToolDef,
+  ChainStep,
+  ChainStepResult,
+  ChainRunResult,
+  ScenarioDefinition,
   DEFAULT_WEIGHTS,
 } from "./types.js";
 import { DEFAULT_WEIGHTS as WEIGHTS } from "./types.js";
 import { SCENARIOS, SCENARIO_IDS } from "./scenarios/index.js";
+import { CHAINS, CHAIN_IDS } from "./chains/index.js";
 import { ScoutSimulator } from "./scout-simulator.js";
-import { Evaluator } from "./evaluator.js";
+import { Evaluator, EVALUATOR_SYSTEM_PROMPT } from "./evaluator.js";
 import { SCOUT_TOOL_DEFINITIONS, dispatchToolCall } from "./tool-definitions.js";
+import { GUIDE_TOOL_DEFINITIONS, dispatchGuideToolCall } from "./tool-definitions-guide.js";
 import { analyzeTranscript } from "./hallucination.js";
+import { captureSnapshot, diffSnapshots } from "./db-snapshot.js";
 import {
   TEST_SCOUT_EMAIL,
+  TEST_GUIDE_EMAIL,
   TEST_SCOUT,
   TEST_SCOUT_USER,
   TEST_GUIDE_USER,
@@ -69,7 +79,23 @@ TOOL DISCIPLINE — READ THIS FIRST:
 7. If you need data, READ the resource. If you need to record something,
    CALL the tool. One call, then use the result.
 
-TOOLS (mutations — call ONCE per action, never retry on error):
+READ TOOLS (use these to check state before acting):
+- read_quest_state — goal, savings, target budget, progress percentage
+- read_requirements — all requirement statuses (or pass req_id for one)
+- read_budget_summary — weeks tracked, projected vs actual, savings toward goal
+- read_chore_streak — current streak, total earned, FL Req 3 progress
+- read_last_session — most recent session notes from prior session
+- read_quest_plan — coaching plan, milestones, observations
+
+SESSION START PROTOCOL — DO THIS FIRST, EVERY SESSION:
+1. Call read_quest_state AND read_requirements AND read_last_session in parallel
+2. Use the last session notes to pick up where you left off (pending items, next focus)
+3. Greet the scout with awareness of their current situation
+
+Use read tools whenever you need data — do NOT guess or make up numbers.
+The read tools return the real DB state.
+
+MUTATION TOOLS (call ONCE per action, never retry on error):
 - log_chore — when scout confirms which chores they completed. ASK FIRST, log ONCE.
 - log_budget_entry — weekly budget tracking
 - advance_requirement — move requirements through states
@@ -117,6 +143,48 @@ SCOUT PROFILE (embedded for this test session):
 {SCOUT_PROFILE}`;
 
 // ---------------------------------------------------------------------------
+// GUIDE_INSTRUCTIONS — system prompt for the guide (parent/scouter) endpoint
+// ---------------------------------------------------------------------------
+
+const GUIDE_INSTRUCTIONS = `SCOUT GUIDE — COACHING & MONITORING TOOLS
+
+You are a coaching assistant for parents, scoutmasters, and other trusted adults
+("guides") who support scouts through the Scout Quest system.
+
+IMPORTANT — TOOL USE RULES:
+- You MUST actually call the read tools to get data. NEVER fabricate or guess data.
+- If a tool call fails, report the error honestly.
+- If no profile is found, say so — do not fabricate data.
+
+READ TOOLS (use these to access scout data):
+- read_linked_scouts — list all scouts linked to this guide
+- read_scout_summary — gamified progress overview for a scout
+- read_scout_chores — chore streak and income data
+- read_scout_budget — budget tracking snapshot
+- read_scout_requirements — all requirement states with descriptions
+- read_scout_reminders — pending/overdue items
+- read_scout_conversations — recent session summaries
+- read_scout_setup_status — onboarding checklist progress
+
+SESSION START PROTOCOL:
+1. Call read_linked_scouts to see all scouts linked to this guide
+2. If no scouts found, explain the Scoutbook requirement
+3. Use read tools to answer questions — never guess at numbers
+
+MONITORING TOOLS:
+- flag_conversation — mark a conversation for follow-up
+- send_notification_guide — push alert to scout
+- suggest_intervention — propose intervention options with tradeoffs
+
+COACHING PRINCIPLES:
+- Preserve scout agency — suggest options, let the guide decide
+- For sensitive topics, recommend the guide talk to the scout directly
+- Present data in parent-friendly terms, not internal jargon
+- When reporting progress, focus on what the scout is learning, not just checkboxes
+- Do NOT reveal internal coaching details (tone_dial, quest overlay, character config)
+- Suggest specific ways the parent can help without doing the scout's work`;
+
+// ---------------------------------------------------------------------------
 // CLI argument parsing
 // ---------------------------------------------------------------------------
 
@@ -124,6 +192,7 @@ const { values: args } = parseArgs({
   options: {
     model: { type: "string", default: "claude-sonnet-4-6" },
     scenarios: { type: "string", default: "all" },
+    chain: { type: "string", default: "" },
     output: { type: "string", default: "test/reports/latest.md" },
     "simulator-model": { type: "string", default: "claude-haiku-4-5-20251001" },
     "evaluator-model": { type: "string", default: "claude-sonnet-4-6" },
@@ -131,7 +200,7 @@ const { values: args } = parseArgs({
     "skip-eval": { type: "boolean", default: false },
     "mongo-uri": { type: "string", default: "" },
     thinking: { type: "boolean", default: false },
-    "thinking-budget": { type: "string", default: "10000" },
+    "thinking-budget": { type: "string", default: "2000" },
   },
   allowPositionals: true,
 });
@@ -143,28 +212,52 @@ const { values: args } = parseArgs({
 async function main(): Promise<void> {
   console.log("=== Scout Quest Test Harness ===\n");
 
-  // Resolve scenario list
-  const scenarioIds =
-    args.scenarios === "all" ? SCENARIO_IDS : args.scenarios!.split(",").map((s) => s.trim());
+  const chainMode = !!args.chain;
 
-  for (const id of scenarioIds) {
-    if (!SCENARIOS.has(id)) {
-      console.error(`Error: Unknown scenario "${id}". Available: ${SCENARIO_IDS.join(", ")}`);
+  // Validate chain or scenario selection
+  if (chainMode) {
+    if (!CHAINS.has(args.chain!)) {
+      console.error(`Error: Unknown chain "${args.chain}". Available: ${CHAIN_IDS.join(", ")}`);
       process.exit(1);
+    }
+  } else {
+    // Resolve scenario list
+    var scenarioIds =
+      args.scenarios === "all" ? SCENARIO_IDS : args.scenarios!.split(",").map((s) => s.trim());
+
+    for (const id of scenarioIds) {
+      if (!SCENARIOS.has(id)) {
+        console.error(`Error: Unknown scenario "${id}". Available: ${SCENARIO_IDS.join(", ")}`);
+        process.exit(1);
+      }
     }
   }
 
   console.log(`Model under test: ${args.model}`);
-  console.log(`Scenarios:        ${scenarioIds.join(", ")}`);
+  if (chainMode) {
+    console.log(`Chain:            ${args.chain}`);
+  } else {
+    console.log(`Scenarios:        ${scenarioIds!.join(", ")}`);
+  }
   console.log(`Dry run:          ${args["dry-run"]}`);
   console.log();
 
   // Dry run — no API key or MongoDB needed
   if (args["dry-run"]) {
-    console.log("Dry run — listing scenarios and exiting.\n");
-    for (const id of scenarioIds) {
-      const s = SCENARIOS.get(id)!;
-      console.log(`  ${s.id}: ${s.name} (${s.maxTurns} turns, expected tools: ${(s.expectedTools || []).join(", ") || "none"})`);
+    if (chainMode) {
+      const chain = CHAINS.get(args.chain!)!;
+      console.log(`Dry run — chain: ${chain.name}\n`);
+      for (const step of chain.steps) {
+        console.log(`  Step ${step.id}: ${step.description}`);
+        console.log(`    maxTurns: ${step.maxTurns}, expected tools: ${(step.expectedTools || []).join(", ") || "none"}`);
+        if (step.expectedMutations) console.log(`    expected mutations: ${step.expectedMutations.join(", ")}`);
+      }
+    } else {
+      console.log("Dry run — listing scenarios and exiting.\n");
+      for (const id of scenarioIds!) {
+        const s = SCENARIOS.get(id)!;
+        console.log(`  ${s.id}: ${s.name} (${s.maxTurns} turns, expected tools: ${(s.expectedTools || []).join(", ") || "none"})`);
+      }
     }
     return;
   }
@@ -212,69 +305,12 @@ async function main(): Promise<void> {
   }
 
   try {
-    // 1. Seed test data
-    await seedTestData(db);
-
-    // 2. Run scenarios
-    const results: EvaluationResult[] = [];
-
-    for (const scenarioId of scenarioIds) {
-      const scenario = SCENARIOS.get(scenarioId)!;
-      console.log(`\n--- Running: ${scenario.name} (${scenario.id}) ---\n`);
-
-      const result = await runScenario(config, db, scenario);
-      results.push(result);
-
-      // Print quick summary
-      const status = result.hallucinations.length > 0
-        ? "FAIL (hallucination)"
-        : result.overallScore >= 7
-        ? "PASS"
-        : result.overallScore >= 5
-        ? "PARTIAL"
-        : "FAIL";
-
-      console.log(`\n  Result: ${status} (score: ${result.overallScore.toFixed(1)}/10)`);
-      if (result.hallucinations.length > 0) {
-        console.log(`  Hallucinations detected: ${result.hallucinations.length}`);
-        for (const h of result.hallucinations) {
-          console.log(`    - Turn ${h.turnIndex}: ${h.type} — ${h.description}`);
-        }
-      }
-
-      // Reset test data between scenarios
-      await resetTestData(db);
-    }
-
-    // 3. Generate report
-    const report = generateReport(results, config);
-    const outputPath = args.output!;
-
-    // Write report using absolute path
-    const { writeFileSync, mkdirSync } = await import("node:fs");
-    const { dirname } = await import("node:path");
-    mkdirSync(dirname(outputPath), { recursive: true });
-    writeFileSync(outputPath, report, "utf-8");
-    console.log(`\nReport written to ${outputPath}`);
-
-    // Print summary
-    console.log("\n=== Summary ===\n");
-    const passed = results.filter((r) => r.overallScore >= 7 && r.hallucinations.length === 0).length;
-    const partial = results.filter((r) => r.overallScore >= 5 && r.overallScore < 7 && r.hallucinations.length === 0).length;
-    const failed = results.length - passed - partial;
-    console.log(`  Passed:  ${passed}/${results.length}`);
-    console.log(`  Partial: ${partial}/${results.length}`);
-    console.log(`  Failed:  ${failed}/${results.length}`);
-
-    const avgScore = results.reduce((s, r) => s + r.overallScore, 0) / results.length;
-    console.log(`  Average: ${avgScore.toFixed(1)}/10`);
-
-    const totalHallucinations = results.reduce((s, r) => s + r.hallucinations.length, 0);
-    if (totalHallucinations > 0) {
-      console.log(`\n  !! ${totalHallucinations} total hallucination(s) detected !!`);
+    if (chainMode) {
+      await runChainMode(config, db);
+    } else {
+      await runScenarioMode(config, db, scenarioIds!);
     }
   } finally {
-    // 4. Cleanup
     await cleanupTestData(db);
     if (client) await client.close();
     console.log("\nDone.");
@@ -282,14 +318,301 @@ async function main(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Scenario mode (original behavior)
+// ---------------------------------------------------------------------------
+
+async function runScenarioMode(config: HarnessConfig, db: Db, scenarioIds: string[]): Promise<void> {
+  // 1. Seed test data
+  await seedTestData(db);
+
+  // 2. Run scenarios
+  const results: EvaluationResult[] = [];
+  const captures: TestRunCapture[] = [];
+
+  for (const scenarioId of scenarioIds) {
+    const scenario = SCENARIOS.get(scenarioId)!;
+    console.log(`\n--- Running: ${scenario.name} (${scenario.id}) ---\n`);
+
+    const { evaluation, capture } = await runScenario(config, db, scenario);
+    results.push(evaluation);
+    captures.push(capture);
+
+    // Print quick summary
+    const status = evaluation.hallucinations.length > 0
+      ? "FAIL (hallucination)"
+      : evaluation.overallScore >= 7
+      ? "PASS"
+      : evaluation.overallScore >= 5
+      ? "PARTIAL"
+      : "FAIL";
+
+    console.log(`\n  Result: ${status} (score: ${evaluation.overallScore.toFixed(1)}/10)`);
+    if (evaluation.hallucinations.length > 0) {
+      console.log(`  Hallucinations detected: ${evaluation.hallucinations.length}`);
+      for (const h of evaluation.hallucinations) {
+        console.log(`    - Turn ${h.turnIndex}: ${h.type} — ${h.description}`);
+      }
+    }
+
+    // Reset test data between scenarios
+    await resetTestData(db);
+  }
+
+  // 3. Generate reports
+  const { writeFileSync, mkdirSync } = await import("node:fs");
+  const { dirname, join } = await import("node:path");
+
+  // Markdown report (legacy)
+  const report = generateReport(results, config);
+  const outputPath = args.output!;
+  mkdirSync(dirname(outputPath), { recursive: true });
+  writeFileSync(outputPath, report, "utf-8");
+  console.log(`\nReport written to ${outputPath}`);
+
+  // JSON captures — one file per scenario, in timestamped subdirectory
+  const outputDir = dirname(outputPath);
+  const runTimestamp = new Date().toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
+  const runDir = join(outputDir, "scenarios", runTimestamp);
+  mkdirSync(runDir, { recursive: true });
+  for (const capture of captures) {
+    const jsonPath = join(runDir, `${capture.scenario.id}.json`);
+    writeFileSync(jsonPath, JSON.stringify(capture, null, 2), "utf-8");
+    console.log(`Capture written to ${jsonPath}`);
+  }
+
+  // Print summary
+  console.log("\n=== Summary ===\n");
+  const passed = results.filter((r) => r.overallScore >= 7 && r.hallucinations.length === 0).length;
+  const partial = results.filter((r) => r.overallScore >= 5 && r.overallScore < 7 && r.hallucinations.length === 0).length;
+  const failed = results.length - passed - partial;
+  console.log(`  Passed:  ${passed}/${results.length}`);
+  console.log(`  Partial: ${partial}/${results.length}`);
+  console.log(`  Failed:  ${failed}/${results.length}`);
+
+  const avgScore = results.reduce((s, r) => s + r.overallScore, 0) / results.length;
+  console.log(`  Average: ${avgScore.toFixed(1)}/10`);
+
+  const totalHallucinations = results.reduce((s, r) => s + r.hallucinations.length, 0);
+  if (totalHallucinations > 0) {
+    console.log(`\n  !! ${totalHallucinations} total hallucination(s) detected !!`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Chain mode — multi-session progression testing
+// ---------------------------------------------------------------------------
+
+async function runChainMode(config: HarnessConfig, db: Db): Promise<void> {
+  const chain = CHAINS.get(args.chain!)!;
+  const chainStart = new Date();
+
+  console.log(`\n╔══════════════════════════════════════════════════╗`);
+  console.log(`║  Chain: ${chain.name.padEnd(40)}║`);
+  console.log(`║  Steps: ${String(chain.steps.length).padEnd(40)}║`);
+  console.log(`╚══════════════════════════════════════════════════╝\n`);
+
+  // Seed once — no reset between steps
+  await seedTestData(db);
+
+  // For guide endpoint, seed additional data the parent would see
+  const endpoint = chain.endpoint || "scout";
+  if (endpoint === "guide") {
+    await seedGuideTestData(db);
+  }
+
+  // Build endpoint config for non-scout endpoints
+  let endpointConfig: EndpointConfig | undefined;
+  if (endpoint === "guide") {
+    const linkedEmails = [config.scoutEmail];
+    endpointConfig = {
+      endpoint: "guide",
+      systemPrompt: GUIDE_INSTRUCTIONS,
+      toolDefinitions: GUIDE_TOOL_DEFINITIONS,
+      dispatch: (d: Db, name: string, a: Record<string, unknown>) =>
+        dispatchGuideToolCall(d, TEST_GUIDE_EMAIL, linkedEmails, name, a),
+    };
+  }
+
+  const stepResults: ChainStepResult[] = [];
+
+  for (let i = 0; i < chain.steps.length; i++) {
+    const step = chain.steps[i];
+    console.log(`\n┌─── Step ${i + 1}/${chain.steps.length}: ${step.id} ───`);
+    console.log(`│ ${step.description}`);
+    if (step.expectedMutations) {
+      console.log(`│ Expected: ${step.expectedMutations.join(", ")}`);
+    }
+    console.log(`└${"─".repeat(50)}\n`);
+
+    // Apply pre-step mutations (e.g., counselor sign-off)
+    if (step.preStepMutations) {
+      for (const mut of step.preStepMutations) {
+        await db.collection(mut.collection).updateOne(mut.filter, mut.update);
+      }
+      console.log(`  [SETUP] Applied ${step.preStepMutations.length} pre-step mutation(s)`);
+    }
+
+    // Snapshot DB before
+    const dbBefore = await captureSnapshot(db, config.scoutEmail);
+
+    // Convert ChainStep → ScenarioDefinition for runScenario
+    const scenarioDef: ScenarioDefinition = {
+      id: `${chain.id}/${step.id}`,
+      name: `${chain.name} — ${step.id}`,
+      description: step.description + (step.evaluatorContext ? `\n\nEVALUATOR CONTEXT: ${step.evaluatorContext}` : ""),
+      scoutSimPrompt: step.scoutSimPrompt,
+      initialMessage: step.initialMessage,
+      maxTurns: step.maxTurns,
+      expectedTools: step.expectedTools,
+      evaluationWeights: step.evaluationWeights,
+    };
+
+    const { evaluation, capture } = await runScenario(config, db, scenarioDef, endpointConfig);
+
+    // Snapshot DB after
+    const dbAfter = await captureSnapshot(db, config.scoutEmail);
+    const changes = diffSnapshots(dbBefore, dbAfter);
+
+    stepResults.push({ stepId: step.id, evaluation, capture, dbBefore, dbAfter });
+
+    // Print step result
+    const status = evaluation.hallucinations.length > 0
+      ? "FAIL (hallucination)"
+      : evaluation.overallScore >= 7
+      ? "PASS"
+      : evaluation.overallScore >= 5
+      ? "PARTIAL"
+      : "FAIL";
+
+    console.log(`\n  Step result: ${status} (score: ${evaluation.overallScore.toFixed(1)}/10)`);
+    if (changes.length > 0) {
+      console.log(`  DB changes: ${changes.join(", ")}`);
+    } else {
+      console.log(`  DB changes: none`);
+    }
+
+    if (evaluation.hallucinations.length > 0) {
+      console.log(`  Hallucinations: ${evaluation.hallucinations.length}`);
+      for (const h of evaluation.hallucinations) {
+        console.log(`    - Turn ${h.turnIndex}: ${h.type} — ${h.description}`);
+      }
+    }
+
+    // Do NOT reset between steps — this is the key difference from scenario mode.
+    // Replace coach-generated session notes with a Haiku-generated summary that
+    // captures the full conversation context (the coach only sees tool calls,
+    // Haiku sees the entire transcript).
+    await db.collection("session_notes").deleteMany({
+      scout_email: config.scoutEmail,
+      _test_seeded: { $ne: true },
+    });
+
+    // Generate rich session notes via Haiku from the full transcript
+    const haikuNotes = await generateSessionNotes(
+      config.anthropicApiKey,
+      config.simulatorModel, // Haiku
+      capture.transcript,
+      step,
+    );
+    if (haikuNotes) {
+      await db.collection("session_notes").insertOne({
+        scout_email: config.scoutEmail,
+        session_date: new Date(),
+        source: "reviewer",
+        ...haikuNotes,
+        created_at: new Date(),
+      });
+      console.log(`  [NOTES] Haiku session summary: ${haikuNotes.topics_discussed.join(", ")}`);
+    }
+  }
+
+  // Write chain results
+  const chainEnd = new Date();
+  const overallScore = stepResults.reduce((s, r) => s + r.evaluation.overallScore, 0) / stepResults.length;
+
+  const chainResult: ChainRunResult = {
+    chainId: chain.id,
+    chainName: chain.name,
+    steps: stepResults,
+    overallScore,
+    startTime: chainStart.toISOString(),
+    endTime: chainEnd.toISOString(),
+    durationMs: chainEnd.getTime() - chainStart.getTime(),
+  };
+
+  const { writeFileSync, mkdirSync } = await import("node:fs");
+  const { dirname, join } = await import("node:path");
+
+  const outputDir = dirname(args.output!);
+  // Use timestamped subdirectory so history accumulates
+  const runTimestamp = chainStart.toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
+  const chainDir = join(outputDir, chain.id, runTimestamp);
+  mkdirSync(chainDir, { recursive: true });
+
+  // Write chain summary JSON
+  const chainJsonPath = join(chainDir, "chain-result.json");
+  writeFileSync(chainJsonPath, JSON.stringify(chainResult, null, 2), "utf-8");
+  console.log(`\nChain result written to ${chainJsonPath}`);
+
+  // Write per-step capture JSONs
+  for (const sr of stepResults) {
+    const stepPath = join(chainDir, `${sr.stepId}.json`);
+    writeFileSync(stepPath, JSON.stringify(sr.capture, null, 2), "utf-8");
+    console.log(`Step capture written to ${stepPath}`);
+  }
+
+  // Symlink latest for convenience
+  const latestLink = join(outputDir, chain.id, "latest");
+  try {
+    const { unlinkSync, symlinkSync } = await import("node:fs");
+    try { unlinkSync(latestLink); } catch {}
+    symlinkSync(runTimestamp, latestLink);
+  } catch {}
+
+  // Print chain summary
+  console.log(`\n╔══════════════════════════════════════════════════╗`);
+  console.log(`║  Chain Summary: ${chain.name.padEnd(33)}║`);
+  console.log(`╠══════════════════════════════════════════════════╣`);
+
+  for (const sr of stepResults) {
+    const icon = sr.evaluation.hallucinations.length > 0 ? "✗" :
+      sr.evaluation.overallScore >= 7 ? "✓" :
+      sr.evaluation.overallScore >= 5 ? "~" : "✗";
+    const pad = sr.stepId.padEnd(25);
+    console.log(`║  ${icon} ${pad} ${sr.evaluation.overallScore.toFixed(1)}/10${" ".repeat(15)}║`);
+  }
+
+  console.log(`╠══════════════════════════════════════════════════╣`);
+  console.log(`║  Overall: ${overallScore.toFixed(1)}/10${" ".repeat(35)}║`);
+  const dur = chainEnd.getTime() - chainStart.getTime();
+  const durStr = dur < 60000 ? `${(dur / 1000).toFixed(0)}s` : `${Math.floor(dur / 60000)}m ${Math.floor((dur % 60000) / 1000)}s`;
+  console.log(`║  Duration: ${durStr.padEnd(38)}║`);
+  console.log(`╚══════════════════════════════════════════════════╝`);
+}
+
+// ---------------------------------------------------------------------------
 // Run a single scenario
 // ---------------------------------------------------------------------------
+
+interface ScenarioResult {
+  evaluation: EvaluationResult;
+  capture: TestRunCapture;
+}
+
+/** Endpoint-specific configuration for a test run. */
+interface EndpointConfig {
+  endpoint: "scout" | "guide" | "admin";
+  systemPrompt: string;
+  toolDefinitions: AnthropicToolDef[];
+  dispatch: (db: Db, toolName: string, args: Record<string, unknown>) => Promise<string>;
+}
 
 async function runScenario(
   config: HarnessConfig,
   db: Db,
   scenario: ReturnType<typeof SCENARIOS.get> & {},
-): Promise<EvaluationResult> {
+  endpointOverride?: EndpointConfig,
+): Promise<ScenarioResult> {
   const simulator = new ScoutSimulator({
     model: config.simulatorModel,
     apiKey: config.anthropicApiKey,
@@ -302,18 +625,26 @@ async function runScenario(
 
   const anthropic = new Anthropic({ apiKey: config.anthropicApiKey });
 
-  // Build system prompt with scout profile embedded
+  // Build system prompt — use endpoint override if provided, otherwise default to scout
   const scoutDoc = await db.collection("scouts").findOne({ email: config.scoutEmail });
-  const systemPrompt = SCOUT_INSTRUCTIONS.replace("{SCOUT_PROFILE}", JSON.stringify(scoutDoc, null, 2));
+  const systemPrompt = endpointOverride
+    ? endpointOverride.systemPrompt
+    : SCOUT_INSTRUCTIONS.replace("{SCOUT_PROFILE}", JSON.stringify(scoutDoc, null, 2));
+  const toolDefs = endpointOverride?.toolDefinitions ?? SCOUT_TOOL_DEFINITIONS;
+  const toolDispatch = endpointOverride?.dispatch ?? ((d: Db, name: string, a: Record<string, unknown>) => dispatchToolCall(d, config.scoutEmail, name, a));
 
   const transcript: TranscriptMessage[] = [];
   const startTime = new Date();
 
+  // Display labels depend on endpoint
+  const userLabel = endpointOverride ? "USER" : "SCOUT";
+  const modelLabel = endpointOverride ? "GUIDE" : "COACH";
+
   // Conversation loop
   for (let turn = 0; turn < scenario.maxTurns; turn++) {
-    // 1. Generate scout message
+    // 1. Generate user message (scout, parent, or admin)
     const scoutMessage = await simulator.generateResponse(scenario, transcript);
-    console.log(`  [SCOUT] ${scoutMessage}`);
+    console.log(`  [${userLabel}] ${scoutMessage}`);
     transcript.push({
       role: "scout",
       content: scoutMessage,
@@ -327,7 +658,8 @@ async function runScenario(
       systemPrompt,
       transcript,
       db,
-      config.scoutEmail,
+      toolDefs,
+      toolDispatch,
       config.thinkingEnabled ? { enabled: true, budget: config.thinkingBudget } : undefined,
     );
 
@@ -335,7 +667,7 @@ async function runScenario(
       const thinkingPreview = coachResponse.thinkingText.substring(0, 150).replace(/\n/g, " ");
       console.log(`  [THINK] ${thinkingPreview}${coachResponse.thinkingText.length > 150 ? "..." : ""}`);
     }
-    console.log(`  [COACH] ${coachResponse.content.substring(0, 120)}${coachResponse.content.length > 120 ? "..." : ""}`);
+    console.log(`  [${modelLabel}] ${coachResponse.content.substring(0, 120)}${coachResponse.content.length > 120 ? "..." : ""}`);
     if (coachResponse.toolCalls.length > 0) {
       console.log(`  [TOOLS] ${coachResponse.toolCalls.map((tc) => tc.name).join(", ")}`);
     }
@@ -347,6 +679,12 @@ async function runScenario(
       role: "coach",
       content: coachResponse.content,
       toolCalls: coachResponse.toolCalls,
+      thinkingText: coachResponse.thinkingText,
+      tokenUsage: coachResponse.usage ? {
+        inputTokens: coachResponse.usage.inputTokens,
+        outputTokens: coachResponse.usage.outputTokens,
+        thinkingTokens: coachResponse.usage.thinkingTokens,
+      } : undefined,
       timestamp: new Date(),
     });
 
@@ -369,9 +707,15 @@ async function runScenario(
   const hallucinations = analyzeTranscript(transcript);
 
   // 4. Evaluate
-  let scores = evaluator.constructor.name === "Evaluator" && !args["skip-eval"]
-    ? await evaluator.evaluate(transcriptResult, scenario, scoutDoc as Record<string, unknown> || {})
-    : [];
+  let scores;
+  let evaluatorUserPrompt = "";
+  if (evaluator.constructor.name === "Evaluator" && !args["skip-eval"]) {
+    const evalOutput = await evaluator.evaluate(transcriptResult, scenario, scoutDoc as Record<string, unknown> || {}, endpointOverride?.endpoint);
+    scores = evalOutput.scores;
+    evaluatorUserPrompt = evalOutput.evaluatorUserPrompt;
+  } else {
+    scores = [];
+  }
 
   // 5. Calculate overall score
   const weights = { ...WEIGHTS, ...(scenario.evaluationWeights || {}) };
@@ -390,13 +734,49 @@ async function runScenario(
     overallScore = Math.min(overallScore, 4.0);
   }
 
+  const endTime = new Date();
+
+  const capture: TestRunCapture = {
+    version: 1,
+    capturedAt: endTime.toISOString(),
+    config: {
+      modelUnderTest: config.modelUnderTest,
+      simulatorModel: config.simulatorModel,
+      evaluatorModel: config.evaluatorModel,
+      thinkingEnabled: config.thinkingEnabled,
+      thinkingBudget: config.thinkingBudget,
+    },
+    scenario,
+    scoutProfile: (scoutDoc as Record<string, unknown>) || {},
+    systemPrompt,
+    toolDefinitions: toolDefs,
+    evaluator: {
+      systemPrompt: EVALUATOR_SYSTEM_PROMPT,
+      userPrompt: evaluatorUserPrompt,
+    },
+    transcript,
+    evaluation: {
+      scores,
+      overallScore,
+      hallucinations,
+    },
+    timing: {
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      durationMs: endTime.getTime() - startTime.getTime(),
+    },
+  };
+
   return {
-    scenarioId: scenario.id,
-    model: config.modelUnderTest,
-    scores,
-    overallScore,
-    transcript: transcriptResult,
-    hallucinations,
+    evaluation: {
+      scenarioId: scenario.id,
+      model: config.modelUnderTest,
+      scores,
+      overallScore,
+      transcript: transcriptResult,
+      hallucinations,
+    },
+    capture,
   };
 }
 
@@ -417,7 +797,8 @@ async function callModelUnderTest(
   systemPrompt: string,
   transcript: TranscriptMessage[],
   db: Db,
-  scoutEmail: string,
+  toolDefinitions: AnthropicToolDef[],
+  toolDispatcher: (db: Db, toolName: string, args: Record<string, unknown>) => Promise<string>,
   thinkingConfig?: { enabled: boolean; budget: number },
 ): Promise<CoachResponse> {
   // Build message history for the API, preserving tool_use and tool_result
@@ -481,7 +862,7 @@ async function callModelUnderTest(
       model,
       system: systemPrompt,
       messages,
-      tools: SCOUT_TOOL_DEFINITIONS,
+      tools: toolDefinitions,
     };
 
     if (useThinking) {
@@ -524,9 +905,8 @@ async function callModelUnderTest(
       } else if (block.type === "tool_use") {
         hasToolUse = true;
         // Execute the tool against test MongoDB
-        const result = await dispatchToolCall(
+        const result = await toolDispatcher(
           db,
-          scoutEmail,
           block.name,
           block.input as Record<string, unknown>,
         );
@@ -584,6 +964,82 @@ function isConversationComplete(coachMessage: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
+// Haiku session note generator — post-step reviewer
+// ---------------------------------------------------------------------------
+
+interface SessionNoteFields {
+  topics_discussed: string[];
+  progress_made: string;
+  pending_items: string[];
+  next_session_focus: string;
+  coach_issues: string[];
+}
+
+async function generateSessionNotes(
+  apiKey: string,
+  model: string,
+  transcript: TranscriptMessage[],
+  step: ChainStep,
+): Promise<SessionNoteFields | null> {
+  if (transcript.length === 0) return null;
+
+  const client = new Anthropic({ apiKey });
+
+  // Build a compact transcript representation for Haiku
+  const lines: string[] = [];
+  for (const msg of transcript) {
+    const role = msg.role === "scout" ? "SCOUT" : "COACH";
+    lines.push(`[${role}] ${msg.content}`);
+    if (msg.toolCalls && msg.toolCalls.length > 0) {
+      for (const tc of msg.toolCalls) {
+        lines.push(`  [TOOL] ${tc.name}(${JSON.stringify(tc.args)}) → ${tc.result.substring(0, 200)}`);
+      }
+    }
+  }
+
+  const response = await client.messages.create({
+    model,
+    max_tokens: 500,
+    system: `You are a session note generator for a scout coaching system. Given a conversation transcript between a scout and their AI coach, extract structured session notes. Be precise and factual — only include what actually happened in the conversation.`,
+    messages: [{
+      role: "user",
+      content: `Extract session notes from this coaching conversation.
+
+STEP CONTEXT: ${step.description}
+
+TRANSCRIPT:
+${lines.join("\n")}
+
+Respond with ONLY valid JSON matching this schema (no markdown, no explanation):
+{
+  "topics_discussed": ["topic1", "topic2"],
+  "progress_made": "What was accomplished this session",
+  "pending_items": ["Things the scout committed to doing"],
+  "next_session_focus": "What to focus on next session",
+  "coach_issues": ["Any errors, missed data, wrong numbers, or failures by the coach — empty array if none"]
+}`,
+    }],
+  });
+
+  try {
+    const text = response.content[0].type === "text" ? response.content[0].text : "";
+    // Strip potential markdown code fences
+    const jsonStr = text.replace(/^```(?:json)?\s*/, "").replace(/\s*```$/, "").trim();
+    const parsed = JSON.parse(jsonStr) as SessionNoteFields;
+    return {
+      topics_discussed: parsed.topics_discussed || [],
+      progress_made: parsed.progress_made || "",
+      pending_items: parsed.pending_items || [],
+      next_session_focus: parsed.next_session_focus || "",
+      coach_issues: parsed.coach_issues || [],
+    };
+  } catch {
+    console.log("  [NOTES] Warning: Failed to parse Haiku session notes response");
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Seed / reset / cleanup
 // ---------------------------------------------------------------------------
 
@@ -617,6 +1073,36 @@ async function seedTestData(db: Db): Promise<void> {
   }
 
   console.log(`  Seeded: 1 scout, ${reqs.length} requirements, ${choreHistory.length} chore logs, ${budgetHistory.length} budget entries.`);
+}
+
+async function seedGuideTestData(db: Db): Promise<void> {
+  // Seed some session notes so the guide can see recent conversation history
+  const now = new Date();
+  await db.collection("session_notes").insertMany([
+    {
+      scout_email: TEST_SCOUT_EMAIL,
+      session_date: new Date(now.getTime() - 2 * 86400000),
+      source: "reviewer",
+      topics_discussed: ["Budget tracking progress", "Week 4 budget entry", "Gaming PC savings update"],
+      progress_made: "Logged week 4 budget entry. $84 saved through budget tracking, $120 total toward Gaming PC.",
+      pending_items: ["Log week 5 budget entry next session"],
+      next_session_focus: "Week 5 budget logging",
+      created_at: new Date(now.getTime() - 2 * 86400000),
+      _test_seeded: true,
+    },
+    {
+      scout_email: TEST_SCOUT_EMAIL,
+      session_date: new Date(now.getTime() - 5 * 86400000),
+      source: "reviewer",
+      topics_discussed: ["Chore logging", "Streak milestone", "FL Req 3 progress"],
+      progress_made: "Logged daily chores (dishes, trash). Chore streak at 7 days — hit first milestone.",
+      pending_items: ["Keep daily chore streak going", "Next milestone at 14 days"],
+      next_session_focus: "Continue chore logging, check FL Req 3 progress",
+      created_at: new Date(now.getTime() - 5 * 86400000),
+      _test_seeded: true,
+    },
+  ]);
+  console.log("  Seeded: 2 session notes for guide test.");
 }
 
 async function resetTestData(db: Db): Promise<void> {
