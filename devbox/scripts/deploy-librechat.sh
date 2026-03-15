@@ -28,6 +28,7 @@ echo "=== Step 1: Upload scripts and config ==="
 scp_cmd "$REPO_ROOT/devbox/scripts/setup-librechat.sh" "/tmp/setup-librechat.sh"
 scp_cmd "$REPO_ROOT/devbox/config/librechat.service" "/tmp/librechat.service"
 scp_cmd "$REPO_ROOT/config/devbox/librechat.yaml" "/tmp/librechat.yaml"
+scp_cmd "$REPO_ROOT/devbox/config/.mcp.json" "/tmp/devbox-mcp.json"
 
 echo "=== Step 2: Run setup script as devuser ==="
 ssh_cmd "chmod +x /tmp/setup-librechat.sh && sudo -u $REMOTE_USER bash /tmp/setup-librechat.sh"
@@ -40,6 +41,9 @@ ssh_cmd "sudo -u $REMOTE_USER cp /tmp/librechat.yaml /home/$REMOTE_USER/LibreCha
 
 echo "=== Step 4: Install systemd service ==="
 ssh_cmd "sudo cp /tmp/librechat.service /etc/systemd/system/librechat.service && sudo systemctl daemon-reload && sudo systemctl enable librechat"
+
+echo "=== Step 5: Install Claude Code MCP config ==="
+ssh_cmd "sudo cp /tmp/devbox-mcp.json /home/$REMOTE_USER/scout-quest/.mcp.json && sudo chown $REMOTE_USER:$REMOTE_USER /home/$REMOTE_USER/scout-quest/.mcp.json"
 
 echo ""
 echo "=== Deployment complete ==="

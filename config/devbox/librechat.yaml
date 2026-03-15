@@ -2,7 +2,7 @@
 # Devbox LibreChat — Configuration
 # ============================================
 # Copy to ~/LibreChat/librechat.yaml on the VM.
-# Minimal dev-focused setup with Claude Code + browser MCP.
+# Dev-focused setup with Claude Code, browser, docs, DB, and memory MCP.
 
 version: 1.2.1
 cache: true
@@ -30,6 +30,37 @@ mcpServers:
       - "--headless"
     timeout: 60000
 
+  context7:
+    type: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@upstash/context7-mcp@latest"
+    timeout: 30000
+
+  mongodb:
+    type: stdio
+    command: npx
+    args:
+      - "-y"
+      - "mongodb-mcp-server@latest"
+      - "--readOnly"
+      - "--connectionString"
+      - "mongodb://localhost:27017/LibreChat"
+    timeout: 15000
+
+  mem0:
+    type: stdio
+    command: npx
+    args:
+      - "-y"
+      - "@pinkpixel/mem0-mcp"
+    env:
+      MEM0_API_KEY: "${MEM0_API_KEY}"
+      DEFAULT_USER_ID: "jeremy"
+      DEFAULT_APP_ID: "devbox-librechat"
+    timeout: 30000
+
 # --- Endpoints ---
 endpoints:
   anthropic:
@@ -45,7 +76,7 @@ modelSpecs:
   list:
     - name: "Claude Sonnet"
       label: "Claude Sonnet 4.6"
-      description: "Primary coding assistant with Claude Code and browser tools"
+      description: "Full toolset: code, browser, docs, DB, and memory"
       preset:
         endpoint: "anthropic"
         model: "claude-sonnet-4-6"
@@ -53,10 +84,13 @@ modelSpecs:
         mcpServers:
           - "claude-code"
           - "browser"
+          - "context7"
+          - "mongodb"
+          - "mem0"
 
     - name: "Claude Haiku"
       label: "Claude Haiku 4.5"
-      description: "Fast and cheap with Claude Code and browser tools"
+      description: "Fast and cheap with full toolset"
       preset:
         endpoint: "anthropic"
         model: "claude-haiku-4-5-20251001"
@@ -64,10 +98,13 @@ modelSpecs:
         mcpServers:
           - "claude-code"
           - "browser"
+          - "context7"
+          - "mongodb"
+          - "mem0"
 
     - name: "GPT-4.1"
       label: "GPT-4.1"
-      description: "OpenAI with 1M context, Claude Code and browser tools"
+      description: "OpenAI with 1M context and full toolset"
       preset:
         endpoint: "openAI"
         model: "gpt-4.1"
@@ -75,6 +112,9 @@ modelSpecs:
         mcpServers:
           - "claude-code"
           - "browser"
+          - "context7"
+          - "mongodb"
+          - "mem0"
 
     - name: "Quick Chat"
       label: "Quick Chat"

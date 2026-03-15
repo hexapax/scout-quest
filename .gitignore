@@ -10,12 +10,14 @@ config/ai-chat/.env
 config/scout-quest/.env
 config/admin/.env
 !config/**/.env.example
+MEM0_API_KEY
 *.json
 !package.json
 !scouting-org-research/**/*.json
 !package-lock.json
 !tsconfig.json
 !devbox/config/settings.json
+!devbox/config/.mcp.json
 !.devcontainer/devcontainer.json
 !.mcp.json
 

@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"],
+      "timeout": 30000
+    },
+    "mongodb": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mongodb-mcp-server@latest",
+        "--readOnly",
+        "--connectionString",
+        "mongodb://localhost:27017/LibreChat"
+      ],
+      "timeout": 15000
+    },
+    "mem0": {
+      "command": "npx",
+      "args": ["-y", "@pinkpixel/mem0-mcp"],
+      "env": {
+        "MEM0_API_KEY": "m0-qgpEmR1pPYZCgtOBKTlq85W2IzTZKnLpcEAy03Oe",
+        "DEFAULT_USER_ID": "jeremy",
+        "DEFAULT_APP_ID": "devbox-claude"
+      },
+      "timeout": 30000
+    }
+  }
+}
