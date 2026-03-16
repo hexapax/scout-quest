@@ -1,7 +1,7 @@
 // Structured queries for rank requirements and merit badge info
 // Merges reference text (scoutbook_reference) with per-scout completion (scoutbook_requirements)
 
-import { getDb } from "../db.js";
+import { getScoutQuestDb } from "../db.js";
 import { scoutbookScouts, scoutbookRequirements, scoutbookAdvancement } from "../scoutbook/collections.js";
 
 const RANK_IDS: Record<string, number> = {
@@ -22,7 +22,7 @@ export async function getRankRequirements(rank: string, scoutId?: string): Promi
   if (!rankId)
     return `Unknown rank: "${rank}". Valid ranks: ${Object.keys(RANK_IDS).join(", ")}`;
 
-  const db = await getDb();
+  const db = await getScoutQuestDb();
   const refCol = db.collection("scoutbook_reference");
 
   // Get reference requirement text
@@ -79,7 +79,7 @@ export async function getRankRequirements(rank: string, scoutId?: string): Promi
 }
 
 export async function getMeritBadgeInfo(meritBadge: string, scoutId?: string): Promise<string> {
-  const db = await getDb();
+  const db = await getScoutQuestDb();
   const refCol = db.collection("scoutbook_reference");
 
   const mbRef = await refCol.findOne({
