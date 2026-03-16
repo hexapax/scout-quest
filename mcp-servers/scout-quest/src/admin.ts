@@ -2,6 +2,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerAdminResources } from "./resources/index.js";
 import { registerAdminTools } from "./tools/admin/index.js";
+import { registerKnowledgeTools } from "./tools/shared/knowledgeTools.js";
+import { registerAdvancementPlanningTools, registerTroopPolicyTool } from "./tools/shared/advancementTools.js";
+import { registerRankGuideResource } from "./resources/rankGuide.js";
+import { registerTroopPoliciesResource, registerJTEGapsResource } from "./resources/troopPolicies.js";
 
 const ADMIN_INSTRUCTIONS = `SCOUT QUEST ADMIN — CONFIGURATION TOOLS
 
@@ -78,6 +82,12 @@ registerAdminResources(server);
 // Without this, bootstrapping fails: no roles exist until the first scout is created,
 // but you can't create a scout without tools being registered.
 registerAdminTools(server);
+registerKnowledgeTools(server);
+registerAdvancementPlanningTools(server);
+registerTroopPolicyTool(server);
+registerRankGuideResource(server);
+registerTroopPoliciesResource(server);
+registerJTEGapsResource(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

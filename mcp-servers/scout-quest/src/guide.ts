@@ -2,6 +2,10 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerGuideResources } from "./resources/index.js";
 import { registerGuideTools } from "./tools/guide/index.js";
+import { registerKnowledgeTools } from "./tools/shared/knowledgeTools.js";
+import { registerAdvancementPlanningTools } from "./tools/shared/advancementTools.js";
+import { registerRankGuideResource } from "./resources/rankGuide.js";
+import { registerTroopPoliciesResource } from "./resources/troopPolicies.js";
 
 const GUIDE_INSTRUCTIONS = `SCOUT GUIDE — COACHING & MONITORING TOOLS
 
@@ -100,6 +104,10 @@ if (!guideEmail) {
 
 registerGuideResources(server, guideEmail);
 registerGuideTools(server, guideEmail);
+registerKnowledgeTools(server);
+registerAdvancementPlanningTools(server);
+registerRankGuideResource(server);
+registerTroopPoliciesResource(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);

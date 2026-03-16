@@ -2,6 +2,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { registerScoutResources } from "./resources/index.js";
 import { registerScoutTools } from "./tools/scout/index.js";
+import { registerKnowledgeTools } from "./tools/shared/knowledgeTools.js";
+import { registerRankGuideResource } from "./resources/rankGuide.js";
+import { registerTroopPoliciesResource } from "./resources/troopPolicies.js";
 
 const SCOUT_INSTRUCTIONS = `SCOUT QUEST MCP — SESSION PROTOCOL
 
@@ -145,6 +148,9 @@ registerScoutResources(server, scoutEmail);
 // Without this, bootstrapping fails: no roles exist until the admin creates
 // the scout, but LibreChat needs tools registered at MCP init time.
 registerScoutTools(server, scoutEmail);
+registerKnowledgeTools(server);
+registerRankGuideResource(server);
+registerTroopPoliciesResource(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
