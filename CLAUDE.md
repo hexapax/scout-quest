@@ -46,6 +46,20 @@ Deploy flow: pulls `.env` from GCS (secrets), combines with git-tracked `librech
 ./scripts/update-caddyfile.sh        # Update Caddy with all three reverse proxy rules
 ```
 
+### Scoutbook Data Refresh
+
+```bash
+# Full procedure: docs/scoutbook-data-refresh.md
+# BSA automated auth is broken (503). Manual Chrome CDP workaround:
+# 1. Launch Chrome: chrome --remote-debugging-port=9222 https://my.scouting.org
+# 2. Log in manually in Chrome
+# 3. Fetch data:
+nvm exec 24 node scripts/fetch-all-scoutbook-data.mjs
+# 4. Generate mongosh import:
+nvm exec 24 node scripts/generate-mongo-import.mjs 2>/dev/null | tail -n +2 > /tmp/scoutbook-import.js
+# 5. Load to production MongoDB (see docs/scoutbook-data-refresh.md for full commands)
+```
+
 ### Devbox (remote development)
 
 ```bash

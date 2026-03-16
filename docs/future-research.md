@@ -299,6 +299,13 @@ Revisit automatic routing if:
 **Decision:** Keep DeepSeek for non-tool presets (Quick Chat, Deep Think) where it excels at cheap general conversation and reasoning.
 **Revisit if:** LibreChat adds custom endpoint function calling AND DeepSeek tool reliability improves above 95%.
 
+### BSA Automated Authentication (my.scouting.org API)
+**Status:** Broken (March 2026)
+**What happened:** `POST my.scouting.org/api/users/{username}/authenticate` returns **503** from all sources (GCP VMs, residential IPs, WSL2). The endpoint was working on 2026-02-22 when we captured HAR files. The `advancements.scouting.org` frontend still works — you can log in via browser (the SPA uses a different auth flow or the WAF allows browser sessions).
+**Impact:** The Scoutbook sync CLI (`cli.ts sync-all`) cannot authenticate. No automated/cron sync is possible.
+**Workaround:** Manual Chrome login + Chrome DevTools Protocol token extraction. See `docs/scoutbook-data-refresh.md` for full procedure. This works reliably — JWT extracted from cookies via CDP, then used for direct API calls from Node.js.
+**Revisit if:** BSA auth endpoint starts returning 200, or we discover the new auth flow used by `advancements.scouting.org` (may be cookie-based without an explicit token endpoint).
+
 ### Cloud Run Deployment
 **Status:** Rejected (architecture decision)
 **Why rejected:** LibreChat needs MongoDB + Redis as sidecars. MCP servers run as stdio subprocesses — doesn't map to Cloud Run's request model. Docker Compose is LibreChat's primary supported deployment path.

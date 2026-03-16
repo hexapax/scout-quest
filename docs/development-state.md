@@ -90,23 +90,21 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
 - [ ] **All Scout Quest resources are empty** — no data has been created yet
 - [ ] **Dense CSS not rendering** — dashboard still shows default AdminJS styling
 
-### Scoutbook Sync (v2 Complete — All 18 Tasks Done, Ready for Deployment)
+### Scoutbook Sync (Deployed, Data Loaded — Manual Refresh Workflow)
 - [x] Design spec approved (`docs/plans/2026-02-22-scoutbook-sync-design.md`)
 - [x] Implementation plan with 18 tasks (roster + advancement + events + dashboards + calendars)
-- [x] API client with auth, rate limiting, and tests (committed on feat/scoutbook-sync)
+- [x] API client with auth, rate limiting, and tests
 - [x] MongoDB collection accessors for all 9 scoutbook_* collections
 - [x] BSA API response types and MongoDB doc types (all v2 types)
 - [x] 79 API endpoints cataloged across 9 categories
 - [x] Core sync orchestration — syncRoster, syncScout, syncEvents, syncDashboards, syncCalendars, syncAll
-- [x] MCP admin tools — 9 tools: sync_roster, sync_scout, sync_all, sync_events, sync_status, get_scout_advancement, init_quest, sync_dashboards, sync_calendars
-- [x] Calendar/events sync — events with invitedUsers + RSVP, calendar subscriptions per user
-- [x] Activity dashboard sync — advancement + activities dashboards upserted to scoutbook_dashboards
-- [x] **Task 10: Quest Init Bridge** — scoutbook_init_quest implemented in questBridge.ts; initQuestFromScoutbook creates quest profiles from synced data
-- [x] **Tasks 14–18: Calendar/Dashboard sync** — syncDashboards, syncCalendars fully implemented; all MCP tools registered and operational
-- [x] **All 18 Scoutbook sync tasks complete** — ready for deployment
-- [ ] **Smart rate limiting** — randomized burst patterns to avoid scraping signatures (~0.5 req/sec avg, 30 req/min hard cap, human-like timing) (enhancement, not blocking deployment)
-- [ ] **Shared email detection** — families using same email for parent and scout accounts (enhancement, not blocking deployment)
-- [ ] **Cron-based periodic sync** — automated background sync with configurable intervals per data type (enhancement, not blocking deployment)
+- [x] MCP admin tools — 9 tools deployed to ai-chat instance
+- [x] **MongoDB populated (2026-03-15)** — 20 scouts, 15 adults, 419 advancement records, 2,535 requirements
+- [x] **`scoutbook_get_scout_advancement` tool verified working** with real data in MongoDB
+- [ ] **BSA automated auth is broken** — `my.scouting.org/api/users/{username}/authenticate` returns 503 (since ~March 2026). Automated CLI sync cannot authenticate. See manual refresh workflow below.
+- [ ] **Manual refresh via Chrome CDP** — working workaround: launch Chrome with `--remote-debugging-port=9222`, log in manually, run `scripts/fetch-all-scoutbook-data.mjs` to extract JWT from cookies and fetch all data, then `scripts/generate-mongo-import.mjs` to load into MongoDB. See `docs/scoutbook-data-refresh.md` for full procedure.
+- [ ] **Smart rate limiting** — enhancement, not blocking
+- [ ] **Cron-based periodic sync** — blocked by BSA auth issue; manual refresh is current workflow
 
 ### Cron System (Exists, Not Verified)
 - [x] Cron sidecar in Docker Compose
@@ -155,7 +153,8 @@ The minimum needed to run a pilot with 2-3 scouts from the troop:
 | Issue | Severity | Status |
 |-------|----------|--------|
 | AI hallucinates MCP tool calls | High | Instructions updated 2026-02-22, needs retest |
-| No scout data in MongoDB | Blocker | **Resolved** — All 18 Scoutbook sync tasks complete, run sync to populate |
+| No scout data in MongoDB | ~~Blocker~~ | **Resolved 2026-03-15** — 20 scouts, 419 advancement, 2,535 requirements loaded via Chrome CDP capture + mongosh import |
+| BSA automated auth endpoint 503 | High | `my.scouting.org/api/users/{username}/authenticate` returns 503. Workaround: manual Chrome login + CDP token extraction. See `docs/scoutbook-data-refresh.md` |
 | Admin panel shows only ai-chat conversations | Medium | Need second LibreChat DB connection or config fix |
 | Scoutbook API has no documented rate limits | Medium | Using conservative 1 req/sec with randomized timing |
 | gcloud gsutil re-auth failures | Fixed | Switched to `gcloud storage cp` |
