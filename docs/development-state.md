@@ -1,6 +1,6 @@
 # Scout Quest — Development State
 
-**Last updated:** 2026-02-25 (all 18 tasks complete)
+**Last updated:** 2026-03-16
 
 ## Current Architecture
 
@@ -22,7 +22,9 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
   └── LibreChat (native Node.js, :3080)
         ├── MongoDB + Redis (Docker)
         ├── MCP: claude-code-mcp → Claude Code CLI
-        └── MCP: @playwright/mcp → headless Chromium
+        ├── MCP: @playwright/mcp → headless Chromium
+        ├── MCP: Perplexity (research queries)
+        └── MCP: Brave Search (web search)
 ```
 
 ## Component Status
@@ -43,6 +45,9 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
 - [x] MongoDB + Redis running as Docker containers on VM
 - [x] claude-code-mcp providing Claude Code as MCP tool (1 tool: `claude_code`)
 - [x] @playwright/mcp providing headless browser automation (22 tools)
+- [x] Perplexity MCP server configured (both devuser and jeremy_hexapax_com)
+- [x] Brave Search MCP server configured (both devuser and jeremy_hexapax_com)
+- [x] Node.js 24 installed system-wide (replaced nvm dependency)
 - [x] Cross-project IAM verified: devbox SA has editor on scout-assistant, dns.admin on hexapax-web, storage.admin on scout-assistant
 - [x] Claude Code CLI authenticated (jebramwell@gmail.com Max plan, `--dangerously-skip-permissions` accepted)
 - [x] API keys configured (Anthropic, OpenAI, Google — copied from scout-assistant, to be replaced with devbox-specific keys)
@@ -65,8 +70,8 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
 - [x] 11 tools registered and loading (log_chore, log_budget_entry, advance_requirement, compose_email, send_notification, adjust_tone, setup_time_mgmt, log_diary_entry, update_quest_goal, update_quest_plan, log_session_notes)
 - [x] 10 resources registered (quest-state, quest-plan, last-session, requirements, chore-streak, budget-summary, character, reminders, quest-summary)
 - [x] Server instructions with Scoutbook data source context
+- [x] **Scoutbook data loaded** — 20 scouts, 15 adults, 419 advancement, 2,535 requirements in MongoDB (2026-03-15)
 - [ ] **Not tested end-to-end** — tools register but we haven't verified a scout can actually log chores, track budget, etc. with real data flowing to/from MongoDB
-- [ ] **No scout data in DB** — scouts collection is empty. Waiting on Scoutbook sync to populate.
 - [ ] **Tool hallucination** — even with updated instructions, need to verify models actually call tools
 
 ### MCP Server — Guide-Facing (Partially Working)
@@ -118,6 +123,22 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
 - [x] Tone dial and domain intensity calibration
 - [ ] **Untested with real scouts** — personality calibration is theoretical
 
+### Scouting Knowledge Base (Design Approved, Implementation Pending)
+- [x] Design spec approved (`docs/plans/2026-03-16-scouting-knowledge-base-design.md`)
+- [x] Architecture: pgvector (semantic search) + Gemini Embedding 2 (1536d) + MongoDB (structured advancement data)
+- [x] 10 troop operational knowledge docs extracted from Google Drive (`docs/scouting-knowledge/troop/`)
+- [x] Content covers: troop overview, leadership, meeting history, advancement practices, campouts/events, finances, patrols, newsletters, Eagle process, policies
+- [ ] **Embedding pipeline** — script to chunk markdown, embed via Gemini, store in pgvector
+- [ ] **MCP query tools** — `search_scouting_knowledge`, `get_rank_requirements`, `get_troop_policy`
+- [ ] **BSA policy content** — rank requirements, merit badge summaries, Guide to Advancement excerpts
+- [ ] **Version-aware advancement** — correct requirement text per scout's version (2016, 2022, 2024)
+
+### Test Harness (Working, on Devbox)
+- [x] Multi-session chain framework (7,580 lines) committed from devbox
+- [x] Guide tools experiments, thinking budget experiments
+- [x] Experiment reports generated
+- [ ] **Not integrated with CI** — manual runs on devbox only
+
 ## Critical Path to MVP
 
 The minimum needed to run a pilot with 2-3 scouts from the troop:
@@ -126,41 +147,46 @@ The minimum needed to run a pilot with 2-3 scouts from the troop:
 1. ~~**Complete Scoutbook sync — roster + advancement**~~ — DONE: all 18 sync tasks implemented
 2. ~~**Add calendar/events sync**~~ — DONE: events with RSVP and attendance data (Tasks 14-18)
 3. ~~**Map Scoutbook scouts to quest system**~~ — DONE: questBridge.ts initQuestFromScoutbook (Task 10)
-4. **Verify email matching** — scouts log in via Google OAuth, email must match Scoutbook
-5. **Set up cron-based periodic sync** — automated background sync with smart rate limiting
+4. ~~**Load real data into production MongoDB**~~ — DONE (2026-03-15): 20 scouts, 15 adults, 419 advancement, 2,535 requirements loaded via Chrome CDP capture + mongosh import
+5. **Verify email matching** — scouts log in via Google OAuth, email must match Scoutbook
+6. **Set up periodic data refresh** — BSA automated auth broken (503). Manual Chrome CDP refresh is current workflow (see `docs/scoutbook-data-refresh.md`)
 
 ### Phase 2: Close the Loop
-6. **Test MCP tools end-to-end** — verify a scout can log chores, track budget, advance requirements
-7. **Test resource loading** — verify quest-state, character, etc. return meaningful data
-8. **Test calendar/event queries** — scouts, parents, and scouters can ask about upcoming events and RSVPs
-9. **Fix tool hallucination** — confirm models actually call tools after instruction update
-10. **Test guide flow** — parent can see their scout's progress, upcoming events, set up quest parameters
+7. **Test MCP tools end-to-end** — verify a scout can log chores, track budget, advance requirements
+8. **Test resource loading** — verify quest-state, character, etc. return meaningful data
+9. **Test calendar/event queries** — scouts, parents, and scouters can ask about upcoming events and RSVPs
+10. **Fix tool hallucination** — confirm models actually call tools after instruction update
+11. **Test guide flow** — parent can see their scout's progress, upcoming events, set up quest parameters
 
 ### Phase 3: Verify Consistency
-11. **Multi-session continuity** — does session_notes → last_session flow preserve context?
-12. **Character consistency** — does the AI maintain character persona across sessions?
-13. **Cron verification** — do automated checks (Scoutbook sync, backfill, plan review) actually run?
-14. **Data freshness** — is the periodic sync keeping data current enough for useful responses?
+12. **Multi-session continuity** — does session_notes → last_session flow preserve context?
+13. **Character consistency** — does the AI maintain character persona across sessions?
+14. **Cron verification** — do automated checks (Scoutbook sync, backfill, plan review) actually run?
+15. **Data freshness** — is the periodic sync keeping data current enough for useful responses?
 
 ### Phase 4: Pilot
-15. **Onboard 2-3 scouts** — walk parents through guide setup, scouts through first session
-16. **Test scouter flow** — can I (as scoutmaster) get useful event/RSVP/advancement info from the assistant?
-17. **Monitor via admin panel** — watch for issues, gaps, hallucinations
-18. **Iterate** — fix what breaks, refine what's awkward
+16. **Onboard 2-3 scouts** — walk parents through guide setup, scouts through first session
+17. **Test scouter flow** — can I (as scoutmaster) get useful event/RSVP/advancement info from the assistant?
+18. **Monitor via admin panel** — watch for issues, gaps, hallucinations
+19. **Iterate** — fix what breaks, refine what's awkward
 
 ## Known Issues
 
 | Issue | Severity | Status |
 |-------|----------|--------|
 | AI hallucinates MCP tool calls | High | Instructions updated 2026-02-22, needs retest |
-| No scout data in MongoDB | ~~Blocker~~ | **Resolved 2026-03-15** — 20 scouts, 419 advancement, 2,535 requirements loaded via Chrome CDP capture + mongosh import |
 | BSA automated auth endpoint 503 | High | `my.scouting.org/api/users/{username}/authenticate` returns 503. Workaround: manual Chrome login + CDP token extraction. See `docs/scoutbook-data-refresh.md` |
 | Admin panel shows only ai-chat conversations | Medium | Need second LibreChat DB connection or config fix |
 | Scoutbook API has no documented rate limits | Medium | Using conservative 1 req/sec with randomized timing |
-| gcloud gsutil re-auth failures | Fixed | Switched to `gcloud storage cp` |
-| Chrome DevTools MCP stale connection | Low | Server doesn't auto-reconnect after Chrome restart |
 | Cron system not verified | Medium | Need to check if sidecar is running |
 | Dense CSS not applied to admin panel | Low | Cosmetic |
+
+### Resolved Issues
+
+| Issue | Resolution |
+|-------|-----------|
+| No scout data in MongoDB | **Resolved 2026-03-15** — 20 scouts, 419 advancement, 2,535 requirements loaded via Chrome CDP capture + mongosh import |
+| gcloud gsutil re-auth failures | Switched to `gcloud storage cp` |
 
 ## Scoutbook API Data Available
 

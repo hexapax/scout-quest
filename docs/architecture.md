@@ -1,5 +1,7 @@
 # Scout Quest — System Architecture
 
+**Last updated:** 2026-03-16
+
 ## Architecture Overview
 
 ```
@@ -46,10 +48,12 @@
 External services:
   ├── Anthropic API (Claude — primary model, MCP tool use)
   ├── OpenAI API (GPT-4.1, Whisper STT, TTS)
-  ├── Google Gemini API (Gemini 3 Flash — budget MCP tool use)
+  ├── Google Gemini API (Gemini 3 Flash — budget MCP tool use; Embedding 2 — knowledge base)
   ├── DeepSeek API (cheap reasoning, no MCP)
   ├── OpenRouter (open-source models, no MCP)
-  └── ntfy.sh (push notifications → Will's iPad)
+  ├── ntfy.sh (push notifications → Will's iPad)
+  ├── Perplexity API (research MCP on devbox)
+  └── Brave Search API (web search MCP on devbox)
 ```
 
 ### Admin Panel
@@ -124,18 +128,27 @@ Node.js: v24 via nvm (for MCP server builds — build locally, SCP bundle to VM)
 - `scout-shared` Docker network for cross-instance MCP and admin access
 - Admin panel: AdminJS on port 3082, CRUD for Scout Quest + read-only LibreChat MongoDB
 
+**Scoutbook data in MongoDB (loaded 2026-03-15 via Chrome CDP capture):**
+- 20 scouts, 15 adults, ~420 advancement records, ~2,535 requirements
+- `scoutbook_get_scout_advancement` tool verified working with real data
+- Manual refresh workflow documented in `docs/scoutbook-data-refresh.md`
+- BSA automated auth endpoint (`my.scouting.org`) returns 503 — see Dead Ends in `docs/future-research.md`
+
+**Scouting Knowledge Base (design approved 2026-03-16, implementation pending):**
+- pgvector + Gemini Embedding 2 for semantic search over BSA policies and troop knowledge
+- 10 troop operational knowledge docs extracted from Google Drive (`docs/scouting-knowledge/troop/`)
+- Design spec: `docs/plans/2026-03-16-scouting-knowledge-base-design.md`
+
 **What's not yet deployed:**
-- Admin panel DNS: `admin.hexapax.com` A record defined in Terraform but not yet applied
-- Admin panel auth: Google OAuth wiring (currently email-allowlist with session cookie)
 - Cron sidecar for background checks and ntfy notifications (implemented, pending deployment)
 - Guide endpoint (`guide.js`) for parent/SM onboarding (implemented, pending deployment)
-- Brave Search MCP integration (see `docs/future-research.md`)
+- Scouting Knowledge Base embedding pipeline and MCP query tools
 
 ---
 
 ## MCP Server Architecture
 
-Two entry points from the same TypeScript codebase (`mcp-servers/scout-quest/`):
+Five entry points from the same TypeScript codebase (`mcp-servers/scout-quest/`):
 
 | Entry Point | Instance | Tools | Resources | Connects To |
 |-------------|----------|-------|-----------|-------------|

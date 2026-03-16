@@ -1,12 +1,12 @@
 # Scout Quest — Strategy
 
-**Last updated:** 2026-02-22
+**Last updated:** 2026-03-16
 
 ## Vision
 
 Scout Quest is an AI-assisted coordination and coaching system for Boy Scout troops. It gives scouts, parents, and adult volunteers ("scouters") an AI assistant backed by real troop data from Scoutbook — the official BSA management system.
 
-The project started as a merit badge coaching tool for one troop but is evolving into something broader: an AI layer that makes the entire troop experience more accessible. Scouts get coaching and accountability. Parents get visibility into their child's progress and upcoming events. Scouters get help with the relentless coordination burden that drives volunteer attrition.
+The project started as a merit badge coaching tool for one troop but is evolving into something broader: an AI layer that makes the entire troop experience more accessible. Scouts get coaching and accountability. Parents get visibility into their child's progress and upcoming events. Scouters get help with the relentless coordination burden that drives volunteer attrition. A Scouting Knowledge Base (design approved 2026-03-16) will give all three audiences access to authoritative BSA policies, rank requirements, and troop-specific knowledge through semantic search — replacing reliance on AI training data recall with curated, versioned, searchable reference material.
 
 The ideas behind it have wider potential. Agentic-led pedagogy — AI that teaches by enabling rather than answering — could reshape how young people interact with AI at a formative age. Scouting has spent over a century formalizing how to build values and character in youth. Combining that institutional knowledge with AI assistants is a powerful opportunity.
 
@@ -69,7 +69,7 @@ Scout Quest solves this by syncing Scoutbook data into a local MongoDB mirror an
 - **Calendar/Events** — upcoming events with full RSVP and attendance data
 - **Activity summaries** — camping nights, hiking miles, service hours per scout
 
-This data is synced periodically via cron (with smart rate limiting) and available on-demand via admin tools. The sync is read-only — Scoutbook remains the source of truth for official records.
+As of 2026-03-15, this data is loaded into production MongoDB: 20 scouts, 15 adults, 419 advancement records, and 2,535 individual requirements. The BSA automated auth endpoint is currently broken (503), so data is refreshed via a manual Chrome CDP workflow (see `docs/scoutbook-data-refresh.md`). The sync is read-only — Scoutbook remains the source of truth for official records.
 
 ### What the AI can do with this data
 
@@ -87,12 +87,15 @@ The prototype was very effective with individual scouts. The open questions are:
 4. **Data integration** — Does Scoutbook sync give us enough data to make the experience seamless for scouts, parents, and scouters?
 5. **Volunteer adoption** — Will busy volunteer leaders actually use the guide/scouter assistant?
 6. **Coordination value** — Can the assistant reduce the friction of event planning, RSVPs, and troop communication enough that people actually use it?
+7. **Knowledge authority** — Can a curated knowledge base (pgvector + Gemini Embedding 2) give the AI accurate, citable BSA policy answers instead of training-data hallucinations?
 
 ## Strategic Next Steps
 
-1. Get Scoutbook sync fully working — roster, advancement, calendar/events, activity data
-2. Close the testing loop — agents need to be able to verify the system works end-to-end
-3. Run with 2-3 scouts from the troop as a pilot (quest + calendar awareness)
-4. Add scouter-facing features — event/RSVP queries, roster views, advancement dashboards
-5. If it works, prepare a demo for the Atlanta Area Council or Scouting America
-6. Document the pedagogy approach for broader audiences (Pace Academy, education conferences)
+1. ~~Get Scoutbook sync fully working — roster, advancement, calendar/events, activity data~~ — DONE (data loaded 2026-03-15, manual refresh workflow established)
+2. **Build the Scouting Knowledge Base** — implement embedding pipeline, MCP query tools, load BSA policies and troop knowledge into pgvector (design approved 2026-03-16)
+3. Close the testing loop — agents need to be able to verify the system works end-to-end
+4. Run with 2-3 scouts from the troop as a pilot (quest + calendar awareness + knowledge base)
+5. Add scouter-facing features — event/RSVP queries, roster views, advancement dashboards, Scoutmaster planning assistant
+6. Support Eagle candidates — three scouts (William McDaid, Connor Goldstrom, Charles Brunt) actively working on Eagle projects; the assistant should help with project planning and requirement tracking
+7. If it works, prepare a demo for the Atlanta Area Council or Scouting America
+8. Document the pedagogy approach for broader audiences (Pace Academy, education conferences)

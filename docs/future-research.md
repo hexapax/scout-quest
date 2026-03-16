@@ -227,13 +227,15 @@ Revisit automatic routing if:
 
 ## External Integration Research
 
-**Last updated:** 2026-02-21
+**Last updated:** 2026-03-16
 
 ### Tier 1 — High Value, Low Cost
 
 | Integration | What It Does | Value | Cost | Maturity | Status |
 |-------------|-------------|-------|------|----------|--------|
-| **Brave Search MCP** | Web search for hardware prices, BSA info | High | Free (2K queries/mo) | Production | Not yet integrated |
+| **Brave Search MCP** | Web search for hardware prices, BSA info | High | Free (2K queries/mo) | Production | Configured on devbox (2026-03-16) |
+| **Perplexity MCP** | Research queries with citations | High | API cost (low) | Production | Configured on devbox (2026-03-16) |
+| **Scouting Knowledge Base** | Semantic search over BSA policies + troop knowledge | High | Free (Gemini Embedding 2) | Design approved | Design spec: `docs/plans/2026-03-16-scouting-knowledge-base-design.md` |
 | **QuickChart MCP** | Generate progress charts, budget graphs | Medium | Free | Production | Not yet integrated |
 
 ### Tier 2 — Moderate Value
