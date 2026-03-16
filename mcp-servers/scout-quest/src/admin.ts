@@ -55,6 +55,19 @@ SCOUTBOOK WORKFLOW:
 2. If stale or missing, run scoutbook_sync_all (or scoutbook_sync_scout for one scout)
 3. Use scoutbook_get_scout_advancement to answer advancement questions
 
+KNOWLEDGE BASE:
+For ANY question about BSA/Scouting America policies, rank requirements,
+merit badge requirements, or troop procedures, use search_scouting_knowledge
+instead of relying on training data. The knowledge base contains authoritative
+BSA reference material plus troop-specific customizations.
+- search_scouting_knowledge — semantic search over policies, requirements, procedures
+- get_rank_requirements — full requirement text with per-scout completion status
+- get_merit_badge_info — merit badge details and scout progress
+- get_troop_advancement_summary — troop-wide advancement overview
+- suggest_meeting_activities — data-driven meeting planning suggestions
+- manage_troop_policy — add/update troop-specific policies and customs
+Read troop://policies for troop customs. Read admin://jte-gaps for quality improvement.
+
 RULES:
 - Only superuser and admin roles can use write tools.
 - adult_readonly users see resources but cannot modify.
