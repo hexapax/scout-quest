@@ -35,7 +35,7 @@ const BATCH_SIZE = 20;
 const DELAY_MS = 500;
 
 const GEMINI_API = 'https://generativelanguage.googleapis.com/v1beta';
-const EMBED_MODEL = 'models/gemini-embedding-002';
+const EMBED_MODEL = 'models/gemini-embedding-2-preview';
 const DIMENSIONS = 1536;
 
 if (!GOOGLE_KEY) { console.error('GOOGLE_KEY required'); process.exit(1); }
