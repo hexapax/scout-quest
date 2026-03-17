@@ -271,6 +271,65 @@ export function registerScoutbookSyncTools(server: McpServer): void {
     },
   );
 
+  // ---- scoutbook_list_scouts ----
+  server.registerTool(
+    "scoutbook_list_scouts",
+    {
+      title: "Scoutbook: List All Scouts",
+      description:
+        "List all scouts from synced Scoutbook roster. Returns BSA userId, name, current rank, and patrol for every scout. " +
+        "Use this to discover userIds before calling scoutbook_get_scout_advancement.",
+      inputSchema: {},
+    },
+    async () => {
+      try {
+        const col = await scoutbookScouts();
+        const allScouts = await col
+          .find({})
+          .sort({ lastName: 1, firstName: 1 })
+          .toArray();
+
+        if (allScouts.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: "No scouts found. Run scoutbook_sync_roster first.",
+              },
+            ],
+          };
+        }
+
+        const lines = allScouts.map((s) => {
+          const rank = s.currentRank?.name ?? "No rank";
+          const patrol = s.patrol?.name ?? "No patrol";
+          return `${s.userId} | ${s.firstName} ${s.lastName} | ${rank} | ${patrol}`;
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                `${allScouts.length} scouts (userId | name | rank | patrol):\n` +
+                lines.join("\n"),
+            },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Failed to list scouts: ${err instanceof Error ? err.message : String(err)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
   // ---- scoutbook_get_scout_advancement ----
   server.registerTool(
     "scoutbook_get_scout_advancement",
@@ -399,6 +458,107 @@ export function registerScoutbookSyncTools(server: McpServer): void {
             {
               type: "text",
               text: `Failed to get advancement for userId ${userId}: ${err instanceof Error ? err.message : String(err)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  // ---- scoutbook_get_rank_requirements ----
+  server.registerTool(
+    "scoutbook_get_rank_requirements",
+    {
+      title: "Scoutbook: Get Rank Requirements",
+      description:
+        "Get the canonical requirements list (text + numbering) for a BSA rank. " +
+        "Deduplicates across scouts to return one authoritative list. " +
+        "Ranks: Scout, Tenderfoot, Second Class, First Class, Star Scout, Life Scout, Eagle Scout. " +
+        "Use this to answer 'What are the requirements for First Class?'",
+      inputSchema: {
+        rank_name: z.string().describe(
+          "Rank name, e.g. 'First Class', 'Eagle Scout', 'Life Scout'",
+        ),
+      },
+    },
+    async ({ rank_name }) => {
+      try {
+        // Find the advancementId for this rank
+        const advCol = await scoutbookAdvancement();
+        const rankAdv = await advCol.findOne({
+          type: "rank",
+          name: { $regex: new RegExp(`^${rank_name.trim()}$`, "i") },
+        });
+
+        if (!rankAdv) {
+          // List available ranks
+          const allRanks = await advCol
+            .find({ type: "rank" })
+            .project({ name: 1 })
+            .toArray();
+          const names = [...new Set(allRanks.map((r) => r.name))].sort();
+          return {
+            content: [
+              {
+                type: "text",
+                text:
+                  `Rank '${rank_name}' not found. Available ranks:\n` +
+                  names.join(", "),
+              },
+            ],
+          };
+        }
+
+        // Get deduplicated requirements for this rank (by reqId)
+        const reqCol = await scoutbookRequirements();
+        const allReqs = await reqCol
+          .find({ advancementType: "rank", advancementId: rankAdv.advancementId })
+          .toArray();
+
+        // Deduplicate by reqId — keep first occurrence
+        const seen = new Set<number>();
+        const unique = allReqs.filter((r) => {
+          if (seen.has(r.reqId)) return false;
+          seen.add(r.reqId);
+          return true;
+        });
+
+        if (unique.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `No requirements found for ${rankAdv.name}. Run scoutbook_sync_all to populate data.`,
+              },
+            ],
+          };
+        }
+
+        // Sort by reqNumber (numeric-aware)
+        unique.sort((a, b) =>
+          a.reqNumber.localeCompare(b.reqNumber, undefined, { numeric: true }),
+        );
+
+        const lines = unique.map((r) => {
+          const sub = r.parentReqId != null ? "  " : "";
+          return `${sub}${r.reqNumber}. ${r.reqName.trim()}`;
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `## ${rankAdv.name} Requirements (${unique.length} requirements)\n\n` + lines.join("\n"),
+            },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Failed to get rank requirements: ${err instanceof Error ? err.message : String(err)}`,
             },
           ],
           isError: true,

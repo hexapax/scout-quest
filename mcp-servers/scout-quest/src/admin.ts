@@ -44,16 +44,24 @@ SCOUTBOOK SYNC TOOLS:
 - scoutbook_sync_events — Sync upcoming calendar events (default: next 90 days).
 - scoutbook_sync_status — Check when data was last synced and whether it succeeded.
   Use this first to see if data is current before running a full sync.
+- scoutbook_list_scouts — List all 28 scouts with userId, name, current rank, and patrol.
+  Use this first to discover userIds, then call scoutbook_get_scout_advancement for each.
 - scoutbook_get_scout_advancement — Query locally synced data for a scout's ranks,
   merit badges, awards, and individual requirements. Use this to answer questions
   like "What does Scout X still need for First Class?" or "How far along is Scout X
   on Camping merit badge?" Does NOT call the Scoutbook API — reads from MongoDB,
   so it's fast. If data is missing, run scoutbook_sync_scout first.
+- scoutbook_get_rank_requirements — Get the canonical requirements list (text) for a
+  BSA rank by name, e.g. "First Class" or "Eagle Scout". Deduplicates across all scouts
+  to return one authoritative requirements list. Use this to answer "What are the
+  requirements for Life Scout?"
 
 SCOUTBOOK WORKFLOW:
 1. Check scoutbook_sync_status to see if data is current
 2. If stale or missing, run scoutbook_sync_all (or scoutbook_sync_scout for one scout)
-3. Use scoutbook_get_scout_advancement to answer advancement questions
+3. Use scoutbook_list_scouts to enumerate scouts and their BSA userIds
+4. Use scoutbook_get_scout_advancement to get full advancement + requirements per scout
+5. Use scoutbook_get_rank_requirements for canonical rank requirement text
 
 KNOWLEDGE BASE:
 For ANY question about BSA/Scouting America policies, rank requirements,
