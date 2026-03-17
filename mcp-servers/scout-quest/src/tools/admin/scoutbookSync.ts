@@ -330,6 +330,64 @@ export function registerScoutbookSyncTools(server: McpServer): void {
     },
   );
 
+  // ---- scoutbook_list_adults ----
+  server.registerTool(
+    "scoutbook_list_adults",
+    {
+      title: "Scoutbook: List All Adults",
+      description:
+        "List all adult leaders from synced Scoutbook roster. Returns BSA userId, name, and positions. " +
+        "Use this to see registered adults and their leadership roles.",
+      inputSchema: {},
+    },
+    async () => {
+      try {
+        const col = await scoutbookAdults();
+        const allAdults = await col
+          .find({})
+          .sort({ lastName: 1, firstName: 1 })
+          .toArray();
+
+        if (allAdults.length === 0) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: "No adults found. Run scoutbook_sync_roster first.",
+              },
+            ],
+          };
+        }
+
+        const lines = allAdults.map((a) => {
+          const positions = a.positions?.map((p) => p.name).join(", ") ?? "No positions";
+          return `${a.userId} | ${a.firstName} ${a.lastName} | ${positions}`;
+        });
+
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                `${allAdults.length} adults (userId | name | positions):\n` +
+                lines.join("\n"),
+            },
+          ],
+        };
+      } catch (err) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Failed to list adults: ${err instanceof Error ? err.message : String(err)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
   // ---- scoutbook_get_scout_advancement ----
   server.registerTool(
     "scoutbook_get_scout_advancement",
