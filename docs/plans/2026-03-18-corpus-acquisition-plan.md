@@ -1,9 +1,14 @@
 # BSA Corpus Acquisition Plan
 
-**Status:** Approved
+**Status:** Approved — see scout-corpus repo for authoritative plan
 **Date:** 2026-03-18
 **Architecture:** docs/plans/2026-03-18-architecture-v2.md
-**Source:** inbox/scout-quest-refactor/bsa-corpus-acquisition-plan.md (adapted)
+**Corpus repo:** https://github.com/hexapax/scout-corpus
+
+> **This document is a summary and cross-reference pointer.**
+> The full acquisition plan, directory structure, and pipeline documentation lives in the
+> [scout-corpus repo README](https://github.com/hexapax/scout-corpus/blob/main/README.md).
+> Local clone: `/opt/repos/scout-corpus/`
 
 ---
 
