@@ -302,11 +302,49 @@ Revisit automatic routing if:
 **Revisit if:** LibreChat adds custom endpoint function calling AND DeepSeek tool reliability improves above 95%.
 
 ### BSA Automated Authentication (my.scouting.org API)
-**Status:** Broken (March 2026)
+**Status:** Broken (March 2026) — workaround available
+**Last updated:** 2026-03-18
 **What happened:** `POST my.scouting.org/api/users/{username}/authenticate` returns **503** from all sources (GCP VMs, residential IPs, WSL2). The endpoint was working on 2026-02-22 when we captured HAR files. The `advancements.scouting.org` frontend still works — you can log in via browser (the SPA uses a different auth flow or the WAF allows browser sessions).
 **Impact:** The Scoutbook sync CLI (`cli.ts sync-all`) cannot authenticate. No automated/cron sync is possible.
 **Workaround:** Manual Chrome login + Chrome DevTools Protocol token extraction. See `docs/scoutbook-data-refresh.md` for full procedure. This works reliably — JWT extracted from cookies via CDP, then used for direct API calls from Node.js.
-**Revisit if:** BSA auth endpoint starts returning 200, or we discover the new auth flow used by `advancements.scouting.org` (may be cookie-based without an explicit token endpoint).
+
+**LibreChat token delivery options (evaluated 2026-03-18):**
+The JWT lives in a cookie on `*.scouting.org` — cross-origin, so LibreChat can't read it directly. Options for getting the token to the MCP server:
+| Option | Approach | Complexity | UX |
+|--------|----------|------------|-----|
+| **Bookmarklet** | User logs into BSA, clicks bookmarklet that POSTs token to MCP server endpoint | Low | One click after login |
+| **Chrome extension** | Extension with `host_permissions` for `*.scouting.org` auto-extracts token | Medium | Seamless but requires extension install |
+| **Admin panel page** | Auth page in admin panel — but cross-origin blocks cookie access | N/A | **Doesn't work** (Same-Origin Policy) |
+| **CDP background service** | Local service connects to Chrome debug port, extracts token, pushes to MCP | Medium | Requires Chrome with debug port |
+
+**Recommendation:** Bookmarklet is lowest-friction. MCP server needs a small HTTP endpoint to receive and store the token (with expiry tracking).
+**Revisit if:** BSA auth endpoint starts returning 200, or BSA adds OAuth2/OIDC support.
+
+### BSA Write API (Confirmed Working 2026-03-18)
+**Status:** Fully mapped — 8 write endpoints confirmed via network interception
+**Last updated:** 2026-03-18
+**Full reference:** `docs/bsa-api-reference.md`
+**Discovery method:** Chrome CDP network interception (`scripts/scoutbook/intercept-api.mjs`) while interacting with `advancements.scouting.org` UI.
+
+All write endpoints use the same JWT bearer token as reads. No additional CSRF or auth required.
+
+| Endpoint | Method | What It Does |
+|----------|--------|-------------|
+| `/advancements/v2/youth/ranks/{rankId}/requirements` | POST | Mark requirements complete/approved (batch) |
+| `/advancements/v2/users/{userId}/comments/add` | POST | Add comment to a requirement |
+| `/advancements/v2/events/{eventId}/invitees` | PUT | RSVP to event (Y/M/N) |
+| `/advancements/events/add` | POST | Create calendar event |
+| `/advancements/v2/events/{eventId}/invitees` | POST | Add invitees to event |
+| `/advancements/v2/{orgGuid}/email` | POST | Send email (uses memberId, not userId) |
+| `/advancements/v2/activities/add` | POST | Create activity with per-person hours |
+| `/advancements/v2/activities/{id}` | PUT | Update activity |
+
+**Key findings:**
+- Email uses `memberId` (not `userId`) for recipients
+- Event creation is two-step: create → add invitees
+- Activity recording includes per-person service hours via `activityValues`
+- Requirement updates are batch — multiple scouts × multiple requirements in one call
+- Raw intercept data: `scouting-org-research/data/api-intercept.json`
 
 ### Cloud Run Deployment
 **Status:** Rejected (architecture decision)
