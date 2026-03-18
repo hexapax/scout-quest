@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 COPY dist/ ./dist/
 COPY knowledge/ ./knowledge/
+COPY public/ ./public/
 
 # Install production dependencies only
 RUN npm ci --omit=dev

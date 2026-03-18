@@ -41,7 +41,7 @@ trap "rm -rf '$TEMP_DIR'" EXIT
 TARBALL="$TEMP_DIR/backend-deploy.tar.gz"
 
 cd "$BACKEND_DIR"
-tar czf "$TARBALL" dist/ node_modules/ knowledge/ package.json Dockerfile
+tar czf "$TARBALL" dist/ node_modules/ knowledge/ public/ package.json Dockerfile
 echo "  Tarball: $(du -h "$TARBALL" | cut -f1)"
 
 # --- Upload to VM ---
