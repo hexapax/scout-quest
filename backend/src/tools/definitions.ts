@@ -11,6 +11,128 @@ export interface ToolDefinition {
   };
 }
 
+/** Tools that require write access to BSA Scoutbook (BSA token required). */
+export const BSA_WRITE_TOOLS: ToolDefinition[] = [
+  {
+    name: "advance_requirement",
+    description:
+      "Mark a rank requirement as complete in BSA Scoutbook. " +
+      "Use when a scout reports completing a requirement and a leader has already approved it. " +
+      "Do NOT call unless the scout confirms the work is done and a leader has reviewed it. " +
+      "Requires a valid BSA leader token.",
+    input_schema: {
+      type: "object",
+      properties: {
+        scoutUserId: {
+          type: "string",
+          description: "BSA userId of the scout (from their Scoutbook profile).",
+        },
+        rankName: {
+          type: "string",
+          description: 'Full rank name, e.g., "Second Class", "First Class", "Eagle".',
+        },
+        requirementNumber: {
+          type: "string",
+          description: 'Requirement identifier, e.g., "1a", "3b", "7".',
+        },
+        dateCompleted: {
+          type: "string",
+          description: "Date the scout completed the requirement (YYYY-MM-DD).",
+        },
+        notes: {
+          type: "string",
+          description: "Optional leader notes to attach as a Scoutbook comment.",
+        },
+      },
+      required: ["scoutUserId", "rankName", "requirementNumber", "dateCompleted"],
+    },
+  },
+  {
+    name: "rsvp_event",
+    description:
+      "RSVP a scout to a BSA calendar event. " +
+      "Use when the scout says they plan to attend, might attend, or cannot attend an event. " +
+      "Requires the BSA eventId — only call if you know it (e.g., from a prior tool result).",
+    input_schema: {
+      type: "object",
+      properties: {
+        eventId: {
+          type: "string",
+          description: "BSA event ID (numeric string).",
+        },
+        scoutUserId: {
+          type: "string",
+          description: "BSA userId of the scout to RSVP.",
+        },
+        rsvpCode: {
+          type: "string",
+          enum: ["Y", "M", "N"],
+          description: "Y = yes (attending), M = maybe, N = no (not attending).",
+        },
+      },
+      required: ["eventId", "scoutUserId", "rsvpCode"],
+    },
+  },
+  {
+    name: "log_activity",
+    description:
+      "Record a service project or other activity in BSA Scoutbook for service-hour credit. " +
+      "Use when logging a completed service project with a list of youth participants and hours. " +
+      "Do NOT use for rank requirements — use advance_requirement for those. " +
+      "Requires a valid BSA leader token.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description: "Activity name, e.g., \"Eagle Project — Dunwoody Nature Center\".",
+        },
+        startDateTime: {
+          type: "string",
+          description: "Start datetime in ISO format (UTC), e.g., \"2026-03-14T15:30:00.000Z\".",
+        },
+        endDateTime: {
+          type: "string",
+          description: "End datetime in ISO format (UTC).",
+        },
+        location: {
+          type: "string",
+          description: "Location name or address.",
+        },
+        city: {
+          type: "string",
+          description: "City where the activity took place.",
+        },
+        description: {
+          type: "string",
+          description: "Brief description of the activity.",
+        },
+        activityTypeId: {
+          type: "number",
+          description: "BSA activity type: 1 = Service Project.",
+        },
+        categoryId: {
+          type: "number",
+          description: "BSA category ID: 47 = confirmed for service projects.",
+        },
+        participants: {
+          type: "array",
+          description: "Youth participants and their service hours.",
+          items: {
+            type: "object",
+            properties: {
+              userId: { type: "string", description: "BSA userId." },
+              serviceHours: { type: "number", description: "Hours of service." },
+            },
+            required: ["userId", "serviceHours"],
+          },
+        },
+      },
+      required: ["name", "startDateTime", "endDateTime", "location", "city", "description", "activityTypeId", "categoryId", "participants"],
+    },
+  },
+];
+
 export const SCOUT_TOOLS: ToolDefinition[] = [
   {
     name: "get_scout_status",
@@ -64,4 +186,5 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
       required: ["query"],
     },
   },
+  ...BSA_WRITE_TOOLS,
 ];

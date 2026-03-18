@@ -3,6 +3,7 @@ import { connectDb } from "./db.js";
 import { loadKnowledge } from "./knowledge.js";
 import { connectFalkorDB } from "./falkordb.js";
 import { chatHandler } from "./chat.js";
+import { createBsaTokenRouter } from "./routes/bsa-token.js";
 
 const app = express();
 
@@ -10,6 +11,9 @@ app.use(express.json({ limit: "4mb" }));
 
 // OpenAI-compatible chat completions endpoint
 app.post("/v1/chat/completions", chatHandler);
+
+// BSA token management
+app.use("/", createBsaTokenRouter());
 
 // Health check
 app.get("/health", (_req, res) => {

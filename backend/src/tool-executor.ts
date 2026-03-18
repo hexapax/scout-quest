@@ -1,6 +1,9 @@
 import { getScoutQuestDb } from "./db.js";
 import { getScoutStatus } from "./tools/get-scout-status.js";
 import { searchBsaReference } from "./tools/search-bsa-reference.js";
+import { advanceRequirementTool } from "./tools/advance-requirement.js";
+import { rsvpEventTool } from "./tools/rsvp-event.js";
+import { logActivityTool, type LogActivityInput } from "./tools/log-activity.js";
 
 interface ToolUseBlock {
   type: "tool_use";
@@ -55,6 +58,29 @@ async function executeOneTool(
           String(input.query || ""),
           input.category ? String(input.category) : undefined
         );
+      }
+
+      case "advance_requirement": {
+        if (!userEmail) return "Cannot advance requirement: no user email context.";
+        return await advanceRequirementTool({
+          scoutUserId: String(input.scoutUserId || ""),
+          rankName: String(input.rankName || ""),
+          requirementNumber: String(input.requirementNumber || ""),
+          dateCompleted: String(input.dateCompleted || new Date().toISOString().slice(0, 10)),
+          notes: input.notes ? String(input.notes) : undefined,
+        });
+      }
+
+      case "rsvp_event": {
+        return await rsvpEventTool({
+          eventId: String(input.eventId || ""),
+          scoutUserId: String(input.scoutUserId || ""),
+          rsvpCode: String(input.rsvpCode || "Y"),
+        });
+      }
+
+      case "log_activity": {
+        return await logActivityTool(input as unknown as LogActivityInput);
       }
 
       default:
