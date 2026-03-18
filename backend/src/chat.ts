@@ -23,13 +23,21 @@ function isAuthorized(req: Request): boolean {
   return token === requiredKey;
 }
 
-/** Run the Anthropic tool execution loop and return the final response text. */
+interface CacheMetrics {
+  input_tokens: number;
+  output_tokens: number;
+  cache_creation_input_tokens: number;
+  cache_read_input_tokens: number;
+}
+
+/** Run the Anthropic tool execution loop and return the final response text + cache metrics. */
 async function runWithTools(
   baseReq: object,
   messages: MessageParam[],
   userEmail: string | undefined
-): Promise<string> {
+): Promise<{ text: string; usage: CacheMetrics }> {
   const workingMessages = [...messages];
+  let lastUsage: CacheMetrics = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 };
 
   for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
     const resp = await anthropic.messages.create({
@@ -39,12 +47,23 @@ async function runWithTools(
       stream: false,
     });
 
+    // Capture cache metrics from usage
+    const u = resp.usage as unknown as Record<string, number>;
+    lastUsage = {
+      input_tokens: u.input_tokens ?? 0,
+      output_tokens: u.output_tokens ?? 0,
+      cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
+      cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
+    };
+    console.log(`[cache] turn=${turn} input=${lastUsage.input_tokens} output=${lastUsage.output_tokens} cache_create=${lastUsage.cache_creation_input_tokens} cache_read=${lastUsage.cache_read_input_tokens}`);
+
     // No tool calls — return final text
     if (resp.stop_reason !== "tool_use") {
-      return resp.content
+      const text = resp.content
         .filter((b) => b.type === "text")
         .map((b) => (b.type === "text" ? b.text : ""))
         .join("");
+      return { text, usage: lastUsage };
     }
 
     // Execute tool calls
@@ -65,7 +84,7 @@ async function runWithTools(
     workingMessages.push({ role: "user", content: toolResults });
   }
 
-  return "I was unable to complete that request.";
+  return { text: "I was unable to complete that request.", usage: lastUsage };
 }
 
 export async function chatHandler(req: Request, res: Response): Promise<void> {
@@ -115,24 +134,17 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
     const requestId = `chatcmpl-${Date.now()}`;
 
     if (doStream) {
-      // Use tool execution loop (may involve non-streaming tool turns),
-      // then stream the final text to the client.
-      //
-      // For simple responses (no tool calls), Anthropic returns in one turn
-      // and we fake-stream the result. For tool calls, there's a natural pause
-      // during execution which users expect.
       initSSE(res);
       writeRoleChunk(res, requestId, model);
 
-      const finalText = await runWithTools(baseReq, messages, userEmail);
+      const { text: finalText } = await runWithTools(baseReq, messages, userEmail);
 
-      // Stream the final text
       writeContentChunk(res, requestId, model, finalText);
       writeFinishChunk(res, requestId, model, "stop");
       writeSSEDone(res);
       res.end();
     } else {
-      const finalText = await runWithTools(baseReq, messages, userEmail);
+      const { text: finalText, usage } = await runWithTools(baseReq, messages, userEmail);
       res.json({
         id: requestId,
         object: "chat.completion",
@@ -146,6 +158,13 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
             finish_reason: "stop",
           },
         ],
+        usage: {
+          prompt_tokens: usage.input_tokens,
+          completion_tokens: usage.output_tokens,
+          total_tokens: usage.input_tokens + usage.output_tokens,
+          cache_creation_input_tokens: usage.cache_creation_input_tokens,
+          cache_read_input_tokens: usage.cache_read_input_tokens,
+        },
       });
     }
   } catch (err: unknown) {
