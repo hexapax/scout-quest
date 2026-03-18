@@ -119,12 +119,34 @@ async function getRankProgress(userId: string): Promise<string> {
   return lines.join("\n");
 }
 
+/** Normalize rank names: "Star" → "Star Scout", "Eagle" → "Eagle Scout", etc. */
+function normalizeRankName(name: string): string[] {
+  const n = name.trim();
+  // Return multiple candidates for fuzzy matching
+  const candidates = [n];
+  // If they said "Star" but the graph has "Star Scout"
+  if (!n.toLowerCase().includes("scout") && !["tenderfoot", "second class", "first class"].includes(n.toLowerCase())) {
+    candidates.push(`${n} Scout`);
+  }
+  // If they said "Star Scout" but we should also try "Star"
+  if (n.toLowerCase().endsWith(" scout")) {
+    candidates.push(n.replace(/ [Ss]cout$/, ""));
+  }
+  return candidates;
+}
+
 async function getRankRequirements(userId: string, rankName: string): Promise<string> {
-  // Get the advancementId for this rank
-  const rankRows = await graphQuery<{ advancementId: number }>(
-    "MATCH (a:Advancement {type: 'rank', name: $rankName}) RETURN a.advancementId AS advancementId",
-    { rankName }
-  );
+  // Try multiple name variants (e.g., "Star" and "Star Scout")
+  const candidates = normalizeRankName(rankName);
+  let rankRows: { advancementId: number }[] = [];
+
+  for (const candidate of candidates) {
+    rankRows = await graphQuery<{ advancementId: number }>(
+      "MATCH (a:Advancement {type: 'rank', name: $rankName}) RETURN a.advancementId AS advancementId",
+      { rankName: candidate }
+    );
+    if (rankRows.length > 0) break;
+  }
 
   if (rankRows.length === 0) {
     return `Rank "${rankName}" not found in the knowledge graph.`;

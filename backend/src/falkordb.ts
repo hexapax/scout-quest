@@ -68,7 +68,7 @@ function buildParamStr(params: Record<string, string | number | boolean | null>)
       if (typeof v === "string") return `${k} = '${v.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
       return `${k} = ${v}`;
     })
-    .join(", ");
+    .join(" ");
 }
 
 function parseGraphResponse<T>(raw: unknown): T[] {
