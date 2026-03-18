@@ -31,33 +31,34 @@ See: docs/plans/2026-03-18-corpus-acquisition-plan.md
 ### Tasks
 
 **1.1 — Backend scaffold**
-- [ ] New directory: `backend/` with TypeScript + Express
-- [ ] OpenAI-compatible `/v1/chat/completions` endpoint
-- [ ] Request translation: OpenAI format → Anthropic format
-- [ ] Response translation: Anthropic format → OpenAI SSE format
-- [ ] Streaming proxy (Anthropic SSE → OpenAI SSE)
-- [ ] Docker container + compose integration
+- [x] New directory: `backend/` with TypeScript + Express
+- [x] OpenAI-compatible `/v1/chat/completions` endpoint
+- [x] Request translation: OpenAI format → Anthropic format
+- [x] Response translation: Anthropic format → OpenAI SSE format
+- [x] Streaming proxy (Anthropic SSE → OpenAI SSE)
+- [x] Docker container + compose integration
 
 **1.2 — BSA knowledge injection**
-- [ ] Load distilled BSA knowledge document from disk on startup
-- [ ] Inject as `system[0]` with `cache_control: {type: "ephemeral"}`
-- [ ] Inject persona instructions as `system[1]`
-- [ ] Verify cache metrics in Anthropic response headers
+- [x] Load distilled BSA knowledge document from disk on startup
+- [x] Inject as `system[0]` with `cache_control: {type: "ephemeral"}`
+- [x] Inject persona instructions as `system[1]`
+- [ ] Verify cache metrics in Anthropic response headers (test on first deploy)
 
 **1.3 — Per-scout context injection**
-- [ ] Map LibreChat user (from request headers) → scout profile in MongoDB
-- [ ] Load scout context: profile, active badges, recent session notes
-- [ ] Inject as `system[2]` (dynamic block after cached knowledge)
+- [x] Map LibreChat user (from `X-User-Email` header) → scout profile in MongoDB
+- [x] Load scout context: profile, active badges, upcoming events
+- [x] Inject as `system[2]` (dynamic block after cached knowledge)
 
 **1.4 — LibreChat configuration**
-- [ ] Add custom endpoint in `config/scout-quest/librechat.yaml` pointing to backend
-- [ ] Create "Scout Coach v2" preset using the custom endpoint
-- [ ] Keep existing MCP presets working during migration (parallel operation)
+- [x] Add `ScoutCoachV2` custom endpoint in `config/scout-quest/librechat.yaml`
+- [x] Create "Scout Coach v2" preset using the custom endpoint
+- [x] Keep existing MCP presets working during migration (parallel operation)
 
 **1.5 — Interim knowledge document**
-- [ ] Before corpus is ready: assemble an interim cached context from existing sources
-- [ ] Use existing `docs/scouting-knowledge/` markdown files + Scoutbook reference data
-- [ ] Target ~50K tokens initially, expand as corpus pipeline delivers content
+- [x] Assembled from `docs/scouting-knowledge/` markdown files (40 files)
+- [x] `scripts/assemble-knowledge.sh` for regeneration
+- [x] 210K chars (~52K tokens) — within 50K target
+- [ ] Expand when corpus pipeline delivers content
 
 ### Test
 - Scout asks a BSA policy question → correct answer from cached knowledge, no tool call

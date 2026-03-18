@@ -1,6 +1,6 @@
 # Scout Quest — Development State
 
-**Last updated:** 2026-03-16
+**Last updated:** 2026-03-18
 
 ## Current Architecture
 
@@ -123,15 +123,26 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
 - [x] Tone dial and domain intensity calibration
 - [ ] **Untested with real scouts** — personality calibration is theoretical
 
-### Scouting Knowledge Base (Design Approved, Implementation Pending)
-- [x] Design spec approved (`docs/plans/2026-03-16-scouting-knowledge-base-design.md`)
-- [x] Architecture: pgvector (semantic search) + Gemini Embedding 2 (1536d) + MongoDB (structured advancement data)
-- [x] 10 troop operational knowledge docs extracted from Google Drive (`docs/scouting-knowledge/troop/`)
-- [x] Content covers: troop overview, leadership, meeting history, advancement practices, campouts/events, finances, patrols, newsletters, Eagle process, policies
-- [ ] **Embedding pipeline** — script to chunk markdown, embed via Gemini, store in pgvector
-- [ ] **MCP query tools** — `search_scouting_knowledge`, `get_rank_requirements`, `get_troop_policy`
-- [ ] **BSA policy content** — rank requirements, merit badge summaries, Guide to Advancement excerpts
-- [ ] **Version-aware advancement** — correct requirement text per scout's version (2016, 2022, 2024)
+### Custom API Backend v2 (Phase 1 — Built, Not Yet Deployed)
+- [x] `backend/` directory with TypeScript + Express
+- [x] OpenAI-compatible `/v1/chat/completions` endpoint
+- [x] Anthropic SSE → OpenAI SSE streaming translation
+- [x] BSA knowledge injection as `system[0]` with `cache_control: {type: "ephemeral"}`
+- [x] Scout Coach / Scout Guide persona as `system[1]`
+- [x] Per-scout context injection as `system[2]` (from MongoDB scoutbook + quest collections)
+- [x] `ScoutCoachV2` custom endpoint in `librechat.yaml`
+- [x] `Scout Coach v2` preset in modelSpecs
+- [x] `scripts/deploy-backend.sh` deploy script
+- [x] Interim knowledge document: 40 scouting-knowledge/ files → 52K tokens
+- [x] `BACKEND_API_KEY` auth between LibreChat and backend
+- [ ] **Not yet deployed** — run `scripts/deploy-backend.sh gcloud` then `deploy-config.sh gcloud`
+- [ ] **Needs testing** — verify streaming, cache hits, per-scout context, model spec UI
+
+### Scouting Knowledge Base (Superseded by v2 Architecture)
+- [x] 40 scouting-knowledge/ docs assembled into `backend/knowledge/interim-bsa-knowledge.md` (52K tokens)
+- [x] `scripts/assemble-knowledge.sh` for regeneration
+- [ ] pgvector embedding pipeline (deferred — v2 uses FalkorDB instead, Phase 2)
+- [ ] Version-aware advancement (Phase 2 — FalkorDB knowledge graph)
 
 ### Test Harness (Working, on Devbox)
 - [x] Multi-session chain framework (7,580 lines) committed from devbox

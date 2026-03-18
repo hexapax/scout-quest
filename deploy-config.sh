@@ -266,10 +266,12 @@ setup_instance() {
     CREDS_KEY=$(openssl rand -hex 32)
     JWT_SECRET=$(openssl rand -hex 32)
     JWT_REFRESH=$(openssl rand -hex 32)
+    BACKEND_KEY=$(openssl rand -hex 32)
     sudo sed -i "s|CREDS_IV=<GENERATE>|CREDS_IV=${CREDS_IV}|" "${APP_DIR}/.env"
     sudo sed -i "s|CREDS_KEY=<GENERATE>|CREDS_KEY=${CREDS_KEY}|" "${APP_DIR}/.env"
     sudo sed -i "s|JWT_SECRET=<GENERATE>|JWT_SECRET=${JWT_SECRET}|" "${APP_DIR}/.env"
     sudo sed -i "s|JWT_REFRESH_SECRET=<GENERATE>|JWT_REFRESH_SECRET=${JWT_REFRESH}|" "${APP_DIR}/.env"
+    sudo sed -i "s|BACKEND_API_KEY=<GENERATE>|BACKEND_API_KEY=${BACKEND_KEY}|" "${APP_DIR}/.env"
     echo "  Security keys generated ✓"
   fi
 

@@ -57,9 +57,24 @@ mcpServers:
     timeout: 30000
     serverInstructions: true
 
-# --- Custom Endpoints (cheaper / open-source models) ---
+# --- Custom Endpoints ---
 endpoints:
   custom:
+    # Scout Coach v2 — custom backend with BSA knowledge cache + per-scout context
+    - name: "ScoutCoachV2"
+      apiKey: "${BACKEND_API_KEY}"
+      baseURL: "http://scout-quest-backend:3090/v1"
+      headers:
+        X-User-Email: "{{user.email}}"
+      models:
+        default:
+          - "scout-coach"
+          - "scout-guide"
+        fetch: false
+      titleConvo: true
+      titleModel: "scout-coach"
+      modelDisplayLabel: "Scout Coach v2"
+
     # DeepSeek — very cheap, strong reasoning
     - name: "Deepseek"
       apiKey: "${DEEPSEEK_API_KEY}"
@@ -98,6 +113,14 @@ modelSpecs:
   enforce: true
   prioritize: true
   list:
+    - name: "Scout Coach v2"
+      label: "Scout Coach v2"
+      description: "Scout Coach with BSA knowledge cache and per-scout context injection (v2 backend)"
+      preset:
+        endpoint: "ScoutCoachV2"
+        model: "scout-coach"
+        maxOutputTokens: 4096
+
     - name: "Scout Coach (Claude)"
       label: "Scout Coach"
       description: "Your AI Scout Coach — best for merit badge help, quest planning, and advancement tracking"

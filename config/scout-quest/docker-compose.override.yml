@@ -17,6 +17,21 @@ services:
       - scout-shared
     depends_on:
       - mongodb
+      - backend
+
+  backend:
+    build: ./backend
+    container_name: scout-quest-backend
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017/scoutquest"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+      BACKEND_API_KEY: "${BACKEND_API_KEY}"
+      PORT: "3090"
+    networks:
+      - default
+    depends_on:
+      - mongodb
+    restart: unless-stopped
 
   mongodb:
     container_name: scout-quest-mongodb
