@@ -15,6 +15,7 @@ This document is the **persistent research store** for the Scout Quest project. 
 5. [Dead Ends & Rejected Approaches](#dead-ends--rejected-approaches)
 6. [Push Notification & Native App Shell Research](#push-notification--native-app-shell-research)
 7. [Android Conversational Notifications in Capacitor](#android-conversational-notifications-in-capacitor)
+8. [Embedding & Vector Search: Google Ecosystem vs Current Plan](#embedding--vector-search-google-ecosystem-vs-current-plan)
 
 ---
 
@@ -1020,6 +1021,217 @@ Yes, but the Notification Service Extension is entirely native Swift code. Capac
 6. **FCM data messages are the key architectural decision.** Send data-only FCM messages (no `notification` key) so your native code always has the opportunity to build rich notifications. If you send `notification` messages, Android auto-displays them as basic notifications before your code runs, and you lose the ability to use MessagingStyle.
 
 **Revisit if:** Capacitor adds a plugin that exposes MessagingStyle/conversation APIs (unlikely — too Android-specific). Or if a community plugin emerges for this (check npm for `capacitor-messaging-style` or similar periodically).
+
+---
+
+## Embedding & Vector Search: Google Ecosystem vs Current Plan
+
+**Last updated:** 2026-03-18
+**Context:** Architecture v2 plan uses Voyage AI embeddings + FalkorDB vector indexes. This research evaluates whether Google's embedding/vector ecosystem could replace or complement that approach.
+
+### 1. Google Embedding Models (as of March 2026)
+
+#### gemini-embedding-001 (GA, text-only)
+- **Status:** Generally available (launched July 2025)
+- **Dimensions:** 3072 default; supports Matryoshka Representation Learning (MRL) truncation to 1536 or 768 with minimal quality loss
+- **Max input:** 2,048 tokens
+- **Pricing:** $0.15/million tokens (paid tier); free tier available with 1,500 RPD limit
+- **MTEB score:** 68.32 overall average — **#1 on English MTEB leaderboard** as of March 2026
+- **MTEB retrieval score:** 67.71 (best among API models)
+- **Task types:** Supports `RETRIEVAL_QUERY`, `RETRIEVAL_DOCUMENT`, `SEMANTIC_SIMILARITY`, `CLASSIFICATION`, `CLUSTERING`, and others
+- **Languages:** 100+
+- **Key advantage:** Best overall MTEB scores among commercial models, good free tier
+- **Key limitation:** 2,048 token max input is shorter than Voyage's 32K context
+
+#### gemini-embedding-2-preview (public preview, multimodal)
+- **Status:** Public preview (launched March 2026)
+- **Dimensions:** 3072 default; MRL truncation to any size 128-3072 (768 recommended for production)
+- **Max input:** 8,192 tokens for text (4x gemini-embedding-001)
+- **Pricing:** $0.20/million text tokens ($0.10/M via batch API)
+- **Modalities:** Text, images, video, audio, PDFs in a single unified vector space
+- **Note:** Embedding spaces are incompatible with gemini-embedding-001 — switching requires re-embedding
+- **Key advantage:** Multimodal; longer input context than embedding-001
+- **Key limitation:** Still in preview; 33% more expensive than embedding-001 for text
+
+#### text-embedding-004 (deprecated)
+- **Status:** Deprecated January 14, 2026. Do not use for new projects.
+
+### 2. Voyage AI Embedding Models (as of March 2026)
+
+#### voyage-3.5
+- **Dimensions:** 1024
+- **Max input:** 32,000 tokens (16x Gemini embedding-001)
+- **Pricing:** $0.06/million tokens
+- **Free tier:** 200 million tokens per account
+- **Quality:** Strong domain-specific retrieval; "measurably better results on domain-specific tasks" per independent comparisons
+- **Key advantage:** Very long context (32K), excellent domain-specific performance, generous free tier
+
+#### voyage-context-3 (launched July 2025)
+- **What it does:** Contextualized chunk embedding — automatically captures full document context in each chunk's embedding without manual metadata or LLM-based context augmentation
+- **Drop-in replacement** for standard embedding models (same dimensions, same interface)
+- **Outperforms contextual retrieval** (Anthropic's approach) by 6.76% on chunk-level and 2.40% on document-level retrieval tasks
+- **Key insight:** This model directly replaces the "Contextual Retrieval" step in our architecture plan (the Haiku batch enrichment step). Instead of using an LLM to prepend context to each chunk before embedding, voyage-context-3 captures that context natively in the embedding itself.
+- **Pricing:** Same as standard Voyage models
+- **Impact on current plan:** Could eliminate the $3-6 Haiku batch contextual enrichment cost and the pipeline complexity
+
+### 3. Embedding Model Comparison Matrix
+
+| Dimension | gemini-embedding-001 | gemini-embedding-2 | voyage-3.5 | voyage-context-3 | OpenAI text-3-small |
+|---|---|---|---|---|---|
+| MTEB overall | **68.32 (#1)** | ~65.2 | ~63-64 (est) | N/A (chunk-level) | ~62.3 |
+| MTEB retrieval | **67.71** | ~65 | Strong (domain) | +6.76% vs CR | ~61 |
+| Price/MTok | $0.15 | $0.20 | $0.06 | ~$0.06 | **$0.02** |
+| Max input | 2,048 tok | 8,192 tok | **32,000 tok** | **32,000 tok** | 8,191 tok |
+| Default dims | 3072 | 3072 | 1024 | 1024 | 1536 |
+| MRL (dim flex) | Yes (768/1536/3072) | Yes (128-3072) | No | No | Yes (256-3072) |
+| Free tier | 1,500 RPD | Preview (free) | **200M tokens** | 200M tokens | None |
+| Multimodal | No | **Yes** | No | No | No |
+| Domain-specific | Good (general MTEB) | Good | **Excellent** | **Best** (contextual) | Good |
+| Context-aware | No | No | No | **Yes (built-in)** | No |
+
+### 4. Google Vector Search Options
+
+#### Vertex AI Vector Search (v1 — legacy provisioned)
+- **Architecture:** Requires provisioned index endpoints that run continuously
+- **Pricing:** Node-hour based — always-on cost regardless of query volume
+- **Minimum cost:** Prohibitive for small/sporadic workloads (estimated $100+/month minimum)
+- **Verdict:** **Not suitable for this project.** "The provisioned endpoint model makes it a poor financial fit for sporadic use cases" (Google Cloud community post)
+
+#### Vertex AI Vector Search 2.0 (launched late 2025, in preview)
+- **Key improvements:**
+  - Auto-embeddings (generates embeddings via Gemini automatically)
+  - Unified storage (eliminates separate feature store)
+  - Self-tuning indexes (auto ANN configuration)
+  - Built-in hybrid search (semantic + keyword in one API)
+  - kNN for small datasets (brute-force, zero setup)
+  - ANN for large datasets (auto-configured)
+- **Pricing:** Not yet fully public. Expected to improve on v1's always-on model.
+- **kNN mode:** Perfect for development and small datasets — zero setup, instant, 100% accuracy
+- **Verdict:** Promising for enterprise use, but still requires Vertex AI / GCP. Overkill for <10K vectors. Monitor pricing when GA.
+
+#### BigQuery Vector Search (serverless)
+- **Architecture:** Serverless, pay-per-query
+- **How it works:** Store vectors in BigQuery tables, use `VECTOR_SEARCH()` SQL function
+- **Pricing:** Standard BigQuery pricing (per TB scanned)
+- **Advantage:** No provisioned infrastructure, pure pay-per-use
+- **Verdict:** Could work for infrequent queries on small datasets, but BigQuery is not a real-time serving layer. Not a fit for interactive chat retrieval.
+
+### 5. Firestore Vector Search
+
+- **Status:** Available (launched ~2024, progressively improved)
+- **How it works:** Store embedding vectors as a field in Firestore documents; query with `findNearest()`
+- **Dimensions:** Supports up to 2048 dimensions
+- **Index:** Uses Firestore's built-in vector indexing
+- **Pricing:** Standard Firestore pricing ($0.18/100K reads, $0.26/GB stored)
+- **Known issues:**
+  - **Performance complaints:** Reddit reports of "prohibitively slow" queries on large collections
+  - **2048 dimension limit** — won't work with Gemini's default 3072 (but works with 768 MRL truncation or Voyage's 1024)
+  - Extension compatibility issues reported
+- **Verdict:** **Not recommended.** Immature vector search, performance concerns, dimension limitations. For a small project, adding Firestore just for vector search adds complexity without clear benefit.
+
+### 6. AlloyDB AI / Cloud SQL pgvector
+
+#### AlloyDB (managed)
+- **What it is:** Fully managed PostgreSQL-compatible with ScaNN integration (Google's similarity search algorithm)
+- **Vector search:** 10x faster than standard pgvector (uses ScaNN under the hood)
+- **Minimum cost:** ~$530/month for smallest HA configuration (4 vCPU, 32GB). Non-HA is cheaper but still $200+/month
+- **Verdict:** **Way too expensive for this project.** Enterprise pricing for enterprise workloads.
+
+#### AlloyDB Omni (self-hosted)
+- **What it is:** Downloadable AlloyDB as a Docker container, runs anywhere
+- **Licensing:** Free for development/testing; per-vCPU license for production
+- **Includes:** Columnar engine, pgvector, alloydb_scann extension
+- **Verdict:** Interesting for professional work. For Scout Quest, the FalkorDB plan already provides graph + vector + full-text in one container. AlloyDB Omni would add PostgreSQL overhead without the graph capabilities.
+
+#### Cloud SQL with pgvector
+- **Smallest instance:** ~$7-15/month (f1-micro / db-f1-micro)
+- **pgvector:** Supported
+- **Verdict:** Cheapest managed Google option, but still adds a separate database to manage. Self-hosted FalkorDB on the existing VM is $0 incremental.
+
+### 7. Context Caching Comparison (Gemini vs Anthropic)
+
+| Feature | Anthropic Prompt Caching | Gemini Context Caching |
+|---|---|---|
+| Discount | **90% off** cached input tokens | **90% off** cached reads (2.5+ models) |
+| Storage cost | **None** | $1-4.50/million tokens/hour |
+| Cache control | Explicit (`cache_control` markers) | Explicit + implicit (auto) |
+| Min tokens | ~1,024 (auto) | 1,024 (Flash) / 2,048 (Pro) explicit: 32,768 |
+| TTL | 5 min base, extendable to 1 hour | Default 1 hour, configurable |
+| Write premium | Yes (25% surcharge on first write) | Yes (varies by model) |
+
+**Key finding for this project:** Anthropic's prompt caching is cheaper for the Scout Quest use case because there are no storage fees. With a 200K-token BSA knowledge base cached in the system prompt, Anthropic's approach costs ~$0.04/query (cache hit) with no hourly storage cost. Gemini would charge $1/M tokens/hour for storage, meaning the 200K-token cache would cost ~$0.20/hour ($4.80/day) just to keep alive, even with zero queries. This makes Gemini context caching uneconomical for low-query-volume applications unless implicit caching suffices.
+
+### 8. Compatibility: Mix-and-Match Embeddings + Vector DBs
+
+**Critical finding: Gemini embeddings work with ANY standard vector database.**
+
+Gemini embeddings produce standard floating-point vectors. Google officially documents compatibility with: Pinecone, Weaviate, Qdrant, Milvus, Chroma, Redis (with vector extension), pgvector, and their own AlloyDB/Vector Search. Multiple production examples exist of Gemini embeddings stored in pgvector and Qdrant.
+
+Similarly, Voyage/OpenAI embeddings can be stored in Google's vector search products (they accept any float vectors of the configured dimension).
+
+**Therefore: The embedding model choice and the vector DB choice are fully independent.** You can use Gemini embeddings with FalkorDB, or Voyage embeddings with Vertex AI Vector Search, etc.
+
+### 9. Comparison Matrix: Current Plan vs Google All-In vs Hybrid
+
+| Dimension | Current Plan (Voyage + FalkorDB) | Google All-In (Gemini Embed + VS 2.0) | Recommended Hybrid |
+|---|---|---|---|
+| **Embedding quality** | Strong domain-specific (Voyage) | #1 MTEB overall (Gemini) | Voyage-context-3 or Gemini-embed-001 |
+| **Embedding cost** | $0.06/MTok + free 200M tier | $0.15/MTok + free 1,500 RPD | Either works; both <$1/mo at this scale |
+| **One-time corpus embed cost** | ~$0.50 | ~$1.25 | Negligible either way |
+| **Vector DB cost** | $0 (self-hosted FalkorDB) | $100+/month (VS) or $0 (self-hosted) | **$0 (FalkorDB on existing VM)** |
+| **Setup complexity** | Medium (FalkorDB container) | High (Vertex AI setup) or Medium (self-hosted) | Medium (FalkorDB already planned) |
+| **Retrieval quality** | Excellent with voyage-context-3 | Excellent with Gemini embed-001 | Both excellent |
+| **Graph capability** | **Yes (Cypher queries)** | No (pure vector) | **FalkorDB (graph + vector)** |
+| **Full-text/BM25** | **Yes (built-in)** | Only in VS 2.0 (preview) | **FalkorDB (built-in)** |
+| **Hybrid search** | **Yes (vector + BM25 + graph)** | VS 2.0 only (preview) | **FalkorDB** |
+| **Integration w/ Anthropic** | Native (same ecosystem) | Works fine (standard vectors) | Either |
+| **Integration w/ Gemini** | Works fine | Native | Either |
+| **Self-hosted option** | **Yes (Docker, $0)** | Omni only; VS requires GCP | **FalkorDB (Docker, $0)** |
+| **Managed option** | No | Yes (Vertex AI) | Not needed at this scale |
+| **Contextual retrieval** | voyage-context-3 replaces LLM step | Need separate LLM enrichment | **voyage-context-3 (simpler)** |
+| **Max input length** | **32,000 tokens** | 2,048 (embed-001) / 8,192 (embed-2) | **Voyage wins for long chunks** |
+| **Enterprise learning value** | Good (Voyage is popular) | **Excellent (GCP ecosystem)** | Both |
+
+### 10. Recommendations
+
+#### For Scout Quest (this project)
+
+**Stick with the current plan (Voyage + FalkorDB) with one upgrade: use voyage-context-3.**
+
+Rationale:
+1. **FalkorDB is irreplaceable in this architecture.** It provides graph + vector + full-text in a single self-hosted container at $0 cost. No Google product matches this combination. The knowledge graph (Layer 3 in the architecture) is a core differentiator.
+2. **voyage-context-3 eliminates the Contextual Retrieval complexity.** The architecture plan calls for Haiku batch enrichment ($3-6 one-time, plus pipeline complexity). voyage-context-3 does this natively in the embedding model, outperforming Anthropic's contextual retrieval approach by 6.76%. This simplifies the pipeline and saves the enrichment cost.
+3. **Voyage's 32K context window matters.** BSA policy documents can be long. Gemini embedding-001's 2,048-token limit would require more aggressive chunking.
+4. **Cost is negligible either way.** At <10K vectors and <$1/month embedding cost, the price difference between Voyage ($0.06/MTok) and Gemini ($0.15/MTok) is irrelevant. Both have generous free tiers.
+5. **Anthropic prompt caching has no storage fee.** Gemini context caching charges $1/M tokens/hour for storage, which adds up for always-on cached context in a low-volume application.
+
+**Updated one-time corpus processing budget with voyage-context-3:**
+
+| Task | Original (Voyage + Contextual Retrieval) | Updated (voyage-context-3) |
+|------|---|----|
+| Layer 1: Distill cached context | $30-60 | $30-60 (unchanged) |
+| Layer 2: Contextual Retrieval enrichment (Haiku Batch) | $3-6 | **$0 (eliminated)** |
+| Layer 2: Embeddings | $0.50 (Voyage) | $0.50 (voyage-context-3) |
+| Layer 3: Knowledge graph extraction | $25-50 | $25-50 (unchanged) |
+| Validation & re-processing | $20-40 | $20-40 (unchanged) |
+| **Total** | **$80-170** | **$76-165** |
+
+The savings are small in dollars but significant in pipeline complexity — one less LLM batch processing step to build, test, and maintain.
+
+#### For Professional/Enterprise Context
+
+Gemini embeddings are worth understanding for enterprise work:
+- **gemini-embedding-001** is the MTEB leader and well-integrated with GCP
+- **Vertex AI Vector Search 2.0** (when GA) could be a strong managed option for large-scale applications
+- **AlloyDB Omni** is interesting for on-prem/hybrid PostgreSQL deployments with vector search
+- The key enterprise advantage of Google's stack is the integrated pipeline: auto-embeddings in VS 2.0 eliminate the need for separate embedding pipelines
+
+**Revisit if:**
+- Gemini embedding-2 reaches GA with clear pricing advantage over Voyage
+- Vertex AI Vector Search 2.0 launches with serverless/pay-per-query pricing suitable for small workloads
+- FalkorDB's vector search proves inadequate in testing (latency, recall quality)
+- Google releases a combined graph + vector database product
+- voyage-context-3 proves problematic in practice (limited real-world reports as of March 2026)
 
 ---
 
