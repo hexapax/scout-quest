@@ -13,6 +13,8 @@ This document is the **persistent research store** for the Scout Quest project. 
 3. [Multi-Model Routing & Orchestration](#multi-model-routing--orchestration)
 4. [External Integration Research](#external-integration-research)
 5. [Dead Ends & Rejected Approaches](#dead-ends--rejected-approaches)
+6. [Push Notification & Native App Shell Research](#push-notification--native-app-shell-research)
+7. [Android Conversational Notifications in Capacitor](#android-conversational-notifications-in-capacitor)
 
 ---
 
@@ -461,6 +463,563 @@ Apple/Google Wallet passes are the closest thing to replicating TeamSnap's "alwa
 | AI Coaching | Scout Quest/Guide (if adopted) | Advancement coaching — enhancement, not dependency |
 
 Layers 1-4 work independently of the AI assistant.
+
+---
+
+## Push Notification & Native App Shell Research
+
+**Last updated:** 2026-03-18
+
+**Context:** The existing notification stack (ntfy.sh + Resend email + GroupMe) works but ntfy requires parents to install a niche app, and iOS web push remains unreliable. The goal is reliable push notifications on iOS and Android that deep-link to specific pages in the web app, without building a full native app from scratch. Target audience: ~80 users (scouts + parents + leaders), volunteer-run troop.
+
+### Executive Summary
+
+**Recommended approach: Capacitor (Ionic) + FCM/APNs + OneSignal (optional)**
+
+Capacitor is the clear winner for wrapping an existing Express/Node.js web app in a native shell with push notifications. It requires near-zero native code, has mature push + deep-linking plugins, and produces real App Store/Play Store apps. The main investment is App Store setup and compliance, not framework complexity.
+
+PWA web push on iOS remains unreliable and should not be the primary push channel. Expo is overkill for a WebView wrapper. Tauri Mobile lacks production push notification support. TWA on Android is excellent but doesn't solve iOS.
+
+### Approach 1: Capacitor (Ionic) — RECOMMENDED
+
+**What it is:** Capacitor wraps your existing web app in a native WebView (WKWebView on iOS, Chromium WebView on Android) controlled by a bridge runtime. Your web app loads inside this shell and can call native APIs through JavaScript plugins. Unlike Cordova (its predecessor), Capacitor gives you full access to the native Xcode/Android Studio projects for customization.
+
+**How it wraps the web app:**
+- Config option 1: Point `serverUrl` at your production URL (e.g., `https://troopquest.com`) — the app loads your remote web app
+- Config option 2: Bundle static assets locally via `webDir` — faster cold start but requires app update for web changes
+- For development: point at `http://localhost:3000` for hot reload
+- The Capacitor bridge injects `window.Capacitor` into the WebView, giving your JS code access to native plugins
+
+**Push notifications (FCM + APNs):**
+- Official plugin: `@capacitor/push-notifications` — unified JS API for both platforms
+- Under the hood: FCM on Android, APNs on iOS (FCM handles APNs token translation)
+- Setup: `npm install @capacitor/push-notifications && npx cap sync`
+- iOS requires: Apple Developer account ($99/yr), APNs key (.p8 file), Firebase project
+- Android requires: Firebase project, `google-services.json` in Android project
+- iOS opt-in rates: 29-73% (median ~51% in 2025). Android: 81-95%. iOS requires earning permission with clear value proposition.
+- Reliability: Excellent — native APNs delivery, same as any native iOS app
+- Rich notifications: images, action buttons, custom sounds, badges — all supported
+- Background/silent notifications supported with `UIBackgroundModes` config
+- Pro tip: Use APNs Certificates (.p12) not Authentication Keys for more reliable delivery via Firebase Console
+
+**Deep linking from push notifications:**
+- `pushNotificationActionPerformed` event fires when user taps notification
+- Notification payload carries custom data (e.g., `{ url: "/quest/camping-merit-badge" }`)
+- Your JS code extracts the URL and navigates via your router (works with any framework — vanilla JS, React, Vue)
+- Also supports Universal Links (iOS) and App Links (Android) for links from email/web
+- Requires server-side config: `.well-known/apple-app-site-association` (iOS) and `assetlinks.json` (Android) — both served from your Express backend
+
+**Native code required:** Near zero for the base case.
+- Push notifications: zero custom native code (plugin handles everything)
+- Deep linking: zero custom native code (plugin + config files)
+- Custom features (NFC, Wallet): community plugins exist, may need small native wrappers
+- Only need Swift/Kotlin if building features with no existing plugin
+
+**Wallet passes / NFC:**
+- Apple Wallet: `capacitor-pass-to-wallet` plugin — download .pkpass, base64 encode, call `addToWallet()`. Need backend to generate signed .pkpass files (use `passkit-generator` npm package). Requires Apple Developer certificate.
+- NFC: `@exxili/capacitor-nfc` community plugin — read/write NDEF tags. Requires NFC entitlement in provisioning profile.
+- Google Wallet: Less mature plugin ecosystem, but Google Wallet passes can be added via URL scheme
+
+**Setup time estimate (solo developer):**
+- Prerequisites (Xcode + Android Studio installed): 2-4 hours one-time
+- Capacitor project init + config: 1-2 hours
+- Push notification setup (Firebase + APNs): 2-4 hours
+- Deep linking config + testing: 2-3 hours
+- App Store/Play Store submission prep: 4-8 hours (screenshots, descriptions, privacy policy, review notes)
+- **Total to first working app: 2-3 days**
+
+**App Store submission complexity:**
+- Apple requires $99/yr developer account
+- Google requires $25 one-time developer account
+- Guideline 4.2 (Minimum Functionality) is the biggest Apple risk for WebView apps — Apple rejects "web wrapper" apps that add nothing beyond Safari
+- To pass review: must include push notifications, native navigation elements (tab bar), offline capability, and at least one native feature (camera, biometrics, etc.)
+- Push notifications alone are often sufficient as "native value add" — Safari on iOS doesn't support web push reliably, so this is a genuine native-only feature
+- For youth apps: must set correct age rating, comply with COPPA if collecting data from under-13s
+- **COPPA exemption for nonprofits:** COPPA expressly exempts nonprofit entities not subject to Section 5 of the FTC Act. A volunteer-run Scout troop app operated by a 501(c)(3) council is likely exempt, but should still follow best practices for data minimization.
+- New state laws (App Store Accountability Acts — Utah May 2026, Louisiana July 2026, Texas, California): app stores will share verified age categories with developers. Apps for minors may face additional review scrutiny.
+- Initial Apple review: typically 24-48 hours (90% reviewed in <24h), but youth-focused apps may take longer
+- Subsequent updates: same review process, but usually faster
+
+**Ongoing maintenance:**
+- Capacitor version updates: ~1-2 times/year, usually non-breaking
+- iOS/Android SDK updates: annual (each fall with new OS release)
+- Push certificate renewal: APNs keys don't expire; APNs certificates expire annually
+- Low maintenance overall — web app changes deploy instantly (if using remote URL), native shell updates only needed for Capacitor/OS updates
+
+**Cost:**
+- Apple Developer: $99/yr
+- Google Play Developer: $25 one-time
+- Firebase: free (FCM is free, no limits)
+- OneSignal (optional): free tier covers unlimited mobile push subscribers
+- **Total recurring: $99/yr** (just Apple)
+
+### Approach 2: Expo (React Native Wrapper) — NOT RECOMMENDED
+
+**What it is:** Expo is a framework and platform for React Native apps. It can embed a WebView, but it's architecturally designed for building React Native UIs, not wrapping existing web apps.
+
+**Can it wrap an existing web app?** Technically yes, via `react-native-webview`, but:
+- You must create a React Native app that hosts a WebView component — you can't just point Expo at a URL
+- The WebView is isolated from Expo's native plugins — you need manual `postMessage`/`onMessage` bridges
+- Push notifications (`expo-notifications`) work in the React Native layer, not inside the WebView
+- To deep-link from a notification into your web app, you must: receive notification in RN layer -> extract URL -> inject JavaScript into WebView -> navigate. This is fragile.
+
+**Push notification support:**
+- `expo-notifications` library: comprehensive, well-documented
+- But: cannot be tested in Expo Go (development app) — must build production APK/IPA to test
+- This kills development velocity for notification features
+
+**Why it's overkill:**
+- Expo's value is React Native UI components, routing, and the managed build service
+- If your app is 100% web content in a WebView, you're paying Expo's complexity tax for no benefit
+- Capacitor is purpose-built for this exact "web app in native shell" use case
+- Expo adds: React Native dependency, Metro bundler, EAS Build service, and a React Native project structure — all unnecessary for a WebView wrapper
+
+**Setup time:** 2-4 days (more than Capacitor due to React Native overhead)
+**Verdict:** Use Expo if you're building a React Native app. Don't use it to wrap an existing web app.
+
+### Approach 3: PWA + Firebase Cloud Messaging (No Native Shell) — UNRELIABLE ON iOS
+
+**Current state of iOS web push (2025-2026):**
+- Safari 16.4 (March 2023) added Web Push API support for PWAs added to Home Screen
+- FCM **cannot directly deliver push messages to Safari** — Safari uses Apple Push Notification Service with its own implementation, separate from how FCM works on Chrome/Android
+- Workaround services (OneSignal, PushEngage) have built custom bridges but reliability is inconsistent
+- iOS web push requires: (1) HTTPS, (2) Service Worker, (3) user must add PWA to Home Screen first, (4) user must grant permission from within the installed PWA
+- The "add to Home Screen" requirement is a huge adoption barrier — most users don't know how
+- After device restart, iOS may not re-register the Service Worker, causing silent notification failure
+- No badge API on iOS (can't show notification count on app icon)
+- Permission persistence is unreliable across Safari sessions
+- iOS Service Workers have stricter memory/execution limits than Android
+
+**Real-world reliability:**
+- iOS web push delivery: estimated 60-75% of native push reliability (based on developer reports)
+- Opt-in rates: much lower than native due to the Home Screen install requirement
+- Silent failures are common — no error, notification just doesn't arrive
+- Apple's implementation diverges from the WHATWG spec in ways that break common patterns
+
+**Rich notifications on iOS:**
+- Action buttons: not reliably supported on iOS web push
+- Images: limited/unreliable
+- Deep linking: works on Android (Service Worker `clients.openWindow(url)`), unreliable on iOS
+
+**What works well:**
+- Android Chrome: FCM web push is excellent — reliable delivery, rich notifications, deep linking
+- Desktop browsers: generally reliable across Chrome, Firefox, Edge
+
+**Verdict:** PWA web push is not viable as the primary notification channel for iOS. It can supplement native push for users who don't install the app, but cannot be relied upon for time-sensitive communications (event changes, meeting cancellations).
+
+**Revisit if:** Apple significantly improves iOS web push reliability and removes the Home Screen install requirement.
+
+### Approach 4: TWA (Android) + Minimal iOS Shell — VIABLE HYBRID
+
+**Trusted Web Activity on Android:**
+- TWA wraps your PWA in Chrome (not a WebView) — full Chrome engine, zero URL bar, full PWA features
+- Service Workers, offline caching, and FCM web push all work identically to the browser
+- Push notifications: yes — FCM via Service Worker, same as regular PWA but packaged as an app
+- Tools: Bubblewrap CLI (Google-maintained) or PWABuilder (Microsoft) can generate TWA packages
+- Setup: 2-4 hours to generate signed APK/AAB and publish to Play Store
+- Deep linking: works via Service Worker `push` event -> `clients.openWindow(url)`
+- No native code required — it's literally Chrome running your PWA
+- Digital Asset Links verification required (host `assetlinks.json` on your domain)
+
+**Minimal iOS Swift shell:**
+- A bare-bones Swift app with WKWebView + native push notification handling
+- Architecture: WKWebView loads your web app; UNNotificationCenter handles push; JavaScript bridge passes notification data to WebView
+- Push flow: APNs delivers notification -> Swift delegate receives it -> evaluates JavaScript in WebView to trigger navigation
+- Can be as minimal as ~200 lines of Swift code (AppDelegate + ViewController + notification handling)
+- Must still pass App Store Guideline 4.2 — needs native tab bar, splash screen, offline indicator at minimum
+
+**Pros of this hybrid:**
+- Android: zero native code, Chrome engine (best web compatibility), easy Play Store publishing
+- iOS: minimal native code, full native push reliability
+- Single web codebase serves both platforms
+- No framework dependency (no Capacitor, no Expo)
+
+**Cons:**
+- Two different build/deploy pipelines (TWA tooling vs Xcode)
+- iOS shell needs manual maintenance for Swift/Xcode version updates
+- Less ecosystem support than Capacitor (no plugin marketplace, DIY everything)
+- Deep linking on iOS requires custom bridge code
+
+**When this makes sense:** If you want absolute minimal dependencies and are comfortable with basic Swift. For a solo developer who may not maintain the iOS app frequently, Capacitor's plugin ecosystem and unified tooling is probably less maintenance long-term.
+
+**Setup time:** 3-5 days (TWA: 1 day, iOS shell: 2-4 days including App Store submission)
+
+### Approach 5: Push-as-a-Service (OneSignal / Pushover / Firebase / ntfy)
+
+#### OneSignal — BEST ALL-AROUND SERVICE
+
+**What it is:** Multi-channel engagement platform (push, email, SMS, in-app messages).
+
+**Free tier (2025-2026):**
+- Unlimited mobile push subscribers + unlimited sends
+- Up to 10,000 web push subscribers (unlimited sends)
+- 10,000 emails/month free
+- 1 active In-App Message
+- Basic segmentation, A/B testing, Journeys automation
+- For 80 users: completely free, massive headroom
+
+**Paid tier:** Growth plan at $19/mo + $0.012/MAU for mobile push. Not needed at troop scale.
+
+**iOS + Android:** Full native SDK for both platforms. Also works via Capacitor plugin.
+**Web push:** Yes — handles the Safari/Chrome differences for you.
+**Rich notifications:** Action buttons, images, deep links, custom data — all supported.
+
+**Deep linking:** Notification payload includes `url` or `data` fields. SDK handles launching the correct screen. Works with Capacitor's notification listener.
+
+**Node.js/Express integration:**
+- REST API + official Node SDK (`@onesignal/node-onesignal`)
+- Send notification: single API call with `include_player_ids` or segments
+- 30-45 minutes to send first notification from backend
+
+**Privacy/minors:** Collects device IDs and behavioral data. GDPR-compliant. COPPA compliance possible with configuration (disable behavioral tracking, limit data collection). As a nonprofit, COPPA likely doesn't apply (see exemption above), but data minimization is still best practice.
+
+**OneSignal vs doing-it-yourself with FCM:** OneSignal abstracts away: token management, platform differences, delivery optimization, analytics, segmentation. For a solo developer, this saves significant time. The free tier makes the cost argument irrelevant.
+
+**Verdict:** If using Capacitor, OneSignal is the easiest path to production push notifications. It can also serve as the push backend if you later add a web PWA fallback channel.
+
+#### Firebase Cloud Messaging (Direct) — POWERFUL BUT MORE SETUP
+
+**Free tier:** Unlimited messages, no billing required (Spark plan).
+**iOS + Android + Web:** Yes, all three.
+**Rich notifications:** Full support.
+**Deep linking:** Via notification `data` payload — your app handles routing.
+
+**Setup complexity:** Moderate-to-challenging for first-timers.
+- Firebase project creation + service account JSON
+- Firebase Admin SDK in Node.js backend
+- iOS: APNs key upload to Firebase Console
+- Android: `google-services.json` in project
+- Token management: you must store and manage device tokens yourself
+- 1-2 hours for first notification, but ongoing token lifecycle management adds complexity
+
+**When to use FCM directly:** If you want full control and no third-party dependency. Good if you're already in the Google ecosystem. But for a solo developer, OneSignal's abstraction saves time.
+
+#### Pushover — SIMPLE BUT LIMITED
+
+**Pricing:** $5 one-time per-platform (users must buy the Pushover app on iOS/Android).
+**Free tier:** 7,500 messages/month (for 80 users: ~94 per user/month — borderline).
+**Rich notifications:** Basic priority levels and sounds only. No action buttons. No images.
+**Web push:** No — native apps only.
+**Deep linking:** No built-in support.
+
+**Verdict:** The per-user app purchase ($5/platform) is a non-starter for a volunteer troop. Parents won't pay for a notification app. Also limited in features compared to alternatives.
+
+#### ntfy — CURRENT SOLUTION, PRIVACY-BEST
+
+**Already in use** in Scout Quest. Self-hostable, zero tracking, simple HTTP POST API.
+**Limitation:** Requires parents to install the ntfy app — adoption friction is the main problem.
+**Rich notifications:** Basic (text, priority, tags, action URLs). Improving but not as rich as OneSignal/FCM.
+**Deep linking:** Action URLs can open specific pages, but it's "open URL" not "navigate within app."
+
+**ntfy's role going forward:** Keep as a backend delivery mechanism. If using Capacitor + OneSignal, ntfy becomes the "power user" option for those who prefer it, while the main app handles push natively.
+
+### Approach 6: Tauri 2.0 Mobile — NOT READY
+
+**What it is:** Tauri wraps web apps in the system's native web renderer (WebKit on iOS, Chromium on Android) with a Rust backend for system integration. Tauri 2.0 (late 2024) added mobile support.
+
+**Maturity (March 2026):** Pre-production for mobile.
+- Desktop: production-ready (Windows, macOS, Linux)
+- Mobile: early production — rapidly improving but missing key features
+- Push notifications: **not officially supported** — no stable API exposed. Community plugins exist (`tauri-plugin-fcm-push-notifications`) but are undocumented and untested in production. The Tauri team acknowledges this gap but hasn't committed to a timeline.
+- Deep linking: partially supported (custom URI schemes + Universal/App Links), but requires Rust code to handle events
+- Binary size advantage: ~600KB vs Capacitor's ~5-10MB — nice but not a deciding factor for this use case
+
+**Rust requirement:** All native-side logic must be written in Rust. For a JavaScript developer, the learning curve is substantial (ownership, borrowing, lifetimes). This is a deal-breaker for a solo developer wanting quick results.
+
+**Verdict:** Tauri is architecturally elegant and security-focused, but mobile push notification support is the critical missing piece. Do not use for this project until push notifications are officially supported.
+
+**Revisit if:** Tauri adds stable, documented push notification support for iOS and Android.
+
+### Approach Comparison Matrix
+
+| Criterion | Capacitor | Expo | PWA+FCM | TWA+iOS Shell | OneSignal (service) | Tauri Mobile |
+|-----------|-----------|------|---------|---------------|-------------------|-------------|
+| **Setup effort** | 2-3 days | 2-4 days | 1-2 days | 3-5 days | 2-4 hours (service only) | 4-7 days |
+| **iOS push reliability** | Excellent (native APNs) | Excellent (native APNs) | Poor (60-75% of native) | Excellent (native APNs) | Excellent (native APNs) | No support |
+| **Deep linking** | Yes (plugin) | Yes (complex bridge) | Android yes, iOS unreliable | Yes (custom code) | Yes (with native app) | Partial (Rust required) |
+| **Rich notifications** | Yes (images, buttons) | Yes (images, buttons) | Android yes, iOS limited | Yes | Yes (images, buttons) | No support |
+| **App Store submission** | Standard | Standard | N/A (no app) | Standard | Requires native app | Standard |
+| **Native code required** | Near zero | React Native wrapper | Zero | ~200 lines Swift | Near zero (with Capacitor) | Rust backend required |
+| **Ongoing maintenance** | Low | Medium | Very low | Medium (2 pipelines) | Very low | Medium-high |
+| **Cost (annual)** | $124 (Apple + Google) | $124 (Apple + Google) | $0 | $124 (Apple + Google) | $0 (free tier) | $124 (Apple + Google) |
+| **Wallet/NFC** | Yes (plugins) | No | No | No (DIY) | No | No |
+| **Framework lock-in** | Low (web-first) | High (React Native) | None | None | None (service) | Medium (Rust) |
+
+### What Small Organizations Actually Use
+
+Based on research into churches, sports leagues, PTAs, and scout troops:
+
+**Most common (non-technical orgs):**
+- Remind (texting service) + Facebook Groups + email newsletters
+- GroupMe / WhatsApp for informal coordination
+- No custom apps — they use whatever platform has lowest adoption friction
+
+**Tech-forward small orgs:**
+- OneSignal-powered web portal where parents opt in
+- Capacitor-wrapped web app for "App Store presence" + push
+- Spond (popular in European scouting and youth sports)
+
+**Pattern: "thin native shell + push service"** is a real and growing approach:
+1. Web app at `myorg.example.com` (existing)
+2. Capacitor wraps it into iOS/Android apps
+3. OneSignal or FCM handles push across native app + web fallback
+4. Same codebase, minimal native code
+
+**Discourse + push:** Discourse (self-hosted forum) has built-in web push support. A "Discourse Hub" mobile app exists but is minimal/unmaintained. Custom native wrappers around Discourse web UI exist but require active development. For the Scout Quest use case, Discourse is better as the forum/discussion layer (already recommended above), not as the push notification backbone.
+
+### Recommended Implementation Plan
+
+**Phase 1 — Capacitor shell + FCM push (2-3 days):**
+1. `npm install @capacitor/cli @capacitor/core` in the web app project
+2. `npx cap init` + `npx cap add ios` + `npx cap add android`
+3. Configure `serverUrl` to point at `https://troopquest.com` (or `troop2024.ai`)
+4. Install `@capacitor/push-notifications`
+5. Set up Firebase project, upload APNs key
+6. Implement push registration + deep link handling in web app JS
+7. Backend: store device tokens in MongoDB, send via Firebase Admin SDK (or OneSignal)
+
+**Phase 2 — App Store submission (1-2 days):**
+1. Add native tab bar (Home, Schedule, Chat, Settings) — satisfies Guideline 4.2
+2. Add splash screen with troop branding
+3. Add basic offline indicator / cached content
+4. Generate screenshots, write descriptions, set age rating
+5. Submit to App Store + Play Store
+
+**Phase 3 — Enhance (ongoing):**
+1. Rich notifications (event images, action buttons for RSVP)
+2. Deep links for all micro-apps (quest progress, chore log, merit badge tracker)
+3. Wallet passes for events (Phase 3+, requires `passkit-generator` backend work)
+4. NFC for attendance tracking at meetings (future)
+
+**Cost summary:**
+| Item | Cost | Frequency |
+|------|------|-----------|
+| Apple Developer Program | $99 | Annual |
+| Google Play Developer | $25 | One-time |
+| Firebase (FCM) | $0 | Free |
+| OneSignal (if used) | $0 | Free tier |
+| Capacitor | $0 | Open source |
+| **Total Year 1** | **$124** | |
+| **Total Year 2+** | **$99** | |
+
+---
+
+## Android Conversational Notifications in Capacitor
+
+**Last updated:** 2026-03-18
+
+**Context:** The app is an AI coaching chatbot (LibreChat web UI inside a Capacitor WebView) that sends push notifications to scouts and parents. This research evaluates whether Android's rich conversational notification features (MessagingStyle, bubbles, inline reply, conversation widgets) can work in a Capacitor app, and what the iOS equivalent looks like.
+
+### 1. MessagingStyle Notifications in Capacitor
+
+**Can `@capacitor/push-notifications` create Android MessagingStyle notifications?**
+No. The official Capacitor push notification plugin (v5.0+ as of 2026) uses basic `NotificationCompat.Builder` internally. It does not expose MessagingStyle, Person objects, conversation shortcuts, or any of the Android Conversations API. The community plugin `@capacitor-firebase/messaging` (capawesome) is more capable (topics, foreground notifications, silent push) but also does not expose MessagingStyle.
+
+**What you need instead:**
+- **Option A (recommended): Custom Capacitor native plugin.** Write a Java/Kotlin Capacitor plugin that receives FCM data messages and builds `NotificationCompat.MessagingStyle` notifications natively. Capacitor's plugin system (`@CapacitorPlugin` annotation, `registerPlugin()` in `MainActivity.java`) is well-documented for this. The plugin intercepts FCM data payloads in a `FirebaseMessagingService` subclass and constructs the notification with full Android API access.
+- **Option B: Modify the generated Android project directly.** After `npx cap sync`, modify files in `android/app/src/main/java/...` to add a custom `FirebaseMessagingService`. This works but is fragile — `cap sync` can overwrite changes.
+
+**FCM payload format for MessagingStyle:**
+You must use **data-only messages** (no `notification` key), because Android auto-displays `notification` messages before your code can intercept them. The data payload carries the conversation metadata; your native code builds the MessagingStyle notification:
+
+```json
+{
+  "message": {
+    "token": "device_token_here",
+    "data": {
+      "type": "conversation",
+      "conversationId": "quest_camping_merit_badge",
+      "senderName": "Scout Coach",
+      "senderIcon": "https://troopquest.com/img/coach-avatar.png",
+      "messageText": "Great job completing the fire safety requirement!",
+      "timestamp": "1710768000000",
+      "shortcutId": "scout_coach_conv"
+    }
+  }
+}
+```
+
+The native handler then:
+1. Creates a `Person` object from `senderName`/`senderIcon`
+2. Builds `NotificationCompat.MessagingStyle` with the message
+3. Associates a long-lived `ShortcutInfo` (required for conversation section)
+4. Posts the notification via `NotificationManagerCompat`
+
+**Effort estimate:** 2-4 days for a working custom plugin with MessagingStyle support. Requires Java/Kotlin knowledge.
+
+### 2. Android Notification Bubbles (Chat Heads)
+
+**Can a Capacitor app use bubbles?**
+Technically yes, but with significant caveats. Bubbles are a native Android API feature — they are not tied to how the app was built. Any app (including Capacitor WebView apps) can post bubble-enabled notifications if the native notification code is correct.
+
+**Requirements checklist:**
+
+| Requirement | Detail |
+|---|---|
+| **targetSdk** | 30+ (Android 11+). Current Play Store requirement is 34 as of 2026. |
+| **Notification channel** | Must have `importance = IMPORTANCE_HIGH` and `setShowBubbles(true)` |
+| **MessagingStyle** | Required — bubbles only work with MessagingStyle notifications |
+| **ShortcutInfo** | Must publish a long-lived dynamic shortcut via `ShortcutManager.pushDynamicShortcut()` before posting the notification. Max 5 dynamic shortcuts at a time. |
+| **BubbleMetadata** | Must create `NotificationCompat.BubbleMetadata` with a `PendingIntent` pointing to an Activity, an icon, and a desired height |
+| **Person** | ShortcutInfo must have a `Person` associated via `.setPerson()` |
+| **POST_NOTIFICATIONS** | Required permission on Android 13+ |
+
+**The critical problem: What does the bubble open?**
+When the user taps a bubble, Android opens the Activity specified in the `BubbleMetadata`'s `PendingIntent`. In a Capacitor app, this would be the main `BridgeActivity` (the WebView). However:
+- Bubbles open the Activity in a **small floating window** (configurable height, ~75% screen width)
+- The Capacitor WebView would render inside this cramped bubble window
+- A full chat UI (LibreChat) would be barely usable in this constrained space
+- There is no way to open a "lightweight" bubble view while keeping the full WebView for the main app — you'd need a separate native Activity for the bubble content, which defeats the purpose of a WebView app
+
+**Practical assessment for this use case:** Bubbles are not worth implementing. The LibreChat UI is not designed for the small bubble window. Native chat apps (WhatsApp, Messages) work well in bubbles because they have purpose-built, minimal conversation views. A WebView rendering a full web chat UI in a bubble would provide a poor experience.
+
+**Verdict:** Skip bubbles. The effort-to-value ratio is very poor for a WebView-based chat app.
+
+### 3. Inline Reply from Notification
+
+**Can users reply directly from the notification shade?**
+Yes, but it requires custom native code. The Android `RemoteInput` API allows text input directly in the notification shade. This works regardless of whether the app uses a WebView.
+
+**How it works:**
+1. When building the notification (in your custom native plugin), attach a `NotificationCompat.Action` with a `RemoteInput`
+2. When the user types and sends, Android fires a `PendingIntent` (to a `BroadcastReceiver` or `Service`)
+3. The receiver extracts the reply text from `RemoteInput.getResultsFromIntent(intent)`
+4. The reply must be routed back to the web app/backend
+
+**Routing the reply back — three options:**
+
+| Option | How | Complexity | Reliability |
+|---|---|---|---|
+| **Direct API call** | BroadcastReceiver makes HTTP POST to your backend API with the reply text + conversationId | Low | High (no WebView needed) |
+| **Capacitor bridge** | BroadcastReceiver calls `notifyListeners()` on a Capacitor plugin, which fires a JS event in the WebView | Medium | Medium (requires WebView to be alive) |
+| **Store-and-forward** | BroadcastReceiver writes reply to local SQLite/SharedPreferences; WebView reads on next launch | Low | High |
+
+**Recommended approach for this use case:** Direct API call from the BroadcastReceiver. The backend already has chat endpoints (LibreChat API). The native receiver can POST the reply directly without involving the WebView at all. This is the same pattern WhatsApp and Telegram use — the inline reply goes straight to the server.
+
+**Important limitation:** For an AI chatbot, inline reply has a UX problem. The user sends a reply, but the AI response comes asynchronously (could take seconds). The notification shade can't display a streaming AI response. The user would send "yes I completed that requirement" and then... nothing happens in the notification. They'd need to open the app to see the AI's response. This makes inline reply less useful for an AI chat than for human-to-human messaging.
+
+**Effort estimate:** 1-2 days on top of the MessagingStyle plugin. The BroadcastReceiver + RemoteInput is straightforward.
+
+### 4. Conversation Widget (Android 11+ / Conversation Section)
+
+**Can conversations appear in Android's conversation section of the notification shade?**
+Yes, with the same requirements as MessagingStyle. Android 11+ (API 30+) shows a dedicated "Conversations" section at the top of the notification shade. From Android 14+ (API 34, `UPSIDE_DOWN_CAKE`), MessagingStyle notifications associated with a valid conversation shortcut are **automatically** placed in this section.
+
+**Requirements (all must be met):**
+
+1. **MessagingStyle notification** — the notification must use `NotificationCompat.MessagingStyle`
+2. **Long-lived sharing shortcut** — must call `ShortcutManagerCompat.pushDynamicShortcut()` with `.setLongLived(true)` before posting the notification
+3. **setShortcutId()** — the notification builder must call `.setShortcutId(shortcutId)` linking to the published shortcut
+4. **Person on shortcut** — the shortcut should have `.setPerson(person)` for proper rendering
+5. **LocusId (optional but recommended)** — improves ranking accuracy: `.setLocusId(new LocusId(shortcutId))`
+6. **Category** — set `.setCategory(NotificationCompat.CATEGORY_MESSAGE)` on the notification
+
+**For a Capacitor app:** All of this is native-only code. The Capacitor plugin system cannot reach the `ShortcutManager` or `MessagingStyle` APIs. You need the same custom native plugin described in section 1.
+
+**What users get:**
+- "Scout Coach" conversations appear in the prioritized Conversations section
+- Users can long-press to set the conversation as "Priority" (always shows at top, even in DND)
+- The conversation shortcut appears in the launcher's long-press menu
+- On Android 12+, conversation shortcuts can power homescreen Conversation Widgets
+
+**Practical value for this use case:** High. Having "Scout Coach" appear as a real conversation in the notification shade (alongside WhatsApp, Messages, etc.) significantly elevates the app's perceived quality. It signals to Android that this is a real messaging app, not just a notification spammer.
+
+### 5. Practical Assessment: Capacitor WebView Chat vs. Native
+
+**Feature comparison for this specific use case (AI coaching chatbot):**
+
+| Feature | Capacitor (with custom plugin) | Native App (Kotlin) | Effort Delta |
+|---|---|---|---|
+| Basic push notification | Yes (plugin) | Yes (built-in) | Same |
+| MessagingStyle | Yes (custom plugin, 2-4 days) | Yes (trivial) | +2-4 days |
+| Conversation section | Yes (same custom plugin) | Yes (trivial) | Included above |
+| Inline reply | Yes (custom plugin, +1-2 days) | Yes (trivial) | +1-2 days |
+| Notification bubbles | Technically yes, but poor UX | Good UX (dedicated view) | Not recommended |
+| Tap-to-chat navigation | Yes (deep link to WebView) | Yes (native navigation) | Same |
+| Chat UI quality | Good (LibreChat web UI) | Would need to build from scratch | WebView wins |
+| AI streaming responses | Excellent (SSE in WebView) | Must implement (OkHttp SSE) | WebView wins |
+| Offline support | Limited (WebView needs network) | Can cache conversations | Native wins |
+| App size | ~15-25 MB | ~10-15 MB | Minor |
+| Development time (total) | 1-2 weeks | 2-4 months | WebView wins massively |
+
+**How good would the Android experience ACTUALLY be vs WhatsApp/iMessage?**
+
+With the custom native plugin implementing MessagingStyle + conversation shortcuts + inline reply:
+- **Notification experience: 85-90% of WhatsApp.** Notifications look identical in the shade — same conversation grouping, same person avatars, same priority section. The only tell is that tapping opens a WebView instead of a native view.
+- **In-app experience: 70-80% of WhatsApp.** The LibreChat web UI is a good chat interface but has WebView overhead (slower initial load, no native gestures like swipe-to-reply). For an AI coaching chatbot (not a real-time group chat), this is perfectly adequate.
+- **Without the custom plugin: 40-50% of WhatsApp.** Basic push notifications with no conversation grouping, no inline reply, generic notification style. Looks like any random app sending alerts, not a chat app.
+
+**What's realistic for a solo developer?**
+
+| Tier | Features | Effort | Quality |
+|---|---|---|---|
+| **Tier 1: Basic** | Standard push notifications via `@capacitor/push-notifications` or OneSignal. Tap opens WebView chat. | 2-3 days | Functional but generic |
+| **Tier 2: Conversational** | Custom native plugin with MessagingStyle + conversation shortcuts. Notifications appear in Conversations section. | 1-2 weeks | Feels like a real chat app |
+| **Tier 3: Full chat UX** | Tier 2 + inline reply + notification grouping + reply routing to backend API | 2-3 weeks | Near-native quality notifications |
+
+**Recommendation:** Start with Tier 1, ship the app, then upgrade to Tier 2 when time permits. Tier 2 is the sweet spot — the conversation section placement and MessagingStyle are the highest-impact features for perceived quality. Inline reply (Tier 3) is lower priority because AI responses can't be shown in the notification shade anyway.
+
+### 6. iOS Comparison: Communication Notifications
+
+**Does iOS have equivalent conversational notification features?**
+Yes. iOS 15+ introduced **Communication Notifications** via the `INSendMessageIntent` framework (part of SiriKit/Intents). These provide:
+- Contact avatars on notifications (instead of just the app icon)
+- Siri suggestions based on communication patterns
+- Focus mode exceptions (notifications from "important" conversations can break through DND)
+- Notification grouping by conversation
+
+**How Communication Notifications work on iOS:**
+1. A **Notification Service Extension** (separate binary target in Xcode) intercepts incoming push notifications
+2. The extension creates an `INSendMessageIntent` with sender info (name, avatar, conversation ID)
+3. The extension attaches the intent to the notification content via `UNMutableNotificationContent.contentProvidingIntent`
+4. iOS renders the notification with the contact's avatar and places it in the communication category
+
+**Requirements for Capacitor apps:**
+- Must add a **Notification Service Extension** target in the Xcode project (native Swift code, cannot be done from JavaScript)
+- Must add `INSendMessageIntent` to `NSUserActivityTypes` in the main app's `Info.plist`
+- Must add `INSendMessageIntent` to `IntentsSupported` in the extension's `Info.plist`
+- The extension runs in a separate process with limited memory (24 MB on older devices)
+- Extension has ~30 seconds to modify the notification before iOS displays the original
+
+**Can this work with a Capacitor WebView app?**
+Yes, but the Notification Service Extension is entirely native Swift code. Capacitor's plugin system does not help here. You must:
+1. Open the Xcode project generated by Capacitor (`npx cap open ios`)
+2. Add a new target: File -> New -> Target -> Notification Service Extension
+3. Implement `didReceive(request:withContentHandler:)` in Swift
+4. Create `INSendMessageIntent` with sender info extracted from the push payload
+
+**Key difference from Android:** iOS Communication Notifications are simpler to implement than Android's full conversational stack (no ShortcutManager, no BubbleMetadata). But they provide less functionality — no bubbles, no inline reply from notification (iOS has no equivalent of Android's RemoteInput in the notification shade), no conversation widget.
+
+**iOS vs Android feature comparison:**
+
+| Feature | Android | iOS |
+|---|---|---|
+| Conversation grouping in shade | Yes (MessagingStyle + shortcut) | Yes (Communication Notifications) |
+| Contact avatar on notification | Yes (Person object) | Yes (INSendMessageIntent) |
+| Inline reply from notification | Yes (RemoteInput) | No (must open app) |
+| Notification bubbles | Yes (BubbleMetadata) | No equivalent |
+| Conversation widget on homescreen | Yes (Android 12+) | No equivalent |
+| DND bypass for priority conversations | Yes (Important conversations) | Yes (Focus mode exceptions) |
+| Native code required in Capacitor | Yes (custom plugin) | Yes (Notification Service Extension) |
+| Effort for Capacitor app | 2-4 days (custom plugin) | 1-2 days (NSE target) |
+
+### Summary and Recommendations
+
+**For the Scout Quest Capacitor app:**
+
+1. **Ship with basic push first (Tier 1).** Use `@capacitor/push-notifications` or `@capacitor-firebase/messaging`. Get the app in stores with working notifications. This alone is a massive improvement over ntfy.sh (no separate app install, native delivery).
+
+2. **Add Android MessagingStyle + conversation shortcuts later (Tier 2).** This is the highest-impact upgrade. Write a custom Capacitor native plugin (~200-300 lines of Java/Kotlin) that builds MessagingStyle notifications from FCM data messages. "Scout Coach" will appear as a real conversation in the Android notification shade alongside WhatsApp and Messages.
+
+3. **Add iOS Communication Notifications.** Add a Notification Service Extension (~50-100 lines of Swift) to show the Scout Coach avatar on iOS notifications and enable Focus mode bypass.
+
+4. **Skip bubbles entirely.** The LibreChat WebView UI does not work well in a bubble's constrained window. Not worth the effort.
+
+5. **Inline reply is low priority.** For an AI chatbot, the user sends a reply but can't see the AI's response in the notification shade. The UX is awkward. Only implement if forum/group messaging (human-to-human) becomes a notification source.
+
+6. **FCM data messages are the key architectural decision.** Send data-only FCM messages (no `notification` key) so your native code always has the opportunity to build rich notifications. If you send `notification` messages, Android auto-displays them as basic notifications before your code runs, and you lose the ability to use MessagingStyle.
+
+**Revisit if:** Capacitor adds a plugin that exposes MessagingStyle/conversation APIs (unlikely — too Android-specific). Or if a community plugin emerges for this (check npm for `capacitor-messaging-style` or similar periodically).
 
 ---
 
