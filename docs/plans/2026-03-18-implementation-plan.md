@@ -75,34 +75,39 @@ See: docs/plans/2026-03-18-corpus-acquisition-plan.md
 ### Tasks
 
 **2.1 — FalkorDB setup**
-- [ ] Docker container: `scout-quest-falkordb` (Redis + FalkorDB module)
-- [ ] Docker compose integration on VM
-- [ ] Verify Cypher queries work from Node.js (falkordb or redis client)
+- [x] Docker container: `scout-quest-falkordb` (falkordb/falkordb:latest)
+- [x] Docker compose integration + named volume `falkordb_data`
+- [x] `backend/src/falkordb.ts` client using `redis` package + `sendCommand`
+- [x] Graceful degradation: backend starts even if FalkorDB unavailable
 
 **2.2 — Graph schema implementation**
-- [ ] Create node types: Rank, MeritBadge, Requirement, Activity, RequirementVersion
-- [ ] Create relationship types: HAS_REQUIREMENT, INVOLVES_ACTIVITY, CROSS_REFERENCES, VERSION_OF
-- [ ] Create scout-specific relationships: WORKING_ON, COMPLETED, HOLDS_RANK
-- [ ] Implement bitemporal versioning on RequirementVersion nodes
+- [x] Node types: `Scout`, `Advancement` (Rank+MeritBadge), `Requirement`
+- [x] Relationship types: `HAS_ADVANCEMENT`, `HAS_REQUIREMENT`, `COMPLETED_REQ`, `STARTED_REQ`
+- [ ] Cross-reference relationships (deferred — needs corpus content)
+- [ ] RequirementVersion nodes (deferred — needs historical BSA data)
 
 **2.3 — Data loading**
-- [ ] Load rank requirements from Scoutbook data → graph nodes
-- [ ] Load merit badge requirements → graph nodes
-- [ ] Load cross-references (from corpus extraction or manual mapping)
-- [ ] Load requirement versions (from annual update documents)
-- [ ] Load scout advancement data from MongoDB → scout-specific graph edges
+- [x] `backend/src/graph-loader.ts` — MongoDB scoutbook_* → FalkorDB
+  - Scout nodes from scoutbook_scouts
+  - Advancement nodes (deduplicated by advancementId) from scoutbook_advancement
+  - Requirement nodes (deduplicated by reqId+advancementId) from scoutbook_requirements
+  - Scout-Advancement edges (HAS_ADVANCEMENT with status/percent/dates)
+  - Scout-Requirement edges (COMPLETED_REQ, STARTED_REQ)
+  - Full-text index on Requirement(reqName, reqNumber)
+- [x] `scripts/load-graph.sh` — runs loader inside backend container on VM
+- [ ] Cross-references (deferred — corpus)
+- [ ] Requirement version nodes (deferred — historical data)
 
 **2.4 — Vector + full-text indexes**
-- [ ] Generate embeddings for content-bearing nodes (Voyage or Gemini)
-- [ ] Create HNSW vector indexes in FalkorDB
-- [ ] Create full-text indexes for BM25 search
-- [ ] Implement hybrid search (vector + BM25 + RRF)
+- [x] Full-text index on Requirement.reqName + reqNumber (BM25)
+- [ ] Vector indexes (deferred — needs corpus text chunks + Voyage embeddings)
 
 **2.5 — Backend integration**
-- [ ] `query_bsa_graph` tool implementation (graph traversals)
-- [ ] `get_scout_advancement` / `get_my_status` tool implementation
-- [ ] `search_bsa_reference` tool implementation (hybrid search)
-- [ ] Wire tools into backend's tool execution loop
+- [x] `backend/src/tools/definitions.ts` — `get_scout_status` + `search_bsa_reference` tool schemas
+- [x] `backend/src/tools/get-scout-status.ts` — rank progress, rank requirements, merit badges, summary
+- [x] `backend/src/tools/search-bsa-reference.ts` — FalkorDB full-text + knowledge doc fallback
+- [x] `backend/src/tool-executor.ts` — resolves email→userId, dispatches tool calls
+- [x] `backend/src/chat.ts` — tool execution loop (MAX_TOOL_TURNS=5), fake-stream final text
 
 ### Test
 - Version-aware query: two scouts who started the same badge in different years see different requirements

@@ -1,6 +1,7 @@
 import express from "express";
 import { connectDb } from "./db.js";
 import { loadKnowledge } from "./knowledge.js";
+import { connectFalkorDB } from "./falkordb.js";
 import { chatHandler } from "./chat.js";
 
 const app = express();
@@ -29,6 +30,11 @@ app.get("/v1/models", (_req, res) => {
 async function start(): Promise<void> {
   await connectDb();
   loadKnowledge();
+
+  // FalkorDB is optional — backend works without it (tools degrade gracefully)
+  connectFalkorDB().catch((err: unknown) => {
+    console.warn("FalkorDB not available — graph tools will be disabled:", err);
+  });
 
   const port = Number(process.env.PORT || 3090);
   app.listen(port, "0.0.0.0", () => {

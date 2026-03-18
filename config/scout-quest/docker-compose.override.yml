@@ -26,11 +26,22 @@ services:
       MONGO_URI: "mongodb://mongodb:27017/scoutquest"
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
       BACKEND_API_KEY: "${BACKEND_API_KEY}"
+      FALKORDB_HOST: "scout-quest-falkordb"
       PORT: "3090"
     networks:
       - default
     depends_on:
       - mongodb
+      - falkordb
+    restart: unless-stopped
+
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: scout-quest-falkordb
+    volumes:
+      - falkordb_data:/data
+    networks:
+      - default
     restart: unless-stopped
 
   mongodb:
@@ -69,6 +80,9 @@ services:
     restart: unless-stopped
     depends_on:
       - mongodb
+
+volumes:
+  falkordb_data:
 
 networks:
   scout-shared:
