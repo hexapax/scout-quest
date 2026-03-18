@@ -357,6 +357,80 @@ All write endpoints use the same JWT bearer token as reads. No additional CSRF o
 
 ---
 
+## Communication & Notification Strategy
+
+**Last updated:** 2026-03-18
+
+### Email Delivery Service (Researched 2026-03-18)
+
+**Recommendation: Resend** — free tier (3,000/mo) covers troop volume (200/mo) with 15x headroom. TypeScript-native SDK, CC/BCC/Reply-To as first-class API params (perfect for YPT enforcement). 5-minute setup.
+
+| Service | Free Tier | Cost @200/mo | Deliverability | Verdict |
+|---------|-----------|-------------|----------------|---------|
+| **Resend** | 3,000/mo forever | $0 | Good | **Recommended** |
+| Brevo | 9,000/mo forever | $0 | Decent | Backup (marketing-heavy) |
+| Mailgun | 3,000/mo forever | $0 | Poor (declining 2025) | Avoid |
+| Amazon SES | 3,000/mo (12 mo only) | $0.02 | Variable | Too much setup |
+| Postmark | 100/mo (dev only) | $15/mo | Best (98.7%) | Fallback if deliverability matters |
+| SendGrid | None (trial only) | $19.95/mo | Poor (declining) | Avoid |
+
+**Thread continuity pattern:** Use `Reply-To` headers + consistent From name:
+```
+From: "Jeremy via Scout Quest" <noreply@troop2024.scoutquest.app>
+Reply-To: jeremy@gmail.com
+CC: parent@example.com  (YPT enforced by backend)
+```
+Gmail/Outlook/Apple Mail all honor Reply-To for replies. Threading maintained via `Message-ID`/`References` headers, not From address.
+
+**Revisit if:** Resend deliverability degrades. Switch to Postmark ($15/mo) as fallback.
+
+### Notification Channel Strategy (Researched 2026-03-18)
+
+**Context:** Troop lost significant parent engagement ("impressions") moving from TeamSnap to Scoutbook-only. TeamSnap push notifications were effective. Scoutbook SMS is truncated/terrible.
+
+**Key insight:** TeamSnap worked because it was the *single source of truth* — schedule + notification + chat in one place. Multi-channel strategy can replicate this with each channel playing to its strength.
+
+#### Recommended multi-channel approach:
+
+| Message Type | Channel | Why |
+|-------------|---------|-----|
+| Weekly newsletter / detailed info | **Email (Resend, HTML)** | Rich content, persistent, universal |
+| Event schedule | **Calendar subscription (ICS)** | Zero-effort, events just appear |
+| Urgent changes | **ntfy.sh + GroupMe** | Immediate, high visibility |
+| Day-of reminders | **Wallet pass** (future) | Lock screen, unobtrusive |
+| Informal discussion | **GroupMe** | Two-way, SMS fallback, low barrier |
+
+#### Channels evaluated:
+
+| Channel | Cost/mo | Reach | Engagement | Annoyance | Verdict |
+|---------|---------|-------|------------|-----------|---------|
+| Email (HTML) | $0 | 95%+ | 40-60% open | Low | **Foundation — enhance with templates** |
+| Calendar (ICS) | $0 | 80-90% | High (events) | Very low | **Implement — 3-5hr effort** |
+| ntfy.sh | $0 | 40-60% | High | Low | **Keep — expand adoption** |
+| GroupMe | $0 | 70-85% | 60-70% | Moderate | **Add — bot API for automation** |
+| Wallet passes | $99/yr | 75-85% | High | Very low | **Future — highest TeamSnap replacement potential** |
+| SMS (Twilio) | $10-40 | 95% | 98% open | HIGH | Reserve for emergencies only |
+| Web/PWA push | $0 | 50-65% | Variable | Low | iOS too unreliable |
+| WhatsApp | $15-40 | 40-60% | 90% | Moderate-high | Skip — incomplete US reach |
+
+#### Wallet passes — the high-impact future investment:
+Apple/Google Wallet passes are the closest thing to replicating TeamSnap's "always visible" quality:
+- Persistent presence on every parent's phone
+- Lock screen notifications on event updates (bypass most DND)
+- Location-aware: auto-surfaces at meeting location
+- Very low annoyance (contextual, not broadcast)
+- Requires: $99/yr Apple Developer + 20-40hr development
+- **Revisit when:** communication infrastructure is stable and multi-channel is working
+
+#### Not recommended:
+- **SMS/Twilio:** Too expensive ($10-40/mo), high annoyance, TCPA liability ($500-1500/message fines)
+- **WhatsApp Business:** Only ~41% US penetration, awkward for scout troop
+- **Discord:** Wrong audience, youth safety concerns
+- **PWA Push:** iOS reliability genuinely poor — notifications fail silently after device restarts, require home-screen install
+- **Gmail Actions/AMP:** Require 100+ emails/day to qualify — impossible at troop scale
+
+---
+
 ## Research Process Notes
 
 When conducting new research:
