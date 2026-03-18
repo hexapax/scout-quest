@@ -1,6 +1,6 @@
 # Scout Quest — Strategy
 
-**Last updated:** 2026-03-16
+**Last updated:** 2026-03-18
 
 ## Vision
 
@@ -43,7 +43,7 @@ The ideas behind it have wider potential. Agentic-led pedagogy — AI that teach
 
 4. **Powered by real data.** Scout profiles, advancement, calendars, events, RSVPs, and troop rosters come from Scoutbook — the official BSA system. The AI works with accurate, current data rather than manual entry. Scoutbook is the backbone.
 
-5. **Read-only from Scoutbook.** We sync data from Scoutbook but never write back to it. People update Scoutbook directly for official records. This keeps the system safe and simple — we can't break anything.
+5. **Scoutbook integration (read + selective write).** We sync data from Scoutbook and can now write back to it (requirement updates, events, RSVPs, emails — see `docs/bsa-api-reference.md`). Write operations go through the BSA API using the same JWT auth as reads. Official records remain in Scoutbook; our writes update Scoutbook directly rather than maintaining a separate system.
 
 6. **Character and values.** The AI adopts a character persona calibrated per scout. Tone, vocabulary, and intensity are tuned to the individual. The character system is designed to build engagement over the 13-week quest without being cringey or patronizing.
 
@@ -87,15 +87,18 @@ The prototype was very effective with individual scouts. The open questions are:
 4. **Data integration** — Does Scoutbook sync give us enough data to make the experience seamless for scouts, parents, and scouters?
 5. **Volunteer adoption** — Will busy volunteer leaders actually use the guide/scouter assistant?
 6. **Coordination value** — Can the assistant reduce the friction of event planning, RSVPs, and troop communication enough that people actually use it?
-7. **Knowledge authority** — Can a curated knowledge base (pgvector + Gemini Embedding 2) give the AI accurate, citable BSA policy answers instead of training-data hallucinations?
+7. **Knowledge authority** — Can a three-layer knowledge system (cached context + vector search + knowledge graph) give the AI accurate, citable BSA policy answers instead of training-data hallucinations?
+8. **Write-back integration** — Can the assistant safely update Scoutbook (mark requirements, RSVP, create events, send emails) through the BSA API, with appropriate guard rails?
 
 ## Strategic Next Steps
 
-1. ~~Get Scoutbook sync fully working — roster, advancement, calendar/events, activity data~~ — DONE (data loaded 2026-03-15, manual refresh workflow established)
-2. **Build the Scouting Knowledge Base** — implement embedding pipeline, MCP query tools, load BSA policies and troop knowledge into pgvector (design approved 2026-03-16)
-3. Close the testing loop — agents need to be able to verify the system works end-to-end
-4. Run with 2-3 scouts from the troop as a pilot (quest + calendar awareness + knowledge base)
-5. Add scouter-facing features — event/RSVP queries, roster views, advancement dashboards, Scoutmaster planning assistant
-6. Support Eagle candidates — three scouts (William McDaid, Connor Goldstrom, Charles Brunt) actively working on Eagle projects; the assistant should help with project planning and requirement tracking
-7. If it works, prepare a demo for the Atlanta Area Council or Scouting America
-8. Document the pedagogy approach for broader audiences (Pace Academy, education conferences)
+1. ~~Get Scoutbook sync fully working~~ — DONE (2026-03-15, 20 scouts, manual refresh workflow)
+2. ~~Map BSA write API~~ — DONE (2026-03-18, 8 write endpoints confirmed via network interception, `docs/bsa-api-reference.md`)
+3. **Build v2 architecture** — custom API backend with prompt caching, FalkorDB knowledge graph, tool rationalization (plan: `docs/plans/2026-03-18-architecture-v2.md`)
+4. **Acquire BSA corpus** — web scrape scouting.org, extract PDFs, build distilled 200K-token knowledge document (plan: `docs/plans/2026-03-18-corpus-acquisition-plan.md`)
+5. **Implement BSA write-back** — requirement updates, events, RSVPs, emails through the BSA API with auth token management
+6. Run with 2-3 scouts from the troop as a pilot
+7. Support Eagle candidates — William McDaid, Connor Goldstrom, Charles Brunt
+8. Add scouter-facing features — event/RSVP queries, advancement dashboards, planning assistant
+9. If it works, prepare a demo for the Atlanta Area Council or Scouting America
+10. Document the pedagogy approach for broader audiences
