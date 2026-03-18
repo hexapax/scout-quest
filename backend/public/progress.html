@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advancement Progress — Scout Quest</title>
+  <style>
+    :root {
+      --green: #2e7d32;
+      --green-light: #e8f5e9;
+      --gold: #f9a825;
+      --blue: #1565c0;
+      --blue-light: #e3f2fd;
+      --gray: #757575;
+      --bg: #fafafa;
+      --card: #fff;
+      --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: #212121;
+      line-height: 1.5;
+      padding: 16px;
+    }
+    .container { max-width: 720px; margin: 0 auto; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 4px; }
+    h2 { font-size: 1.1rem; margin-bottom: 12px; color: #424242; }
+    h3 { font-size: 1rem; margin: 16px 0 8px; }
+    .subtitle { color: var(--gray); font-size: 0.85rem; margin-bottom: 16px; }
+    .stats { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; }
+    .stat {
+      background: var(--blue-light);
+      border-radius: 8px;
+      padding: 12px 16px;
+      text-align: center;
+      min-width: 100px;
+      flex: 1;
+    }
+    .stat-value { font-size: 1.4rem; font-weight: 700; color: var(--blue); }
+    .stat-label { font-size: 0.75rem; color: var(--gray); }
+    .progress-bar-outer {
+      background: #eee;
+      border-radius: 4px;
+      height: 8px;
+      overflow: hidden;
+      margin: 4px 0 8px;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    .progress-green { background: var(--green); }
+    .progress-gold { background: var(--gold); }
+    .progress-blue { background: var(--blue); }
+    .rank-item { padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .rank-item:last-child { border-bottom: none; }
+    .rank-header { display: flex; justify-content: space-between; align-items: center; }
+    .rank-name { font-weight: 600; }
+    .rank-status { font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; }
+    .status-awarded { background: var(--green-light); color: var(--green); }
+    .status-started { background: #fff3e0; color: #e65100; }
+    .status-not-started { background: #eeeeee; color: var(--gray); }
+    .req-list { list-style: none; padding: 4px 0 0 16px; }
+    .req-item { font-size: 0.85rem; padding: 2px 0; }
+    .req-done { color: var(--green); }
+    .req-pending { color: var(--gray); }
+    .req-started { color: #e65100; }
+    .toggle { cursor: pointer; user-select: none; }
+    .toggle::before { content: ""; display: inline-block; width: 12px; }
+    .toggle.collapsed::before { content: ""; }
+    .section-badge { display: flex; flex-wrap: wrap; gap: 8px; }
+    .badge-card {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      min-width: 140px;
+    }
+    .badge-card-name { font-weight: 500; }
+    .badge-card-pct { font-size: 0.75rem; color: var(--gray); }
+    .eagle-badge { border-color: var(--gold); background: #fffde7; }
+    .loading { text-align: center; padding: 40px; color: var(--gray); }
+    .error { text-align: center; padding: 40px; color: #c62828; }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div class="card">
+      <div class="loading" id="loading">Loading advancement data...</div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get("email");
+    const appEl = document.getElementById("app");
+
+    if (!email) {
+      appEl.innerHTML = '<div class="card error">Missing email parameter.</div>';
+    } else {
+      loadProgress(email);
+    }
+
+    async function loadProgress(email) {
+      try {
+        const res = await fetch(`/api/progress?email=${encodeURIComponent(email)}`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          appEl.innerHTML = `<div class="card error">${err.error || "Scout not found"}</div>`;
+          return;
+        }
+        const data = await res.json();
+        render(data);
+      } catch (err) {
+        appEl.innerHTML = `<div class="card error">Error: ${err.message}</div>`;
+      }
+    }
+
+    function render(data) {
+      const ranks = data.ranks || [];
+      const mbs = data.meritBadges || [];
+      const as = data.activitySummary || {};
+
+      // Current rank info
+      const currentRank = ranks.find(r => r.status !== "Awarded" && r.percentComplete > 0);
+      const earnedRanks = ranks.filter(r => r.status === "Awarded");
+      const earnedMBs = mbs.filter(m => m.status === "Awarded");
+      const inProgressMBs = mbs.filter(m => m.status !== "Awarded" && m.percentComplete > 0);
+
+      let html = `
+        <div class="card">
+          <h1>${esc(data.name)}</h1>
+          <div class="subtitle">
+            ${data.currentRank ? `Current rank: ${esc(data.currentRank)}` : ""}
+            ${data.syncedAt ? ` &middot; Data synced: ${new Date(data.syncedAt).toLocaleDateString()}` : ""}
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-value">${earnedRanks.length}</div>
+              <div class="stat-label">Ranks Earned</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${earnedMBs.length}</div>
+              <div class="stat-label">Merit Badges</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${as.campingNights}</div>
+              <div class="stat-label">Camping Nights</div>
+            </div>
+            <div class="stat">
+              <div class="stat-value">${as.serviceHours}</div>
+              <div class="stat-label">Service Hours</div>
+            </div>
+          </div>
+        </div>`;
+
+      // Rank progress
+      if (ranks.length > 0) {
+        html += `<div class="card"><h2>Rank Progress</h2>`;
+        for (const rank of ranks) {
+          const pct = Math.round(rank.percentComplete * 100);
+          const statusCls = rank.status === "Awarded" ? "status-awarded"
+            : pct > 0 ? "status-started" : "status-not-started";
+          const barCls = rank.status === "Awarded" ? "progress-green" : "progress-gold";
+          const reqs = rank.requirements || [];
+          const done = reqs.filter(r => r.completed).length;
+
+          html += `
+            <div class="rank-item">
+              <div class="rank-header toggle" onclick="toggleReqs(this)">
+                <span class="rank-name">${esc(rank.name)}</span>
+                <span class="rank-status ${statusCls}">
+                  ${rank.status === "Awarded" ? "Awarded" : `${done}/${reqs.length} (${pct}%)`}
+                </span>
+              </div>
+              <div class="progress-bar-outer">
+                <div class="progress-bar-inner ${barCls}" style="width:${pct}%"></div>
+              </div>
+              <ul class="req-list" style="display:none">
+                ${reqs.map(r => `
+                  <li class="req-item ${r.completed ? 'req-done' : r.started ? 'req-started' : 'req-pending'}">
+                    ${r.completed ? '&#10003;' : r.started ? '&#9711;' : '&#9675;'}
+                    ${esc(r.number)}. ${esc(r.name)}
+                    ${r.dateCompleted ? `<small>(${r.dateCompleted})</small>` : ""}
+                  </li>
+                `).join("")}
+              </ul>
+            </div>`;
+        }
+        html += `</div>`;
+      }
+
+      // Merit badges
+      if (mbs.length > 0) {
+        // In-progress first, then earned
+        html += `<div class="card"><h2>Merit Badges</h2>`;
+        if (inProgressMBs.length > 0) {
+          html += `<h3>In Progress (${inProgressMBs.length})</h3><div class="section-badge">`;
+          for (const mb of inProgressMBs.sort((a,b) => b.percentComplete - a.percentComplete)) {
+            const pct = Math.round(mb.percentComplete * 100);
+            html += `
+              <div class="badge-card ${mb.isEagleRequired ? 'eagle-badge' : ''}">
+                <div class="badge-card-name">${esc(mb.name)}</div>
+                <div class="progress-bar-outer">
+                  <div class="progress-bar-inner progress-blue" style="width:${pct}%"></div>
+                </div>
+                <div class="badge-card-pct">${pct}% ${mb.isEagleRequired ? '(Eagle req)' : ''}</div>
+              </div>`;
+          }
+          html += `</div>`;
+        }
+        if (earnedMBs.length > 0) {
+          html += `<h3>Earned (${earnedMBs.length})</h3><div class="section-badge">`;
+          for (const mb of earnedMBs.sort((a,b) => (a.name||"").localeCompare(b.name||""))) {
+            html += `
+              <div class="badge-card ${mb.isEagleRequired ? 'eagle-badge' : ''}">
+                <div class="badge-card-name">${esc(mb.name)}</div>
+                <div class="badge-card-pct">${mb.dateAwarded ? mb.dateAwarded.substring(0,10) : 'Earned'} ${mb.isEagleRequired ? '(Eagle req)' : ''}</div>
+              </div>`;
+          }
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+
+      appEl.innerHTML = html;
+    }
+
+    function toggleReqs(el) {
+      const list = el.parentElement.querySelector(".req-list");
+      if (list) {
+        list.style.display = list.style.display === "none" ? "block" : "none";
+      }
+    }
+
+    function esc(str) {
+      if (!str) return "";
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

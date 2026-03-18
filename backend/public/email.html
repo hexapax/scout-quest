@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Email — Scout Quest</title>
+  <style>
+    :root {
+      --green: #2e7d32;
+      --green-light: #e8f5e9;
+      --red: #c62828;
+      --red-light: #ffebee;
+      --gold: #f9a825;
+      --gray: #757575;
+      --bg: #fafafa;
+      --card: #fff;
+      --border: #e0e0e0;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: #212121;
+      line-height: 1.5;
+      padding: 16px;
+    }
+    .container { max-width: 640px; margin: 0 auto; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 8px; }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+    .badge-pending { background: var(--gold); color: #212121; }
+    .badge-executed { background: var(--green-light); color: var(--green); }
+    .badge-cancelled { background: var(--red-light); color: var(--red); }
+    .badge-expired { background: #eeeeee; color: var(--gray); }
+    .ypt-notice {
+      background: #fff3e0;
+      border: 1px solid #ffb74d;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 12px 0;
+      font-size: 0.9rem;
+    }
+    .ypt-notice strong { color: #e65100; }
+    .field { margin-bottom: 12px; }
+    .field label { display: block; font-size: 0.8rem; color: var(--gray); margin-bottom: 2px; }
+    .field-value { font-size: 0.95rem; }
+    .email-body {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 16px;
+      min-height: 100px;
+      background: #fafafa;
+    }
+    .email-body-editable {
+      background: #fff;
+      outline: none;
+    }
+    .actions { display: flex; gap: 12px; margin-top: 16px; }
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-send { background: var(--green); color: #fff; flex: 1; }
+    .btn-cancel { background: var(--red-light); color: var(--red); }
+    .result {
+      padding: 16px;
+      border-radius: 6px;
+      margin-top: 16px;
+      font-weight: 500;
+    }
+    .result-ok { background: var(--green-light); color: var(--green); }
+    .result-err { background: var(--red-light); color: var(--red); }
+    .loading { text-align: center; padding: 40px; color: var(--gray); }
+    .back-link { display: block; text-align: center; margin-top: 16px; color: var(--green); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card" id="main">
+      <div class="loading" id="loading">Loading email draft...</div>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const actionId = params.get("action");
+    const mainEl = document.getElementById("main");
+
+    if (!actionId) {
+      mainEl.innerHTML = '<p>Missing action parameter.</p><a class="back-link" href="javascript:window.close()">Close</a>';
+    } else {
+      loadAction(actionId);
+    }
+
+    async function loadAction(id) {
+      try {
+        const res = await fetch(`/actions/${id}`);
+        if (!res.ok) {
+          mainEl.innerHTML = '<p>Email draft not found or expired.</p>';
+          return;
+        }
+        const action = await res.json();
+        renderEmail(action);
+      } catch (err) {
+        mainEl.innerHTML = `<p>Error loading: ${err.message}</p>`;
+      }
+    }
+
+    function renderEmail(action) {
+      const p = action.payload;
+      const isPending = action.status === "pending";
+      const statusClass = `badge-${action.status}`;
+
+      mainEl.innerHTML = `
+        <h1>Review Email <span class="badge ${statusClass}">${action.status}</span></h1>
+        <div class="ypt-notice">
+          <strong>Youth Protection:</strong> Parent/guardian is automatically included
+          on all scout emails per BSA Youth Protection Training policy.
+        </div>
+        <div class="field">
+          <label>To (Member IDs)</label>
+          <div class="field-value">${JSON.stringify(p.toMemberIds || [])}</div>
+        </div>
+        ${p.parentCcMemberIds ? `
+        <div class="field">
+          <label>CC (Parent/Guardian — required by YPT)</label>
+          <div class="field-value">${JSON.stringify(p.parentCcMemberIds)}</div>
+        </div>` : ""}
+        <div class="field">
+          <label>Subject</label>
+          <div class="field-value"><strong>${escapeHtml(p.subject || "")}</strong></div>
+        </div>
+        <div class="field">
+          <label>Body</label>
+          <div class="email-body ${isPending ? "email-body-editable" : ""}"
+               id="emailBody"
+               ${isPending ? 'contenteditable="true"' : ""}>
+            ${p.body || ""}
+          </div>
+        </div>
+        ${isPending ? `
+        <div class="actions">
+          <button class="btn btn-send" id="btnSend" onclick="sendEmail()">Send Email</button>
+          <button class="btn btn-cancel" id="btnCancel" onclick="cancelEmail()">Cancel</button>
+        </div>` : ""}
+        ${action.status === "executed" ? '<div class="result result-ok">Email sent successfully.</div>' : ""}
+        ${action.status === "cancelled" ? '<div class="result result-err">Email was cancelled.</div>' : ""}
+        ${action.status === "expired" ? '<div class="result result-err">This email draft has expired.</div>' : ""}
+      `;
+    }
+
+    async function sendEmail() {
+      const btn = document.getElementById("btnSend");
+      const cancelBtn = document.getElementById("btnCancel");
+      btn.disabled = true;
+      cancelBtn.disabled = true;
+      btn.textContent = "Sending...";
+
+      try {
+        const updatedBody = document.getElementById("emailBody").innerHTML;
+        const res = await fetch(`/actions/${actionId}/execute`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updatedPayload: { body: updatedBody } }),
+        });
+        const result = await res.json();
+        if (result.ok) {
+          mainEl.innerHTML += '<div class="result result-ok">Email sent successfully!</div>';
+          btn.style.display = "none";
+          cancelBtn.style.display = "none";
+        } else {
+          mainEl.innerHTML += `<div class="result result-err">Failed: ${result.message}</div>`;
+          btn.disabled = false;
+          cancelBtn.disabled = false;
+          btn.textContent = "Send Email";
+        }
+      } catch (err) {
+        mainEl.innerHTML += `<div class="result result-err">Error: ${err.message}</div>`;
+        btn.disabled = false;
+        cancelBtn.disabled = false;
+        btn.textContent = "Send Email";
+      }
+    }
+
+    async function cancelEmail() {
+      try {
+        await fetch(`/actions/${actionId}/cancel`, { method: "POST" });
+        mainEl.innerHTML += '<div class="result result-err">Email cancelled.</div>';
+        document.getElementById("btnSend").style.display = "none";
+        document.getElementById("btnCancel").style.display = "none";
+      } catch (err) {
+        mainEl.innerHTML += `<div class="result result-err">Error: ${err.message}</div>`;
+      }
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

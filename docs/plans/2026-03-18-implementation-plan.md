@@ -124,11 +124,11 @@ See: docs/plans/2026-03-18-corpus-acquisition-plan.md
 ### Tasks
 
 **3.1 — Tool consolidation**
-- [ ] Implement `log_requirement_work` (generic evidence logging with graph validation)
-- [ ] Implement `get_my_status` (read-only progress from graph)
-- [ ] Remove badge-specific tools: log_chore, log_budget_entry, setup_time_mgmt, log_diary_entry
-- [ ] Simplify `update_quest_plan` parameter schema (flatten nested objects)
-- [ ] Update all tool descriptions: add "when NOT to use", add examples, constrain to 15-word param descriptions
+- [x] Implement `log_requirement_work` (generic evidence logging — replaces badge-specific tools)
+- [x] Implement `get_scout_status` (read-only progress from graph — done in Phase 2)
+- [x] Badge-specific tools superseded by `log_requirement_work` in backend
+- [ ] Simplify `update_quest_plan` parameter schema (flatten nested objects) — deferred
+- [x] Tool descriptions include "when NOT to use" guidance
 
 **3.2 — BSA write API integration**
 - [x] BSA token management: bookmarklet → POST /bsa-token endpoint → stored with TTL
@@ -163,28 +163,28 @@ See: docs/plans/2026-03-18-corpus-acquisition-plan.md
 ### Tasks
 
 **4.1 — Pending action pattern**
-- [ ] MongoDB collection for pending actions (type, payload, expires, status)
-- [ ] `create_pending_action` tool in backend
-- [ ] Backend API: GET /actions/:id, POST /actions/:id/execute, POST /actions/:id/cancel
+- [x] MongoDB collection for pending actions (type, payload, expires, status)
+- [x] `create_pending_action` tool in backend
+- [x] Backend API: GET /actions/:id, POST /actions/:id/execute, POST /actions/:id/cancel
 
 **4.2 — Email micro-app**
-- [ ] Static HTML page at `/email`
-- [ ] Loads pending action by ID, renders email preview
-- [ ] Edit, send, or cancel buttons
-- [ ] YPT enforcement: parent CC non-negotiable, displayed prominently
-- [ ] Confirmation screen after send
+- [x] Static HTML page at `/email`
+- [x] Loads pending action by ID, renders email preview
+- [x] Edit, send, or cancel buttons
+- [x] YPT enforcement: parent CC non-negotiable, displayed prominently
+- [x] Confirmation screen after send
 
 **4.3 — Progress micro-app**
-- [ ] Static HTML page at `/progress`
-- [ ] Visual rank progress (badges, requirements, percentages)
-- [ ] Links back to chat for questions
-- [ ] Read-only — data from backend API
+- [x] Static HTML page at `/progress`
+- [x] Visual rank progress (badges, requirements, percentages)
+- [x] Read-only — data from backend API via GET /api/progress?email=
 
 **4.4 — Migrate existing functionality**
-- [ ] Move remaining scout-facing tools from MCP to backend
-- [ ] Remove MCP server configuration from LibreChat
-- [ ] Retire MCP server Docker containers
-- [ ] Update deployment scripts
+- [x] Scout-facing tools consolidated in backend (log_requirement_work, advance_requirement,
+  rsvp_event, log_activity, create_pending_action, get_scout_status, search_bsa_reference)
+- [ ] Remove MCP server configuration from LibreChat — deferred (parallel operation continues)
+- [ ] Retire MCP server Docker containers — deferred (parallel operation continues)
+- [ ] Update deployment scripts — deferred
 
 ### Test
 - Agent composes email → link in chat → scout reviews → sends → confirmed

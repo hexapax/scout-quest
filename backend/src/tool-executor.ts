@@ -4,6 +4,9 @@ import { searchBsaReference } from "./tools/search-bsa-reference.js";
 import { advanceRequirementTool } from "./tools/advance-requirement.js";
 import { rsvpEventTool } from "./tools/rsvp-event.js";
 import { logActivityTool, type LogActivityInput } from "./tools/log-activity.js";
+import { createPendingActionTool } from "./tools/create-pending-action.js";
+import type { ActionType } from "./pending-action.js";
+import { logRequirementWork, type EvidenceType } from "./tools/log-requirement-work.js";
 
 interface ToolUseBlock {
   type: "tool_use";
@@ -81,6 +84,26 @@ async function executeOneTool(
 
       case "log_activity": {
         return await logActivityTool(input as unknown as LogActivityInput);
+      }
+
+      case "create_pending_action": {
+        return await createPendingActionTool({
+          type: String(input.type || "send_email") as ActionType,
+          payload: (input.payload as Record<string, unknown>) ?? {},
+          createdBy: userEmail ?? "unknown",
+          scoutUserId: input.scoutUserId ? String(input.scoutUserId) : undefined,
+        });
+      }
+
+      case "log_requirement_work": {
+        if (!userEmail) return "Cannot log work: no user email context.";
+        return await logRequirementWork({
+          scoutEmail: userEmail,
+          evidenceType: String(input.evidenceType || "general") as EvidenceType,
+          description: String(input.description || ""),
+          requirementRef: input.requirementRef ? String(input.requirementRef) : undefined,
+          data: (input.data as Record<string, unknown>) ?? undefined,
+        });
       }
 
       default:

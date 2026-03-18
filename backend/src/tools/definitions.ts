@@ -187,4 +187,66 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
     },
   },
   ...BSA_WRITE_TOOLS,
+  {
+    name: "create_pending_action",
+    description:
+      "Create a pending action for the scout to review before execution. " +
+      "Use for emails (the scout reviews the draft before sending) or any write " +
+      "operation that should have human confirmation. Returns a link the scout " +
+      "can click to review and approve. Do NOT execute BSA write actions directly " +
+      "when sending email — always route through this tool so the scout can review.",
+    input_schema: {
+      type: "object",
+      properties: {
+        type: {
+          type: "string",
+          enum: ["send_email", "advance_requirement", "rsvp_event"],
+          description: "Action type.",
+        },
+        payload: {
+          type: "object",
+          description:
+            "Action-specific payload. For send_email: { subject, body (HTML), toMemberIds, bccMemberIds, parentCcMemberIds }. " +
+            "For advance_requirement: { rankId, scoutUserId, requirementId, dateCompleted }. " +
+            "For rsvp_event: { eventId, scoutUserId, rsvpCode }.",
+        },
+      },
+      required: ["type", "payload"],
+    },
+  },
+  {
+    name: "log_requirement_work",
+    description:
+      "Log evidence of work toward a scouting requirement. Replaces badge-specific tools. " +
+      "Use when a scout reports completing a chore, making a budget entry, writing a diary entry, " +
+      "practicing a skill, or logging service hours. Do NOT call for signing off a requirement " +
+      "— use advance_requirement for that.",
+    input_schema: {
+      type: "object",
+      properties: {
+        evidenceType: {
+          type: "string",
+          enum: ["chore_log", "budget_entry", "diary_entry", "time_management", "service_hours", "skill_practice", "general"],
+          description: "Type of evidence being logged.",
+        },
+        description: {
+          type: "string",
+          description: "What the scout did. Be specific.",
+        },
+        requirementRef: {
+          type: "string",
+          description: 'Optional requirement reference, e.g., "PM 2c", "FL 3a", "Camping 9a".',
+        },
+        data: {
+          type: "object",
+          description:
+            "Type-specific data. chore_log: { choreName, amount }. " +
+            "budget_entry: { type (income|expense), amount, category }. " +
+            "diary_entry: no extra data needed. " +
+            "time_management: { type (todo|schedule), items }.",
+        },
+      },
+      required: ["evidenceType", "description"],
+    },
+  },
 ];

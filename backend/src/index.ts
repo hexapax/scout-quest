@@ -4,6 +4,8 @@ import { loadKnowledge, getKnowledgeBlock } from "./knowledge.js";
 import { connectFalkorDB } from "./falkordb.js";
 import { chatHandler } from "./chat.js";
 import { createBsaTokenRouter } from "./routes/bsa-token.js";
+import { createActionsRouter } from "./routes/actions.js";
+import { createProgressRouter } from "./routes/progress.js";
 
 const app = express();
 
@@ -14,6 +16,18 @@ app.post("/v1/chat/completions", chatHandler);
 
 // BSA token management
 app.use("/", createBsaTokenRouter());
+
+// Pending actions API (micro-app backend)
+app.use("/", createActionsRouter());
+
+// Progress API (for progress micro-app)
+app.use("/", createProgressRouter());
+
+// Serve static micro-app files
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+app.use("/", (await import("express")).default.static(join(__dirname, "../public")));
 
 // Internal admin routes (protected by BACKEND_API_KEY)
 app.post("/internal/reload-knowledge", (req, res) => {
