@@ -131,22 +131,22 @@ See: docs/plans/2026-03-18-corpus-acquisition-plan.md
 - [ ] Update all tool descriptions: add "when NOT to use", add examples, constrain to 15-word param descriptions
 
 **3.2 — BSA write API integration**
-- [ ] BSA token management: bookmarklet → backend endpoint → stored with TTL
-- [ ] Implement `advance_requirement` write-through to BSA API
-- [ ] Implement `rsvp_event` tool (new)
-- [ ] Implement `create_event` tool (new)
-- [ ] Wire `compose_email` to BSA email API (in addition to / instead of direct SMTP)
-- [ ] Implement `log_activity` for service hours recording
+- [x] BSA token management: bookmarklet → POST /bsa-token endpoint → stored with TTL
+- [x] Implement `advance_requirement` write-through to BSA API (with comment support)
+- [x] Implement `rsvp_event` tool (new)
+- [ ] Implement `create_event` tool (new) — deferred
+- [ ] Wire `compose_email` to BSA email API — deferred
+- [x] Implement `log_activity` for service hours recording
 
 **3.3 — Guide tool consolidation**
-- [ ] Consolidate 7 onboarding tools → 3 (setup_scout, setup_quest, set_character_preferences)
-- [ ] Add `get_onboarding_status` read tool
-- [ ] Add `get_scout_dashboard` read tool
+- [x] Consolidate 7 onboarding tools → 3 (setup_scout, setup_quest, set_character_preferences)
+- [x] Add `get_onboarding_status` read tool
+- [x] Add `get_scout_dashboard` read tool
 
 **3.4 — Admin tool updates**
-- [ ] Remove `scoutbook_get_rank_requirements` (redundant with cached knowledge)
-- [ ] Add `rebuild_knowledge_cache` trigger
-- [ ] Add `validate_graph_integrity` health check
+- [x] Remove `scoutbook_get_rank_requirements` (redundant with cached knowledge)
+- [x] Add `rebuild_knowledge_cache` trigger (POST /internal/reload-knowledge backend endpoint)
+- [x] Add `validate_graph_integrity` health check (MongoDB data integrity check)
 
 ### Test
 - Scout logs chore → `log_requirement_work` with evidence_type="log_entry" → validated against graph
