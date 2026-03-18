@@ -1,0 +1,21 @@
+{
+  "CampOuts": {
+    "Campouts": 0,
+    "CampoutsScoutParticipating": 0,
+    "CampoutsTotalAttendance": 0,
+    "NightsCamped": 0,
+    "DaysCamped": 0
+  },
+  "ServiceProjects": {
+    "ServiceProjects": 0,
+    "ServiceProjectsScoutParticipating": 0,
+    "ServiceProjectsTotalAttendance": 0,
+    "ServiceHours": 0,
+    "ConservationHours": 0
+  },
+  "Hikes": {
+    "Hikes": 0,
+    "HikesScoutParticipating": 0,
+    "HikesTotalAttendance": 0
+  }
+}

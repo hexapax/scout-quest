@@ -107,7 +107,7 @@ Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
 - [x] **MongoDB populated (2026-03-15)** — 20 scouts, 15 adults, 419 advancement records, 2,535 requirements
 - [x] **`scoutbook_get_scout_advancement` tool verified working** with real data in MongoDB
 - [ ] **BSA automated auth is broken** — `my.scouting.org/api/users/{username}/authenticate` returns 503 (since ~March 2026). Automated CLI sync cannot authenticate. See manual refresh workflow below.
-- [ ] **Manual refresh via Chrome CDP** — working workaround: launch Chrome with `--remote-debugging-port=9222`, log in manually, run `scripts/fetch-all-scoutbook-data.mjs` to extract JWT from cookies and fetch all data, then `scripts/generate-mongo-import.mjs` to load into MongoDB. See `docs/scoutbook-data-refresh.md` for full procedure.
+- [ ] **Manual refresh via Chrome CDP** — working workaround: launch Chrome with `--remote-debugging-port=9222`, log in manually, run `scripts/scoutbook/fetch-all-data.mjs` to extract JWT from cookies and fetch all data, then `scripts/mongo/load-fresh-data.mjs` to load into MongoDB. See `docs/scoutbook-data-refresh.md` for full procedure.
 - [ ] **Smart rate limiting** — enhancement, not blocking
 - [ ] **Cron-based periodic sync** — blocked by BSA auth issue; manual refresh is current workflow
 

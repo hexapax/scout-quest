@@ -1,0 +1,20 @@
+{
+  "memberId": "135072517",
+  "fullName": "John Patrick McDaid",
+  "campingLogs": {
+    "totalNumberOfDays": 10,
+    "totalNumberOfNights": 11,
+    "percentCompleteTowardGoal": 0.55
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 4,
+    "percentCompleteTowardGoal": 0.04
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 3,
+    "percentCompleteTowardGoal": 0.2
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

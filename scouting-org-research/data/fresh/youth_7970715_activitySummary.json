@@ -1,0 +1,20 @@
+{
+  "memberId": "132490934",
+  "fullName": "William C McDaid",
+  "campingLogs": {
+    "totalNumberOfDays": 24,
+    "totalNumberOfNights": 22,
+    "percentCompleteTowardGoal": 1
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

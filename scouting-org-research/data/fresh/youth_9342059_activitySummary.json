@@ -1,0 +1,20 @@
+{
+  "memberId": "135885035",
+  "fullName": "Jacob Kilpatrick McMurtry",
+  "campingLogs": {
+    "totalNumberOfDays": 3,
+    "totalNumberOfNights": 2,
+    "percentCompleteTowardGoal": 0.1
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 5,
+    "percentCompleteTowardGoal": 0.33
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

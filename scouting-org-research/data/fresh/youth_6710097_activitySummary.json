@@ -1,0 +1,20 @@
+{
+  "memberId": "132963126",
+  "fullName": "Noah Marx Eisenman",
+  "campingLogs": {
+    "totalNumberOfDays": 0,
+    "totalNumberOfNights": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

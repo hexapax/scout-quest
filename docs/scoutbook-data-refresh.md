@@ -16,8 +16,8 @@ The automated sync pipeline (`cli.ts` → `sync.ts`) authenticates via `POST my.
 - **Node.js 24+** — via nvm (`nvm exec 24 node ...`)
 - **gcloud CLI** — authenticated as `jeremy@hexapax.com` for VM access
 - Scripts in `scripts/`:
-  - `fetch-all-scoutbook-data.mjs` — fetches all data from BSA API
-  - `generate-mongo-import.mjs` — converts JSON to mongosh import script
+  - `scripts/scoutbook/fetch-all-data.mjs` — fetches all data from BSA API
+  - `scripts/mongo/load-fresh-data.mjs` — loads JSON data directly into MongoDB
 
 ## Step-by-Step Refresh
 
@@ -53,7 +53,7 @@ Should show `"Browser": "Chrome/..."`. If not, Chrome may not have started with 
 
 ```bash
 source ~/.nvm/nvm.sh
-nvm exec 24 node scripts/fetch-all-scoutbook-data.mjs
+nvm exec 24 node scripts/scoutbook/fetch-all-data.mjs
 ```
 
 This will:
@@ -64,55 +64,39 @@ This will:
 
 **If you get "No JWT token found":** Your BSA session expired. Go back to Chrome and log in again at `advancements.scouting.org/login`.
 
-### 5. Generate MongoDB Import Script
+### 5. Load into MongoDB
 
+**Option A: Direct connection (local or tunneled):**
 ```bash
 source ~/.nvm/nvm.sh
-nvm exec 24 node scripts/generate-mongo-import.mjs 2>/dev/null | tail -n +2 > /tmp/scoutbook-import.js
+nvm exec 24 node scripts/mongo/load-fresh-data.mjs --mongo-uri=mongodb://localhost:27017/scoutquest
 ```
 
-Verify it looks right:
+**Option B: Via SSH tunnel to production:**
 ```bash
-head -3 /tmp/scoutbook-import.js   # Should start with "// Auto-generated"
-tail -3 /tmp/scoutbook-import.js   # Should end with print statements
-wc -l /tmp/scoutbook-import.js     # Should be ~3000 lines
-```
-
-### 6. Load into Production MongoDB
-
-```bash
-# Set gcloud account
-gcloud config set account jeremy@hexapax.com
-
-# Upload to VM
-gcloud compute scp /tmp/scoutbook-import.js scout-coach-vm:/tmp/scoutbook-import.js \
-  --zone=us-east4-b --project=scout-assistant-487523 --tunnel-through-iap
-
-# Copy into MongoDB container and run
+# Open SSH tunnel to production MongoDB
 gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=scout-assistant-487523 \
-  --tunnel-through-iap --command="
-    sudo docker cp /tmp/scoutbook-import.js ai-chat-mongodb:/tmp/scoutbook-import.js && \
-    sudo docker exec ai-chat-mongodb mongosh --quiet scoutquest /tmp/scoutbook-import.js
-  "
+  --tunnel-through-iap -- -L 27018:172.19.0.4:27017 -N &
+
+# Load data through tunnel
+nvm exec 24 node scripts/mongo/load-fresh-data.mjs --mongo-uri=mongodb://localhost:27018/scoutquest
 ```
 
 Expected output:
 ```
-Scouts: 20
-Adults: 15
-Advancement: ~420
-Requirements: ~2500
-Sync log written
-
-=== Collection Counts ===
-  scoutbook_scouts: 20
-  scoutbook_adults: 15
-  scoutbook_advancement: ~420
-  scoutbook_requirements: ~2500
-  scoutbook_sync_log: N
+=== Loading Scouts ===
+  20 scouts upserted
+=== Loading Adults ===
+  15 adults upserted
+=== Loading Parents ===
+  N parents upserted
+=== Loading Advancement ===
+  ~420 advancement records upserted
+=== Loading Requirements ===
+  ~2500 requirement records upserted
 ```
 
-### 7. Verify in ai-chat
+### 6. Verify in ai-chat
 
 Go to `ai-chat.hexapax.com` and ask the assistant to use the `scoutbook_get_scout_advancement` tool for a specific scout. It should return rank, merit badge, and requirement data.
 
@@ -153,7 +137,7 @@ Go to `ai-chat.hexapax.com` and ask the assistant to use the `scoutbook_get_scou
 | "No scouting.org tab found" | Chrome isn't open or isn't on a scouting.org page. |
 | 401 errors on API calls | Token expired mid-run. Log in again and re-run. |
 | Chrome not accessible on port 9222 | Ensure Chrome was started with `--remote-debugging-port=9222`. Close ALL other Chrome windows first if not using `--user-data-dir`. |
-| mongosh syntax error | Check for stray nvm output in the import file. First line should be `// Auto-generated`. |
+| MongoDB connection refused | Check tunnel is open or MongoDB is running. |
 | gcloud permission denied | Run `gcloud config set account jeremy@hexapax.com` first. |
 
 ## BSA Session Duration

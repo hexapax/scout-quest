@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tuesday Meeting Plan: Rank Advancement with EDGE Teaching</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 13px; line-height: 1.5; color: #212529; max-width: 1050px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; color: #003f87; }
+  h2 { font-size: 18px; font-weight: 600; margin: 18px 0 8px; color: #003f87; border-bottom: 2px solid #003f87; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 600; margin: 14px 0 6px; color: #333; }
+  h4 { font-size: 13px; font-weight: 600; margin: 8px 0 4px; color: #555; }
+  .subtitle { color: #666; font-size: 14px; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px; }
+  th { background: #003f87; color: white; padding: 6px 8px; text-align: left; font-weight: 600; }
+  td { padding: 5px 8px; border-bottom: 1px solid #dee2e6; vertical-align: top; }
+  tr:nth-child(even) { background: #f8f9fa; }
+  .rank-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; color: white; font-size: 11px; font-weight: 600; }
+  .section { margin-bottom: 20px; }
+
+  /* EDGE method box */
+  .edge-box { background: #e8f4fd; border: 2px solid #0d6efd; border-radius: 8px; padding: 14px 18px; margin: 12px 0 18px; }
+  .edge-box h3 { color: #0d6efd; margin: 0 0 8px; font-size: 16px; }
+  .edge-step { display: flex; gap: 8px; margin: 4px 0; }
+  .edge-letter { font-weight: 800; font-size: 16px; color: #003f87; width: 30px; text-align: center; }
+  .edge-desc { font-size: 13px; }
+
+  /* Groups */
+  .group-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+  .group-card { border-radius: 8px; padding: 12px 16px; }
+  .teachers-card { background: #d4edda; border: 2px solid #28a745; }
+  .learners-card { background: #fff3cd; border: 2px solid #ffc107; }
+  .group-card h3 { margin: 0 0 8px; }
+  .group-list { list-style: none; padding: 0; }
+  .group-list li { padding: 3px 0; font-size: 13px; }
+  .group-list li strong { font-weight: 600; }
+
+  /* Station cards */
+  .station { border-radius: 8px; padding: 14px 18px; margin-bottom: 16px; page-break-inside: avoid; }
+  .station-first-aid { background: #fce4ec; border-left: 6px solid #e53935; }
+  .station-knots { background: #fff3e0; border-left: 6px solid #f57c00; }
+  .station-navigation { background: #e3f2fd; border-left: 6px solid #1565c0; }
+  .station-citizenship { background: #e8f5e9; border-left: 6px solid #2e7d32; }
+  .station-fitness { background: #f3e5f5; border-left: 6px solid #7b1fa2; }
+  .station-financial { background: #e0f7fa; border-left: 6px solid #00838f; }
+  .station-safety { background: #fbe9e7; border-left: 6px solid #d84315; }
+  .station h3 { margin: 0 0 6px; font-size: 16px; }
+  .station-meta { font-size: 12px; color: #555; margin-bottom: 8px; }
+  .station-teacher { display: inline-block; background: #28a745; color: white; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+  .req-list { margin: 6px 0; padding-left: 0; list-style: none; }
+  .req-list li { padding: 3px 0 3px 12px; font-size: 12px; border-bottom: 1px dotted #ccc; position: relative; }
+  .req-list li::before { content: ""; position: absolute; left: 0; top: 8px; width: 6px; height: 6px; border-radius: 50%; background: #999; }
+  .req-id { font-weight: 700; color: #003f87; }
+  .scout-names { color: #555; font-style: italic; font-size: 11px; }
+  .edge-guide { background: rgba(255,255,255,0.6); border-radius: 4px; padding: 6px 10px; margin-top: 8px; font-size: 12px; }
+  .edge-guide strong { color: #003f87; }
+
+  /* Per-scout checklist */
+  .scout-card { border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 14px; page-break-inside: avoid; }
+  .scout-header { background: #003f87; color: white; padding: 8px 14px; border-radius: 7px 7px 0 0; display: flex; justify-content: space-between; align-items: center; }
+  .scout-header h3 { color: white; margin: 0; font-size: 15px; }
+  .scout-header .rank-info { font-size: 12px; opacity: 0.9; }
+  .scout-body { padding: 10px 14px; }
+  .req-check { display: flex; align-items: flex-start; gap: 6px; padding: 3px 0; font-size: 12px; border-bottom: 1px solid #f0f0f0; }
+  .req-tag { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .tag-meeting { background: #28a745; color: white; }
+  .tag-field { background: #ffc107; color: #333; }
+  .tag-admin { background: #6c757d; color: white; }
+  .tag-done { background: #e0e0e0; color: #666; text-decoration: line-through; }
+
+  /* Assignments */
+  .assignment-card { display: grid; grid-template-columns: 200px 1fr; gap: 0; border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: 8px; overflow: hidden; }
+  .assignment-teacher { background: #28a745; color: white; padding: 10px 14px; display: flex; flex-direction: column; justify-content: center; }
+  .assignment-teacher .name { font-weight: 700; font-size: 15px; }
+  .assignment-teacher .rank { font-size: 11px; opacity: 0.9; }
+  .assignment-detail { padding: 10px 14px; }
+  .assignment-station { font-weight: 700; font-size: 14px; color: #003f87; }
+  .assignment-scouts { font-size: 12px; color: #555; margin-top: 4px; }
+
+  @media print {
+    body { font-size: 11px; padding: 10px; }
+    .page-break { page-break-before: always; }
+    th { background: #003f87 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .rank-badge, .station, .group-card, .station-teacher, .req-tag, .edge-box, .scout-header, .assignment-teacher { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .station { page-break-inside: avoid; }
+    .scout-card { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: MEETING OVERVIEW -->
+<!-- ============================================================ -->
+
+<h1>Tuesday Meeting Plan: Rank Advancement with EDGE Teaching</h1>
+<p class="subtitle">Troop 2024 &mdash; Pace Academy, Atlanta GA &mdash; Generated March 15, 2026</p>
+
+<div class="edge-box">
+  <h3>The EDGE Method &mdash; How Scouts Teach Scouts</h3>
+  <p style="font-size:12px; margin-bottom:8px; color:#333;">The BSA EDGE method is how older scouts teach younger scouts. It's the foundation of the patrol method &mdash; youth-led, hands-on learning.</p>
+  <div class="edge-step"><div class="edge-letter">E</div><div class="edge-desc"><strong>Explain</strong> &mdash; Tell them what you're going to teach and why it matters. "Today I'm going to show you how to tie a bowline. You'll use this to rescue someone or secure a rope around a post."</div></div>
+  <div class="edge-step"><div class="edge-letter">D</div><div class="edge-desc"><strong>Demonstrate</strong> &mdash; Show them how to do it, step by step, slowly enough to follow. Do it correctly the first time.</div></div>
+  <div class="edge-step"><div class="edge-letter">G</div><div class="edge-desc"><strong>Guide</strong> &mdash; Have them try it while you watch and coach. Give corrections and encouragement. "Good, but pull the working end tighter."</div></div>
+  <div class="edge-step"><div class="edge-letter">E</div><div class="edge-desc"><strong>Enable</strong> &mdash; Let them do it on their own. Step back and let them practice until they've got it. Then test them &mdash; can they do it without help?</div></div>
+</div>
+
+<h2>Meeting Goal</h2>
+<p style="margin-bottom:14px;">Advance younger scouts through <strong>Tenderfoot</strong>, <strong>Second Class</strong>, and <strong>First Class</strong> rank requirements by setting up teaching stations led by experienced scouts. Requirements that CAN be completed at a meeting are organized into skill stations; requirements needing camping/field time or admin are flagged for follow-up.</p>
+
+<div class="group-row">
+  <div class="group-card teachers-card">
+    <h3 style="color:#155724;">Teachers (Life/Star/Eagle)</h3>
+    <ul class="group-list">
+      <li><strong>Noah Eisenman</strong> &mdash; Eagle, age 17</li>
+      <li><strong>Davis Beauchamp</strong> &mdash; Life, age 17</li>
+      <li><strong>Connor Goldstrom</strong> &mdash; Life, age 17</li>
+      <li><strong>William McDaid</strong> &mdash; Life, age 17</li>
+      <li><strong>Henry Baddley</strong> &mdash; Life, age 16</li>
+      <li><strong>Charles Brunt</strong> &mdash; Life, age 16</li>
+      <li><strong>Markus Burnett</strong> &mdash; Life, age 15</li>
+      <li><strong>Jacob McMurtry</strong> &mdash; Star, age 14</li>
+      <li><strong>Owen Sebel</strong> &mdash; Star, age 14</li>
+    </ul>
+  </div>
+  <div class="group-card learners-card">
+    <h3 style="color:#856404;">Learners (Scout &rarr; First Class)</h3>
+    <ul class="group-list">
+      <li><strong>William Bramwell</strong> &mdash; Scout, working on Tenderfoot (70%)</li>
+      <li><strong>Graeme Buffenbarger</strong> &mdash; Scout, working on Tenderfoot (63%)</li>
+      <li><strong>Jack Flaum</strong> &mdash; Scout, working on Tenderfoot (59%)</li>
+      <li><strong>John Shirley</strong> &mdash; Scout, working on Tenderfoot (78%)</li>
+      <li><strong>Jackson Fields</strong> &mdash; No rank, working on Scout (0%)</li>
+      <li><strong>Klaus Heilman</strong> &mdash; No rank, working on Scout (0%)</li>
+      <li><strong>Benjamin Bramwell</strong> &mdash; 2nd Class, working on First Class (74%)</li>
+      <li><strong>Thomas Goldstrom</strong> &mdash; 2nd Class, working on First Class (45%)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: TEACHING STATIONS -->
+<!-- ============================================================ -->
+
+<div class="page-break"></div>
+<h2>Section 2: Teaching Stations &mdash; Requirements You CAN Do at a Meeting</h2>
+<p style="margin-bottom:14px;">Each station covers related requirements across multiple ranks. Scouts rotate through the stations they need. An older scout leads each station using EDGE.</p>
+
+<!-- STATION 1: FIRST AID -->
+<div class="station station-first-aid">
+  <h3>Station 1: First Aid</h3>
+  <div class="station-teacher">Led by: Noah Eisenman (Eagle) &amp; Davis Beauchamp (Life)</div>
+  <p class="station-meta">Covers first aid requirements across Tenderfoot, Second Class, and First Class. Bring a first aid kit for demonstration.</p>
+
+  <h4>Tenderfoot Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">TF 4a.</span> Show first aid for simple cuts and scrapes, blisters on the hand and foot, minor (thermal/chemical) burns, bites or stings of insects and ticks, venomous snakebite, nosebleed, frostbite and sunburn, choking, and hyperventilation.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">TF 4b.</span> Describe the signs of a sprained ankle and demonstrate first aid (RICE).
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">TF 4c.</span> Demonstrate the proper application of a tourniquet on yourself and another person.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">TF 4d.</span> Show how to transport a sick or injured person using a two-person carry.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>Second Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">2C 6a.</span> Demonstrate first aid for: object in the eye, bite of a warm-blooded animal, puncture wounds including from a rusty nail, heat exhaustion, heat stroke, dehydration, hypothermia, hyperventilation.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">2C 6b.</span> Show what to do for hurry cases of stopped breathing, stroke, severe bleeding, heart attack, and poisoning.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">2C 6c.</span> Tell what you can do while on a Scout outing to prevent or reduce the occurrence of injuries listed in 2C 6a and 6b.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">2C 6d.</span> Explain what to do in case of accidents or injuries that require emergency response, including defining the term triage.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>First Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">FC 7a.</span> Demonstrate bandages for a sprained ankle and injured kneecap.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+    <li><span class="req-id">FC 7b.</span> Show how to transport by yourself, and with one other person, a patient from a smoke-filled room, and with an injured ankle using a two-person carry.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+    <li><span class="req-id">FC 7c.</span> Tell the five most common signs of a heart attack. Explain the steps (CPR) in the event the victim is unresponsive and is not breathing normally.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+    <li><span class="req-id">FC 7d.</span> Tell what utility services exist in your home or meeting place. Describe potential hazards and how to respond.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+    <li><span class="req-id">FC 7e.</span> Develop an emergency action plan for your home that includes what to do in case of fire, move-in-place (shelter), and target hazard.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+  </ul>
+
+  <div class="edge-guide">
+    <strong>EDGE Teaching Tips:</strong> Set up a "patient" with mock injuries. <strong>Explain</strong> each condition and why the treatment works. <strong>Demonstrate</strong> on the patient using a first aid kit. <strong>Guide</strong> each learner through it while watching. <strong>Enable</strong> by pairing learners to practice on each other. Sign off when they can do it correctly without prompting.
+  </div>
+</div>
+
+<!-- STATION 2: KNOTS & LASHINGS -->
+<div class="station station-knots">
+  <h3>Station 2: Knots &amp; Lashings</h3>
+  <div class="station-teacher">Led by: Connor Goldstrom (Life) &amp; William McDaid (Life)</div>
+  <p class="station-meta">Rope work from Tenderfoot through First Class. Bring 6-foot lengths of rope for each learner.</p>
+
+  <h4>Tenderfoot Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">TF 3a.</span> Demonstrate a practical use of the square knot.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">TF 3b.</span> Demonstrate a practical use of two half-hitches.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">TF 3c.</span> Demonstrate a practical use of the taut-line hitch.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>Second Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">2C 2a.</span> Demonstrate how to tie the bowline knot and describe several ways it can be used.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">2C 2b.</span> Demonstrate how to tie the timber hitch and use it to drag a log.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">2C 2c.</span> Demonstrate tying the clove hitch and describe several ways it can be used.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>First Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">FC 3a.</span> Demonstrate tying the timber hitch and clove hitch. Then demonstrate the lashings: square, shear, and diagonal. Use lashing to make a useful camp gadget.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+  </ul>
+
+  <div class="edge-guide">
+    <strong>EDGE Teaching Tips:</strong> <strong>Explain</strong> each knot's purpose with a real scenario (taut-line for tent guylines, bowline for rescue). <strong>Demonstrate</strong> slowly, step by step. <strong>Guide</strong> learners with hands-on correction &mdash; watch their hand placement. <strong>Enable</strong> by having them tie it 3 times in a row without help. For lashings, build a simple camp stool or tripod together.
+  </div>
+</div>
+
+<!-- STATION 3: NAVIGATION -->
+<div class="station station-navigation">
+  <h3>Station 3: Navigation &amp; Map Skills</h3>
+  <div class="station-teacher">Led by: Henry Baddley (Life) &amp; Charles Brunt (Life)</div>
+  <p class="station-meta">Compass, map reading, and orienteering. Bring compasses (at least 4) and a local topo map.</p>
+
+  <h4>Second Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">2C 3a.</span> Demonstrate how a compass works and how to orient a map. Use a map to point out and tell the meaning of five map symbols.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">2C 3b.</span> Using a compass and map together, take a 5-mile hike (or 10-mile bike ride) approved by your adult leader and your parent or guardian. <em>(Hike portion = field, but compass/map skills can be taught at meeting)</em>
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>First Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">FC 4a.</span> Using a map and compass, complete an orienteering course that covers at least one mile and requires measuring the height or width of a designated item. <em>(Course can be set up on school grounds for partial work.)</em>
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+    <li><span class="req-id">FC 4b.</span> Demonstrate how to use a handheld GPS unit, GPS app on a smartphone, or web-based mapping application. Geocache or follow a route using coordinates.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+  </ul>
+
+  <div class="edge-guide">
+    <strong>EDGE Teaching Tips:</strong> <strong>Explain</strong> what the compass needle does and how declination works. <strong>Demonstrate</strong> orienting a map on a table, then taking a bearing to a visible landmark. <strong>Guide</strong> each learner through taking their own bearing. <strong>Enable</strong> by setting up a 3-point course around the meeting area where they navigate between points on bearings. Use a phone GPS app for FC 4b.
+  </div>
+</div>
+
+<!-- STATION 4: CITIZENSHIP & VALUES -->
+<div class="station station-citizenship">
+  <h3>Station 4: Citizenship &amp; Values</h3>
+  <div class="station-teacher">Led by: Markus Burnett (Life) &amp; Jacob McMurtry (Star)</div>
+  <p class="station-meta">Scout Oath, Law, Leave No Trace, flag etiquette, and citizenship discussions. No special materials needed.</p>
+
+  <h4>Scout Rank Requirements (for Jackson &amp; Klaus)</h4>
+  <ul class="req-list">
+    <li><span class="req-id">SC 1a.</span> Repeat from memory the Scout Oath, Scout Law, Scout motto, and Scout slogan.
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+    <li><span class="req-id">SC 1b.</span> Explain what Scout spirit means. Describe some ways you have shown Scout spirit by practicing the Scout Oath, Scout Law, Scout motto, and Scout slogan.
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+    <li><span class="req-id">SC 2.</span> Demonstrate the Scout sign, salute, and handshake. Explain when they should be used.
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+    <li><span class="req-id">SC 3.</span> Demonstrate tying the square knot (used in the neckerchief).
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+    <li><span class="req-id">SC 4a.</span> Describe how the patrol method works.
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+    <li><span class="req-id">SC 4b.</span> Describe the roles of the patrol leader and assistant patrol leader.
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+    <li><span class="req-id">SC 5.</span> Describe the Outdoor Code and Leave No Trace principles.
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+    <li><span class="req-id">SC 7.</span> Demonstrate the Pledge of Allegiance and describe proper flag etiquette.
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+  </ul>
+
+  <h4>Tenderfoot Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">TF 7.</span> Demonstrate how to display, raise, lower, and fold the U.S. flag.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">TF 9.</span> Describe the Scout Oath and Scout Law and explain how they apply to your everyday life.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>Second Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">2C 8.</span> Participate in a flag ceremony for your school, religious institution, chartered organization, community, or Scouting activity.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">2C 9.</span> Describe the principles of Leave No Trace and tell how you practiced them on a campout or outing. Discuss your efforts to "reduce, reuse, recycle."
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>First Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">FC 8.</span> Participate in a flag ceremony for your school, religious institution, chartered organization, community, or Scouting activity.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+    <li><span class="req-id">FC 9.</span> Demonstrate Scout spirit by living the Scout Oath and Scout Law. Tell how you have done your duty to God and how you have lived four different points of the Scout Law in your everyday life.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+  </ul>
+
+  <div class="edge-guide">
+    <strong>EDGE Teaching Tips:</strong> For Scout rank basics, <strong>Explain</strong> the meaning of each point of the Scout Law with a real example. <strong>Demonstrate</strong> the sign, salute, and handshake. <strong>Guide</strong> Jackson and Klaus through reciting the Oath and Law from memory. For flag ceremony, <strong>Demonstrate</strong> proper folding and raising, then <strong>Enable</strong> learners to run a flag ceremony themselves at the end of the meeting. Do a group discussion on LNT principles &mdash; have each learner describe one they've used.
+  </div>
+</div>
+
+<!-- STATION 5: PHYSICAL FITNESS -->
+<div class="station station-fitness">
+  <h3>Station 5: Physical Fitness</h3>
+  <div class="station-teacher">Led by: Owen Sebel (Star)</div>
+  <p class="station-meta">Fitness plans, exercises, and health discussions. Bring a stopwatch and measuring tape.</p>
+
+  <h4>Tenderfoot Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">TF 5a.</span> Explain the importance of the buddy system as it relates to your personal safety on outings and in your neighborhood.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">TF 5b.</span> Describe what to do if you become lost on a hike or campout (STOP method).
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+    <li><span class="req-id">TF 6.</span> Record your best in the following tests: push-ups, sit-ups or curl-ups, back-saver sit-and-reach, 1-mile walk/run. (Initial baseline &mdash; do 30 days later for improvement.)
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>Second Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">2C 7a.</span> After completing Tenderfoot req. 6, continue to track your fitness for 30 more days and record improvement.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>First Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">FC 10.</span> Tell someone who is eligible to join Scouts BSA, or is a current Scout, about your Scouting activities. Invite them to an outing, activity, service project, or meeting.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+  </ul>
+
+  <div class="edge-guide">
+    <strong>EDGE Teaching Tips:</strong> <strong>Explain</strong> why fitness tracking matters for self-improvement. <strong>Demonstrate</strong> proper form for push-ups, curl-ups, and sit-and-reach. <strong>Guide</strong> each learner through a baseline test &mdash; record their numbers on a tracking sheet. <strong>Enable</strong> them to understand the 30-day retest process. Do the initial fitness test right now at this station.
+  </div>
+</div>
+
+<!-- STATION 6: FINANCIAL LITERACY -->
+<div class="station station-financial">
+  <h3>Station 6: Financial Literacy &amp; Duty to Self</h3>
+  <div class="station-teacher">Led by: Jacob McMurtry (Star)</div>
+  <p class="station-meta">Budget, savings, and personal management discussions. Bring paper and pencils.</p>
+
+  <h4>Second Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">2C 10.</span> Describe the three R's of personal safety and protection (Recognize, Respond, Report).
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>First Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">FC 11.</span> Tell someone who is eligible to join Scouts BSA about your Scouting activities. Invite them to a meeting or outing. <em>(Can be discussed/planned at meeting.)</em>
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+  </ul>
+
+  <div class="edge-guide">
+    <strong>EDGE Teaching Tips:</strong> Discussion-based station. <strong>Explain</strong> the three R's with real scenarios. <strong>Demonstrate</strong> by walking through a scenario (stranger danger, online safety). <strong>Guide</strong> scouts through creating their own safety plan. <strong>Enable</strong> by having them explain it back to you.
+  </div>
+</div>
+
+<!-- STATION 7: SAFETY & EMERGENCY -->
+<div class="station station-safety">
+  <h3>Station 7: Safety &amp; Emergency Preparedness</h3>
+  <div class="station-teacher">Led by: Noah Eisenman (Eagle) &amp; Henry Baddley (Life)</div>
+  <p class="station-meta">Personal safety, online safety, emergency plans. Can overlap with First Aid station timing.</p>
+
+  <h4>Scout Rank Requirements (for Jackson &amp; Klaus)</h4>
+  <ul class="req-list">
+    <li><span class="req-id">SC 6.</span> Complete exercises in the pamphlet "How to Protect Your Children from Child Abuse" and the Personal Safety Awareness videos (Cyber Chip or equivalent).
+      <br><span class="scout-names">Scouts who need this: Jackson F., Klaus H.</span></li>
+  </ul>
+
+  <h4>Tenderfoot Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">TF 8.</span> Describe the steps in Scouting's Teaching EDGE method. Use the method to teach another person how to tie the square knot.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>Second Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">2C 4a.</span> Demonstrate how to use a fire extinguisher.
+      <br><span class="scout-names">Scouts who need this: William B., Graeme, Jack, John S.</span></li>
+  </ul>
+
+  <h4>First Class Requirements</h4>
+  <ul class="req-list">
+    <li><span class="req-id">FC 5a.</span> Tell what precautions must be taken for a safe trip afloat.
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+    <li><span class="req-id">FC 5b.</span> Successfully complete the BSA swimmer test. <em>(Needs pool &mdash; just DISCUSS at meeting.)</em>
+      <br><span class="scout-names">Scouts who need this: Benjamin B., Thomas G.</span></li>
+  </ul>
+
+  <div class="edge-guide">
+    <strong>EDGE Teaching Tips:</strong> For TF 8 (EDGE method itself), this is meta-teaching: <strong>Explain</strong> EDGE, then have the Tenderfoot scouts teach a square knot to someone using EDGE. For fire extinguisher, use PASS method (Pull, Aim, Squeeze, Sweep). For Scout rank safety, walk through the pamphlet exercises together.
+  </div>
+</div>
+
+<h3 style="margin-top:20px; color:#dc3545;">Requirements That CANNOT Be Done at a Meeting</h3>
+<table>
+  <tr><th>Category</th><th>Requirements</th><th>When/Where</th></tr>
+  <tr>
+    <td><strong>Camping/Outdoor</strong></td>
+    <td>
+      TF 1a-1c (campout, cooking outdoors, explain fire rules)<br>
+      2C 1a-1b (campout, cook over fire/stove)<br>
+      2C 4b-4c (build fire, use tinder/kindling/fuel at campout)<br>
+      FC 1a-1b (campout, plan menu & cook)<br>
+      FC 2a-2e (nature/plants/animals observation on campout)<br>
+      FC 4a (orienteering course &mdash; partial at meeting, full needs field)
+    </td>
+    <td>Next campout</td>
+  </tr>
+  <tr>
+    <td><strong>Hiking</strong></td>
+    <td>
+      TF 2 (1-mile hike with compass)<br>
+      2C 3b-3c (5-mile hike with compass / 3 compass bearings on hike)<br>
+      FC 3b (hike 5 miles with map)
+    </td>
+    <td>Saturday hike</td>
+  </tr>
+  <tr>
+    <td><strong>Swimming/Water</strong></td>
+    <td>
+      2C 5a-5c (rescue methods, swim test)<br>
+      FC 6a-6e (swimmer test, water rescue, reaching assists)
+    </td>
+    <td>Pool / summer camp</td>
+  </tr>
+  <tr>
+    <td><strong>At Home / 30-day</strong></td>
+    <td>
+      TF 6 retest (30-day fitness improvement &mdash; do initial NOW, retest later)<br>
+      2C 7a (fitness tracking log continuation)<br>
+      FC 7e (home emergency plan)
+    </td>
+    <td>At home, retest at future meeting</td>
+  </tr>
+  <tr>
+    <td><strong>Admin Only</strong></td>
+    <td>
+      TF 10 (Scoutmaster Conference) + TF 11 (Board of Review)<br>
+      2C 11 (SM Conference) + 2C 12 (Board of Review)<br>
+      FC 12 (SM Conference) + FC 13 (Board of Review)
+    </td>
+    <td>Schedule with Scoutmaster</td>
+  </tr>
+</table>
+
+
+<!-- ============================================================ -->
+<!-- SECTION 3: PER-SCOUT CHECKLISTS -->
+<!-- ============================================================ -->
+
+<div class="page-break"></div>
+<h2>Section 3: Per-Scout Checklists</h2>
+<p style="margin-bottom:14px;">For each learner: remaining requirements for their next rank, categorized by where they can be completed.</p>
+
+<!-- JACKSON FIELDS -->
+<div class="scout-card">
+  <div class="scout-header">
+    <h3>Jackson Fields</h3>
+    <span class="rank-info">No rank &rarr; Working on Scout (0% complete)</span>
+  </div>
+  <div class="scout-body">
+    <h4>Scout Rank Requirements</h4>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1a.</span> Repeat from memory the Scout Oath. In your own words, explain its meaning.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1b.</span> Repeat from memory the Scout Law, motto, and slogan. In your own words, explain their meaning.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1c.</span> Demonstrate the Scout sign, salute, and handshake. Explain when they should be used.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1d.</span> Describe the First Class Scout badge and tell what each part stands for.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1e.</span> Repeat from memory the Outdoor Code. In your own words, explain what it means.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1f.</span> Repeat from memory the Pledge of Allegiance. Explain its meaning in your own words.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">2.</span> Describe the Scout Oath, Scout Law, Scout motto, and slogan; explain the patrol method.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3.</span> Demonstrate tying a square knot.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4a-b.</span> Show how a pocketknife/saw works safely (Whittling Chip or Totin' Chip).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">5.</span> Describe the Outdoor Code and Leave No Trace principles. Demonstrate proper care for the outdoors.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">6.</span> Identify local poisonous plants; tell treatment for exposure. Demonstrate the buddy system.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7.</span> Complete Personal Safety Awareness exercises / Cyber Chip.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">8.</span> Participate in a Scoutmaster conference.</span></div>
+  </div>
+</div>
+
+<!-- KLAUS HEILMAN -->
+<div class="scout-card">
+  <div class="scout-header">
+    <h3>Klaus Heilman</h3>
+    <span class="rank-info">No rank &rarr; Working on Scout (0% complete)</span>
+  </div>
+  <div class="scout-body">
+    <h4>Scout Rank Requirements</h4>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1a.</span> Repeat from memory the Scout Oath. In your own words, explain its meaning.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1b.</span> Repeat from memory the Scout Law, motto, and slogan.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1c.</span> Demonstrate the Scout sign, salute, and handshake.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1d.</span> Describe the First Class Scout badge and tell what each part stands for.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1e.</span> Repeat from memory the Outdoor Code.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">1f.</span> Repeat from memory the Pledge of Allegiance.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">2.</span> Describe the patrol method, roles of patrol leader and assistant.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3.</span> Demonstrate tying a square knot.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4a-b.</span> Show how to use a pocketknife/saw safely.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">5.</span> Describe the Outdoor Code and Leave No Trace principles.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">6.</span> Identify local poisonous plants; demonstrate buddy system.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7.</span> Complete Personal Safety Awareness exercises / Cyber Chip.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">8.</span> Participate in a Scoutmaster conference.</span></div>
+  </div>
+</div>
+
+<!-- WILLIAM BRAMWELL -->
+<div class="scout-card">
+  <div class="scout-header">
+    <h3>William Bramwell</h3>
+    <span class="rank-info">Scout &rarr; Working on Tenderfoot (70% complete) + 2nd Class (46%) + 1st Class (45%)</span>
+  </div>
+  <div class="scout-body">
+    <h4>Remaining Tenderfoot Requirements</h4>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1a.</span> Present yourself to your leader, prepared for an overnight camping trip. Show personal and camping gear.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1b.</span> Spend at least one night on a patrol or troop campout. Sleep in a tent you have helped pitch.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3a.</span> Demonstrate a practical use of the square knot.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3b.</span> Demonstrate a practical use of two half-hitches.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3c.</span> Demonstrate a practical use of the taut-line hitch.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4a.</span> Show first aid for simple cuts, blisters, burns, bites/stings, snakebite, nosebleed, frostbite, sunburn, choking.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4b.</span> Describe signs of sprained ankle and demonstrate first aid (RICE).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4c.</span> Demonstrate proper application of a tourniquet.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4d.</span> Show how to transport a sick or injured person (two-person carry).</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">10.</span> Scoutmaster conference.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">11.</span> Board of review.</span></div>
+  </div>
+</div>
+
+<!-- GRAEME BUFFENBARGER -->
+<div class="scout-card">
+  <div class="scout-header">
+    <h3>Graeme Buffenbarger</h3>
+    <span class="rank-info">Scout &rarr; Working on Tenderfoot (63% complete) + 2nd Class (46%) + 1st Class (42%)</span>
+  </div>
+  <div class="scout-body">
+    <h4>Remaining Tenderfoot Requirements</h4>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1c.</span> Tell how you practiced the Outdoor Code on a campout or outing.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3a.</span> Demonstrate a practical use of the square knot.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3b.</span> Demonstrate a practical use of two half-hitches.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3c.</span> Demonstrate a practical use of the taut-line hitch.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4a.</span> Show first aid for cuts, blisters, burns, bites/stings, snakebite, nosebleed, frostbite, sunburn, choking.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4b.</span> Describe signs of sprained ankle and demonstrate first aid (RICE).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4c.</span> Demonstrate proper application of a tourniquet.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4d.</span> Show how to transport a sick or injured person (two-person carry).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7.</span> Demonstrate how to display, raise, lower, and fold the U.S. flag.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">8.</span> Describe the steps in Scouting's Teaching EDGE method. Use it to teach another person a skill.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">9.</span> Describe the Scout Oath and Scout Law; explain how they apply to your everyday life.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">10.</span> Scoutmaster conference.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">11.</span> Board of review.</span></div>
+  </div>
+</div>
+
+<!-- JACK FLAUM -->
+<div class="scout-card">
+  <div class="scout-header">
+    <h3>Jack Flaum</h3>
+    <span class="rank-info">Scout &rarr; Working on Tenderfoot (59% complete) + 2nd Class (43%) + 1st Class (39%)</span>
+  </div>
+  <div class="scout-body">
+    <h4>Remaining Tenderfoot Requirements</h4>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1a.</span> Present yourself prepared for an overnight camping trip. Show personal and camping gear.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1b.</span> Spend at least one night on a patrol or troop campout.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1c.</span> Tell how you practiced the Outdoor Code on a campout or outing.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3a.</span> Demonstrate a practical use of the square knot.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3b.</span> Demonstrate a practical use of two half-hitches.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3c.</span> Demonstrate a practical use of the taut-line hitch.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4a.</span> Show first aid for cuts, blisters, burns, bites/stings, snakebite, nosebleed, frostbite, sunburn, choking.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4b.</span> Describe signs of sprained ankle and demonstrate first aid (RICE).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4c.</span> Demonstrate proper application of a tourniquet.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4d.</span> Show how to transport a sick or injured person (two-person carry).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">5a.</span> Explain the importance of the buddy system.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">5b.</span> Describe what to do if you become lost (STOP method).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">6.</span> Record your fitness baselines (push-ups, sit-ups, sit-and-reach, 1-mile run).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7.</span> Demonstrate how to display, raise, lower, and fold the U.S. flag.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">8.</span> Describe the EDGE method. Use it to teach another person a skill.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">9.</span> Describe the Scout Oath and Law; explain how they apply to your life.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">10.</span> Scoutmaster conference.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">11.</span> Board of review.</span></div>
+  </div>
+</div>
+
+<!-- JOHN SHIRLEY -->
+<div class="scout-card">
+  <div class="scout-header">
+    <h3>John Shirley</h3>
+    <span class="rank-info">Scout &rarr; Working on Tenderfoot (78% complete) + 2nd Class (43%) + 1st Class (42%)</span>
+  </div>
+  <div class="scout-body">
+    <h4>Remaining Tenderfoot Requirements</h4>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4a.</span> Show first aid for cuts, blisters, burns, bites/stings, snakebite, nosebleed, frostbite, sunburn, choking.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4b.</span> Describe signs of sprained ankle and demonstrate first aid (RICE).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4c.</span> Demonstrate proper application of a tourniquet.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4d.</span> Show how to transport a sick or injured person (two-person carry).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">8.</span> Describe the EDGE method. Use it to teach another person a skill.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">10.</span> Scoutmaster conference.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">11.</span> Board of review.</span></div>
+    <p style="margin-top:8px; font-size:12px; color:#28a745; font-weight:600;">John is close to Tenderfoot! Focus on first aid (4a-d) and EDGE (8) and he could be ready for SM conference.</p>
+  </div>
+</div>
+
+<!-- BENJAMIN BRAMWELL -->
+<div class="scout-card">
+  <div class="scout-header">
+    <h3>Benjamin Bramwell</h3>
+    <span class="rank-info">Second Class &rarr; Working on First Class (74% complete)</span>
+  </div>
+  <div class="scout-body">
+    <h4>Remaining First Class Requirements</h4>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1a.</span> Since joining Scouts BSA, participate in 10 separate troop/patrol activities (including 6 outdoor, 3 campouts).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3a.</span> Demonstrate lashings: square, shear, and diagonal. Use lashing to make a useful camp gadget.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">4a.</span> Complete an orienteering course (at least one mile).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4b.</span> Demonstrate how to use a GPS unit or app. Geocache or follow a route.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">5a.</span> Tell what precautions must be taken for a safe trip afloat.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">6a.</span> Successfully complete the BSA swimmer test.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7a.</span> Demonstrate bandages for a sprained ankle and injured kneecap.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7b.</span> Transport a patient from a smoke-filled room; transport with injured ankle (two-person carry).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7c.</span> Tell five signs of a heart attack. Explain CPR steps.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7d.</span> Tell what utility services exist in your home/meeting place and potential hazards.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">7e.</span> Develop an emergency action plan for your home.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">9.</span> Demonstrate Scout spirit. Tell how you have lived four points of the Scout Law.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">12.</span> Scoutmaster conference.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">13.</span> Board of review.</span></div>
+    <p style="margin-top:8px; font-size:12px; color:#28a745; font-weight:600;">Benjamin is close! Focus on first aid (7a-d), lashings (3a), and GPS (4b) at the meeting. Swimming and orienteering course need field time.</p>
+  </div>
+</div>
+
+<!-- THOMAS GOLDSTROM -->
+<div class="scout-card">
+  <div class="scout-header">
+    <h3>Thomas Goldstrom</h3>
+    <span class="rank-info">Second Class &rarr; Working on First Class (45% complete)</span>
+  </div>
+  <div class="scout-body">
+    <h4>Remaining First Class Requirements</h4>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1a.</span> Participate in 10 separate troop/patrol activities (including 6 outdoor, 3 campouts).</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">1b.</span> Plan and lead a menu for your patrol for a campout. Cook at least one meal.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">2a-e.</span> Nature observation requirements (identify plants, animals, birds on campout).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">3a.</span> Demonstrate lashings: square, shear, and diagonal. Make a useful camp gadget.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">4a.</span> Complete an orienteering course (at least one mile).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">4b.</span> Demonstrate how to use a GPS unit or app.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">5a.</span> Tell precautions for a safe trip afloat.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">6a.</span> Successfully complete the BSA swimmer test.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">6b-e.</span> Water rescue methods (reaching, throwing, wading, etc.).</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7a.</span> Demonstrate bandages for a sprained ankle and injured kneecap.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7b.</span> Transport a patient from a smoke-filled room; transport with injured ankle.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7c.</span> Tell five signs of a heart attack. Explain CPR steps.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">7d.</span> Tell what utility services exist in your home/meeting place and potential hazards.</span></div>
+    <div class="req-check"><span class="req-tag tag-field">FIELD</span> <span><span class="req-id">7e.</span> Develop an emergency action plan for your home.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">8.</span> Participate in a flag ceremony.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">9.</span> Demonstrate Scout spirit. Tell how you have lived four points of the Scout Law.</span></div>
+    <div class="req-check"><span class="req-tag tag-meeting">MEETING</span> <span><span class="req-id">10.</span> Tell someone about Scouting activities. Invite them to a meeting.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">12.</span> Scoutmaster conference.</span></div>
+    <div class="req-check"><span class="req-tag tag-admin">ADMIN</span> <span><span class="req-id">13.</span> Board of review.</span></div>
+    <p style="margin-top:8px; font-size:12px; color:#0d6efd; font-weight:600;">Thomas has more ground to cover. Prioritize first aid (7a-d), lashings (3a), and GPS (4b) at this meeting. Nature, swimming, and orienteering need field time.</p>
+  </div>
+</div>
+
+
+<!-- ============================================================ -->
+<!-- SECTION 4: OLDER SCOUT ASSIGNMENTS -->
+<!-- ============================================================ -->
+
+<div class="page-break"></div>
+<h2>Section 4: Older Scout Teaching Assignments</h2>
+<p style="margin-bottom:14px;">Each older scout is assigned a station based on their experience. Teaching younger scouts counts toward their own Star/Life/Eagle service and leadership requirements. Pair up at busy stations.</p>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">Noah Eisenman</div>
+    <div class="rank">Eagle Scout, age 17</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 1: First Aid (Lead) + Station 7: Safety &amp; Emergency</div>
+    <div class="assignment-scouts">Teaching: William B., Graeme, Jack, John S. (Tenderfoot first aid) &rarr; then Benjamin B. &amp; Thomas G. (First Class first aid)</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Noah has completed every first aid requirement through Eagle. He's the most qualified to run this critical station. Have him start with Tenderfoot scouts on basic first aid (4a-d), then rotate to First Class scouts on advanced topics (7a-e).</p>
+  </div>
+</div>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">Davis Beauchamp</div>
+    <div class="rank">Life Scout, age 17</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 1: First Aid (Support)</div>
+    <div class="assignment-scouts">Co-teaching with Noah. Focus on Second Class first aid requirements (6a-d) for William B., Graeme, Jack, John S.</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Davis is at 100% on Eagle requirements &mdash; he's done all of this. He can run the Second Class first aid portion while Noah handles Tenderfoot, then they swap groups.</p>
+  </div>
+</div>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">Connor Goldstrom</div>
+    <div class="rank">Life Scout, age 17</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 2: Knots &amp; Lashings (Lead)</div>
+    <div class="assignment-scouts">Teaching: William B., Graeme, Jack, John S. (Tenderfoot/2nd Class knots) &rarr; Benjamin B. &amp; Thomas G. (First Class lashings)</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Connor is Thomas Goldstrom's older brother &mdash; natural teaching dynamic. Start with square knot, two half-hitches, and taut-line hitch for Tenderfoot scouts, then bowline/timber hitch/clove hitch for Second Class, then lashings for First Class.</p>
+  </div>
+</div>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">William McDaid</div>
+    <div class="rank">Life Scout, age 17</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 2: Knots &amp; Lashings (Support)</div>
+    <div class="assignment-scouts">Co-teaching with Connor. Focus on hands-on guidance &mdash; walking around correcting hand positions and testing knots.</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Two teachers at the knots station ensures each learner gets individual attention during the Guide phase of EDGE.</p>
+  </div>
+</div>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">Henry Baddley</div>
+    <div class="rank">Life Scout, age 16</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 3: Navigation (Lead)</div>
+    <div class="assignment-scouts">Teaching: William B., Graeme, Jack, John S. (compass basics) &rarr; Benjamin B. &amp; Thomas G. (GPS/orienteering intro)</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Henry has extensive orienteering experience. Set up a mini compass course around the meeting area. Teach map symbols, compass bearing, and GPS app usage.</p>
+  </div>
+</div>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">Charles Brunt</div>
+    <div class="rank">Life Scout, age 16</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 3: Navigation (Support) + Floater</div>
+    <div class="assignment-scouts">Co-teaching navigation with Henry, then floating to help at busy stations.</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Charles can assist with navigation instruction and then rotate to whichever station has the most learners waiting.</p>
+  </div>
+</div>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">Markus Burnett</div>
+    <div class="rank">Life Scout, age 15</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 4: Citizenship &amp; Values (Lead)</div>
+    <div class="assignment-scouts">Teaching: Jackson F. &amp; Klaus H. (Scout rank basics) &rarr; Tenderfoot scouts (flag ceremony, Scout Oath/Law)</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Markus starts with Jackson and Klaus who need Scout rank from scratch. Help them memorize the Oath and Law. Then run a flag ceremony practice for all learners.</p>
+  </div>
+</div>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">Jacob McMurtry</div>
+    <div class="rank">Star Scout, age 14</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 4: Citizenship (Support) + Station 6: Financial Literacy/Safety Discussion</div>
+    <div class="assignment-scouts">Help Markus with Scout rank basics for Jackson &amp; Klaus, then lead the safety discussion (three R's) for Second Class scouts.</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Jacob is close in age to the learners &mdash; peer teaching can be very effective. The discussion-based stations are a good fit.</p>
+  </div>
+</div>
+
+<div class="assignment-card">
+  <div class="assignment-teacher">
+    <div class="name">Owen Sebel</div>
+    <div class="rank">Star Scout, age 14</div>
+  </div>
+  <div class="assignment-detail">
+    <div class="assignment-station">Station 5: Physical Fitness</div>
+    <div class="assignment-scouts">Teaching: William B., Graeme, Jack, John S. (fitness baseline testing)</div>
+    <p style="font-size:11px; color:#555; margin-top:4px;">Owen runs the fitness baseline tests. Record initial numbers for push-ups, curl-ups, sit-and-reach, and 1-mile walk/run. This gets TF 6 started for scouts who need it. Give each learner a tracking sheet to take home for their 30-day retest.</p>
+  </div>
+</div>
+
+<!-- MEETING SCHEDULE -->
+<div class="page-break"></div>
+<h2>Suggested Meeting Schedule (90 minutes)</h2>
+<table>
+  <tr><th style="width:120px;">Time</th><th>Activity</th><th>Who</th></tr>
+  <tr>
+    <td><strong>6:30 &ndash; 6:40</strong></td>
+    <td><strong>Opening:</strong> Flag ceremony (run by Markus with Jackson &amp; Klaus assisting &mdash; counts toward citizenship requirements), Scout Oath &amp; Law</td>
+    <td>All scouts</td>
+  </tr>
+  <tr>
+    <td><strong>6:40 &ndash; 6:50</strong></td>
+    <td><strong>SPL Brief:</strong> Explain the station rotation plan. Assign learners to starting stations based on their most critical needs. Hand out station assignment cards.</td>
+    <td>SPL + Scoutmaster</td>
+  </tr>
+  <tr>
+    <td><strong>6:50 &ndash; 7:15</strong></td>
+    <td><strong>Rotation 1 (25 min):</strong><br>
+      &bull; Jackson &amp; Klaus &rarr; Station 4 (Citizenship &mdash; Scout rank basics)<br>
+      &bull; William B., Graeme, Jack &rarr; Station 1 (First Aid &mdash; TF 4a-d)<br>
+      &bull; John S. &rarr; Station 1 (First Aid &mdash; he's close to TF!)<br>
+      &bull; Benjamin B. &amp; Thomas G. &rarr; Station 2 (Knots &amp; Lashings &mdash; FC 3a)</td>
+    <td>Teachers at assigned stations</td>
+  </tr>
+  <tr>
+    <td><strong>7:15 &ndash; 7:40</strong></td>
+    <td><strong>Rotation 2 (25 min):</strong><br>
+      &bull; Jackson &amp; Klaus &rarr; Station 4 (continue Scout rank &mdash; more Oath/Law memorization)<br>
+      &bull; William B., Graeme, Jack &rarr; Station 2 (Knots &mdash; TF 3a-c, 2C 2a-c)<br>
+      &bull; John S. &rarr; Station 7 (EDGE method &mdash; TF 8, teach someone a square knot)<br>
+      &bull; Benjamin B. &amp; Thomas G. &rarr; Station 1 (First Aid &mdash; FC 7a-d)</td>
+    <td>Teachers at assigned stations</td>
+  </tr>
+  <tr>
+    <td><strong>7:40 &ndash; 7:55</strong></td>
+    <td><strong>Rotation 3 (15 min):</strong><br>
+      &bull; All Tenderfoot scouts &rarr; Station 5 (Fitness baseline test &mdash; TF 6)<br>
+      &bull; Benjamin B. &amp; Thomas G. &rarr; Station 3 (Navigation &mdash; GPS/compass)<br>
+      &bull; Jackson &amp; Klaus &rarr; Station 7 (Personal Safety Awareness)</td>
+    <td>Teachers at assigned stations</td>
+  </tr>
+  <tr>
+    <td><strong>7:55 &ndash; 8:00</strong></td>
+    <td><strong>Closing:</strong> Flag retirement, Scout Oath &amp; Law, announcements. Scoutmaster highlights progress made tonight. Schedule SM conferences for John S. and Benjamin B. (both close to rank).</td>
+    <td>All scouts</td>
+  </tr>
+</table>
+
+<h3>Materials Needed</h3>
+<table>
+  <tr><th>Station</th><th>Materials</th></tr>
+  <tr><td>First Aid (1 &amp; 7)</td><td>First aid kit, triangular bandages (2), cravats, tourniquet (practice), roller bandage, gloves</td></tr>
+  <tr><td>Knots &amp; Lashings (2)</td><td>6-foot rope lengths (8-10), long poles/staves (4-6) for lashings, printed knot cards</td></tr>
+  <tr><td>Navigation (3)</td><td>Compasses (4+), local topo map, smartphones with GPS app, printed map symbols reference</td></tr>
+  <tr><td>Citizenship (4)</td><td>U.S. flag on pole, Scout Handbook for reference, printed Scout Oath/Law cards for memorization</td></tr>
+  <tr><td>Fitness (5)</td><td>Stopwatch, measuring tape for sit-and-reach, fitness tracking sheets (print 8 copies), pencils</td></tr>
+  <tr><td>Safety (6 &amp; 7)</td><td>Cyber Chip pamphlet or printout, "How to Protect Your Children" exercises</td></tr>
+</table>
+
+<h3>Sign-Off Protocol</h3>
+<p style="margin-bottom:16px;">When a learner completes a requirement at a station, the teaching scout <strong>initials</strong> the learner's handbook and <strong>writes the date</strong>. After the meeting, the Scoutmaster or designated leader enters completions into Scoutbook. Requirements should only be signed off when the scout can demonstrate the skill <strong>without assistance</strong> (the "Enable" step of EDGE).</p>
+
+<div style="background:#e8f4fd; border:2px solid #0d6efd; border-radius:8px; padding:14px 18px; margin-top:16px;">
+  <h3 style="color:#0d6efd; margin:0 0 8px;">Priority Scouts &mdash; Closest to Next Rank</h3>
+  <table style="margin:0;">
+    <tr><th>Scout</th><th>Next Rank</th><th>% Done</th><th>Meeting Requirements Remaining</th><th>What's Blocking Them</th></tr>
+    <tr>
+      <td><strong>John Shirley</strong></td>
+      <td>Tenderfoot</td>
+      <td>78%</td>
+      <td>First aid (4a-d), EDGE method (8)</td>
+      <td>Just these meeting reqs + SM conference &amp; BOR</td>
+    </tr>
+    <tr>
+      <td><strong>Benjamin Bramwell</strong></td>
+      <td>First Class</td>
+      <td>74%</td>
+      <td>First aid (7a-d), lashings (3a), GPS (4b)</td>
+      <td>Meeting reqs + swimming + orienteering course</td>
+    </tr>
+    <tr>
+      <td><strong>William Bramwell</strong></td>
+      <td>Tenderfoot</td>
+      <td>70%</td>
+      <td>Knots (3a-c), first aid (4a-d)</td>
+      <td>Meeting reqs + campout (1a-b) + SM conf &amp; BOR</td>
+    </tr>
+    <tr>
+      <td><strong>Graeme Buffenbarger</strong></td>
+      <td>Tenderfoot</td>
+      <td>63%</td>
+      <td>Knots (3a-c), first aid (4a-d), flag (7), EDGE (8), Oath/Law (9)</td>
+      <td>Meeting reqs + campout + SM conf &amp; BOR</td>
+    </tr>
+    <tr>
+      <td><strong>Jack Flaum</strong></td>
+      <td>Tenderfoot</td>
+      <td>59%</td>
+      <td>Knots (3a-c), first aid (4a-d), buddy system (5a-b), fitness (6), flag (7), EDGE (8), Oath/Law (9)</td>
+      <td>Many meeting reqs + campout + SM conf &amp; BOR</td>
+    </tr>
+    <tr>
+      <td><strong>Thomas Goldstrom</strong></td>
+      <td>First Class</td>
+      <td>45%</td>
+      <td>Lashings (3a), GPS (4b), first aid (7a-d), flag (8), Scout spirit (9)</td>
+      <td>Meeting reqs + nature, swimming, orienteering, cooking</td>
+    </tr>
+    <tr>
+      <td><strong>Jackson Fields</strong></td>
+      <td>Scout</td>
+      <td>0%</td>
+      <td>All Scout rank requirements (mostly doable at meeting)</td>
+      <td>Needs to start from scratch &mdash; focus on memorizing Oath/Law</td>
+    </tr>
+    <tr>
+      <td><strong>Klaus Heilman</strong></td>
+      <td>Scout</td>
+      <td>0%</td>
+      <td>All Scout rank requirements (mostly doable at meeting)</td>
+      <td>Needs to start from scratch &mdash; focus on memorizing Oath/Law</td>
+    </tr>
+  </table>
+</div>
+
+<p style="margin-top:20px; font-size:11px; color:#999; text-align:center;">
+  Generated from Scoutbook data &mdash; Troop 2024, Pace Academy &mdash; March 15, 2026<br>
+  Data source: Scoutbook API (organizations_v2_units_youths.json, advancements_v2_youth_*_ranks.json)
+</p>
+
+</body>
+</html>

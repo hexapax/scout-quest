@@ -28,6 +28,7 @@ MEM0_API_KEY
 # OS
 .DS_Store
 Thumbs.db
+*:Zone.Identifier
 
 # Firebase
 firebase-debug.log

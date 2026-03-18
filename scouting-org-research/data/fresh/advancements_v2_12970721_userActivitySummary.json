@@ -1,0 +1,20 @@
+{
+  "memberId": "14870375",
+  "fullName": "John Martin Shirley",
+  "campingLogs": {
+    "totalNumberOfDays": 4,
+    "totalNumberOfNights": 3,
+    "percentCompleteTowardGoal": 0.15
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 3,
+    "percentCompleteTowardGoal": 0.2
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

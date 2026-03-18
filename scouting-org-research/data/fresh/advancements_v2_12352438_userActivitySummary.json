@@ -1,0 +1,20 @@
+{
+  "memberId": "141634365",
+  "fullName": "William Morgan Bramwell",
+  "campingLogs": {
+    "totalNumberOfDays": 1,
+    "totalNumberOfNights": 1,
+    "percentCompleteTowardGoal": 0.05
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 5,
+    "percentCompleteTowardGoal": 0.33
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "errorCode": "M401",
+  "message": "Unauthorized",
+  "errorDesc": "Missing JWT Token"
+}

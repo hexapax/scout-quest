@@ -1,0 +1,20 @@
+{
+  "memberId": "132490749",
+  "fullName": "Connor Joseph Goldstrom",
+  "campingLogs": {
+    "totalNumberOfDays": 32,
+    "totalNumberOfNights": 28,
+    "percentCompleteTowardGoal": 1
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "memberId": "137114848",
+  "fullName": "Markus Burnett",
+  "campingLogs": {
+    "totalNumberOfDays": 27,
+    "totalNumberOfNights": 18,
+    "percentCompleteTowardGoal": 0.9
+  },
+  "hikingLogs": {
+    "totalNumberOfMiles": 0,
+    "percentCompleteTowardGoal": 0
+  },
+  "serviceLogs": {
+    "totalNumberOfHours": 10,
+    "percentCompleteTowardGoal": 0.67
+  },
+  "longCruiseLogs": {
+    "totalNumberOfDays": 0
+  }
+}

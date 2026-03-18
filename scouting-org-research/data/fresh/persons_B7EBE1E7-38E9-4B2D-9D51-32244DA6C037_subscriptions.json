@@ -1,0 +1,53 @@
+[
+  {
+    "id": 11034133,
+    "personGuid": "B7EBE1E7-38E9-4B2D-9D51-32244DA6C037",
+    "firstName": "Jeremy",
+    "middleName": "Edward",
+    "lastName": "Bramwell",
+    "topicId": 1,
+    "topic": "BSA Global",
+    "optOutFlag": false,
+    "effectiveDt": "0001-01-01",
+    "expiryDt": null,
+    "createdDt": "2020-06-20T05:33:00",
+    "createdBy": "AdobeJobUser@AC",
+    "lastModifiedDt": "2025-10-10T17:03:59",
+    "lastModifiedBy": "AdobeJobUser@AC",
+    "isDelete": false
+  },
+  {
+    "id": 15732691,
+    "personGuid": "B7EBE1E7-38E9-4B2D-9D51-32244DA6C037",
+    "firstName": "Jeremy",
+    "middleName": "Edward",
+    "lastName": "Bramwell",
+    "topicId": 17,
+    "topic": "Phone Text",
+    "optOutFlag": false,
+    "effectiveDt": "2025-09-17",
+    "expiryDt": null,
+    "createdDt": "2025-09-17T15:21:20",
+    "createdBy": "131200255",
+    "lastModifiedDt": "2025-09-22T17:39:31",
+    "lastModifiedBy": "131200255",
+    "isDelete": false
+  },
+  {
+    "id": 18840960,
+    "personGuid": "B7EBE1E7-38E9-4B2D-9D51-32244DA6C037",
+    "firstName": "Jeremy",
+    "middleName": "Edward",
+    "lastName": "Bramwell",
+    "topicId": 50,
+    "topic": "Unit calendar invites/reminders and all general unit messaging emails",
+    "optOutFlag": false,
+    "effectiveDt": "2025-12-06",
+    "expiryDt": null,
+    "createdDt": "2025-12-06T12:48:14",
+    "createdBy": "131200255",
+    "lastModifiedDt": null,
+    "lastModifiedBy": null,
+    "isDelete": false
+  }
+]
