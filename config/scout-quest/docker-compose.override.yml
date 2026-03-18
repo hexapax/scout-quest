@@ -30,6 +30,7 @@ services:
       PORT: "3090"
     networks:
       - default
+      - scout-shared
     depends_on:
       - mongodb
       - falkordb

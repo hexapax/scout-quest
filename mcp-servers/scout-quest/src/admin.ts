@@ -44,17 +44,19 @@ SCOUTBOOK SYNC TOOLS:
 - scoutbook_sync_events — Sync upcoming calendar events (default: next 90 days).
 - scoutbook_sync_status — Check when data was last synced and whether it succeeded.
   Use this first to see if data is current before running a full sync.
-- scoutbook_list_scouts — List all 28 scouts with userId, name, current rank, and patrol.
+- scoutbook_list_scouts — List all scouts with userId, name, current rank, and patrol.
   Use this first to discover userIds, then call scoutbook_get_scout_advancement for each.
 - scoutbook_get_scout_advancement — Query locally synced data for a scout's ranks,
   merit badges, awards, and individual requirements. Use this to answer questions
   like "What does Scout X still need for First Class?" or "How far along is Scout X
   on Camping merit badge?" Does NOT call the Scoutbook API — reads from MongoDB,
   so it's fast. If data is missing, run scoutbook_sync_scout first.
-- scoutbook_get_rank_requirements — Get the canonical requirements list (text) for a
-  BSA rank by name, e.g. "First Class" or "Eagle Scout". Deduplicates across all scouts
-  to return one authoritative requirements list. Use this to answer "What are the
-  requirements for Life Scout?"
+
+ADMIN OPS TOOLS:
+- rebuild_knowledge_cache — Reload the BSA knowledge document in the backend without restart.
+  Run after updating knowledge files.
+- validate_graph_integrity — Check MongoDB scoutbook data for completeness before loading
+  into FalkorDB. Reports missing data, scouts without advancement records, etc.
 
 SCOUTBOOK WORKFLOW:
 1. Check scoutbook_sync_status to see if data is current

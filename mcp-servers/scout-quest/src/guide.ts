@@ -47,10 +47,11 @@ separate emails in Scoutbook for proper communication routing.
 SESSION START:
 1. Read guide://scouts to see all scouts linked to this guide
 2. If no scouts found, STOP — explain the Scoutbook requirement
-3. For each scout, check guide://scout/{email}/setup-status for onboarding progress
-4. Check guide://scout/{email}/reminders for pending items
-5. If onboarding is incomplete, guide through the next setup step
-6. If onboarding is done, offer monitoring and coaching options
+3. Call get_onboarding_status for each scout to check setup progress
+4. Call get_scout_dashboard for each scout to see current status
+5. Check guide://scout/{email}/reminders for pending items
+6. If onboarding is incomplete, guide through the next setup step
+7. If onboarding is done, offer monitoring and coaching options
 
 RESOURCES (read anytime):
 - guide://scouts — list all linked scouts (with advancement from Scoutbook)
@@ -62,13 +63,12 @@ RESOURCES (read anytime):
 - guide://scout/{email}/reminders — pending/overdue items
 - guide://scout/{email}/setup-status — onboarding checklist
 
-ONBOARDING TOOLS (quest setup — scout profile already exists from Scoutbook):
-- set_scout_interests — seed interests, likes/dislikes, motivations
-- set_quest_goal — goal item, target budget, description
-- set_chore_list_guide — define chores, frequencies, income
-- set_budget_plan — income sources, expense categories, savings target
+ONBOARDING TOOLS (quest setup):
+- get_onboarding_status — check which steps are done before calling setup tools
+- get_scout_dashboard — full scout overview (goal, budget, chores, character)
+- setup_scout — create/update scout profile and interests
+- setup_quest — configure goal, chore list, budget plan, and session limits (all optional sections)
 - set_character_preferences — base character, overlay, tone bounds
-- set_session_limits — max time per day, allowed days
 
 MONITORING TOOLS:
 - get_conversation_detail — pull full transcript (opt-in)

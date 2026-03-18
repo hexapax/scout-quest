@@ -1,6 +1,6 @@
 import express from "express";
 import { connectDb } from "./db.js";
-import { loadKnowledge } from "./knowledge.js";
+import { loadKnowledge, getKnowledgeBlock } from "./knowledge.js";
 import { connectFalkorDB } from "./falkordb.js";
 import { chatHandler } from "./chat.js";
 import { createBsaTokenRouter } from "./routes/bsa-token.js";
@@ -14,6 +14,25 @@ app.post("/v1/chat/completions", chatHandler);
 
 // BSA token management
 app.use("/", createBsaTokenRouter());
+
+// Internal admin routes (protected by BACKEND_API_KEY)
+app.post("/internal/reload-knowledge", (req, res) => {
+  const apiKey = process.env.BACKEND_API_KEY;
+  const authHeader = req.headers.authorization ?? "";
+  const provided = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  if (apiKey && provided !== apiKey) {
+    res.status(401).json({ error: "Unauthorized" });
+    return;
+  }
+  try {
+    loadKnowledge();
+    const block = getKnowledgeBlock();
+    const chars = block.text.length;
+    res.json({ ok: true, chars, approxTokens: Math.round(chars / 4) });
+  } catch (err) {
+    res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
+  }
+});
 
 // Health check
 app.get("/health", (_req, res) => {
