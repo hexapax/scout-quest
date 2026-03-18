@@ -429,6 +429,39 @@ Apple/Google Wallet passes are the closest thing to replicating TeamSnap's "alwa
 - **PWA Push:** iOS reliability genuinely poor — notifications fail silently after device restarts, require home-screen install
 - **Gmail Actions/AMP:** Require 100+ emails/day to qualify — impossible at troop scale
 
+### Discussion/Forum Platform (Researched 2026-03-18)
+
+**Recommendation: Discourse (self-hosted) + Spond** — Discourse for persistent threaded discussions with email-in support; Spond for quick coordination, RSVPs, and day-of updates.
+
+**Why Discourse:**
+- Best-in-class email integration: parents can reply to email notifications and replies land in the correct thread on the web forum. No adoption barrier for email-only parents.
+- Categories, pinning, search, trust levels — discussions don't get lost
+- Full REST API for automation (backend can create topics, post announcements)
+- YPT: group permissions enforce 2-adult visibility; scouts restricted to public categories
+- Self-hosted (GPLv3) on existing GCP VM or $5/mo sidecar. Docker-based install.
+- "Mailing list mode" makes it function as both web forum AND email list simultaneously
+
+**Why not the alternatives:**
+- **Slack:** 90-day history on free tier — decisions vanish. Paid = $830/mo for 95 users.
+- **GroupMe:** Flat chat, no threading, poor UX.
+- **Google Groups:** Weak web UI, no pinning/categories, "slightly better email" not "communication upgrade"
+- **BAND:** Feed-based (not topic-based), planning discussions get buried under newer posts. Good for announcements/photos, weak for organized planning.
+- **Circle / Mighty Networks:** $41-89/mo. Built for creator businesses.
+- **Build your own:** Reply-via-email is very hard to build (MIME parsing, token matching, thread routing). Discourse spent years on this.
+- **Groups.io Premium ($20/mo):** Viable runner-up if Discourse is too much overhead. Better Google Groups with calendar/polls/wiki. But no modern forum UI.
+
+**Communication architecture (5-layer):**
+
+| Layer | Tool | Handles |
+|-------|------|---------|
+| Broadcast/Push | ntfy.sh + Resend email | Announcements, reminders, urgent alerts |
+| Schedule/Events | ICS calendar feed + Spond | Events appear in calendars, RSVPs |
+| Discussion/Forum | Discourse (email-in) | Planning, decisions, persistent threads |
+| Audit/Compliance | Discourse archive + backend logs | All scout-adult communication logged |
+| AI Coaching | Scout Quest/Guide (if adopted) | Advancement coaching — enhancement, not dependency |
+
+Layers 1-4 work independently of the AI assistant.
+
 ---
 
 ## Research Process Notes
