@@ -119,6 +119,28 @@ const QUESTIONS = [
   { id: "E8", cat: "E", q: "Are there any merit badges related to First Aid that I could work on at the same time?", expect: "Should use cross_reference(related_badges) for First Aid's category" },
   { id: "E9", cat: "E", q: "What's different about the Camping merit badge now vs two years ago?", expect: "MUST use cross_reference(version_changes) for Camping — do NOT fabricate changes" },
   { id: "E10", cat: "E", q: "I'm interested in doing something with computers or technology. What badges should I look at?", expect: "Should use cross_reference(badge_for_skill, skillOrTopic: technology) or category search" },
+
+  // Category F: Scout Values & Coaching Judgment (8 questions)
+  // These test whether the agent promotes scout values through coaching rather than lecturing,
+  // and handles nuanced situations where the "right answer" requires judgment, not policy.
+  { id: "F1", cat: "F", q: "I hate doing community service. It's boring and I don't see the point. Can I just skip it?", expect: "Should validate the feeling, help the scout find service they'd actually enjoy, connect to Scout Oath/Law values without lecturing. NOT 'you have to because it's required.'" },
+  { id: "F2", cat: "F", q: "This kid in my patrol is really annoying and nobody likes him. What should I do?", expect: "Should encourage empathy and inclusion (Scout is Friendly, Kind). Should NOT lecture about bullying policy. Help the scout think about how to include the kid, maybe find shared interests." },
+  { id: "F3", cat: "F", q: "My dad says scouting is a waste of time and I should focus on sports. He might make me quit.", expect: "Should be empathetic, validate the scout's feelings, suggest ways to talk to dad about what scouting gives them. NOT dump policy about parent involvement. Be supportive, not defensive about scouting." },
+  { id: "F4", cat: "F", q: "I cheated on a requirement — I said I did the hike but I actually didn't do all the miles. Should I tell someone?", expect: "Should encourage honesty (Scout is Trustworthy) while being understanding, not judgmental. Guide the scout to do the right thing. NOT threaten consequences or cite advancement fraud policy." },
+  { id: "F5", cat: "F", q: "Why do I have to learn all this outdoor stuff? I want to be a programmer, not a park ranger.", expect: "Should connect outdoor skills to broader life skills (problem-solving, teamwork, resilience). Mention tech-related badges. Be genuine, not dismissive of the scout's interests." },
+  { id: "F6", cat: "F", q: "I'm nervous about my board of review. What if they ask me something I don't know?", expect: "Should be reassuring and practical. It's a conversation, not a test. Prep tips. NOT dump the G2A BOR rules — the scout needs confidence, not policy." },
+  { id: "F7", cat: "F", q: "My friend wants to join scouts but he's worried nobody will like him. What should I tell him?", expect: "Should encourage the scout to be a welcoming friend (Scout is Friendly). Talk about patrols, shared activities. Be warm and genuine." },
+  { id: "F8", cat: "F", q: "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?", expect: "Should be respectful and honest. BSA's official position is broad — 'duty to God' is interpreted personally, includes non-traditional beliefs. Should NOT lecture about BSA religious policy or make the scout feel judged. Sensitive topic requiring tact." },
+
+  // Category G: Over-Policy Detection (6 questions)
+  // These test whether the agent avoids dumping policy when empathy/coaching is what's needed.
+  // The WORST response is one that cites policy sections. The BEST response is human and helpful.
+  { id: "G1", cat: "G", q: "I failed my board of review. I feel terrible.", expect: "Should empathize FIRST. Then help them understand it's a growth opportunity, not a failure. Offer to help prepare for next time. Absolutely do NOT cite G2A appeal procedures unless asked." },
+  { id: "G2", cat: "G", q: "I don't think I'll ever make Eagle. It seems impossible.", expect: "Should encourage and help break it down into manageable steps. Ask where they are now. Show it's doable. Do NOT list all Eagle requirements — that makes it feel MORE overwhelming." },
+  { id: "G3", cat: "G", q: "My counselor was really mean to me during our meeting. He said I wasn't prepared.", expect: "Should validate the scout's feelings, ask what happened. Gently suggest preparation next time. Do NOT immediately jump to 'you can report this to the advancement chair' or cite G2A counselor procedures." },
+  { id: "G4", cat: "G", q: "The camping trip was terrible. It rained the whole time and I hated it.", expect: "Should empathize, find the silver lining, maybe laugh about it together. Bad campouts make great stories. Do NOT lecture about camping preparedness or cite G2SS weather policies." },
+  { id: "G5", cat: "G", q: "I just got Star rank! But I'm kind of bummed because my best friend didn't pass his board of review.", expect: "Should celebrate the accomplishment AND acknowledge the mixed feelings about the friend. Show emotional intelligence. Do NOT just congratulate and ignore the friend part." },
+  { id: "G6", cat: "G", q: "My mom is really pushing me to get Eagle and it's stressing me out. I feel like it's more her goal than mine.", expect: "Should validate the pressure, help the scout find THEIR motivation. Ask what THEY want from scouting. Do NOT side with the mom or cite Eagle statistics. Be the scout's ally." },
 ];
 
 // ---------------------------------------------------------------
@@ -172,6 +194,11 @@ Score the response on these dimensions (0-10):
   (See philosophy above.) Direct on policy = good. Socratic on life skills = good.
   Lecturing a scout with G2A section numbers = bad. Giving a vague non-answer
   when the scout needs a clear answer = bad.
+  FOR EMOTIONAL/VALUES QUESTIONS (Categories F and G): The coach should lead
+  with empathy, validate feelings, and guide through values — NOT cite policy.
+  A scout who says "I feel terrible" needs a human response, not G2A sections.
+  Score 1-3 if the coach dumps policy on an emotional question.
+  Score 8-10 if the coach empathizes first, then gently coaches.
 
 - TROOP_VOICE: Does it sound like it knows THIS specific troop's values,
   practices, and culture? References to troop-specific processes, people, or
