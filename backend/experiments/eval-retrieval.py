@@ -177,7 +177,7 @@ def load_embeddings_to_falkordb(client, embeddings_file):
     """Load embeddings into a local FalkorDB graph for testing."""
     # Clear existing graph
     try:
-        client.sendCommand(["GRAPH.DELETE", GRAPH_NAME])
+        client.execute_command("GRAPH.DELETE", GRAPH_NAME)
     except:
         pass
 
@@ -200,15 +200,15 @@ def load_embeddings_to_falkordb(client, embeddings_file):
             f"embedding: {vec_str}"
             f"}})"
         )
-        client.sendCommand(["GRAPH.QUERY", GRAPH_NAME, cypher])
+        client.execute_command("GRAPH.QUERY", GRAPH_NAME, cypher)
         if (i + 1) % 200 == 0:
             print(f"  {i+1}/{len(records)}")
 
     # Create vector index
     try:
         dim = records[0]["dimensions"]
-        client.sendCommand(["GRAPH.QUERY", GRAPH_NAME,
-            f"CREATE VECTOR INDEX FOR (c:Chunk) ON (c.embedding) OPTIONS {{dimension: {dim}, similarityFunction: 'cosine'}}"])
+        client.execute_command("GRAPH.QUERY", GRAPH_NAME,
+            f"CREATE VECTOR INDEX FOR (c:Chunk) ON (c.embedding) OPTIONS {{dimension: {dim}, similarityFunction: 'cosine'}}")
         print("  Vector index created")
     except Exception as e:
         print(f"  Index: {str(e)[:60]}")
@@ -227,7 +227,7 @@ def run_query(client, query_vec, k=10):
         f"node.text AS text, score "
         f"ORDER BY score DESC LIMIT {k}"
     )
-    raw = client.sendCommand(["GRAPH.QUERY", GRAPH_NAME, cypher])
+    raw = client.execute_command("GRAPH.QUERY", GRAPH_NAME, cypher)
     # Parse response
     if not isinstance(raw, list) or len(raw) < 2:
         return []
