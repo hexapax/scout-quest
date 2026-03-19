@@ -7,6 +7,7 @@ import { logActivityTool, type LogActivityInput } from "./tools/log-activity.js"
 import { createPendingActionTool } from "./tools/create-pending-action.js";
 import type { ActionType } from "./pending-action.js";
 import { logRequirementWork, type EvidenceType } from "./tools/log-requirement-work.js";
+import { crossReference, type CrossRefScope } from "./tools/cross-reference.js";
 
 interface ToolUseBlock {
   type: "tool_use";
@@ -103,6 +104,16 @@ async function executeOneTool(
           description: String(input.description || ""),
           requirementRef: input.requirementRef ? String(input.requirementRef) : undefined,
           data: (input.data as Record<string, unknown>) ?? undefined,
+        });
+      }
+
+      case "cross_reference": {
+        return await crossReference({
+          scope: String(input.scope || "related_badges") as CrossRefScope,
+          badgeName: input.badgeName ? String(input.badgeName) : undefined,
+          rankName: input.rankName ? String(input.rankName) : undefined,
+          skillOrTopic: input.skillOrTopic ? String(input.skillOrTopic) : undefined,
+          scoutUserId: input.scoutUserId ? String(input.scoutUserId) : undefined,
         });
       }
 

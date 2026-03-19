@@ -249,4 +249,41 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
       required: ["evidenceType", "description"],
     },
   },
+  {
+    name: "cross_reference",
+    description:
+      "Find connections between merit badges, ranks, and requirements using the knowledge graph. " +
+      "Use for questions like 'what badges are related to Camping?', 'what Eagle badges do I still need?', " +
+      "'what changed in this badge recently?', 'what rank requirements overlap with this merit badge?'. " +
+      "Do NOT use for simple requirement lookups — use get_scout_status or search_bsa_reference for those.",
+    input_schema: {
+      type: "object",
+      properties: {
+        scope: {
+          type: "string",
+          enum: ["related_badges", "eagle_requirements", "rank_overlap", "version_changes", "badge_for_skill", "category_badges"],
+          description:
+            "related_badges: badges in same category. " +
+            "eagle_requirements: Eagle-required badges (with scout completion status). " +
+            "rank_overlap: requirements that overlap between a badge and rank. " +
+            "version_changes: what changed between requirement versions. " +
+            "badge_for_skill: badges related to a skill/topic. " +
+            "category_badges: all badges in a category.",
+        },
+        badgeName: {
+          type: "string",
+          description: "Merit badge name (for related_badges, rank_overlap, version_changes, category_badges).",
+        },
+        rankName: {
+          type: "string",
+          description: "Rank name (for rank_overlap, version_changes).",
+        },
+        skillOrTopic: {
+          type: "string",
+          description: "Skill or topic to search for (for badge_for_skill).",
+        },
+      },
+      required: ["scope"],
+    },
+  },
 ];
