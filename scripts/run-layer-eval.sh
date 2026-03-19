@@ -70,39 +70,55 @@ const RUN_DIR = process.env.RUN_DIR;
 // ---------------------------------------------------------------
 
 const QUESTIONS = [
-  // Category A: Policy Nuance
+  // Category A: Policy Nuance (8 questions)
   { id: "A1", cat: "A", q: "Can a board of review reject me for not being active enough in the troop?", expect: "G2A: 'reasonable' standard, cannot hold to unwritten expectations, must communicate early" },
   { id: "A2", cat: "A", q: "My scoutmaster says I have to redo a merit badge requirement because a different counselor started it. Is that true?", expect: "G2A: Scouts need not pass all requirements with same counselor. Partials have no expiration except 18th birthday." },
   { id: "A3", cat: "A", q: "Do partial merit badge completions expire? My troop says they expire after 6 months.", expect: "G2A: Units, districts, or councils must NOT establish expiration dates beyond 18th birthday." },
   { id: "A4", cat: "A", q: "My board of review wants to retest me on the requirements. They're going to quiz me on everything. Can they do that?", expect: "G2A: BOR is NOT a retest/examination. They verify the process was followed." },
   { id: "A5", cat: "A", q: "I was told I can't work on Star requirements until I finish First Class. Is that right?", expect: "G2A: You CAN work on requirements for future ranks, but must earn them in sequence." },
+  { id: "A6", cat: "A", q: "My counselor says I have to redo a requirement because I completed it at summer camp and he wants to see me do it in person. Can he require that?", expect: "G2A: Once a requirement is signed off by any registered counselor, it's complete. Another counselor cannot require it to be redone." },
+  { id: "A7", cat: "A", q: "I'm 17 and a half. Is it too late to start working on Eagle?", expect: "G2A: Must complete before 18th birthday. All requirements except BOR must be done before 18. BOR can happen after 18 if req met before." },
+  { id: "A8", cat: "A", q: "Our troop committee says I need to have my Eagle project approved before I can start my Life board of review. Is that right?", expect: "G2A: Life BOR has nothing to do with Eagle project. These are separate ranks with separate requirements." },
 
-  // Category B: Troop-Specific Values
+  // Category B: Troop-Specific Values (8 questions)
   { id: "B1", cat: "B", q: "I don't really want to go on the campout this weekend. Is that OK?", expect: "Should reference troop camping culture, outdoor program values, patrol method" },
   { id: "B2", cat: "B", q: "My mom wants to help with my Eagle project. How much can she do?", expect: "G2A Eagle project: scout must plan, develop, give leadership. Family can help but scout leads." },
   { id: "B3", cat: "B", q: "What should I wear to the meeting on Tuesday?", expect: "Troop 2024: Class B (troop t-shirt) for regular biweekly meetings, Class A for courts of honor" },
   { id: "B4", cat: "B", q: "How do I get started on a new merit badge? What's the process?", expect: "Blue card process, talk to scoutmaster/advancement chair, find counselor" },
   { id: "B5", cat: "B", q: "Is it OK to use ChatGPT to help me write my Personal Management budget plan?", expect: "Coaching philosophy: AI as tool not shortcut, scout does the work, socratic method" },
+  { id: "B6", cat: "B", q: "Who should I talk to about getting a leadership position?", expect: "Troop 2024 leadership info — SPL, ASPL, scoutmaster, specific people if known" },
+  { id: "B7", cat: "B", q: "When is the next court of honor?", expect: "Should reference troop's schedule or say it doesn't know exact date but can tell them who to ask" },
+  { id: "B8", cat: "B", q: "What patrols does our troop have?", expect: "Troop 2024 patrol names and structure from troop context" },
 
-  // Category C: Requirement Accuracy
+  // Category C: Requirement Accuracy (8 questions)
   { id: "C1", cat: "C", q: "How many camping nights do I need for the Camping merit badge?", expect: "20 days AND nights total with specific subrequirements about long-term camp" },
   { id: "C2", cat: "C", q: "What changed in the Eagle Scout requirements recently? Anything new?", expect: "v2026 Eagle requirements effective 2026-02-27 with specific changes" },
   { id: "C3", cat: "C", q: "For Personal Fitness merit badge, do I need to actually follow a 12-week exercise plan or just create one?", expect: "Must develop AND follow for 12 weeks, keep a log, report improvements" },
   { id: "C4", cat: "C", q: "What are the requirements for Citizenship in Society?", expect: "Current version from official 2025 requirements" },
   { id: "C5", cat: "C", q: "Can I count my Eagle project service hours toward my Star Scout service requirement?", expect: "Depends on timing and G2A double-counting rules" },
+  { id: "C6", cat: "C", q: "How many merit badges do I need for Eagle? How many are Eagle-required vs electives?", expect: "21 total, 13 Eagle-required (from specific list), 8 electives. Should use tool to check." },
+  { id: "C7", cat: "C", q: "What's the difference between requirement 4a and 4b for First Aid merit badge?", expect: "Should look up exact text from search tool, not guess at specific sub-requirements" },
+  { id: "C8", cat: "C", q: "For Environmental Science, do I do the experiments in requirement 3 or 4? I'm confused about the options.", expect: "Should look up exact requirement structure — ES has choose-one sections. Should use tool." },
 
-  // Category D: Safety & YPT
+  // Category D: Safety & YPT (6 questions)
   { id: "D1", cat: "D", q: "Mr. Johnson (our ASM) offered to drive me to the campout since my parents can't. Is that OK?", expect: "G2SS: Two-deep leadership for transport. No one-on-one. Need 2 adults or adult + 2 youth." },
   { id: "D2", cat: "D", q: "We want to go kayaking at the lake for our next campout activity. What do we need to set up?", expect: "G2SS: Safe Swim Defense AND Safety Afloat both apply. Specific supervision requirements." },
   { id: "D3", cat: "D", q: "My assistant scoutmaster wants to follow me on Instagram and be friends. Should I accept?", expect: "YPT: No private one-on-one digital contact between adults and youth." },
   { id: "D4", cat: "D", q: "We're driving to summer camp — it's about 12 hours away. Can we do it in one day?", expect: "G2SS: Max 10 hours driving in one 24-hour period, regardless of drivers available." },
+  { id: "D5", cat: "D", q: "Can our patrol go on a hike without any adults? We're all 15+.", expect: "G2SS: Two-deep adult leadership required for all outings. No youth-only activities regardless of age." },
+  { id: "D6", cat: "D", q: "My den leader from Cub Scouts wants to text me about Arrow of Light. Is that OK since he knows me?", expect: "YPT: No one-on-one electronic communication between adults and youth regardless of prior relationship." },
 
-  // Category E: Cross-Reference
-  { id: "E1", cat: "E", q: "What merit badges would help me prepare for my Eagle project?", expect: "Cross-reference project management skills with MB requirements" },
-  { id: "E2", cat: "E", q: "I really like cooking and outdoor stuff. What merit badges are related to each other in that area?", expect: "Cooking, Camping, Backpacking connections" },
-  { id: "E3", cat: "E", q: "Which First Class requirements could I complete at the same campout where I'm working on Camping merit badge?", expect: "Cross-reference rank + MB requirements for overlap" },
-  { id: "E4", cat: "E", q: "I completed my Swimming merit badge. Does that help me with any rank requirements?", expect: "Swimming MB → rank requirement connections" },
-  { id: "E5", cat: "E", q: "What requirements changed between 2023 and 2025 for the merit badges I'm currently working on?", expect: "Version-aware changes for in-progress badges" },
+  // Category E: Cross-Reference & Graph (10 questions — the gap to close)
+  { id: "E1", cat: "E", q: "What merit badges would help me prepare for my Eagle project?", expect: "Should use cross_reference to find project-management-related badges" },
+  { id: "E2", cat: "E", q: "I really like cooking and outdoor stuff. What merit badges are related to each other in that area?", expect: "Should use cross_reference(related_badges) to find Cooking's category and related badges" },
+  { id: "E3", cat: "E", q: "Which First Class requirements could I complete at the same campout where I'm working on Camping merit badge?", expect: "Should use cross_reference(rank_overlap) to find overlapping requirements" },
+  { id: "E4", cat: "E", q: "I completed my Swimming merit badge. Does that help me with any rank requirements?", expect: "Should check swimming's relationship to rank requirements via cross_reference" },
+  { id: "E5", cat: "E", q: "What requirements changed between 2023 and 2025 for the merit badges I'm currently working on?", expect: "MUST use cross_reference(version_changes) — do NOT guess at specific changes" },
+  { id: "E6", cat: "E", q: "What are all the Eagle-required merit badges? Which ones have I already completed?", expect: "Should use cross_reference(eagle_requirements) with scout's userId" },
+  { id: "E7", cat: "E", q: "I want to do a merit badge about nature or the environment. What are my options?", expect: "Should use cross_reference(badge_for_skill) or (category_badges) for nature/environment" },
+  { id: "E8", cat: "E", q: "Are there any merit badges related to First Aid that I could work on at the same time?", expect: "Should use cross_reference(related_badges) for First Aid's category" },
+  { id: "E9", cat: "E", q: "What's different about the Camping merit badge now vs two years ago?", expect: "MUST use cross_reference(version_changes) for Camping — do NOT fabricate changes" },
+  { id: "E10", cat: "E", q: "I'm interested in doing something with computers or technology. What badges should I look at?", expect: "Should use cross_reference(badge_for_skill, skillOrTopic: technology) or category search" },
 ];
 
 // ---------------------------------------------------------------
