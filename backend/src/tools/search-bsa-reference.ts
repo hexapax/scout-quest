@@ -1,8 +1,9 @@
 import { graphQuery, isFalkorConnected } from "../falkordb.js";
 import { getKnowledgeBlock } from "../knowledge.js";
+import { embedQuery } from "../embeddings.js";
 
-/** Full-text search against the knowledge graph's Requirement nodes.
- * Falls back to scanning the in-memory knowledge document if FalkorDB unavailable. */
+/** Hybrid search: vector similarity + full-text + knowledge scan fallback.
+ * Priority: vector search (semantic) → full-text (keyword) → knowledge doc scan. */
 export async function searchBsaReference(
   query: string,
   category?: string
@@ -11,9 +12,17 @@ export async function searchBsaReference(
     return fallbackKnowledgeScan(query);
   }
 
+  // Try vector search first (best for semantic/conceptual queries)
   try {
-    // Use FalkorDB full-text index on Requirement nodes
-    let cypher =
+    const vectorResults = await vectorSearch(query, category);
+    if (vectorResults) return vectorResults;
+  } catch (err) {
+    console.error("Vector search error (falling back to full-text):", err);
+  }
+
+  // Fall back to full-text search on Requirement nodes
+  try {
+    const cypher =
       "CALL db.idx.fulltext.queryNodes('Requirement', $query) " +
       "YIELD node RETURN node.reqNumber AS reqNumber, node.reqName AS reqName, " +
       "node.advancementType AS advancementType, node.advancementName AS advancementName " +
@@ -26,20 +35,71 @@ export async function searchBsaReference(
       advancementName: string;
     }>(cypher, { query });
 
-    if (results.length === 0) {
-      // Fall back to knowledge document scan
-      return fallbackKnowledgeScan(query);
+    if (results.length > 0) {
+      const lines = [`BSA REFERENCE SEARCH (full-text): "${query}"\n`];
+      for (const r of results) {
+        lines.push(`${r.advancementName} — Req ${r.reqNumber}: ${r.reqName}`);
+      }
+      return lines.join("\n");
     }
-
-    const lines = [`BSA REFERENCE SEARCH: "${query}"\n`];
-    for (const r of results) {
-      lines.push(`${r.advancementName} — Req ${r.reqNumber}: ${r.reqName}`);
-    }
-    return lines.join("\n");
   } catch (err) {
-    console.error("search_bsa_reference error:", err);
-    return fallbackKnowledgeScan(query);
+    console.error("Full-text search error:", err);
   }
+
+  return fallbackKnowledgeScan(query);
+}
+
+/** Vector similarity search against ChunkVector nodes. */
+async function vectorSearch(
+  query: string,
+  category?: string
+): Promise<string | null> {
+  // Embed the query
+  const queryVec = await embedQuery(query);
+  if (!queryVec) return null;
+
+  // FalkorDB KNN vector search
+  const vectorStr = `vecf32([${queryVec.join(",")}])`;
+  const cypher =
+    `CALL db.idx.vector.queryNodes('ChunkVector', 'embedding', 5, ${vectorStr}) ` +
+    `YIELD node, score ` +
+    `RETURN node.chunkId AS id, node.title AS title, node.source AS source, ` +
+    `node.type AS type, node.text AS text, score ` +
+    `ORDER BY score DESC LIMIT 5`;
+
+  const results = await graphQuery<{
+    id: string;
+    title: string;
+    source: string;
+    type: string;
+    text: string;
+    score: number;
+  }>(cypher);
+
+  if (!results || results.length === 0) return null;
+
+  // Filter by category if specified
+  let filtered = results;
+  if (category && category !== "any") {
+    filtered = results.filter((r) => {
+      if (category === "requirements") return r.type?.includes("requirement");
+      if (category === "policy") return r.type?.includes("policy") || r.source?.includes("g2a") || r.source?.includes("g2ss");
+      if (category === "merit_badges") return r.type?.includes("merit_badge");
+      return true;
+    });
+    if (filtered.length === 0) filtered = results; // fall back to unfiltered
+  }
+
+  const lines = [`BSA REFERENCE SEARCH (semantic): "${query}"\n`];
+  for (const r of filtered) {
+    const score = typeof r.score === "number" ? ` (relevance: ${r.score.toFixed(3)})` : "";
+    lines.push(`--- ${r.title || r.source}${score} ---`);
+    // Truncate long chunks for the tool response
+    const text = r.text?.length > 1500 ? r.text.substring(0, 1500) + "..." : (r.text ?? "");
+    lines.push(text);
+    lines.push("");
+  }
+  return lines.join("\n");
 }
 
 /** Scan the in-memory knowledge document for relevant sections. */

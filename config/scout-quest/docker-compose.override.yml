@@ -28,6 +28,7 @@ services:
       MONGO_URI: "mongodb://mongodb:27017/scoutquest"
       ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
       BACKEND_API_KEY: "${BACKEND_API_KEY}"
+      VOYAGE_API_KEY: "${VOYAGE_API_KEY}"
       FALKORDB_HOST: "scout-quest-falkordb"
       PORT: "3090"
     networks:
