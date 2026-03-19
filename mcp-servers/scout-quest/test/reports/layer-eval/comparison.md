@@ -1,6 +1,6 @@
 # Layer Evaluation — Response Comparison
 
-Runs compared: 2026-03-19_12-07-59, 2026-03-19_12-31-44, 2026-03-19_14-04-28, 2026-03-19_14-23-12, 2026-03-19_14-43-06, 2026-03-19_16-38-27
+Runs compared: 2026-03-19_12-07-59, 2026-03-19_12-31-44, 2026-03-19_14-04-28, 2026-03-19_14-23-12, 2026-03-19_14-43-06, 2026-03-19_16-38-27, 2026-03-19_16-54-56
 
 ---
 
@@ -17,6 +17,7 @@ Runs compared: 2026-03-19_12-07-59, 2026-03-19_12-31-44, 2026-03-19_14-04-28, 20
 | 2026-03-19_14-23-12 | 8 | 7 | 10 | 9 | 3 | 7.4 | Response is accurate and well-structured. Correctly explains the 'reasonable' st |
 | 2026-03-19_14-43-06 | 9 | 8 | 10 | 9 | 8 | 8.8 | Excellent response that covers the key G2A concepts accurately: the 'reasonable' |
 | 2026-03-19_16-38-27 | 8 | 8 | 10 | 9 | 8 | 8.6 | Response accurately covers the key G2A protections — registered/good standing/re |
+| 2026-03-19_16-54-56 | 9 | 8 | 10 | 9 | 7 | 8.6 | Excellent response. Accurately explains the BSA 'active' standard including the  |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -196,6 +197,38 @@ So bottom line: **show up prepared, know which rank you're going for and what MB
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question — and the answer is **no, a board of review cannot reject you just for low attendance**.
+
+Here's how it actually works:
+
+## What "active" really means
+
+For Star, Life, and Eagle ranks, you need to be "active" for a certain number of months — but BSA defines active pretty broadly. You're considered active if:
+
+1. **You're registered** in the troop, and
+2. **You're in good standing** (not suspended for any reason), and
+3. **You've met the troop's reasonable expectations** — OR, if you haven't, there's a good reason (school, sports, family stuff, health, etc.)
+
+The key thing: if your troop hasn't written down clear activity expectations and communicated them to you in advance, they can't hold you to them.
+
+## What a BOR *can* ask about
+
+The board can ask you to *talk about* your Scouting experience — what you've done, what you've learned, how you've lived the Scout Oath and Law. That's fair game.
+
+What they **cannot** do is turn the BOR into a punishment for missing meetings or campouts. It's supposed to be a conversation about your growth, not an interrogation.
+
+## The bottom line
+
+A board can only reject you if you genuinely haven't completed the requirements for the rank. Low attendance alone isn't grounds for rejection.
+
+That said — **in Troop 2024 specifically**, the BOR is described as a friendly, casual conversation. Eric Buffenbarger and the committee aren't trying to trip anyone up. They're asking things like "what was your favorite merit badge?" and "whi
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -211,6 +244,7 @@ So bottom line: **show up prepared, know which rank you're going for and what MB
 | 2026-03-19_14-23-12 | 9 | 8 | 10 | 9 | 5 | 8.2 | Accurate and clear on the core policy — partials follow the scout, not the couns |
 | 2026-03-19_14-43-06 | 10 | 9 | 10 | 9 | 8 | 9.2 | Excellent response. Directly answers a policy question with clear, correct infor |
 | 2026-03-19_16-38-27 | 10 | 9 | 10 | 9 | 8 | 9.2 | Excellent response. Directly corrects the misinformation, accurately states BSA  |
+| 2026-03-19_16-54-56 | 9 | 8 | 10 | 9 | 7 | 8.6 | Accurate on the core policy — partials don't expire, signed-off requirements sta |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -346,6 +380,27 @@ Does that help? What merit badge is it?
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question — and the short answer is **no, that's not right**.
+
+Here's how it actually works:
+
+**You don't have to restart with a new counselor.** Any requirements you've already completed and had signed off (initialed on your blue card) are done. A new counselor can pick up where the previous one left off. Partials don't expire, and you're not locked to one counselor for a badge.
+
+The key rule is: **once a requirement has been signed off by someone approved to do so, it's done and can't be taken away.**
+
+What the new counselor *can* decide is whether to accept work you did *before* your first counselor meeting — that's their call. But anything already initialed on your blue card? That's yours.
+
+**What I'd suggest:**
+- Make sure you have your blue card (or Scoutbook record) showing which requirements were signed off
+- Bring that to the conversation with your Scoutmaster
+- If there's still a disagreement, you can reach out to your Advancement Chair — for Troop 2024, that's **Nicole Allen** (texnicking@gmail.com)
+
+Which merit badge is this about? I can help you figure out exactly where you stand.
+
+</details>
+
 ---
 
 
@@ -361,6 +416,7 @@ Does that help? What merit badge is it?
 | 2026-03-19_14-23-12 | 10 | 8 | 10 | 9 | 5 | 8.4 | Excellent response. Directly corrects the misconception, cites the Guide to Adva |
 | 2026-03-19_14-43-06 | 10 | 9 | 10 | 10 | 6 | 9.0 | Excellent response. Accurately states BSA policy that partials don't expire unti |
 | 2026-03-19_16-38-27 | 10 | 9 | 10 | 9 | 6 | 8.8 | Excellent response. Directly corrects the misinformation, cites the Guide to Adv |
+| 2026-03-19_16-54-56 | 10 | 9 | 10 | 10 | 6 | 9.0 | Excellent response. Directly corrects the misinformation, cites the exact G2A la |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -485,6 +541,24 @@ Is there a specific merit badge you're working on with partials? I can help you 
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Good news — **your troop is wrong on this one**, and BSA policy is clearly in your favor.
+
+**Partial merit badge completions do NOT expire.** The only deadline is your 18th birthday. From the Guide to Advancement:
+
+> *"Partials have no expiration except the Scout's 18th birthday. Units, districts, or councils must not establish other expiration dates."*
+
+That last sentence is key — **no one at the troop, district, or council level has the authority to set expiration dates on partials.** It's a national BSA policy, not something troops can customize.
+
+So if you have a partial from a year ago (or longer), it's still valid. You just pick up where you left off with the same counselor, or find a new counselor who can review your prior work and decide whether to accept it.
+
+**Practical tip:** Keep your blue card (or make sure your completions are recorded in Scoutbook) so you have documentation of what you've already finished. A new counselor isn't required to accept prior work without evidence, but they can't make you redo requirements that are properly signed off.
+
+Is there a specific badge you're worried about? Happy to help you figure out next steps.
+
+</details>
+
 ---
 
 
@@ -500,6 +574,7 @@ Is there a specific merit badge you're working on with partials? I can help you 
 | 2026-03-19_14-23-12 | 9 | 8 | 10 | 9 | 5 | 8.2 | Excellent response. Accurately conveys the core BSA policy that a BOR is not a r |
 | 2026-03-19_14-43-06 | 9 | 8 | 10 | 9 | 8 | 8.8 | Excellent response. Accurately explains that a BOR is not a retest, with a clear |
 | 2026-03-19_16-38-27 | 9 | 8 | 10 | 9 | 7 | 8.6 | Accurate and clear on BSA policy — BOR is not a retest, which matches G2A guidan |
+| 2026-03-19_16-54-56 | 9 | 8 | 10 | 9 | 7 | 8.6 | Excellent response. Clearly and directly answers the policy question — no, they  |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -654,6 +729,37 @@ Are you getting ready for an upcoming board of review? I can help you prep for t
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question — and good news for you: **no, they cannot do that.**
+
+A board of review is *not* a retest. That's actually one of the clearest rules in how BSA runs advancement. The whole point of a BOR is to celebrate what you've accomplished and have a conversation about your Scouting experience — not to quiz you on skills again.
+
+Here's the difference in practice:
+
+- ✅ **They CAN ask:** "Tell us about when you learned to tie a square knot" or "What did you get out of that merit badge?"
+- ❌ **They CANNOT say:** "Here's a rope — tie a square knot for us."
+
+If a requirement says you had to *show* or *demonstrate* something, you already did that when you got signed off. The board doesn't get to re-examine whether you can do it again.
+
+The atmosphere is supposed to be **relaxed and friendly** — think of it more like a conversation about your journey than an exam.
+
+**What the board *will* likely ask about:**
+- What you liked (or didn't like) about merit badges you completed
+- Which rank requirement was hardest or most fun
+- How you've lived the Scout Oath and Law
+- Your goals going forward
+
+**In Troop 2024 specifically**, the BOR is described as a casual conversation — about 10-15 minutes. Eric Buffenbarger's committee runs them after the 2nd troop meeting of each month.
+
+If a board member *does* try to retest you, you're within your rights to politely say you've already completed and been signed off on those requirements. You've earned your spot at that table! 💪
+
+Is there a spe
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -669,6 +775,7 @@ Are you getting ready for an upcoming board of review? I can help you prep for t
 | 2026-03-19_14-23-12 | 9 | 7 | 10 | 9 | 4 | 7.8 | Accurate and well-explained — correctly distinguishes between working on require |
 | 2026-03-19_14-43-06 | 10 | 8 | 10 | 9 | 5 | 8.4 | Accurate and well-explained answer that correctly distinguishes between working  |
 | 2026-03-19_16-38-27 | 9 | 8 | 10 | 9 | 4 | 8.0 | Accurate and well-structured answer. Correctly clarifies that merit badges can b |
+| 2026-03-19_16-54-56 | 9 | 7 | 10 | 9 | 4 | 7.8 | Accurate and clear policy answer — correctly explains that scouts can work on fu |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -793,6 +900,25 @@ What are you currently working toward — trying to get to First Class, or are y
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question — and the answer is **no, that's not right!**
+
+You **can** work on Star (and even Second Class and First Class) requirements **at the same time**. BSA policy explicitly allows Scouts to work on Scout, Tenderfoot, Second Class, and First Class requirements **simultaneously**.
+
+The one rule is that you have to **earn the ranks in order** — you can't *receive* Star rank until you've completed First Class. But there's nothing stopping you from getting a head start on Star requirements (like merit badges or service hours) while you're still finishing up First Class.
+
+**Practical example:** If you're working toward First Class right now, you could already be:
+- Earning merit badges that will count toward Star
+- Logging service hours
+- Serving in a position of responsibility
+
+All of that work will count once you're ready to advance to Star.
+
+So don't wait — get a head start! What are you currently working on?
+
+</details>
+
 ---
 
 
@@ -808,6 +934,7 @@ What are you currently working toward — trying to get to First Class, or are y
 | 2026-03-19_14-23-12 | 8 | 4 | 10 | 7 | 2 | 6.2 | Accurate on camping nights mattering for advancement. Appropriately direct for a |
 | 2026-03-19_14-43-06 | 7 | 6 | 10 | 6 | 2 | 6.2 | The response is mostly accurate — camping nights for the Camping merit badge (21 |
 | 2026-03-19_16-38-27 | 8 | 7 | 10 | 7 | 4 | 7.2 | The response is factually solid — camping nights for the Camping merit badge, ac |
+| 2026-03-19_16-54-56 | 7 | 6 | 10 | 7 | 2 | 6.4 | The response is generally accurate — camping nights and active participation are |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -923,6 +1050,22 @@ So my question back to you is — **what's going on?** Is it a scheduling confli
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Hey! So missing one campout is totally fine — nobody's going to mark you absent or anything like that. But here's the thing worth knowing given where you are in your journey:
+
+**You just hit First Class — congrats! 🎉** That means you're now working toward Star, which requires 4 months of active participation. "Active" doesn't mean attending every single event, but it does mean staying reasonably engaged with the troop over time.
+
+A few things to think about:
+
+- **Camping nights matter for Eagle** — you'll need 20 total camping nights logged. Missing one here and there is fine, but those nights add up and you'll want them in the bank before you're pushing toward Eagle.
+- **One campout won't make or break you** — seriously, life happens.
+- **If it's a pattern**, that's when it starts to matter for your active participation requirement.
+
+Is there a specific reason you don't want to go? Sometimes there's a way to work around it (wrong gear, nervous about something, scheduling conflict), and sometimes it's just not the right weekend — both are valid! What's going on?
+
+</details>
+
 ---
 
 
@@ -938,6 +1081,7 @@ So my question back to you is — **what's going on?** Is it a scheduling confli
 | 2026-03-19_14-23-12 | 9 | 7 | 10 | 8 | 4 | 7.6 | Response accurately captures the core BSA requirement that the scout must plan,  |
 | 2026-03-19_14-43-06 | 9 | 7 | 10 | 8 | 4 | 7.6 | Solid and accurate response that correctly captures the core BSA policy: scout l |
 | 2026-03-19_16-38-27 | 9 | 8 | 10 | 8 | 4 | 7.8 | Accurate and well-organized response that correctly captures the core BSA Eagle  |
+| 2026-03-19_16-54-56 | 7 | 6 | 10 | 8 | 4 | 7.0 | Response correctly captures the core BSA requirement that the scout must plan, d |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -1114,6 +1258,35 @@ What kind of project are you thinking about? I can help you figure out how to se
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question — and it's awesome that your mom wants to help!
+
+Here's the deal: **your mom can absolutely help, but you're the one in charge.**
+
+For an Eagle project, BSA requires that you:
+- **Plan and develop** the project
+- **Give leadership** to others while doing it
+
+That means your mom can:
+- ✅ Help with hands-on work (digging, building, painting, whatever the project involves)
+- ✅ Drive you and others around
+- ✅ Help you brainstorm or think through logistics
+- ✅ Donate materials or help fundraise for supplies
+
+But **you** have to:
+- ❌ Not let her run the show — you're the project manager
+- ❌ Not have her do the planning for you
+- ❌ Make sure *you* are the one giving directions and leading the volunteers
+
+One important rule: **"others" means at least two other people besides you** need to be helping. So your mom counts as one of your helpers — that's great!
+
+There's also no minimum number of hours required, and the project doesn't have to be complicated. What matters most is that it provides a real benefit and that *you* led it.
+
+Do you have a project idea in mind yet? I can help you think through the approval process! 🦅
+
+</details>
+
 ---
 
 
@@ -1129,6 +1302,7 @@ What kind of project are you thinking about? I can help you figure out how to se
 | 2026-03-19_14-23-12 | 4 | 3 | 10 | 7 | 1 | 5.0 | The response gives generic BSA full field uniform guidance, but the expected ans |
 | 2026-03-19_14-43-06 | 9 | 8 | 10 | 9 | 7 | 8.6 | Direct and practical answer appropriate for a logistics question. Correctly iden |
 | 2026-03-19_16-38-27 | 9 | 8 | 10 | 9 | 8 | 8.8 | Direct, practical answer exactly right for a logistics question. Correctly ident |
+| 2026-03-19_16-54-56 | 9 | 8 | 10 | 9 | 8 | 8.8 | Direct, practical answer that matches the expected response well. References 'Tr |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -1191,6 +1365,12 @@ Anything else you need for Tuesday?
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+For a regular Tuesday troop meeting, wear your **Class B uniform** — that's your Troop 2024 t-shirt. Class A (the official BSA uniform) is only required for special events like the Court of Honor.
+
+</details>
+
 ---
 
 
@@ -1206,6 +1386,7 @@ Anything else you need for Tuesday?
 | 2026-03-19_14-23-12 | 9 | 8 | 10 | 9 | 5 | 8.2 | Excellent, comprehensive response that covers the full blue card process accurat |
 | 2026-03-19_14-43-06 | 9 | 9 | 10 | 8 | 9 | 9.0 | Excellent response that matches the expected answer and goes beyond it helpfully |
 | 2026-03-19_16-38-27 | 9 | 10 | 10 | 9 | 10 | 9.6 | Excellent response that nails the blue card process with troop-specific names, e |
+| 2026-03-19_16-54-56 | 9 | 9 | 10 | 9 | 9 | 9.2 | Excellent response that hits all the right notes. Accurately covers the full blu |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -1409,6 +1590,40 @@ Bring your completed blue card to Mr. Bramwell, who signs the applicant record s
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question! Here's how the merit badge process works in Troop 2024:
+
+## Starting a Merit Badge
+
+**Step 1 — Talk to Mr. Bramwell first**
+Before you contact any counselor, you need to have a quick conversation with your Scoutmaster (Jeremy Bramwell). This is a required step — it's your chance to talk about what you're interested in and get some guidance.
+
+**Step 2 — Get a blue card (or digital equivalent)**
+Mr. Bramwell signs off on a blue card (or documents the conversation in Scoutbook) and gives you the contact info for a merit badge counselor.
+
+**Step 3 — Contact the counselor**
+Reach out to the counselor and set up your first meeting. You can start working on requirements anytime — even before your first meeting with the counselor.
+
+**Step 4 — Do the work**
+Meet with your counselor as many times as needed. They'll verify that you've actually completed each requirement *as written* — not just filled out a worksheet.
+
+**Step 5 — Counselor signs off**
+Once you've finished everything, the counselor signs your blue card and you bring it back to Mr. Bramwell.
+
+---
+
+## A Few Important Things to Know
+
+- **You can work on as many badges at once as you want** — no limit
+- **Partials don't expire** — if you finish some requirements but not all, those count forever (up until you turn 18)
+- **Never meet one-on-one** with a counselor — always have a parent, another Scout, or another adult present
+- **For Troop 2024 specifically:** Check with Nicole Allen (Advancement Chair) — she or
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -1424,6 +1639,7 @@ Bring your completed blue card to Mr. Bramwell, who signs the applicant record s
 | 2026-03-19_14-23-12 | 9 | 8 | 10 | 9 | 4 | 8.0 | Excellent response that nails the coaching philosophy. Correctly identifies the  |
 | 2026-03-19_14-43-06 | 8 | 8 | 10 | 9 | 7 | 8.4 | Strong response that correctly applies Socratic coaching philosophy to a life sk |
 | 2026-03-19_16-38-27 | 9 | 8 | 10 | 9 | 5 | 8.2 | Excellent response that hits the right coaching philosophy — Socratic on life sk |
+| 2026-03-19_16-54-56 | 8 | 8 | 10 | 7 | 3 | 7.2 | Strong, clear answer that correctly frames AI as a tool vs. shortcut and gives c |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -1601,6 +1817,37 @@ What part of the budget are you working on? I can help you think it through. �
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question — and honestly, a smart one to ask.
+
+**Short answer: You can use AI as a thinking partner, but the work needs to actually be yours.**
+
+Here's the deal with Personal Management requirement 2: you need to **actually track your real income and expenses for 13 consecutive weeks** and **make a real budget based on your actual life**. The counselor needs to see that *you* understood your own financial situation and made real decisions about it.
+
+So it depends on *how* you're using ChatGPT:
+
+**✅ Fine to use AI for:**
+- Understanding what terms mean (like "budget" vs. "actual")
+- Getting ideas for categories to include
+- Checking if your format makes sense
+- Proofreading your written explanations
+
+**❌ Not okay:**
+- Having AI generate your budget numbers (those need to come from your real life)
+- Having AI write your discussion responses for you
+- Using a fake or AI-invented budget when you meet with your counselor
+
+The whole point of Personal Management is that you actually *learn* to manage money — your money, your expenses, your goals. A counselor is going to ask you questions like "walk me through your budget" and "what surprised you when you compared expected vs. actual?" You need to be able to answer those from real experience.
+
+**Think of it this way:** AI can help you understand *how* to make a budget. But the budget itself has to be real. Your counselor will know if it's not.
+
+Want help thinking through what categories to include in your budget, or how to set u
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -1616,6 +1863,7 @@ What part of the budget are you working on? I can help you think it through. �
 | 2026-03-19_14-23-12 | 9 | 9 | 10 | 9 | 6 | 8.6 | Excellent response. Accurately states the 20-night requirement, correctly refere |
 | 2026-03-19_14-43-06 | 7 | 8 | 10 | 9 | 6 | 8.0 | Core answer of 20 nights is correct. However, there are some inaccuracies: the l |
 | 2026-03-19_16-38-27 | 9 | 9 | 10 | 9 | 7 | 8.8 | Accurate answer with correct requirement number (9a) and the 20-night figure. Go |
+| 2026-03-19_16-54-56 | 9 | 9 | 10 | 9 | 6 | 8.6 | Highly accurate and specific response covering the 20-night requirement, long-te |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -1705,6 +1953,22 @@ So with Troop 2024 aiming for roughly one campout per month, you could knock out
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+The Camping merit badge requires **20 nights** of camping at designated Scouting activities or events (requirement 9a).
+
+A few important details:
+
+- **Long-term camping:** Up to **6 consecutive nights** from one trip can count toward the 20. But here's a bonus — each *additional* long-term trip after that counts as **2 nights** instead of 1.
+- **What counts:** Nights spent under the sky, in a tent you pitched yourself, a hammock strung outdoors, a lean-to, or similar open-front shelter.
+- **What doesn't count:** Indoor lock-ins, cabin camping, hotel stays, or other covered accommodations.
+
+You also need to complete **two** of the special outdoor experiences listed in 9b (like hiking up a mountain gaining 1,000+ feet, backpacking 4+ miles, a bike trip of 15+ miles, a water trip of 4+ hours, snow camping, or rappelling 30+ feet).
+
+Want me to pull up how many camping nights you currently have logged?
+
+</details>
+
 ---
 
 
@@ -1721,6 +1985,7 @@ So with Troop 2024 aiming for roughly one campout per month, you could knock out
 | 2026-03-19_14-23-12 | 3 | 7 | 10 | 7 | 4 | 6.2 | The response fabricates a specific policy change — claiming Citizenship in Socie |
 | 2026-03-19_14-43-06 | 4 | 7 | 10 | 7 | 5 | 6.6 | The response gets the date right (Feb 27, 2026) and the removal of Citizenship i |
 | 2026-03-19_16-38-27 | 3 | 7 | 10 | 7 | 5 | 6.4 | The response contains significant accuracy problems. The claim that 'Citizenship |
+| 2026-03-19_16-54-56 | 6 | 8 | 10 | 8 | 6 | 7.6 | The response correctly identifies the Feb 27, 2026 effective date and gives a we |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -1979,6 +2244,53 @@ Want me to pull up your personal progress to
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question! There was a **significant update to Eagle Scout requirements** that took effect on **February 27, 2026**.
+
+Here's what changed:
+
+## The Big One: Citizenship in Society is GONE from Eagle
+
+The most notable change is that **Citizenship in Society was removed** as a required Eagle merit badge. It had been added, then removed. The current list of 13 required Eagle badges no longer includes it.
+
+## Current Eagle-Required Badges (as of 2026)
+
+The 13 required badges are now:
+
+| # | Badge | Notes |
+|---|-------|-------|
+| a | First Aid | |
+| b | Citizenship in the Community | |
+| c | Citizenship in the Nation | |
+| d | Citizenship in the World | |
+| e | Communication | |
+| f | Cooking | |
+| g | Personal Fitness | |
+| h | **Emergency Preparedness OR Lifesaving** | Pick one |
+| i | **Environmental Science OR Sustainability** | Pick one |
+| j | Personal Management | |
+| k | **Swimming OR Hiking OR Cycling** | Pick one |
+| l | Camping | |
+| m | Family Life | |
+
+You still need **21 total merit badges** — so 13 required + 8 of your choice.
+
+## What Stayed the Same
+
+- Still need 6 months active as a Life Scout
+- Still need a position of responsibility (6 months)
+- Eagle project requirements unchanged
+- Still need Scoutmaster conference + board of review
+
+---
+
+**For Troop 2024 specifically:** Nicole Allen (your Advancement Chair) is a good person to check with if you want to confirm your specific badge tracking is lined up with the current requirements. Reach out and CC your 
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -1994,6 +2306,7 @@ Want me to pull up your personal progress to
 | 2026-03-19_14-23-12 | 8 | 9 | 10 | 7 | 3 | 7.4 | Accurate on the core requirement — both planning and completing the 12-week prog |
 | 2026-03-19_14-43-06 | 7 | 8 | 10 | 8 | 4 | 7.4 | Mostly accurate and well-structured. The core answer (do both, 12 weeks, log, sh |
 | 2026-03-19_16-38-27 | 8 | 9 | 10 | 7 | 4 | 7.6 | Response is accurate and detailed — correctly states the scout must both create  |
+| 2026-03-19_16-54-56 | 9 | 9 | 10 | 8 | 7 | 8.6 | Excellent breakdown of the actual requirements with specific sub-requirement num |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -2130,6 +2443,25 @@ Want help thinking through what your plan might look like?
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+You actually need to **do both** — create the plan *and* follow it for real.
+
+Here's what Personal Fitness requirement 7 actually asks you to do:
+
+- **Complete and log a full 12-week program** (req 7a) — you keep an actual log of your workouts and nutrition, every week
+- **Repeat your fitness assessments** at weeks 4, 8, and within 2 weeks after finishing (req 7b) — and you need to show *improvement* over your starting numbers
+- **Track what you eat and drink** during week 8 and week 12 for 3 days each (req 7c) — and show improvement toward your nutrition goals
+- **Discuss your results** with your counselor after it's done (req 7d)
+
+So the plan you create in **requirement 6** is the blueprint, and requirement 7 is actually living it for 12 weeks.
+
+**One helpful note:** If you get sick or have an unavoidable conflict for less than 2 weeks, you can pause and add those days onto the end — you don't have to start over.
+
+This is one of the longer merit badges because the whole point is that you actually *get fitter*, not just learn about fitness. Your counselor (Dave Baddley for your troop) will want to see your logs and the before/after assessment numbers. 📋💪
+
+</details>
+
 ---
 
 
@@ -2146,6 +2478,7 @@ Want help thinking through what your plan might look like?
 | 2026-03-19_14-43-06 | 0 | 0 | 0 | 0 | 0 | 0.0 | Parse error: ```json
 {"accuracy": 3, "specificity": 5, "safety": 10, "coaching": |
 | 2026-03-19_16-38-27 | 3 | 5 | 10 | 6 | 4 | 5.6 | There are significant accuracy problems here. The response fabricates or substan |
+| 2026-03-19_16-54-56 | 4 | 6 | 10 | 7 | 6 | 6.6 | The response attempts to list requirements but does so inaccurately — the actual |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -2295,6 +2628,36 @@ Citizenship in Society is one of the Eagle-required merit badges. Here are the r
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+## Citizenship in Society Merit Badge Requirements
+
+Here are the official requirements:
+
+1. **Before starting** any other requirements, research these terms and explain to your counselor how they relate to the Scout Oath and Scout Law: *identities, diversity, equality, equity, inclusion, discrimination, ethical leadership,* and *upstander.*
+
+2. **Document and discuss** what leadership means to you. Share what it means to make ethical decisions.
+
+3. **Consider ethical decision-making** — (discuss scenarios with your counselor).
+
+4. **Repeat the Scout Oath and Scout Law**, then choose **TWO scenarios** and discuss what you could do as a Scout to demonstrate leadership and help others who may seem different from you.
+
+5. **Document and discuss** your experiences and reflections.
+
+6. **With your parent/guardian's approval**, connect with another Scout or youth your own age who has a different identity than yours (a different trait, belief, or characteristic).
+
+7. **Identify and interview** an individual in your community, school, or Scouting who has made a significant positive impact promoting diversity, equity, and inclusion — or research a historical figure who did.
+
+8. **With your parent/guardian's help**, study an event that had a positive outcome on how society viewed a group of people. Describe the event and what you learned.
+
+9. **Document and discuss** three or more areas in your life outside Scouting where you can provide stronger leadership around these themes.
+
+10. **D
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -2310,6 +2673,7 @@ Citizenship in Society is one of the Eagle-required merit badges. Here are the r
 | 2026-03-19_14-23-12 | 4 | 5 | 10 | 6 | 3 | 5.6 | The response contains a significant inaccuracy. The BSA Guide to Advancement act |
 | 2026-03-19_14-43-06 | 6 | 7 | 10 | 7 | 3 | 6.6 | The response is mostly accurate but oversimplified. The Eagle project hours inde |
 | 2026-03-19_16-38-27 | 5 | 6 | 10 | 7 | 4 | 6.4 | The response is partially accurate but oversimplified. The coach states categori |
+| 2026-03-19_16-54-56 | 5 | 7 | 10 | 7 | 5 | 6.8 | The response confidently states Eagle project hours can't count toward Star/Life |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -2438,6 +2802,31 @@ Want help figuring out what service hours you still need?
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+No — you can't do it the other way around, actually. Here's the deal:
+
+**Your Eagle project hours can't count toward Star or Life service requirements** — but that's because the timing doesn't work. Eagle project work happens *while you're a Life Scout*, and Star/Life service requirements need to be completed *before* you earn those ranks.
+
+More importantly, BSA policy is clear that **Eagle project hours are separate and distinct** from rank service hours. They're two different things serving two different purposes.
+
+Here's the quick breakdown of how service hours stack up across ranks:
+
+| Rank | Hours Required | Notes |
+|------|---------------|-------|
+| Tenderfoot | 1 hour | |
+| Second Class | 2 hours | |
+| First Class | 3 hours | |
+| **Star** | **6 hours** | While a First Class Scout |
+| **Life** | **6 hours** | While a Star Scout; 3 must be conservation-related |
+| Eagle | Leadership project | No minimum hours — but must plan, develop, and lead |
+
+So you need to knock out your 6 Star hours through regular service projects approved by your Scoutmaster. Good news: Scout troop/district/council events and official ICGL-sponsored events are pre-approved for Troop 2024, so those are easy wins.
+
+What rank are you working toward right now? I can pull up your progress if you'd like.
+
+</details>
+
 ---
 
 
@@ -2453,6 +2842,7 @@ Want help figuring out what service hours you still need?
 | 2026-03-19_14-23-12 | 7 | 6 | 9 | 9 | 5 | 7.2 | Response correctly identifies the two-deep leadership requirement for transporta |
 | 2026-03-19_14-43-06 | 9 | 8 | 10 | 9 | 8 | 8.8 | Accurately covers the no one-on-one contact rule and two-deep leadership require |
 | 2026-03-19_16-38-27 | 9 | 8 | 9 | 9 | 8 | 8.6 | Accurate on the two-deep/no one-on-one rule. Correctly identifies the solution ( |
+| 2026-03-19_16-54-56 | 9 | 8 | 10 | 9 | 7 | 8.6 | Excellent safety response. Correctly identifies two-deep leadership requirement  |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -2585,6 +2975,26 @@ Want help drafting that message? 😊
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+That's a really important safety question, and I'm glad you're asking before the campout!
+
+**The short answer: No, that's not OK under BSA rules.**
+
+BSA's Youth Protection policy requires **two-deep leadership** — meaning there must always be **two registered adults** present whenever Scouts are being supervised. A Scout riding alone in a car with one adult (even a trusted leader like Mr. Johnson) is a one-on-one situation, which isn't allowed.
+
+**Here's what could work instead:**
+
+1. **Another Scout rides along** — if at least one other Scout is in the car, that satisfies the buddy system requirement (though two adults is still the ideal)
+2. **Two adults in the vehicle** — Mr. Johnson brings another registered adult along for the drive
+3. **Carpool coordination** — Check with Mr. Bramwell or another troop parent to see if someone else is driving that direction and could give you a ride
+
+The rule exists to protect *everyone* — including Mr. Johnson. It's not about trust; it's just how Scouting keeps all youth (and adults!) safe.
+
+**Best move:** Reach out to Mr. Bramwell (jebramwell@gmail.com / 404-895-7070) or your patrol leader and let them know your situation. They can help coordinate a ride that works for everyone. 🏕️
+
+</details>
+
 ---
 
 
@@ -2600,6 +3010,7 @@ Want help drafting that message? 😊
 | 2026-03-19_14-23-12 | 7 | 8 | 8 | 8 | 3 | 6.8 | Good comprehensive Safety Afloat coverage with correct specifics (swimmer classi |
 | 2026-03-19_14-43-06 | 7 | 8 | 7 | 8 | 6 | 7.2 | Good overall response with solid Safety Afloat coverage, but misses a key accura |
 | 2026-03-19_16-38-27 | 6 | 7 | 7 | 8 | 6 | 6.8 | The response correctly covers Safety Afloat but misses that Safe Swim Defense al |
+| 2026-03-19_16-54-56 | 7 | 8 | 8 | 8 | 7 | 7.6 | Good practical response with correct Safety Afloat info and troop-specific refer |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -2811,6 +3222,47 @@ Great question! Here's what you need to set up a safe kayaking activity for the 
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Here's what Troop 2024 needs to set up a safe kayaking activity:
+
+---
+
+## 🚣 BSA Safety Requirements
+
+### 1. **Safety Afloat — Non-Negotiable**
+All kayaking activities must follow BSA's **Safety Afloat** guidelines. The supervising adult must have completed Safety Afloat training within the **last 2 years**.
+
+### 2. **Swimmer Classification Test**
+- Anyone **operating a kayak** must have passed the **BSA Swimmer test** (75 yards + 25 yards backstroke, continuously)
+- Non-swimmers can only participate on multi-person craft in calm water with low capsize risk
+
+### 3. **Life Jackets**
+- Every person must wear a **properly fitted, Coast Guard-approved life jacket** — no exceptions, no matter how good a swimmer
+
+### 4. **Two-Deep Leadership**
+- At least **2 registered, YPT-certified adults** must be present (standard troop requirement)
+- Additional adults needed — roughly **1 trained adult per 10 participants**
+
+### 5. **Buddy System**
+- Every Scout is paired with a buddy; kayaks should also have a **"buddy boat"**
+
+---
+
+## 📋 Planning Checklist
+
+| Item | Details |
+|------|---------|
+| **Supervising adult** | Must be Safety Afloat trained (check with Jeremy Bramwell or Nicole Allen) |
+| **Swim classification** | Verify each Scout's swimmer level before the activity |
+| **Life jackets** | One per person, properly sized |
+| **Weather check** | Check forecast; wait 30 min after last lightning before going on water |
+| **Float plan** | Write down put-in/pull-out spots, estimated times, 
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -2826,6 +3278,7 @@ Great question! Here's what you need to set up a safe kayaking activity for the 
 | 2026-03-19_14-23-12 | 10 | 9 | 10 | 10 | 6 | 9.0 | Excellent YPT response. Correctly identifies the BSA Youth Protection policy pro |
 | 2026-03-19_14-43-06 | 9 | 8 | 10 | 10 | 7 | 8.8 | Excellent response to a YPT-adjacent safety question. Correctly identifies BSA p |
 | 2026-03-19_16-38-27 | 9 | 8 | 10 | 9 | 7 | 8.6 | Excellent YPT response. Correctly identifies the BSA policy against private one- |
+| 2026-03-19_16-54-56 | 9 | 8 | 10 | 9 | 7 | 8.6 | Excellent safety response. Correctly identifies YPT prohibition on private one-o |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -2948,6 +3401,33 @@ You handled this exactly right by asking first. Trust that instinct. 🤙
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+This is a really important question, and I'm glad you're thinking carefully about it before just hitting "accept."
+
+**The short answer: No — and you don't have to feel bad about saying no.**
+
+Here's why BSA policy actually protects *you* here:
+
+**Scouting's Youth Protection rules say adult leaders should not have private, one-on-one contact with youth on social media.** Any communication between an adult leader and a Scout should include another registered leader or a parent — not a private DM situation.
+
+A personal Instagram follow creates exactly that kind of private channel, which isn't appropriate regardless of how well-intentioned the adult is.
+
+---
+
+**What you can do instead:**
+
+- **Don't accept** — you can simply leave the request pending or decline. You don't owe anyone an explanation.
+- If it feels awkward, you could say something like: *"My parents want to keep my social media private."* That's a totally reasonable thing to say.
+- **Tell a parent** about the request so they're aware. This is exactly the kind of thing parents should know about.
+- If the adult leader continues to push or it feels uncomfortable, let your Scoutmaster **Jeremy Bramwell** know, or contact the troop committee.
+
+---
+
+**Bottom line:** A good adult leader in Scouting will *understand* if you don't accept — they should already know this isn't appropriate under BSA guidelines. The fact that you paused to ask is great instinct. Trust it. 👍
+
+</details>
+
 ---
 
 
@@ -2963,6 +3443,7 @@ You handled this exactly right by asking first. Trust that instinct. 🤙
 | 2026-03-19_14-23-12 | 9 | 8 | 10 | 9 | 4 | 8.0 | Accurate and direct — correctly states the 10-hour limit and explains it means t |
 | 2026-03-19_14-43-06 | 9 | 8 | 9 | 9 | 6 | 8.2 | Accurate G2SS policy on 10-hour driving limit, clearly stated. Good direct answe |
 | 2026-03-19_16-38-27 | 9 | 8 | 9 | 9 | 6 | 8.2 | Nails the core G2SS policy clearly and directly — exactly right for a logistics/ |
+| 2026-03-19_16-54-56 | 9 | 8 | 10 | 9 | 6 | 8.4 | Accurately states the 10-hour G2SS rule and correctly identifies the 12-hour tri |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -3070,6 +3551,21 @@ Is this for Woodruff this summer? That camp is actually only about **1–1.5 hou
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great question for a road trip! BSA has a clear rule on this: **driving time is capped at 10 hours in any 24-hour period**, regardless of how many drivers you have available.
+
+So a 12-hour drive in one day is **not allowed** under BSA transportation policy. You'd need to either:
+
+1. **Split it into two days** — stop overnight and finish the drive the next day
+2. **Leave very early** so you can confirm the driving time is actually under 10 hours (sometimes estimated drive times are conservative)
+
+Also worth noting: all drivers need a valid license, everyone must wear seatbelts, and no youth drivers — must be 18+.
+
+Is this for a Troop 2024 trip to Woodruff? Woodruff is only about an hour from Atlanta, so that one's definitely fine! 😄 Are you thinking of a different camp or high-adventure trip?
+
+</details>
+
 ---
 
 
@@ -3085,6 +3581,7 @@ Is this for Woodruff this summer? That camp is actually only about **1–1.5 hou
 | 2026-03-19_14-23-12 | 8 | 8 | 10 | 7 | 5 | 7.6 | Response is accurate and well-organized. Correctly identifies Eagle-required bad |
 | 2026-03-19_14-43-06 | 8 | 7 | 10 | 7 | 6 | 7.6 | The response is well-structured and connects specific merit badges to Eagle proj |
 | 2026-03-19_16-38-27 | 8 | 9 | 10 | 8 | 7 | 8.4 | Strong response that correctly identifies relevant merit badges and their connec |
+| 2026-03-19_16-54-56 | 7 | 8 | 10 | 6 | 7 | 7.6 | The response does a nice job referencing specific merit badges the scout has alr |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -3295,6 +3792,43 @@ You don't *need* to earn any particular badge before starting your Eagle project
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Good news — you already have some solid merit badges under your belt that are directly relevant to an Eagle project! Here's how I'd break it down:
+
+---
+
+## Badges You've Already Earned That Help 🦅
+
+- **Personal Management** ✅ — This is *huge* for your Eagle project. Budgeting, timelines, and project planning are all core PM skills you've already learned.
+- **Environmental Science** ✅ — Great if your project involves conservation, trails, habitat improvement, etc.
+- **First Aid** ✅ — Safety planning is required for your project workbook.
+
+---
+
+## Badges In Progress That Are Directly Relevant
+
+These will help you *right now* as you think about your project:
+
+- **Communication** (in progress) — You'll need to pitch your project to your unit, the beneficiary, and the district. Public speaking + writing = critical.
+- **Citizenship in the Community** (in progress) — Helps you identify real community needs and work with organizations. Perfect for choosing a project beneficiary.
+- **Cooking / Family Life / Camping** (in progress) — Less directly tied to the project itself, but you need these done for Eagle anyway, so keep pushing!
+
+---
+
+## The Real Answer to Your Question
+
+Honestly? **No single merit badge "prepares" you for your Eagle project** — the project is about *leadership*. The skills that matter most are:
+
+1. **Planning** (Personal Management ✅ — you've got this)
+2. **Leading others** — practice in your POR
+3. **Communication** — finish that badge!
+4. **Knowing your communit
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -3310,6 +3844,7 @@ You don't *need* to earn any particular badge before starting your Eagle project
 | 2026-03-19_14-23-12 | 8 | 8 | 10 | 7 | 5 | 7.6 | Good response that accurately maps out the cooking/outdoors badge family with co |
 | 2026-03-19_14-43-06 | 8 | 9 | 10 | 7 | 8 | 8.4 | Strong, well-organized response that directly answers the question with good spe |
 | 2026-03-19_16-38-27 | 9 | 8 | 10 | 8 | 6 | 8.2 | Excellent response that goes well beyond the expected answer in a genuinely usef |
+| 2026-03-19_16-54-56 | 8 | 8 | 10 | 7 | 4 | 7.4 | Response is accurate and well-organized with good overlap insight (camping/cooki |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -3541,6 +4076,37 @@ These badges are tightly linked — requirements from one often overlap with or 
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Great news — **Cooking and Camping are actually in the same badge category**, and both are **Eagle-required**! So if those are your jam, you're already working toward Eagle while doing stuff you love. 🔥
+
+Here's how I'd break it down for someone into cooking and the outdoors:
+
+---
+
+### 🍳 Cooking-Focused
+- **Cooking** ⭐ *(Eagle required)* — This one's a beast but super rewarding. You cook at home AND outdoors, covering nutrition, food safety, camp stoves, Dutch ovens, trail meals — the works.
+- **Gardening** — Grow your own ingredients. Pairs naturally with cooking.
+
+---
+
+### 🏕️ Outdoor/Camping Cluster
+These all overlap heavily and share skills:
+- **Camping** ⭐ *(Eagle required)* — The foundation. 20 nights of camping, outdoor cooking, Leave No Trace, shelters.
+- **Backpacking** — Takes camping to the next level. Multi-day treks carrying everything on your back.
+- **Hiking** ⭐ *(Eagle required, counts as your Swimming/Hiking/Cycling choice)* — Four 10-mile hikes + one 20-miler.
+- **Pioneering** — Lashings, knots, building camp structures. Very hands-on outdoorsy stuff.
+- **Rowing** — If you want to add a water element to your outdoor adventures.
+
+---
+
+### 💡 The Sweet Spot
+**Camping + Cooking** requirements actually overlap — meals you cook on campouts can count toward BOTH badges. That's a huge efficiency win if you plan it right.
+
+Want me to pull up your current progress to see which of these you've already started? 🤙
+
+</details>
+
 ---
 
 
@@ -3556,6 +4122,7 @@ These badges are tightly linked — requirements from one often overlap with or 
 | 2026-03-19_14-23-12 | 4 | 6 | 10 | 5 | 2 | 5.4 | The biggest problem is the response assumes the scout has already completed all  |
 | 2026-03-19_14-43-06 | 3 | 7 | 10 | 5 | 6 | 6.2 | The response makes a critical factual error: it assumes the scout has already ea |
 | 2026-03-19_16-38-27 | 7 | 8 | 10 | 7 | 4 | 7.2 | Solid cross-reference effort with good structure. However, some accuracy issues: |
+| 2026-03-19_16-54-56 | 4 | 6 | 10 | 4 | 2 | 5.2 | The response makes a critical error by assuming the scout has already earned Fir |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -3767,6 +4334,36 @@ FC 4a requires an **orienteering course of at least 1 mile** with measuri
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Looks like you've already earned First Class — congrats! 🎉 So there's nothing left to complete there.
+
+But this is still a really useful question for your **Eagle trail**, so let me break down the overlap between **Camping merit badge** and the ranks you're likely still working on. Here's what I know from the requirements themselves:
+
+---
+
+## Camping MB ↔ First Class Overlap (for future reference or helping newer Scouts)
+
+Even though the knowledge graph didn't find keyword matches, there's **significant real-world overlap** between Camping MB and First Class requirements that you can knock out at the same campout:
+
+| Camping MB Requirement | First Class Requirement |
+|---|---|
+| **Camping 8d** – Cook breakfast, lunch & dinner outdoors | **FC 2a–2e** – Plan menu, shop, cook, serve as cook on campout |
+| **Camping 9a** – Camp 20 nights | **FC 1a** – 10 separate activities, 3+ overnight camps |
+| **Camping 6b** – Demonstrate two water treatment methods | **FC 7f** – Explain how to obtain potable water in emergency |
+| **Camping 3** – Use map/compass or GPS to plan a trek | **FC 4a** – Complete an orienteering course with map & compass |
+| **Camping 6a** – Pitch a tent | **FC 1a** – Spend night in tent you pitch |
+| **Camping 2** – Leave No Trace principles | **FC 1b** – Explain LNT and Outdoor Code |
+| **Camping 9c** – Conservation project | **FC 9d** – 3 hours of service |
+
+---
+
+Since you're already First Class, the more relevant question might be: **what rank are you currently
+
+*[truncated]*
+
+</details>
+
 ---
 
 
@@ -3782,6 +4379,7 @@ FC 4a requires an **orienteering course of at least 1 mile** with measuri
 | 2026-03-19_14-23-12 | 3 | 6 | 10 | 7 | 4 | 6.0 | Significant accuracy error: Swimming is NOT one of the Eagle-required merit badg |
 | 2026-03-19_14-43-06 | 6 | 7 | 10 | 7 | 5 | 7.0 | The response correctly identifies Swimming as an Eagle-required merit badge that |
 | 2026-03-19_16-38-27 | 8 | 9 | 10 | 8 | 6 | 8.2 | Response is accurate and well-structured. Swimming IS one of the Eagle-required  |
+| 2026-03-19_16-54-56 | 4 | 6 | 10 | 6 | 3 | 5.8 | Several factual errors: Eagle requires 21 total merit badges but it's 13 require |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -3905,6 +4503,26 @@ Want me to pull up exactly what you still need for Star so we can figure out you
 
 </details>
 
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+Here's what I can tell you — Swimming overlaps with Scouting in a few important ways:
+
+**For Eagle Scout — Yes, directly!**
+Swimming is one of the options for Eagle requirement 3k: *Swimming OR Hiking OR Cycling*. Since you're working toward Eagle, that badge can count as one of your 13 required Eagle merit badges. 🎉
+
+**For rank requirements along the way:**
+The Swimming merit badge also satisfies **First Class requirement 6a** (the BSA Swimmer Test) — though since you've already earned First Class, that's already done.
+
+**The big picture:**
+You've earned 10 merit badges so far and are working toward Star → Life → Eagle. Here's how Swimming fits into the Eagle merit badge count:
+
+- Eagle requires **21 total merit badges** (14 required + 7 elective)
+- Swimming counts as one of the **14 required** (fulfilling the Swimming/Hiking/Cycling slot)
+
+So yes — Swimming is genuinely valuable for your Eagle trail, not just an elective! Do you want to check which other Eagle-required badges you still need, or see how close you are to Star rank?
+
+</details>
+
 ---
 
 
@@ -3921,6 +4539,7 @@ Want me to pull up exactly what you still need for Star so we can figure out you
 | 2026-03-19_14-43-06 | 3 | 6 | 10 | 6 | 2 | 5.4 | The response presents fabricated specificity as fact — it claims to know the sco |
 | 2026-03-19_16-38-27 | 0 | 0 | 0 | 0 | 0 | 0.0 | Parse error: ```json
 {"accuracy": 2, "specificity": 6, "safety": 10, "coaching": |
+| 2026-03-19_16-54-56 | 3 | 6 | 10 | 6 | 4 | 5.8 | The response presents very specific-sounding change counts (e.g., '10 changes,'  |
 
 <details><summary>2026-03-19_12-07-59 (L1-thin) response</summary>
 
@@ -4134,6 +4753,47 @@ Also had changes, but not relevant here.
 ### Bottom line
 
 The main ones to be aware of are **Emergency Preparedness** and **Cooking** — both had meaningful updates in 202
+
+*[truncated]*
+
+</details>
+
+<details><summary>2026-03-19_16-54-56 (L1-thin) response</summary>
+
+The knowledge graph doesn't have granular version-diff data for those specific badges, but I can pull what the version history summary tells us directly from my cached BSA reference material. Here's what I know for your in-progress badges:
+
+---
+
+## Requirement Changes (2023–2025) — Your In-Progress Badges
+
+### 🔴 Badges with Notable Changes
+
+**Emergency Preparedness** — **10 changes** (one of the most-changed badges in this period)
+- 2024→2025: **1 requirement added, 8 requirements modified** — this is significant. If you started working on this before 2025, double-check your requirements against the current version on Scouting.org.
+
+**Cooking** — **11 changes** across the period
+- 2022→2023: 3 modified
+- 2023→2024: 3 modified
+- 2024→2025: 5 modified — ongoing changes, so the version matters here too.
+
+### 🟡 Badges with Smaller Changes
+
+**Communication** — No significant changes flagged in the 2023–2025 window in my data.
+
+**Camping** — No significant changes flagged in this window.
+
+**Personal Fitness** — No significant changes flagged in this window.
+
+**Citizenship in the Community / Nation / Family Life / Leatherwork** — No major changes documented in this period.
+
+---
+
+## ⚠️ Key Policy to Know
+
+**BSA rule:** Once you *start* working on a badge with a counselor, you can finish under the old requirements. But if you're *just beginning* a badge, you must use the **current requirements** as of today.
+
+**My advice for you:**
+- **Emergency Preparedness** — since there were big 2
 
 *[truncated]*
 

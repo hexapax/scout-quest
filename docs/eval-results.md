@@ -154,9 +154,57 @@ Tracking progressive improvement as knowledge layers are added to the Scout Coac
 
 ---
 
-### Run 7: L3 — Enriched Graph (planned)
-**Changes:** Load Layer 3 graph nodes (skills, topics, version changes, cross-badge relationships). Add graph-powered cross-reference queries.
-**Expected improvement:** Category E (relationship queries, version-aware answers).
+### Run 7: L3 — Enriched Graph + cross_reference Tool
+**Date:** 2026-03-19 16:54 UTC
+**Changes:** Loaded Layer 3 graph: 140 Badge, 14 Category, 7 RankNode, 138 VersionChange, 148 Skill, 149 Topic nodes + 1,540 edges. Added `cross_reference` tool with 6 scopes (related_badges, eagle_requirements, rank_overlap, version_changes, badge_for_skill, category_badges).
+
+| Dimension | L0 | L1-thin | L1-full+troop | L2 | **L3** | Delta (L2→L3) |
+|---|---|---|---|---|---|---|
+| Accuracy | 6.4 | 7.0 | 7.3 | 7.6 | **7.5** | -0.1 |
+| Specificity | 5.0 | 7.2 | 7.4 | 7.7 | **7.6** | -0.1 |
+| Safety | 9.5 | 9.3 | 9.4 | 9.4 | **9.9** | +0.5 |
+| Coaching | 6.1 | 7.7 | 7.7 | 7.9 | **7.9** | 0 |
+| Troop Voice | 2.3 | 5.6 | 5.7 | 5.8 | **5.6** | -0.2 |
+
+| Category | L0 | L1-thin | L1-full+troop | L2 | **L3** | Delta |
+|---|---|---|---|---|---|---|
+| A: Policy | 5.9 | 8.3 | 8.8 | 8.6 | **8.5** | -0.1 |
+| B: Troop values | 6.4 | 8.3 | 8.0 | 8.3 | **7.7** | -0.6 |
+| C: Requirements | 5.8 | 5.8 | 5.7 | 7.0 | **7.6** | **+0.6** |
+| D: Safety/YPT | 5.5 | 7.7 | 8.3 | 8.1 | **8.3** | +0.2 |
+| E: Cross-reference | 5.8 | 6.8 | 6.9 | 6.4 | **6.4** | 0 |
+
+**Finding:** Category C improved again (+0.6). Category E stayed flat — the model never called `cross_reference` tool (verified in backend logs). It answered cross-reference questions from cached knowledge + vector search instead. The graph data is loaded and the tool works, but the model needs explicit prompting to use it for relationship queries. This is a tool description / persona instruction issue, not a data issue.
+
+**Next step:** Tune persona or tool descriptions to guide the model to use `cross_reference` for relationship questions. Alternatively, the 24-question eval may not have enough cross-reference scenarios that specifically require graph traversal (vs general knowledge).
+
+---
+
+## Final Summary: L0 → L3 Progression
+
+```
+             L0      L1-thin   L1-full+troop   L2 (vectors)   L3 (graph)
+             ------  --------  --------------  ------------   ----------
+Accuracy     6.4     7.0       7.3             7.6            7.5
+Specificity  5.0     7.2       7.4             7.7            7.6
+Safety       9.5     9.3       9.4             9.4            9.9
+Coaching     6.1     7.7       7.7             7.9            7.9
+Troop Voice  2.3     5.6       5.7             5.8            5.6
+
+Cat A Policy 5.9     8.3       8.8             8.6            8.5
+Cat B Troop  6.4     8.3       8.0             8.3            7.7
+Cat C Reqs   5.8     5.8       5.7             7.0            7.6
+Cat D Safety 5.5     7.7       8.3             8.1            8.3
+Cat E XRef   5.8     6.8       6.9             6.4            6.4
+```
+
+**Best-in-class scores achieved:**
+- Category A (Policy): 8.8 at L1-full+troop
+- Category C (Requirements): 7.6 at L3
+- Category D (Safety): 8.3 at L1-full+troop and L3
+- Overall coaching: 7.9 at L2 and L3
+
+**Remaining gap:** Category E (Cross-reference) plateaued at 6.4-6.9 despite graph enrichment. Requires either better tool prompting or more cross-reference-specific eval questions.
 
 ---
 
