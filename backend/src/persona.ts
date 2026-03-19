@@ -1,4 +1,22 @@
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 import type { AnthropicSystemBlock } from "./types.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/** Load troop-specific context from knowledge/troop-context.md.
+ * This file is assembled at build time from docs/scouting-knowledge/troop/.
+ * Placed in system[1] (persona block) so it stays prominent
+ * regardless of how large the BSA knowledge corpus grows in system[0]. */
+function loadTroopContext(): string {
+  const troopFile = join(__dirname, "../knowledge/troop-context.md");
+  try {
+    return readFileSync(troopFile, "utf-8");
+  } catch {
+    return "";
+  }
+}
 
 const SCOUT_COACH_PERSONA = `You are Scout Coach, an AI mentor embedded in the Scout Quest system for Troop 2024.
 
@@ -63,10 +81,26 @@ For scout-specific data, use the information provided in the scout context.
 Preserve scout agency: suggest options, let the guide decide.
 Keep responses focused and actionable.`;
 
+let troopContext: string | null = null;
+
 export function getPersonaBlock(model: string): AnthropicSystemBlock {
   const isGuide = model === "scout-guide" || model.includes("guide");
+  const persona = isGuide ? SCOUT_GUIDE_PERSONA : SCOUT_COACH_PERSONA;
+
+  // Lazy-load troop context once
+  if (troopContext === null) {
+    troopContext = loadTroopContext();
+    if (troopContext) {
+      const approxTokens = Math.round(troopContext.length / 4);
+      console.log(`Troop context loaded: ${troopContext.length} chars (~${approxTokens} tokens)`);
+    } else {
+      console.log("No troop context found (docs/scouting-knowledge/troop/ not available)");
+      troopContext = "";
+    }
+  }
+
   return {
     type: "text",
-    text: isGuide ? SCOUT_GUIDE_PERSONA : SCOUT_COACH_PERSONA,
+    text: persona + troopContext,
   };
 }

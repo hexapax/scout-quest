@@ -93,11 +93,41 @@ Tracking progressive improvement as knowledge layers are added to the Scout Coac
 
 **Action needed:** Move troop-specific content to a prominent separate position (persona block or dedicated section at the start of knowledge doc) so it doesn't get diluted by the BSA corpus.
 
+**NOTE on troop content placement across runs:**
+- Run 3 (L0): No troop content anywhere
+- Run 3 (L1-thin): Troop content was embedded IN the 52K knowledge doc (system[0])
+- Run 4 (L1-full): Troop content was ABSENT — the corpus distillation didn't include it
+- Run 5 (L1-full + troop): Troop content moved to persona block (system[1]), ~11K tokens
+- To fairly compare L1-thin vs L1-full, Run 3 L1-thin should be re-run with troop content in system[1] instead of system[0]. This would isolate the BSA knowledge improvement from the troop context placement effect.
+
 ---
 
-## Future Runs
+### Run 5: L1-full + Troop Context in Persona
+**Date:** 2026-03-19 ~14:45 UTC
+**Changes:** Troop 2024 content (~11K tokens, 8 files: overview, advancement, leadership, patrols, policies, eagle process, campouts, finances) moved from knowledge doc to persona block (system[1]). BSA knowledge (system[0]) stays at 165K tokens. Troop content now always prominent regardless of knowledge corpus size.
+**Cached tokens:** 165,749 (BSA) + ~11,438 (troop in persona) = ~177K total
 
-### Run 5: L2 — Vector Retrieval (planned)
+| Dimension | L0 | L1-thin | L1-full | L1-full+troop | Delta (L1-full→+troop) |
+|---|---|---|---|---|---|
+| Accuracy | 6.4 | 7.0 | 7.1 | | |
+| Specificity | 5.0 | 7.2 | 7.0 | | |
+| Safety | 9.5 | 9.3 | 9.9 | | |
+| Coaching | 6.1 | 7.7 | 7.8 | | |
+| Troop Voice | 2.3 | 5.6 | 3.9 | | |
+
+| Category | L0 | L1-thin | L1-full | L1-full+troop | Delta |
+|---|---|---|---|---|---|
+| A: Policy | 5.9 | 8.3 | 8.0 | | |
+| B: Troop values | 6.4 | 8.3 | 7.0 | | |
+| C: Requirements | 5.8 | 5.8 | 6.6 | | |
+| D: Safety/YPT | 5.5 | 7.7 | 7.8 | | |
+| E: Cross-reference | 5.8 | 6.8 | 6.5 | | |
+
+*Results pending...*
+
+---
+
+### Run 6: L2 — Vector Retrieval (planned)
 **Changes:** Add voyage-context-3 embeddings for 3,990 chunks. Enable vector search in search_bsa_reference tool.
 **Expected improvement:** Category C (exact requirement text), Category E (cross-reference retrieval).
 
