@@ -107,23 +107,25 @@ Tracking progressive improvement as knowledge layers are added to the Scout Coac
 **Changes:** Troop 2024 content (~11K tokens, 8 files: overview, advancement, leadership, patrols, policies, eagle process, campouts, finances) moved from knowledge doc to persona block (system[1]). BSA knowledge (system[0]) stays at 165K tokens. Troop content now always prominent regardless of knowledge corpus size.
 **Cached tokens:** 165,749 (BSA) + ~11,438 (troop in persona) = ~177K total
 
-| Dimension | L0 | L1-thin | L1-full | L1-full+troop | Delta (L1-full→+troop) |
+| Dimension | L0 | L1-thin | L1-full | **L1-full+troop** | Delta (full→+troop) |
 |---|---|---|---|---|---|
-| Accuracy | 6.4 | 7.0 | 7.1 | | |
-| Specificity | 5.0 | 7.2 | 7.0 | | |
-| Safety | 9.5 | 9.3 | 9.9 | | |
-| Coaching | 6.1 | 7.7 | 7.8 | | |
-| Troop Voice | 2.3 | 5.6 | 3.9 | | |
+| Accuracy | 6.4 | 7.0 | 7.1 | **7.3** | +0.2 |
+| Specificity | 5.0 | 7.2 | 7.0 | **7.4** | +0.4 |
+| Safety | 9.5 | 9.3 | 9.9 | 9.4 | -0.5 |
+| Coaching | 6.1 | 7.7 | 7.8 | 7.7 | -0.1 |
+| Troop Voice | 2.3 | 5.6 | 3.9 | **5.7** | **+1.8** |
 
-| Category | L0 | L1-thin | L1-full | L1-full+troop | Delta |
+| Category | L0 | L1-thin | L1-full | **L1-full+troop** | Delta |
 |---|---|---|---|---|---|
-| A: Policy | 5.9 | 8.3 | 8.0 | | |
-| B: Troop values | 6.4 | 8.3 | 7.0 | | |
-| C: Requirements | 5.8 | 5.8 | 6.6 | | |
-| D: Safety/YPT | 5.5 | 7.7 | 7.8 | | |
-| E: Cross-reference | 5.8 | 6.8 | 6.5 | | |
+| A: Policy | 5.9 | 8.3 | 8.0 | **8.8** | +0.8 |
+| B: Troop values | 6.4 | 8.3 | 7.0 | **8.0** | +1.0 |
+| C: Requirements | 5.8 | 5.8 | 6.6 | 5.7 | -0.9 |
+| D: Safety/YPT | 5.5 | 7.7 | 7.8 | **8.3** | +0.5 |
+| E: Cross-reference | 5.8 | 6.8 | 6.5 | **6.9** | +0.4 |
 
-*Results pending...*
+**Finding:** Troop Voice recovered from 3.9→5.7 (+1.8), confirming the persona placement works. Best scores on Policy (8.8) and Safety (8.3). Category C regressed 6.6→5.7 — possibly eval noise or attention competition from the larger persona block. Overall this is the best configuration so far.
+
+**Category C note:** The C regression may be noise (single-run variance). With only 5 questions per category, a single answer scoring differently swings the average by 0.4. L2 (vector retrieval) should definitively improve C by enabling exact requirement text lookup.
 
 ---
 
