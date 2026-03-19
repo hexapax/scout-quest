@@ -129,12 +129,33 @@ Tracking progressive improvement as knowledge layers are added to the Scout Coac
 
 ---
 
-### Run 6: L2 — Vector Retrieval (planned)
-**Changes:** Add voyage-context-3 embeddings for 3,990 chunks. Enable vector search in search_bsa_reference tool.
-**Expected improvement:** Category C (exact requirement text), Category E (cross-reference retrieval).
+### Run 6: L2 — Vector Retrieval
+**Date:** 2026-03-19 16:38 UTC
+**Changes:** 3,990 voyage-3 embeddings (1024 dim) loaded into FalkorDB with cosine vector index. search_bsa_reference now uses hybrid: semantic vector search → full-text → knowledge doc scan. VOYAGE_API_KEY for query-time embedding.
+**Cached tokens:** 165,749 (BSA knowledge) + ~11,438 (troop persona)
 
-### Run 6: L3 — Enriched Graph (planned)
-**Changes:** Load Layer 3 graph nodes (skills, topics, version changes). Add graph-powered cross-reference queries.
+| Dimension | L0 | L1-thin | L1-full | L1-full+troop | **L2** | Delta (troop→L2) |
+|---|---|---|---|---|---|---|
+| Accuracy | 6.4 | 7.0 | 7.1 | 7.3 | **7.6** | +0.3 |
+| Specificity | 5.0 | 7.2 | 7.0 | 7.4 | **7.7** | +0.3 |
+| Safety | 9.5 | 9.3 | 9.9 | 9.4 | 9.4 | 0 |
+| Coaching | 6.1 | 7.7 | 7.8 | 7.7 | **7.9** | +0.2 |
+| Troop Voice | 2.3 | 5.6 | 3.9 | 5.7 | **5.8** | +0.1 |
+
+| Category | L0 | L1-thin | L1-full | L1-full+troop | **L2** | Delta |
+|---|---|---|---|---|---|---|
+| A: Policy | 5.9 | 8.3 | 8.0 | 8.8 | **8.6** | -0.2 |
+| B: Troop values | 6.4 | 8.3 | 7.0 | 8.0 | **8.3** | +0.3 |
+| C: Requirements | 5.8 | 5.8 | 6.6 | 5.7 | **7.0** | **+1.3** |
+| D: Safety/YPT | 5.5 | 7.7 | 7.8 | 8.3 | **8.1** | -0.2 |
+| E: Cross-reference | 5.8 | 6.8 | 6.5 | 6.9 | 6.4 | -0.5 |
+
+**Finding:** Category C (requirements) improved +1.3, confirming vector search retrieves specific requirement text effectively. All dimensions at or near peak scores. Category E did NOT improve — vector search finds individual chunks but doesn't help connect info across badges/ranks. That's L3's job.
+
+---
+
+### Run 7: L3 — Enriched Graph (planned)
+**Changes:** Load Layer 3 graph nodes (skills, topics, version changes, cross-badge relationships). Add graph-powered cross-reference queries.
 **Expected improvement:** Category E (relationship queries, version-aware answers).
 
 ---
