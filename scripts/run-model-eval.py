@@ -118,8 +118,6 @@ Return ONLY JSON: {"accuracy":7,"specificity":5,"safety":10,"coaching":8,"troop_
 # Model providers
 # ---------------------------------------------------------------
 
-import anthropic_provider  # we'll define these inline
-
 def call_claude(messages, system_prompt, max_tokens=1500):
     import httpx
     key = os.environ.get("ANTHROPIC_API_KEY", "")
