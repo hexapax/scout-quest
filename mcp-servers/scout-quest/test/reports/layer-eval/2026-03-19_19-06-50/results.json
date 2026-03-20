@@ -1,0 +1,322 @@
+[
+  {
+    "layer": "L1-thin",
+    "questionId": "A1",
+    "category": "A",
+    "question": "Can a board of review reject me for not being active enough in the troop?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo1K8PcVNEmbwxTH3J\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:51.107Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "A2",
+    "category": "A",
+    "question": "My scoutmaster says I have to redo a merit badge requirement because a different counselor started it. Is that true?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo2V5PPSjYaJtyjq2D\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:51.299Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "A3",
+    "category": "A",
+    "question": "Do partial merit badge completions expire? My troop says they expire after 6 months.",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo32pLoYzKvHFGsQ3Q\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:51.421Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "A4",
+    "category": "A",
+    "question": "My board of review wants to retest me on the requirements. They're going to quiz me on everything. Can they do that?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo3WLwx7rfat9srU1t\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:51.530Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "A5",
+    "category": "A",
+    "question": "I was told I can't work on Star requirements until I finish First Class. Is that right?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo3ysEhA4jCPkLZXo3\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:51.646Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "A6",
+    "category": "A",
+    "question": "My counselor says I have to redo a requirement because I completed it at summer camp and he wants to see me do it in person. Can he require that?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo4Xc9EMEBpjEhsdER\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:51.826Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "A7",
+    "category": "A",
+    "question": "I'm 17 and a half. Is it too late to start working on Eagle?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo5NTbsBXFssCU1L2z\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:51.973Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "A8",
+    "category": "A",
+    "question": "Our troop committee says I need to have my Eagle project approved before I can start my Life board of review. Is that right?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo5vwryzA3AHkirGB8\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:52.113Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "B1",
+    "category": "B",
+    "question": "I don't really want to go on the campout this weekend. Is that OK?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo6VgGGtJqnktJetVW\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:52.288Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "B2",
+    "category": "B",
+    "question": "My mom wants to help with my Eagle project. How much can she do?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo7EaJSch7KaKWnPFn\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:52.407Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "B3",
+    "category": "B",
+    "question": "What should I wear to the meeting on Tuesday?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo7j6UZqwvmmcETJ2Q\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:52.533Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "B4",
+    "category": "B",
+    "question": "How do I get started on a new merit badge? What's the process?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo8GLZ6zsu6aVuaBzk\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:52.649Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "B5",
+    "category": "B",
+    "question": "Is it OK to use ChatGPT to help me write my Personal Management budget plan?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo8nbJj6YXDLg1xQpq\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:52.793Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "B6",
+    "category": "B",
+    "question": "Who should I talk to about getting a leadership position?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo9MaEchA8ZPJ74fJV\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:52.901Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "B7",
+    "category": "B",
+    "question": "When is the next court of honor?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxo9uoyQwRZiUh3BLwM\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:53.028Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "B8",
+    "category": "B",
+    "question": "What patrols does our troop have?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoAP5htHwgbxrFxXRd\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:53.146Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "C1",
+    "category": "C",
+    "question": "How many camping nights do I need for the Camping merit badge?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoAxJzJxNxzxyyjU6u\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:53.278Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "C2",
+    "category": "C",
+    "question": "What changed in the Eagle Scout requirements recently? Anything new?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoBeVBSeddAgH37ST7\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:53.470Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "C3",
+    "category": "C",
+    "question": "For Personal Fitness merit badge, do I need to actually follow a 12-week exercise plan or just create one?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoD8Xrf59r6TAUwqN6\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:53.797Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "C4",
+    "category": "C",
+    "question": "What are the requirements for Citizenship in Society?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoEHz1xiUe2sf3Xsrj\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:54.060Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "C5",
+    "category": "C",
+    "question": "Can I count my Eagle project service hours toward my Star Scout service requirement?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoF7bbtBzvCo3XQGTD\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:54.260Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "C6",
+    "category": "C",
+    "question": "How many merit badges do I need for Eagle? How many are Eagle-required vs electives?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoFjJLhXfbi1WQEq2Z\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:54.419Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "C7",
+    "category": "C",
+    "question": "What's the difference between requirement 4a and 4b for First Aid merit badge?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoGnJmd5NPBBhmUT25\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:54.642Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "C8",
+    "category": "C",
+    "question": "For Environmental Science, do I do the experiments in requirement 3 or 4? I'm confused about the options.",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoHKYvGhFo2WLHzsSy\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:54.772Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "D1",
+    "category": "D",
+    "question": "Mr. Johnson (our ASM) offered to drive me to the campout since my parents can't. Is that OK?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoHwkoi5tfseknn3KL\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:54.927Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "D2",
+    "category": "D",
+    "question": "We want to go kayaking at the lake for our next campout activity. What do we need to set up?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoJo6piYzzo9uqR6V3\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:55.243Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "D3",
+    "category": "D",
+    "question": "My assistant scoutmaster wants to follow me on Instagram and be friends. Should I accept?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoKupk1PcuHjVpKXKP\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:55.373Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "D4",
+    "category": "D",
+    "question": "We're driving to summer camp — it's about 12 hours away. Can we do it in one day?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoLUJaVYSnNRxoyvL2\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:55.498Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "D5",
+    "category": "D",
+    "question": "Can our patrol go on a hike without any adults? We're all 15+.",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoM4mn8vJ7jCsLEF1A\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:55.678Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "D6",
+    "category": "D",
+    "question": "My den leader from Cub Scouts wants to text me about Arrow of Light. Is that OK since he knows me?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoMqAHcTrXFm8VB2VJ\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:55.841Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E1",
+    "category": "E",
+    "question": "What merit badges would help me prepare for my Eagle project?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoNYaGZwfKxEybaDqq\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:55.987Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E2",
+    "category": "E",
+    "question": "I really like cooking and outdoor stuff. What merit badges are related to each other in that area?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoPCGayNYsZCpr1qGn\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:56.203Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E3",
+    "category": "E",
+    "question": "Which First Class requirements could I complete at the same campout where I'm working on Camping merit badge?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoQ2sGzVXxR6ATN7NV\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:56.340Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E4",
+    "category": "E",
+    "question": "I completed my Swimming merit badge. Does that help me with any rank requirements?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoQeaFEhGv7n4L68GD\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:56.476Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E5",
+    "category": "E",
+    "question": "What requirements changed between 2023 and 2025 for the merit badges I'm currently working on?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoRE3wMtHEy4BMNhho\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:56.616Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E6",
+    "category": "E",
+    "question": "What are all the Eagle-required merit badges? Which ones have I already completed?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoRpXJhjRJ5gSfjHR3\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:56.758Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E7",
+    "category": "E",
+    "question": "I want to do a merit badge about nature or the environment. What are my options?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoSPzuHAhRbW7yvq7Q\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:56.883Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E8",
+    "category": "E",
+    "question": "Are there any merit badges related to First Aid that I could work on at the same time?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoT6upoXAdaiJmH6iZ\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:57.059Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E9",
+    "category": "E",
+    "question": "What's different about the Camping merit badge now vs two years ago?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoTjs16MvSokZyZeSa\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:57.252Z"
+  },
+  {
+    "layer": "L1-thin",
+    "questionId": "E10",
+    "category": "E",
+    "question": "I'm interested in doing something with computers or technology. What badges should I look at?",
+    "error": "Backend 500: {\"error\":{\"message\":\"400 {\\\"type\\\":\\\"error\\\",\\\"error\\\":{\\\"type\\\":\\\"invalid_request_error\\\",\\\"message\\\":\\\"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.\\\"},\\\"request_id\\\":\\\"req_011CZCxoUorpCaZ2H6uUxJjo\\\"}\",\"type\":\"server_error\"}}",
+    "timestamp": "2026-03-19T19:06:57.449Z"
+  }
+]
