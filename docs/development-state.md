@@ -1,30 +1,29 @@
 # Scout Quest — Development State
 
-**Last updated:** 2026-03-18
+**Last updated:** 2026-03-20
 
 ## Current Architecture
 
 ```
 Internet → Caddy (auto-HTTPS)
-  ├── ai-chat.hexapax.com:3080    — Full-access LibreChat (admin)
-  ├── scout-quest.hexapax.com:3081 — Locked-down LibreChat (scouts/parents/scouters)
-  └── admin.hexapax.com:3082       — AdminJS panel (system visibility)
+  ├── ai-chat.hexapax.com:3080       — Full-access LibreChat (admin)
+  ├── scout-quest.hexapax.com:3081   — Locked-down LibreChat (scouts/parents/scouters)
+  │     └── /backend/*               → Custom v2 backend (port 3090)
+  │           ├── Anthropic Claude Sonnet 4.6 (with 165K cached BSA knowledge)
+  │           ├── FalkorDB (graph + vector + full-text search)
+  │           ├── 9 server-side tools (get_scout_status, search_bsa_reference,
+  │           │   cross_reference, advance_requirement, rsvp_event, log_activity,
+  │           │   log_requirement_work, create_pending_action, bsa_token)
+  │           └── Micro-apps: /backend/progress.html, /backend/email.html
+  └── admin.hexapax.com:3082         — AdminJS panel (system visibility)
 
-Each instance: LibreChat + MongoDB + Redis
-MCP servers: scout.js (scout-facing), guide.js (parent/scouter-facing), admin.js (admin)
-Scoutbook sync: periodic cron + on-demand admin tools
-  ├── Roster: youth, adults, parents, patrols
-  ├── Advancement: ranks, merit badges, awards, requirements
-  ├── Calendar/Events: events with RSVP and attendance per member
-  └── Activity: camping nights, hiking miles, service hours
+MCP servers: still running in parallel (scout.js, guide.js, admin.js)
+  └── Will be retired when v2 backend handles all tool functions
 
-Devbox (devbox.hexapax.com) → GCP HTTPS LB + IAP
-  └── LibreChat (native Node.js, :3080)
-        ├── MongoDB + Redis (Docker)
-        ├── MCP: claude-code-mcp → Claude Code CLI
-        ├── MCP: @playwright/mcp → headless Chromium
-        ├── MCP: Perplexity (research queries)
-        └── MCP: Brave Search (web search)
+Domains registered:
+  ├── troopquest.com (Cloudflare, primary)
+  ├── troopquest.org (Cloudflare, redirect)
+  └── troop2024.ai (planned, not yet registered)
 ```
 
 ## Component Status
