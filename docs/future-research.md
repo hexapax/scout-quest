@@ -98,7 +98,7 @@ The Agents endpoint offers superior tool integration:
 
 ## Cost Control & Model Strategy
 
-**Last updated:** 2026-02-21
+**Last updated:** 2026-03-20
 
 ### Model Pricing Comparison (per million tokens)
 
@@ -1232,6 +1232,55 @@ Gemini embeddings are worth understanding for enterprise work:
 - FalkorDB's vector search proves inadequate in testing (latency, recall quality)
 - Google releases a combined graph + vector database product
 - voyage-context-3 proves problematic in practice (limited real-world reports as of March 2026)
+
+---
+
+## Model Comparison for AI Coaching (Researched 2026-03-20)
+
+**Context:** Evaluating models for the Scout Coach role — needs character consistency (Woody archetype), tool reliability, 165K cached context handling, and youth safety.
+
+### Recommended Test Matrix
+
+| Tier | Model | Price (in/out) | Context | Character Voice | Tool Use | Action |
+|------|-------|---------------|---------|----------------|----------|--------|
+| **Primary** | Claude Sonnet 4.6 | $3/$15 | 1M | Best | Best | Keep (current) |
+| **Budget** | Gemini 2.5 Flash | $0.15/$0.60 | 1M | Moderate | Good | Test next |
+| **Alternative** | GPT-4.1 | $2/$8 | 1M | Weak (drift) | Excellent | Test for comparison |
+| **Preview** | Gemini 3 Flash | $0.50/$3 | 1M | Moderate | Best budget | Already configured |
+
+### Models Eliminated
+
+| Model | Why |
+|-------|-----|
+| **Grok (all models)** | **Safety disqualified for youth.** Common Sense Media: "inadequate age-detection, weak safety guardrails, frequent inappropriate content for teen users." 131K context also too small for 165K knowledge. |
+| **Claude Haiku 4.5** | 200K context — too tight with 165K knowledge + conversation history |
+| **GPT-4o** | Deprecated Feb 2026, 128K context too small |
+| **GPT-5.4** | 2x pricing surcharge above 272K tokens — cost surprise with 165K knowledge block |
+| **Gemini 2.5 Pro** | Hourly cache storage = ~$120/month for 165K block. Use Flash instead. |
+| **Llama 4 Scout/Maverick** | No tool use data, custom endpoint only (no MCP) |
+| **Qwen 3.5** | Strong benchmarks but Alibaba API, untested English coaching persona |
+| **Mistral Large 2** | No advantage over Claude/GPT/Gemini for this use case |
+
+### Key Findings
+
+**Character voice ranking:** Claude >> Gemini > GPT. RPEval benchmark: Gemini 2.5 Pro scored 59.75% in-character consistency; GPT-4o scored 5.81%. Claude has "warm, empathetic character expression across extended conversations" but documented sycophancy risk.
+
+**Caching economics (for 165K knowledge block):**
+
+| Provider | Cache read discount | Storage fee | Monthly cost @30 sessions |
+|----------|-------------------|-------------|--------------------------|
+| Anthropic | 90% | **$0** | ~$1.50 |
+| OpenAI | 50% | $0 | ~$5.00 |
+| Google (explicit) | 90% | $0.165/hr = **$120/mo** | ~$122 |
+| Google (implicit) | varies | $0 | ~$0.50 |
+
+Anthropic wins on caching economics for low-volume applications.
+
+**Persona stability:** All models show persona drift after ~8-10 turns. Mitigation: re-inject persona in system block every request (already done by the backend architecture).
+
+**Architecture for multi-model testing:** Backend receives OpenAI format, translates to Anthropic. Adding GPT-4.1 = skip translation (trivial). Adding Gemini = new provider adapter (moderate). OpenRouter is an option but adds middleman.
+
+**Revisit if:** GPT-5.x improves character consistency, Gemini Flash implicit caching is confirmed free, or a new model excels at both tool use and persona maintenance.
 
 ---
 
