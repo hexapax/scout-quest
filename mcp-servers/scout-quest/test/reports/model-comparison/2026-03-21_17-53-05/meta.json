@@ -1,0 +1,19 @@
+{
+  "description": "Panel evaluator test \u2014 3 questions with eval_notes",
+  "evalVersion": "4",
+  "systemVersion": "5",
+  "evaluator": "panel",
+  "models": [
+    "claude"
+  ],
+  "categories": "all",
+  "questionCount": 3,
+  "budget": 2.0,
+  "startedAt": "2026-03-21T17:53:05Z",
+  "status": "complete",
+  "completedAt": "2026-03-21T17:55:07Z",
+  "totalCost": 1.635366,
+  "modelsCompleted": [
+    "claude"
+  ]
+}

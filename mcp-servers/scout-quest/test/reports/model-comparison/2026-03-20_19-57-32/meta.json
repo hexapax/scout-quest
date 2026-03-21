@@ -1,0 +1,17 @@
+{
+  "description": "Smoke test \u2014 adaptive low + opus max, G category",
+  "evalVersion": "1",
+  "systemVersion": "4",
+  "models": [
+    "sonnet-adaptive-low"
+  ],
+  "questionCount": 6,
+  "budget": null,
+  "startedAt": "2026-03-20T19-57-32Z",
+  "status": "complete",
+  "totalCost": 3.422334,
+  "modelsCompleted": [
+    "sonnet-adaptive-low"
+  ],
+  "estimated": true
+}

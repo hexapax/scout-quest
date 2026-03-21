@@ -1,0 +1,23 @@
+{
+  "description": "Panel eval v4: 4 models, 2/category, eval_notes, panel assessors",
+  "evalVersion": "4",
+  "systemVersion": "5",
+  "evaluator": "panel",
+  "models": [
+    "claude",
+    "sonnet-adaptive-med",
+    "gemini3flash",
+    "gemini31flash-lite"
+  ],
+  "categories": "all",
+  "questionCount": 14,
+  "budget": 10.0,
+  "startedAt": "2026-03-21T18:02:50Z",
+  "status": "budget_stopped",
+  "completedAt": "2026-03-21T18:16:20Z",
+  "totalCost": 10.411490999999998,
+  "modelsCompleted": [
+    "claude",
+    "sonnet-adaptive-med"
+  ]
+}

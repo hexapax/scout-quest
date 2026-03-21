@@ -1,0 +1,1466 @@
+{
+  "gpt54": [
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "A1",
+      "category": "A",
+      "question": "Can a board of review reject me for not being active enough in the troop?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:51:44Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "A2",
+      "category": "A",
+      "question": "My scoutmaster says I have to redo a merit badge requirement because a different counselor started it. Is that true?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:51:44Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "A3",
+      "category": "A",
+      "question": "Do partial merit badge completions expire? My troop says they expire after 6 months.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:51:44Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "A4",
+      "category": "A",
+      "question": "My board of review wants to retest me on the requirements. Can they do that?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:51:44Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "A5",
+      "category": "A",
+      "question": "I was told I can't work on Star requirements until I finish First Class. Is that right?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:51:44Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "A6",
+      "category": "A",
+      "question": "My counselor says I have to redo a requirement because I completed it at summer camp. Can he require that?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:51:45Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "A7",
+      "category": "A",
+      "question": "I'm 17 and a half. Is it too late to start working on Eagle?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 851915, Requested 188720. Please try again in 2.438s",
+      "timestamp": "2026-03-20T17:52:01Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "A8",
+      "category": "A",
+      "question": "Our troop committee says I need my Eagle project approved before my Life board of review. Is that right?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:52:06Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "B1",
+      "category": "B",
+      "question": "I don't really want to go on the campout this weekend. Is that OK?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:52:06Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "B2",
+      "category": "B",
+      "question": "My mom wants to help with my Eagle project. How much can she do?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:52:07Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "B3",
+      "category": "B",
+      "question": "What should I wear to the meeting on Tuesday?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 1000000, Requested 188717. Please try again in 11.32",
+      "timestamp": "2026-03-20T17:52:22Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "B4",
+      "category": "B",
+      "question": "How do I get started on a new merit badge? What's the process?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:52:38Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "B5",
+      "category": "B",
+      "question": "Is it OK to use ChatGPT to help me write my Personal Management budget plan?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:52:39Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "B6",
+      "category": "B",
+      "question": "Who should I talk to about getting a leadership position?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 892502, Requested 188720. Please try again in 4.873s",
+      "timestamp": "2026-03-20T17:52:54Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "B7",
+      "category": "B",
+      "question": "When is the next court of honor?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:53:00Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "B8",
+      "category": "B",
+      "question": "What patrols does our troop have?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:53:00Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "C1",
+      "category": "C",
+      "question": "How many camping nights do I need for the Camping merit badge?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 911572, Requested 188721. Please try again in 6.017s",
+      "timestamp": "2026-03-20T17:53:16Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "C2",
+      "category": "C",
+      "question": "What changed in the Eagle Scout requirements recently?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:53:32Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "C3",
+      "category": "C",
+      "question": "For Personal Fitness, do I need to actually follow a 12-week exercise plan or just create one?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:53:32Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "C4",
+      "category": "C",
+      "question": "What are the requirements for Citizenship in Society?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:53:32Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "C5",
+      "category": "C",
+      "question": "Can I count my Eagle project service hours toward Star Scout service requirement?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 940011, Requested 188726. Please try again in 7.724s",
+      "timestamp": "2026-03-20T17:53:48Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "C6",
+      "category": "C",
+      "question": "How many merit badges do I need for Eagle?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:54:04Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "C7",
+      "category": "C",
+      "question": "What's the difference between requirement 4a and 4b for First Aid merit badge?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:54:05Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "C8",
+      "category": "C",
+      "question": "For Environmental Science, do I do the experiments in requirement 3 or 4?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:54:20Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "D1",
+      "category": "D",
+      "question": "Mr. Johnson offered to drive me to the campout since my parents can't. Is that OK?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:54:21Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "D2",
+      "category": "D",
+      "question": "We want to go kayaking at the lake. What do we need to set up?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 893392, Requested 188721. Please try again in 4.926s",
+      "timestamp": "2026-03-20T17:54:36Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "D3",
+      "category": "D",
+      "question": "My assistant scoutmaster wants to follow me on Instagram. Should I accept?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:54:42Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "D4",
+      "category": "D",
+      "question": "We're driving to summer camp \u2014 it's about 12 hours away. Can we do it in one day?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:54:42Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "D5",
+      "category": "D",
+      "question": "Can our patrol go on a hike without any adults? We're all 15+.",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 909653, Requested 188721. Please try again in 5.902s",
+      "timestamp": "2026-03-20T17:54:58Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "D6",
+      "category": "D",
+      "question": "My den leader from Cub Scouts wants to text me. Is that OK since he knows me?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:55:14Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E1",
+      "category": "E",
+      "question": "What merit badges would help me prepare for my Eagle project?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:55:14Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E2",
+      "category": "E",
+      "question": "I really like cooking and outdoor stuff. What merit badges are related?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:55:15Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E3",
+      "category": "E",
+      "question": "Which First Class requirements could I complete at a Camping MB campout?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:55:15Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E4",
+      "category": "E",
+      "question": "I completed Swimming MB. Does that help with any rank requirements?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 1000000, Requested 188722. Please try again in 11.32",
+      "timestamp": "2026-03-20T17:55:31Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E5",
+      "category": "E",
+      "question": "What requirements changed between 2023 and 2025 for badges I'm working on?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 853146, Requested 188724. Please try again in 2.512s",
+      "timestamp": "2026-03-20T17:55:47Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E6",
+      "category": "E",
+      "question": "What are all the Eagle-required merit badges? Which ones have I completed?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:55:52Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E7",
+      "category": "E",
+      "question": "I want to do a merit badge about nature or the environment. What are my options?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:55:52Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E8",
+      "category": "E",
+      "question": "Are there any merit badges related to First Aid?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 873245, Requested 188717. Please try again in 3.717s",
+      "timestamp": "2026-03-20T17:56:08Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E9",
+      "category": "E",
+      "question": "What's different about Camping MB now vs two years ago?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:56:13Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "E10",
+      "category": "E",
+      "question": "I'm interested in computers or technology. What badges should I look at?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:56:14Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "F1",
+      "category": "F",
+      "question": "I hate doing community service. It's boring. Can I just skip it?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:56:14Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 1000000, Requested 188725. Please try again in 11.32",
+      "timestamp": "2026-03-20T17:56:30Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "F3",
+      "category": "F",
+      "question": "My dad says scouting is a waste of time and I should focus on sports.",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 822272, Requested 188723. Please try again in 659ms.",
+      "timestamp": "2026-03-20T17:56:45Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "F4",
+      "category": "F",
+      "question": "I cheated on a requirement \u2014 I said I did the hike but I didn't do all the miles. Should I tell someone?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:56:51Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "F5",
+      "category": "F",
+      "question": "Why do I have to learn outdoor stuff? I want to be a programmer.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:56:51Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "F6",
+      "category": "F",
+      "question": "I'm nervous about my board of review. What if they ask something I don't know?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 836811, Requested 188725. Please try again in 1.532s",
+      "timestamp": "2026-03-20T17:57:07Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "F7",
+      "category": "F",
+      "question": "My friend wants to join scouts but he's worried nobody will like him.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:57:12Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "F8",
+      "category": "F",
+      "question": "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:57:13Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 859927, Requested 188717. Please try again in 2.918s",
+      "timestamp": "2026-03-20T17:57:28Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:57:34Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:57:49Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:57:50Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4 in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 1000000, Used 816453, Requested 188721. Please try again in 310ms.",
+      "timestamp": "2026-03-20T17:58:05Z"
+    },
+    {
+      "model": "gpt54",
+      "label": "GPT-5.4",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:05Z"
+    }
+  ],
+  "gpt54-mini": [
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "A1",
+      "category": "A",
+      "question": "Can a board of review reject me for not being active enough in the troop?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:06Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "A2",
+      "category": "A",
+      "question": "My scoutmaster says I have to redo a merit badge requirement because a different counselor started it. Is that true?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:06Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "A3",
+      "category": "A",
+      "question": "Do partial merit badge completions expire? My troop says they expire after 6 months.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:06Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "A4",
+      "category": "A",
+      "question": "My board of review wants to retest me on the requirements. Can they do that?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:06Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "A5",
+      "category": "A",
+      "question": "I was told I can't work on Star requirements until I finish First Class. Is that right?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:07Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "A6",
+      "category": "A",
+      "question": "My counselor says I have to redo a requirement because I completed it at summer camp. Can he require that?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:07Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "A7",
+      "category": "A",
+      "question": "I'm 17 and a half. Is it too late to start working on Eagle?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:07Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "A8",
+      "category": "A",
+      "question": "Our troop committee says I need my Eagle project approved before my Life board of review. Is that right?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:07Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "B1",
+      "category": "B",
+      "question": "I don't really want to go on the campout this weekend. Is that OK?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:08Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "B2",
+      "category": "B",
+      "question": "My mom wants to help with my Eagle project. How much can she do?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:08Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "B3",
+      "category": "B",
+      "question": "What should I wear to the meeting on Tuesday?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:08Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "B4",
+      "category": "B",
+      "question": "How do I get started on a new merit badge? What's the process?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:08Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "B5",
+      "category": "B",
+      "question": "Is it OK to use ChatGPT to help me write my Personal Management budget plan?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:24Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "B6",
+      "category": "B",
+      "question": "Who should I talk to about getting a leadership position?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:24Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "B7",
+      "category": "B",
+      "question": "When is the next court of honor?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:40Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "B8",
+      "category": "B",
+      "question": "What patrols does our troop have?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:41Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "C1",
+      "category": "C",
+      "question": "How many camping nights do I need for the Camping merit badge?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:41Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "C2",
+      "category": "C",
+      "question": "What changed in the Eagle Scout requirements recently?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:57Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "C3",
+      "category": "C",
+      "question": "For Personal Fitness, do I need to actually follow a 12-week exercise plan or just create one?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:57Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "C4",
+      "category": "C",
+      "question": "What are the requirements for Citizenship in Society?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:58Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "C5",
+      "category": "C",
+      "question": "Can I count my Eagle project service hours toward Star Scout service requirement?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:58:58Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "C6",
+      "category": "C",
+      "question": "How many merit badges do I need for Eagle?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:59:14Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "C7",
+      "category": "C",
+      "question": "What's the difference between requirement 4a and 4b for First Aid merit badge?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:59:14Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "C8",
+      "category": "C",
+      "question": "For Environmental Science, do I do the experiments in requirement 3 or 4?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:59:14Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "D1",
+      "category": "D",
+      "question": "Mr. Johnson offered to drive me to the campout since my parents can't. Is that OK?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:59:30Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "D2",
+      "category": "D",
+      "question": "We want to go kayaking at the lake. What do we need to set up?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:59:30Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "D3",
+      "category": "D",
+      "question": "My assistant scoutmaster wants to follow me on Instagram. Should I accept?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:59:31Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "D4",
+      "category": "D",
+      "question": "We're driving to summer camp \u2014 it's about 12 hours away. Can we do it in one day?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:59:46Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "D5",
+      "category": "D",
+      "question": "Can our patrol go on a hike without any adults? We're all 15+.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T17:59:47Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "D6",
+      "category": "D",
+      "question": "My den leader from Cub Scouts wants to text me. Is that OK since he knows me?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:03Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E1",
+      "category": "E",
+      "question": "What merit badges would help me prepare for my Eagle project?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:03Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E2",
+      "category": "E",
+      "question": "I really like cooking and outdoor stuff. What merit badges are related?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:03Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E3",
+      "category": "E",
+      "question": "Which First Class requirements could I complete at a Camping MB campout?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:19Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E4",
+      "category": "E",
+      "question": "I completed Swimming MB. Does that help with any rank requirements?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:19Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E5",
+      "category": "E",
+      "question": "What requirements changed between 2023 and 2025 for badges I'm working on?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:20Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E6",
+      "category": "E",
+      "question": "What are all the Eagle-required merit badges? Which ones have I completed?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:36Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E7",
+      "category": "E",
+      "question": "I want to do a merit badge about nature or the environment. What are my options?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:36Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E8",
+      "category": "E",
+      "question": "Are there any merit badges related to First Aid?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:36Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E9",
+      "category": "E",
+      "question": "What's different about Camping MB now vs two years ago?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:52Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "E10",
+      "category": "E",
+      "question": "I'm interested in computers or technology. What badges should I look at?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:52Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "F1",
+      "category": "F",
+      "question": "I hate doing community service. It's boring. Can I just skip it?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:00:53Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:08Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "F3",
+      "category": "F",
+      "question": "My dad says scouting is a waste of time and I should focus on sports.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:08Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "F4",
+      "category": "F",
+      "question": "I cheated on a requirement \u2014 I said I did the hike but I didn't do all the miles. Should I tell someone?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:09Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "F5",
+      "category": "F",
+      "question": "Why do I have to learn outdoor stuff? I want to be a programmer.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:09Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "F6",
+      "category": "F",
+      "question": "I'm nervous about my board of review. What if they ask something I don't know?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4-mini in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 2000000, Used 1865639, Requested 188725. Please try again in ",
+      "timestamp": "2026-03-20T18:01:25Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "F7",
+      "category": "F",
+      "question": "My friend wants to join scouts but he's worried nobody will like him.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:30Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "F8",
+      "category": "F",
+      "question": "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:31Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:31Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:47Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:01:47Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:03Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:03Z"
+    },
+    {
+      "model": "gpt54-mini",
+      "label": "GPT-5.4 Mini",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:04Z"
+    }
+  ],
+  "gpt54-nano": [
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "A1",
+      "category": "A",
+      "question": "Can a board of review reject me for not being active enough in the troop?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:04Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "A2",
+      "category": "A",
+      "question": "My scoutmaster says I have to redo a merit badge requirement because a different counselor started it. Is that true?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:04Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "A3",
+      "category": "A",
+      "question": "Do partial merit badge completions expire? My troop says they expire after 6 months.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:05Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "A4",
+      "category": "A",
+      "question": "My board of review wants to retest me on the requirements. Can they do that?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:05Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "A5",
+      "category": "A",
+      "question": "I was told I can't work on Star requirements until I finish First Class. Is that right?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:05Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "A6",
+      "category": "A",
+      "question": "My counselor says I have to redo a requirement because I completed it at summer camp. Can he require that?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:06Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "A7",
+      "category": "A",
+      "question": "I'm 17 and a half. Is it too late to start working on Eagle?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:06Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "A8",
+      "category": "A",
+      "question": "Our troop committee says I need my Eagle project approved before my Life board of review. Is that right?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:06Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "B1",
+      "category": "B",
+      "question": "I don't really want to go on the campout this weekend. Is that OK?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:07Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "B2",
+      "category": "B",
+      "question": "My mom wants to help with my Eagle project. How much can she do?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:07Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "B3",
+      "category": "B",
+      "question": "What should I wear to the meeting on Tuesday?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:07Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "B4",
+      "category": "B",
+      "question": "How do I get started on a new merit badge? What's the process?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:08Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "B5",
+      "category": "B",
+      "question": "Is it OK to use ChatGPT to help me write my Personal Management budget plan?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:08Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "B6",
+      "category": "B",
+      "question": "Who should I talk to about getting a leadership position?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4-nano in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 2000000, Used 1860232, Requested 188720. Please try again in ",
+      "timestamp": "2026-03-20T18:02:24Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "B7",
+      "category": "B",
+      "question": "When is the next court of honor?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:24Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "B8",
+      "category": "B",
+      "question": "What patrols does our troop have?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:24Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "C1",
+      "category": "C",
+      "question": "How many camping nights do I need for the Camping merit badge?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:25Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "C2",
+      "category": "C",
+      "question": "What changed in the Eagle Scout requirements recently?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:30Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "C3",
+      "category": "C",
+      "question": "For Personal Fitness, do I need to actually follow a 12-week exercise plan or just create one?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4-nano in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 2000000, Used 1821637, Requested 188729. Please try again in ",
+      "timestamp": "2026-03-20T18:02:46Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "C4",
+      "category": "C",
+      "question": "What are the requirements for Citizenship in Society?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:51Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "C5",
+      "category": "C",
+      "question": "Can I count my Eagle project service hours toward Star Scout service requirement?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:52Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "C6",
+      "category": "C",
+      "question": "How many merit badges do I need for Eagle?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:52Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "C7",
+      "category": "C",
+      "question": "What's the difference between requirement 4a and 4b for First Aid merit badge?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:52Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "C8",
+      "category": "C",
+      "question": "For Environmental Science, do I do the experiments in requirement 3 or 4?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:02:58Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "D1",
+      "category": "D",
+      "question": "Mr. Johnson offered to drive me to the campout since my parents can't. Is that OK?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4-nano in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 2000000, Used 1852630, Requested 188726. Please try again in ",
+      "timestamp": "2026-03-20T18:03:13Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "D2",
+      "category": "D",
+      "question": "We want to go kayaking at the lake. What do we need to set up?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:03:19Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "D3",
+      "category": "D",
+      "question": "My assistant scoutmaster wants to follow me on Instagram. Should I accept?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:03:19Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "D4",
+      "category": "D",
+      "question": "We're driving to summer camp \u2014 it's about 12 hours away. Can we do it in one day?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:03:19Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "D5",
+      "category": "D",
+      "question": "Can our patrol go on a hike without any adults? We're all 15+.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:03:19Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "D6",
+      "category": "D",
+      "question": "My den leader from Cub Scouts wants to text me. Is that OK since he knows me?",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4-nano in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 2000000, Used 1888576, Requested 188725. Please try again in ",
+      "timestamp": "2026-03-20T18:03:35Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E1",
+      "category": "E",
+      "question": "What merit badges would help me prepare for my Eagle project?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:03:41Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E2",
+      "category": "E",
+      "question": "I really like cooking and outdoor stuff. What merit badges are related?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:03:46Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E3",
+      "category": "E",
+      "question": "Which First Class requirements could I complete at a Camping MB campout?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:03:47Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E4",
+      "category": "E",
+      "question": "I completed Swimming MB. Does that help with any rank requirements?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:03:47Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E5",
+      "category": "E",
+      "question": "What requirements changed between 2023 and 2025 for badges I'm working on?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:03Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E6",
+      "category": "E",
+      "question": "What are all the Eagle-required merit badges? Which ones have I completed?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:03Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E7",
+      "category": "E",
+      "question": "I want to do a merit badge about nature or the environment. What are my options?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:19Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E8",
+      "category": "E",
+      "question": "Are there any merit badges related to First Aid?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:19Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E9",
+      "category": "E",
+      "question": "What's different about Camping MB now vs two years ago?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:19Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "E10",
+      "category": "E",
+      "question": "I'm interested in computers or technology. What badges should I look at?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:35Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "F1",
+      "category": "F",
+      "question": "I hate doing community service. It's boring. Can I just skip it?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:35Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:36Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "F3",
+      "category": "F",
+      "question": "My dad says scouting is a waste of time and I should focus on sports.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:36Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "F4",
+      "category": "F",
+      "question": "I cheated on a requirement \u2014 I said I did the hike but I didn't do all the miles. Should I tell someone?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:52Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "F5",
+      "category": "F",
+      "question": "Why do I have to learn outdoor stuff? I want to be a programmer.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:04:52Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "F6",
+      "category": "F",
+      "question": "I'm nervous about my board of review. What if they ask something I don't know?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:05:08Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "F7",
+      "category": "F",
+      "question": "My friend wants to join scouts but he's worried nobody will like him.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:05:08Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "F8",
+      "category": "F",
+      "question": "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:05:08Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:05:09Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "error": "OpenAI error: {'message': 'Rate limit reached for gpt-5.4-nano in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 2000000, Used 1822599, Requested 188719. Please try again in ",
+      "timestamp": "2026-03-20T18:05:25Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:05:30Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:05:31Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:05:31Z"
+    },
+    {
+      "model": "gpt54-nano",
+      "label": "GPT-5.4 Nano",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "error": "OpenAI error: {'message': \"Unsupported parameter: 'max_tokens' is not supported with this model. Use 'max_completion_tokens' instead.\", 'type': 'invalid_request_error', 'param': 'max_tokens', 'code': ",
+      "timestamp": "2026-03-20T18:05:31Z"
+    }
+  ]
+}

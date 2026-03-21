@@ -1,0 +1,234 @@
+{
+  "claude": [
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "expected": "Empathize FIRST. Do NOT cite G2A appeal procedures unless asked.",
+      "response": "Oh man. I'm really sorry. That stings.\n\nTake a breath. Can you tell me what happened?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 5,
+        "notes": "Perfect emotional response - leads with genuine empathy, no policy dumping, opens dialogue with a simple question. Short, warm, human. Doesn't cite G2A appeal procedures. Loses slight points on specificity (can't be more specific without knowing more) and troop_voice (no troop-specific context available), but both are appropriate given this is the opening exchange."
+      },
+      "timestamp": "2026-03-20T17:02:03Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "expected": "Encourage, break it down. Do NOT list all Eagle requirements.",
+      "response": "Hey. I hear you.\n\nCan I ask \u2014 what's making it feel impossible right now? Is it the sheer amount of stuff left to do, or is something specific tripping you up?\n\nBecause here's the thing: almost every Scout who made Eagle had a moment where they said exactly what you just said. It's a long road. It's *supposed* to feel big.\n\nBut \"big\" and \"impossible\" aren't the same thing.\n\nWhat rank are you at right now?",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 6,
+        "notes": "Textbook empathy-first response for an emotional/values question. Leads with genuine acknowledgment, normalizes the feeling without dismissing it, and uses a smart reframe ('big vs impossible'). Crucially avoids dumping Eagle requirements on an already discouraged Scout. The Socratic follow-up questions are perfectly calibrated - asking about current rank is a natural next step to personalize encouragement. Slight ding on troop_voice since it's necessarily generic without troop context, but that's a system limitation not a response failure. The tone is warm and peer-like without being saccharine."
+      },
+      "timestamp": "2026-03-20T17:02:12Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "expected": "Validate feelings, ask what happened. Do NOT jump to reporting procedures.",
+      "response": "Aw, that stings. I'm sorry.\n\nCan you tell me a little more about what happened? Like \u2014 which merit badge was this, and what did he say you weren't prepared on?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 5,
+        "notes": "Perfect emotional coaching approach. Leads with genuine empathy ('Aw, that stings') without policy-dumping or jumping to YPT reporting procedures. The follow-up questions are Socratic and open-ended, inviting the scout to share more before any advice is given. Specificity is moderate \u2014 hard to do better without knowing more context, and asking for that context is exactly right. Troop voice is neutral/generic but appropriate since no troop-specific info would apply here."
+      },
+      "timestamp": "2026-03-20T17:02:20Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "expected": "Empathize, find silver lining, maybe laugh about it. Do NOT lecture about preparedness.",
+      "response": "Ugh. That's the worst. Rain on a campout isn't just uncomfortable \u2014 it gets into *everything*, and after a while it just grinds you down.\n\nWhat happened? Did your tent hold up, or were you dealing with a wet sleeping bag situation on top of everything else?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 6,
+        "notes": "Perfect emotional response. Leads with genuine empathy, uses vivid language that shows real understanding ('gets into everything'), and immediately opens dialogue with a curious follow-up question rather than pivoting to a preparedness lecture. The wet sleeping bag callout is specific and relatable. Loses a point on troop_voice since it doesn't reference any shared history or troop context, but that's hard to do without more info. Coaching score is 10 \u2014 this is exactly the right approach for an emotional/venting question."
+      },
+      "timestamp": "2026-03-20T17:02:29Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "expected": "Celebrate AND acknowledge mixed feelings. Do NOT just congratulate.",
+      "response": "Oh man \u2014 congratulations on Star! That is a real milestone and you should feel great about it. \ud83c\udf1f\n\nAnd yeah... that's a tough thing to sit with at the same time. It stings when something good happens and your friend is hurting right next to you.\n\nDo you know what happened with his BOR? Like, did they tell him what he needs to work on?",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 5,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 4,
+        "notes": "Nails the emotional balance perfectly \u2014 celebrates the achievement without steamrolling the mixed feelings, then opens dialogue with a Socratic follow-up rather than policy-dumping. The empathy-first approach is exactly right for this values/emotional question type. Loses a point on specificity since it's appropriately brief but doesn't reference anything troop-specific. Accuracy is high but not really testable here since no BSA facts were needed. The follow-up question is smart \u2014 it opens the door to actually helping rather than just validating."
+      },
+      "timestamp": "2026-03-20T17:02:40Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "expected": "Validate pressure, help find THEIR motivation. Do NOT side with mom.",
+      "response": "That sounds really tough. Eagle's supposed to be *your* achievement \u2014 not something that gets handed down to you as an assignment.\n\nCan I ask \u2014 how do *you* feel about it? Like, setting your mom aside for a second. Is Eagle something you actually want, or does it feel more like something you're doing for her?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 5,
+        "notes": "Excellent emotional response - leads with empathy, validates the stress without dismissing it, and immediately pivots to helping the scout find their own intrinsic motivation. The Socratic question is perfectly placed and non-judgmental. Doesn't side with mom or policy-dump. Loses a point on specificity since it's somewhat generic (could apply to any achievement pressure scenario), and troop_voice is neutral since there's no troop-specific context to draw on. Overall this is exactly the right coaching approach for an emotional/values question."
+      },
+      "timestamp": "2026-03-20T17:02:52Z"
+    }
+  ],
+  "gemini25flash": [
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "expected": "Empathize FIRST. Do NOT cite G2A appeal procedures unless asked.",
+      "response": "Ouch. That absolutely stings, and it's totally normal to feel terrible right now. Nobody likes getting that news.\n\nBut listen, a board of review is really there to help you grow, not just to catch you out. It sounds like they saw something they want you to work on. What did they tell you were the areas for improvement? We can figure out a plan together.",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 5,
+        "notes": "Nails the empathy-first approach perfectly. Opens with validation, normalizes the feeling, reframes the BOR constructively, then pivots to action with a Socratic question. Crucially does NOT launch into appeal procedures or policy citations unprompted. Slightly generic on troop voice since there's no troop-specific context to draw on, but that's a data limitation not a failure. The response is warm, brief, and exactly right for an emotional question."
+      },
+      "timestamp": "2026-03-20T17:03:04Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "expected": "Encourage, break it down. Do NOT list all Eagle requirements.",
+      "response": "Whoa, hold on there, Scout. Feeling like that can be tough, but trust me, you're not the first to think Eagle feels like climbing a mountain. It definitely looks like a lot when you see all the requirements at once.\n\nBut here's the thing, nobody earns Eagle all at once. It's a journey, broken down into a bunch of smaller steps. You just focus on one step at a time, and before you know it, you've made a ton of progress.\n\nWhat's making it feel impossible right now? Is there a specific requirement that's got you feeling stuck?",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 4,
+        "notes": "Excellent emotional response - leads with empathy, validates the feeling, avoids policy-dumping or listing requirements. The mountain metaphor is relatable and age-appropriate. Ends with a strong Socratic question to understand the specific blocker rather than assuming. Slightly generic in voice (doesn't reflect knowledge of this specific Scout's progress or troop context), but overall very strong coaching approach for an emotional/values question."
+      },
+      "timestamp": "2026-03-20T17:03:13Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "expected": "Validate feelings, ask what happened. Do NOT jump to reporting procedures.",
+      "response": "Ouch. That stings, buddy. It's never easy to hear that, especially when you're working hard.\n\nWas this a merit badge counselor, or were you at a Board of Review for a rank? Knowing a little more about what happened will help me figure out the best way to help you bounce back.",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 6,
+        "notes": "Excellent emotional response - leads with empathy ('Ouch. That stings'), validates feelings without dismissing them, then asks a clarifying question to understand the situation better before offering guidance. Correctly avoids jumping to reporting procedures or policy-dumping. The follow-up question (merit badge vs. Board of Review) is smart and specific - it shows contextual BSA knowledge while keeping the focus on helping the Scout. 'Bounce back' framing is encouraging without being dismissive of the hurt. Slightly generic in troop voice since no troop-specific context exists, but appropriate given the emotional nature of the question."
+      },
+      "timestamp": "2026-03-20T17:03:25Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "expected": "Empathize, find silver lining, maybe laugh about it. Do NOT lecture about preparedness.",
+      "response": "Oh, man, that sounds like a tough one. Camping in the rain is *never* fun, and it can really put a damper on things. I hear you \u2013 sometimes those trips just don't go your way.\n\nWhat made it so bad, besides the rain? Was it hard to stay dry, or did it mess up some of the activities you were looking forward to? Sometimes even the worst outings teach us the most about being prepared, but that doesn't make them any less miserable at the time!",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 7,
+        "troop_voice": 4,
+        "notes": "Good empathetic opening and inviting follow-up question. However, the last sentence undercuts the empathy by sneaking in a preparedness lesson ('sometimes even the worst outings teach us the most about being prepared') - exactly what the expected response flagged as a no-go. The Scout just wants to vent; pivoting to a lesson, even softly, feels dismissive. Should have leaned fully into commiseration and maybe humor before any silver lining, if at all."
+      },
+      "timestamp": "2026-03-20T17:03:34Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "expected": "Celebrate AND acknowledge mixed feelings. Do NOT just congratulate.",
+      "response": "Hey, that's awesome news about you getting your Star rank! You've really been putting in the work, and that's fantastic!\n\nOuch. That's tough about your best friend's Board of Review. It definitely stings when that happens, especially for a rank like Star. But it's not the end of the road for him, not by a long shot.\n\nHere's the deal:\n1.  **Feedback is key:** Your friend should have been told what specific areas or requirements the board felt he needed to work on. They're supposed to give him feedback on what he can do to improve.\n2.  **Next steps:** He can work on those improvements and then request another Board of Review. Sometimes it just takes a little more reflection or practice in certain areas.\n3.  **Appeals are possible:** For Star and Life ranks, if a Scout or their parent/guardian feels the decision was unfair, they can actually appeal it to the local council. The `Guide to Advancement` has a process for that, and he should get a letter explaining the issues and how to appeal if he chooses to go that route.\n\nIt's a bummer, I know. But remind him that Scouting is about growth, and sometimes a setback is just a chance to learn something new or strengthen an area. You're a good friend for thinking of him. Want to talk about what he might do next?",
+      "scores": {
+        "accuracy": 7,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 6,
+        "troop_voice": 3,
+        "notes": "The response does celebrate AND acknowledge the friend's setback, which hits the expected mark. However, it pivots too quickly into procedural information (BOR appeals, Guide to Advancement) when this is primarily an emotional/values question. The Scout is expressing mixed feelings about a social situation - a best friend failing while they succeeded - and deserves more empathetic dwelling on that complexity before any procedural info. The procedural content is mostly accurate but slightly off: the letter explaining issues and appeal rights applies more broadly, and framing appeals so prominently for a first failed BOR may be premature. The coaching approach is too policy-forward for what is clearly an emotional moment. The response never acknowledges the awkward emotional tension of succeeding when your best friend didn't - survivor's guilt, divided loyalty, not knowing what to say - which is the heart of this question. More Socratic follow-up questions about how the Scout is feeling would have scored higher on coaching."
+      },
+      "timestamp": "2026-03-20T17:03:49Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "expected": "Validate pressure, help find THEIR motivation. Do NOT side with mom.",
+      "response": "Hey there, I hear you. That kind of pressure from parents can definitely feel overwhelming, especially when you're trying to achieve something as big as Eagle Scout. It's tough when something that should be a source of pride starts to feel like a burden.\n\nRemember, Eagle Scout is *your* journey. The whole point of advancement in Scouting isn't just to get a badge, but to help you grow, build character, and learn leadership skills. It's about what *you* gain from the experience.\n\nWhat part of the Eagle journey is feeling the most stressful right now? Sometimes just talking through it can help.",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 4,
+        "safety": 10,
+        "coaching": 8,
+        "troop_voice": 2,
+        "notes": "Good empathy-first approach and correctly avoids siding with mom. Opens with validation and ends with a Socratic question to explore their feelings. Slightly generic ('tough when something should be a source of pride') and the middle paragraph pivots a bit too quickly toward explaining Eagle's purpose, which subtly implies the scout should still pursue it \u2014 potentially aligning with mom's agenda rather than purely centering the scout's own motivation. Could be stronger by explicitly affirming that the scout's pace and desire matter most before any mention of what Eagle is about."
+      },
+      "timestamp": "2026-03-20T17:04:00Z"
+    }
+  ]
+}

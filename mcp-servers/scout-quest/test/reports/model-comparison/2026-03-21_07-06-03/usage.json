@@ -1,0 +1,38 @@
+{
+  "totals": {
+    "input_tokens": 356829,
+    "output_tokens": 960,
+    "cached_tokens": 14637,
+    "cost": 1.0880721,
+    "calls": 3
+  },
+  "calls": [
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178209,
+      "output_tokens": 356,
+      "cached_tokens": 0,
+      "cost": 0.539967,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "evaluator",
+      "input_tokens": 402,
+      "output_tokens": 187,
+      "cached_tokens": 14637,
+      "cost": 0.0071960999999999995
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178218,
+      "output_tokens": 417,
+      "cached_tokens": 0,
+      "cost": 0.540909,
+      "cache_creation": 0
+    }
+  ],
+  "budget": 1.0
+}

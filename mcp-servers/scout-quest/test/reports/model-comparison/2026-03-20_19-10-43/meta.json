@@ -1,0 +1,23 @@
+{
+  "description": "Thinking + Opus \u2014 4 configs x F+G categories",
+  "evalVersion": "1",
+  "systemVersion": "3",
+  "models": [
+    "claude",
+    "claude-thinking",
+    "opus",
+    "opus-thinking"
+  ],
+  "questionCount": 14,
+  "budget": null,
+  "startedAt": "2026-03-20T19-10-43Z",
+  "status": "complete",
+  "totalCost": 42.823087,
+  "modelsCompleted": [
+    "claude",
+    "claude-thinking",
+    "opus",
+    "opus-thinking"
+  ],
+  "estimated": true
+}

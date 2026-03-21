@@ -1,0 +1,60 @@
+{
+  "totals": {
+    "input_tokens": 531929,
+    "output_tokens": 1165,
+    "cached_tokens": 479154,
+    "cost": 0.026583525000000004,
+    "calls": 6
+  },
+  "calls": [
+    {
+      "model": "gemini-2.5-flash",
+      "label": "gemini-2.5-flash",
+      "input_tokens": 163512,
+      "output_tokens": 460,
+      "cached_tokens": 159718,
+      "cost": 0.006834525000000001
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "label": "evaluator",
+      "input_tokens": 13874,
+      "output_tokens": 17,
+      "cached_tokens": 0,
+      "cost": 0.0020913
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "label": "gemini-2.5-flash",
+      "input_tokens": 163521,
+      "output_tokens": 491,
+      "cached_tokens": 159718,
+      "cost": 0.0068544750000000005
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "label": "evaluator",
+      "input_tokens": 13921,
+      "output_tokens": 17,
+      "cached_tokens": 0,
+      "cost": 0.00209835
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "label": "gemini-2.5-flash",
+      "input_tokens": 163514,
+      "output_tokens": 160,
+      "cached_tokens": 159718,
+      "cost": 0.0066548250000000005
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "label": "evaluator",
+      "input_tokens": 13587,
+      "output_tokens": 20,
+      "cached_tokens": 0,
+      "cost": 0.00205005
+    }
+  ],
+  "budget": 1.0
+}

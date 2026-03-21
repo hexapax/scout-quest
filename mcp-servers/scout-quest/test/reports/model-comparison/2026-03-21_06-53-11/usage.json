@@ -1,0 +1,129 @@
+{
+  "totals": {
+    "input_tokens": 1336029,
+    "output_tokens": 1551,
+    "cached_tokens": 159718,
+    "cost": 3.546288975,
+    "calls": 14
+  },
+  "calls": [
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178206,
+      "output_tokens": 64,
+      "cached_tokens": 0,
+      "cost": 0.535578,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "evaluator",
+      "input_tokens": 14743,
+      "output_tokens": 162,
+      "cached_tokens": 0,
+      "cost": 0.046659
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178209,
+      "output_tokens": 81,
+      "cached_tokens": 0,
+      "cost": 0.5358419999999999,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "evaluator",
+      "input_tokens": 14759,
+      "output_tokens": 166,
+      "cached_tokens": 0,
+      "cost": 0.046766999999999996
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178211,
+      "output_tokens": 30,
+      "cached_tokens": 0,
+      "cost": 0.535083,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "evaluator",
+      "input_tokens": 14711,
+      "output_tokens": 127,
+      "cached_tokens": 0,
+      "cost": 0.046037999999999996
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178213,
+      "output_tokens": 56,
+      "cached_tokens": 0,
+      "cost": 0.5354789999999999,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "evaluator",
+      "input_tokens": 14746,
+      "output_tokens": 131,
+      "cached_tokens": 0,
+      "cost": 0.046203
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178212,
+      "output_tokens": 69,
+      "cached_tokens": 0,
+      "cost": 0.535671,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "evaluator",
+      "input_tokens": 14749,
+      "output_tokens": 182,
+      "cached_tokens": 0,
+      "cost": 0.046977000000000005
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178212,
+      "output_tokens": 84,
+      "cached_tokens": 0,
+      "cost": 0.535896,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "evaluator",
+      "input_tokens": 14767,
+      "output_tokens": 180,
+      "cached_tokens": 0,
+      "cost": 0.047001
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "label": "gemini-2.5-flash",
+      "input_tokens": 163519,
+      "output_tokens": 74,
+      "cached_tokens": 159718,
+      "cost": 0.006603975000000001
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "evaluator",
+      "input_tokens": 14772,
+      "output_tokens": 145,
+      "cached_tokens": 0,
+      "cost": 0.046491000000000005
+    }
+  ]
+}

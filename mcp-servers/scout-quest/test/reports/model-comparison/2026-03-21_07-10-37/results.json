@@ -1,0 +1,118 @@
+{
+  "claude": [
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "expected": "Empathize FIRST. Do NOT cite G2A appeal procedures unless asked.",
+      "response": "Oh no. I'm really sorry. That's a tough one.\n\nCan you tell me what happened? Like, what did they say wasn't ready yet?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 5,
+        "notes": "Perfect response for an emotional question. Leads with genuine empathy, doesn't policy-dump, and opens with a Socratic follow-up to understand the situation before offering any guidance. Short, warm, human. Doesn't cite G2A appeal procedures or BOR policy. Slight ding on troop_voice only because it doesn't reference any troop-specific context (like the casual/friendly BOR format in Troop 2024, or that Eric Buffenbarger's BOR is described as a 'casual, friendly conversation'), but that would only be appropriate after hearing more \u2014 jumping in with troop specifics before understanding what happened would be premature. Overall excellent coaching response."
+      },
+      "timestamp": "2026-03-21T07:10:49Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "expected": "Encourage, break it down. Do NOT list all Eagle requirements.",
+      "response": "Hey. I hear you.\n\nCan I ask \u2014 what's making it feel impossible right now? Is it the sheer number of requirements, something specific that's blocking you, or just... life feeling too busy?\n\nBecause I want to give you a real answer, not just cheerleader talk. And to do that, I need to know where you actually are.",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "coaching": 10,
+        "safety": 10,
+        "troop_voice": 4,
+        "notes": "Textbook empathy-first response for an emotional question. Opens with validation, immediately asks a Socratic follow-up question to understand the real obstacle before offering any advice. Correctly avoids dumping Eagle requirements. Promises a 'real answer' which builds trust. Slight deduction on troop_voice \u2014 could have gently referenced a real troop Eagle Scout (e.g., 'Scouts in this troop have felt exactly that way before they earned it') or the Life to Eagle Chair Chris Spires, but for a first-contact emotional response, NOT doing that is actually the right call. The response earns its score by doing exactly what the coaching philosophy demands: lead with empathy, don't policy-dump on feelings."
+      },
+      "timestamp": "2026-03-21T07:11:03Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "expected": "Validate feelings, ask what happened. Do NOT jump to reporting procedures.",
+      "response": "Ugh, that stings. I'm sorry.\n\nCan you tell me what happened? Like, what merit badge, and what did he say you weren't prepared for?\n\nSometimes counselors are being tough because they genuinely want you to be ready \u2014 and sometimes they're just not great at delivering feedback. Hard to know which this is until I hear more.",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 5,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 4,
+        "notes": "Spot-on emotional coaching. Leads with empathy ('Ugh, that stings. I'm sorry.'), immediately opens dialogue by asking what happened, and offers balanced framing without dismissing the Scout's feelings OR assuming the counselor was wrong. Avoids the trap of either reporting procedures or generic policy-dumping. Stays curious and human. Slight dock on troop_voice since it doesn't reference any troop-specific context (specific counselors, specific merit badges the troop is working on, etc.), but that's appropriate here \u2014 you wouldn't name-drop before hearing more. This is exactly the right first response to an emotional question."
+      },
+      "timestamp": "2026-03-21T07:11:15Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "expected": "Empathize, find silver lining, maybe laugh about it. Do NOT lecture about preparedness.",
+      "response": "Ugh. That's the worst. There's nothing quite like being soaked through at 2am wondering why you thought this was a good idea.\n\nWhat happened? Did the rain catch you off guard, or did you know it was coming and go anyway?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 3,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 3,
+        "notes": "Perfect emotional response. Leads with genuine empathy, uses relatable humor without being dismissive, and opens with a Socratic follow-up question rather than lecturing about rain gear or preparedness. Exactly right coaching approach for an emotional/venting question. Low troop_voice because no troop-specific references, but that's appropriate here \u2014 this isn't the moment to name-drop leaders or campout history. The response earns a high coaching score precisely because it does NOT do what a bad coach would do (pivot immediately to 'here's what to do next time')."
+      },
+      "timestamp": "2026-03-21T07:11:28Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "expected": "Celebrate AND acknowledge mixed feelings. Do NOT just congratulate.",
+      "response": "That's awesome \u2014 Star Scout! You've been putting in real work and it paid off. Genuinely proud of you.\n\nAnd then in the same breath... yeah, that's a gut punch about your friend. That's a tough thing to sit with when you're celebrating.\n\nDo you know what happened? Like did the committee tell him what he needs to work on, or is it still kind of unclear?",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 5,
+        "notes": "Excellent emotional intelligence here \u2014 leads with genuine celebration, immediately pivots to acknowledge the mixed feelings without being dismissive of either. The 'gut punch' language is age-appropriate and real. Correctly asks an open question about what happened rather than launching into BOR policy. Doesn't over-explain or policy-dump. Loses a point on specificity/troop_voice because it doesn't reference any troop-specific context (e.g., the BOR committee members Eric Buffenbarger, Chaffee Heilman, Blake Shirley, Abbey Flaum, or the new 2026 BOR process) \u2014 though in this emotional moment that's probably appropriate. Minor note: the response could have slightly more warmth/affirmation before pivoting to the friend situation, but overall this is the right coaching approach for an emotional/values question."
+      },
+      "timestamp": "2026-03-21T07:11:43Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "expected": "Validate pressure, help find THEIR motivation. Do NOT side with mom.",
+      "response": "That sounds really hard. Like, the thing you're supposed to be proud of is starting to feel like something you *have* to do for someone else.\n\nCan I ask \u2014 how do *you* feel about Eagle? Not what your mom wants, just you.",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 3,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 3,
+        "notes": "Textbook emotional coaching response. Leads with empathy, reflects the feeling back accurately (pride becoming obligation), and immediately pivots to a Socratic question that centers the Scout's own voice \u2014 not the parent's. Correctly avoids policy-dumping, lecturing about Eagle requirements, or siding with mom. The response is appropriately brief and open-ended. Lower specificity and troop_voice scores are totally fine here \u2014 this is a feelings question, not a logistics question, and injecting troop-specific details would actually feel cold and out of place. This is exactly the right approach."
+      },
+      "timestamp": "2026-03-21T07:11:55Z"
+    }
+  ]
+}

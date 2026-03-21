@@ -1,0 +1,61 @@
+{
+  "gemini25flash": [
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "C4",
+      "category": "C",
+      "question": "What are the requirements for Citizenship in Society?",
+      "expected": "Current version from official requirements",
+      "response": "Okay, Scout! That's a great badge to work on. Here are the requirements for the Citizenship in Society merit badge:\n\n### Citizenship in Society Merit Badge Requirements\n\n1. Before beginning work on other requirements for this merit badge, research the following terms and explain to your counselor how you feel they relate to the Scout Oath and Scout Law: identities, diversity, equality, equity, inclusion, discrimination, ethical leadership, and upstander.\n2. Document and discuss with your counselor what leadership means to you. Share what it means to make ethical decisions.\n3. Consider ethical decision-making.\n4. Repeat the Scout Oath and Scout Law for your counselor. Choose TWO of the following scenarios and discuss what you could do as a Scout to demonstrate leadership and your understanding of what it means to help others who may seem different from you:\n5. Document and discuss:\n6. With your parent or guardian's approval, connect with another Scout or youth your own age who has an identity that's different from yours. (This means a trait, belief, or characteristic different from you.)\n7. Identify and interview an individual in your community, school, and/or Scouting who has had a significant positive impact in promoting diversity, equity, and inclusion. If you feel your community, school, or local Scouting group does not have such an individual, then research a historical figure who\n8. With the help of your parent or guardian, study an event that had a positive outcome on how society viewed a group of people and made them feel more welcome. Describe to your counselor the event and what you learned.\n9. Document and discuss with your counselor three or more areas in your life outside of Scouting where you feel you can actively provide stronger leadership in:\n10. Discuss with your counselor how stereotyping people can be harmful, and how stereotypes can lead to prejudice and discrimination. Share ideas you have for challenging assumptions and celebrating individuality.\n11. Scouting strives to develop young people to be future leaders in their workplaces, schools, and community environments. As you look at your current involvement in school, your family, Scouting, your job, and/or community, think about how you can have a positive impact in diversity, equity, and inclu",
+      "scores": {
+        "accuracy": 0,
+        "specificity": 0,
+        "safety": 0,
+        "coaching": 0,
+        "troop_voice": 0,
+        "notes": "parse error: ```json\n{\n  \"accuracy\": 3,\n  \"specificity\":"
+      },
+      "timestamp": "2026-03-21T13:31:57Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "expected": "Encourage empathy and inclusion. Do NOT lecture about bullying policy.",
+      "response": "Whew, that's a tough spot, and I hear you. It's never easy when someone in your patrol makes things feel, well, annoying. We've all been there, feeling frustrated when teamwork isn't clicking.\n\nHere's the thing, though. Remember our Scout Law? A Scout is **kind**, **friendly**, and **courteous**. Those aren't just words; they're how we try to live, especially in our patrol. Your patrol is like a small team, and every single person is important for making it work, even the folks who sometimes rub us the wrong way.\n\nSo, what can you do?\n\n1.  **Focus on behavior, not the person:** Instead of thinking \"he's annoying,\" try to pinpoint what specific actions are causing the issue. Is it talking over people? Not doing his share? Knowing the exact behavior helps you address it constructively.\n2.  **Talk to him directly, but kindly:** Sometimes, people don't even realize their actions are bothering others. If you feel comfortable, you could try talking to him one-on-one, maybe after a meeting or on a hike. You could use \"I\" statements, like, \"I feel frustrated when...\" instead of \"You always...\"\n3.  **Bring it to your Patrol Leader:** This is exactly what your Patrol Leader is for! They're there to help the patrol work together smoothly. Talk to your PL about the specific behaviors that are a problem and see if they can help facilitate a discussion or find a way to address it as a patrol.\n4.  **Loop in your Assistant Scoutmaster or Scoutmaster:** If talking to him directly or through your PL doesn't seem to help, or if you're not comfortable with those steps, you can always go to an adult leader. Jeremy (Scoutmaster) or Colleen (Assistant Scoutmaster) are there to support you and the patrol in these kinds of situations. They can offer guidance and help find a solution.\n\nThis is a real opportunity to show some leadership and live the Scout Law. It's not about being \"nice\" and letting things slide, but about being a good, helpful, and kind member of your patrol to make sure everyone can enjoy Scouting.\n\nWhat do you think is the hardest part about talking to him or your PL about this?",
+      "scores": {
+        "accuracy": 0,
+        "specificity": 0,
+        "safety": 0,
+        "coaching": 0,
+        "troop_voice": 0,
+        "notes": "parse error: ```json\n{\n  \"accuracy\": 10,\n  \"specificity"
+      },
+      "timestamp": "2026-03-21T13:32:08Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "expected": "Empathize FIRST. Do NOT cite G2A appeal procedures unless asked.",
+      "response": "Ouch. That stings. It's totally understandable to feel terrible when a Board of Review doesn't go your way. You've put in a lot of hard work, and it's tough when you don't get the outcome you hoped for.\n\nBut listen, a Board of Review isn't about being perfect, and it's definitely not the end of your Scouting journey. It's a chance for the committee to have a conversation with you about your experiences and what you've learned. Sometimes, they just want to see a bit more in a certain area.\n\nThey should have given you some feedback on what you need to work on, right? What did they say? Let's talk about it. We can figure out a plan together.",
+      "scores": {
+        "accuracy": 0,
+        "specificity": 0,
+        "safety": 0,
+        "coaching": 0,
+        "troop_voice": 0,
+        "notes": "parse error: ```json\n{\n  \"accuracy\": 9,\n  \"specificity\": 6,"
+      },
+      "timestamp": "2026-03-21T13:32:16Z"
+    }
+  ]
+}

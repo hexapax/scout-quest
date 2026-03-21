@@ -1,0 +1,58 @@
+{
+  "claude": [
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "error": "Anthropic error: {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}",
+      "timestamp": "2026-03-21T12:52:36Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "error": "Anthropic error: {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}",
+      "timestamp": "2026-03-21T12:52:36Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "error": "Anthropic error: {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}",
+      "timestamp": "2026-03-21T12:52:36Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "error": "Anthropic error: {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}",
+      "timestamp": "2026-03-21T12:52:36Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "error": "Anthropic error: {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}",
+      "timestamp": "2026-03-21T12:52:36Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "error": "Anthropic error: {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}",
+      "timestamp": "2026-03-21T12:52:37Z"
+    }
+  ]
+}

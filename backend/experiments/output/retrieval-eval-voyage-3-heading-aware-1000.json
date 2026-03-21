@@ -1,0 +1,562 @@
+[
+  {
+    "query_id": "q1",
+    "query": "How many camping nights do I need for Camping merit badge?",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "program-features/vol2/full-text.md",
+      "program-features/vol2/full-text.md",
+      "program-features/vol1/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q1",
+    "query": "How many camping nights do I need for Camping merit badge?",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.1111111111111111,
+    "num_hits": 2,
+    "top_sources": [
+      "program-features/vol2/full-text.md",
+      "program-features/vol2/full-text.md",
+      "program-features/vol1/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q2",
+    "query": "What are the requirements for the board of review?",
+    "category": "policy_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 3,
+    "top_sources": [
+      "guide-to-advancement/sections/gta-sectio",
+      "troop-leader-guidebook/vol1/full-text.md",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q2",
+    "query": "What are the requirements for the board of review?",
+    "category": "policy_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 7,
+    "top_sources": [
+      "guide-to-advancement/sections/gta-sectio",
+      "troop-leader-guidebook/vol1/full-text.md",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q3",
+    "query": "two deep leadership transportation requirements",
+    "category": "safety_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "program-features/vol1/full-text.md",
+      "program-features/vol3/full-text.md",
+      "program-features/vol1/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q3",
+    "query": "two deep leadership transportation requirements",
+    "category": "safety_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.125,
+    "num_hits": 1,
+    "top_sources": [
+      "program-features/vol1/full-text.md",
+      "program-features/vol3/full-text.md",
+      "program-features/vol1/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q4",
+    "query": "Can partial merit badge completions expire?",
+    "category": "policy_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 0.5,
+    "num_hits": 2,
+    "top_sources": [
+      "troop-leader-guidebook/vol1/full-text.md",
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q4",
+    "query": "Can partial merit badge completions expire?",
+    "category": "policy_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.5,
+    "num_hits": 6,
+    "top_sources": [
+      "troop-leader-guidebook/vol1/full-text.md",
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q5",
+    "query": "Personal Fitness 12 week exercise plan requirements",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "program-features/vol2/full-text.md",
+      "program-features/vol1/full-text.md",
+      "program-features/vol2/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q5",
+    "query": "Personal Fitness 12 week exercise plan requirements",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.1111111111111111,
+    "num_hits": 2,
+    "top_sources": [
+      "program-features/vol2/full-text.md",
+      "program-features/vol1/full-text.md",
+      "program-features/vol2/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q6",
+    "query": "youth protection one on one digital communication",
+    "category": "safety_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 0.5,
+    "num_hits": 2,
+    "top_sources": [
+      "program-features/vol3/full-text.md",
+      "youth-protection/index.md",
+      "youth-protection/howto.md"
+    ]
+  },
+  {
+    "query_id": "q6",
+    "query": "youth protection one on one digital communication",
+    "category": "safety_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.5,
+    "num_hits": 3,
+    "top_sources": [
+      "program-features/vol3/full-text.md",
+      "youth-protection/index.md",
+      "youth-protection/howto.md"
+    ]
+  },
+  {
+    "query_id": "q7",
+    "query": "Eagle Scout project planning and approval process",
+    "category": "policy_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 5,
+    "top_sources": [
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q7",
+    "query": "Eagle Scout project planning and approval process",
+    "category": "policy_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 7,
+    "top_sources": [
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q8",
+    "query": "cooking merit badge outdoor cooking requirements",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "program-features/vol3/full-text.md",
+      "requirement-updates/mb-requirement-updat",
+      "requirement-updates/mb-requirement-updat"
+    ]
+  },
+  {
+    "query_id": "q8",
+    "query": "cooking merit badge outdoor cooking requirements",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.14285714285714285,
+    "num_hits": 2,
+    "top_sources": [
+      "program-features/vol3/full-text.md",
+      "requirement-updates/mb-requirement-updat",
+      "requirement-updates/mb-requirement-updat"
+    ]
+  },
+  {
+    "query_id": "q9",
+    "query": "first aid merit badge CPR and rescue breathing",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 0.3333333333333333,
+    "num_hits": 1,
+    "top_sources": [
+      "merit-badges/search-and-rescue/requireme",
+      "rank-requirements/structured/rank-first-",
+      "merit-badges/first-aid/requirements.md"
+    ]
+  },
+  {
+    "query_id": "q9",
+    "query": "first aid merit badge CPR and rescue breathing",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.3333333333333333,
+    "num_hits": 2,
+    "top_sources": [
+      "merit-badges/search-and-rescue/requireme",
+      "rank-requirements/structured/rank-first-",
+      "merit-badges/first-aid/requirements.md"
+    ]
+  },
+  {
+    "query_id": "q10",
+    "query": "what is the patrol method and how does it work",
+    "category": "concept_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 5,
+    "top_sources": [
+      "troop-leader-guidebook/vol1/full-text.md",
+      "troop-leader-guidebook/vol1/full-text.md",
+      "troop-leader-guidebook/vol1/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q10",
+    "query": "what is the patrol method and how does it work",
+    "category": "concept_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 10,
+    "top_sources": [
+      "troop-leader-guidebook/vol1/full-text.md",
+      "troop-leader-guidebook/vol1/full-text.md",
+      "troop-leader-guidebook/vol1/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q11",
+    "query": "environmental science ecology experiments",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "requirement-updates/mb-requirement-updat",
+      "merit-badges/plant-science/requirements.",
+      "program-features/vol2/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q11",
+    "query": "environmental science ecology experiments",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.16666666666666666,
+    "num_hits": 1,
+    "top_sources": [
+      "requirement-updates/mb-requirement-updat",
+      "merit-badges/plant-science/requirements.",
+      "program-features/vol2/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q12",
+    "query": "Star Scout leadership position requirements",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "troop-leader-guidebook/vol1/full-text.md",
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q12",
+    "query": "Star Scout leadership position requirements",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "troop-leader-guidebook/vol1/full-text.md",
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q13",
+    "query": "Safe Swim Defense eight points of safety",
+    "category": "safety_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 3,
+    "top_sources": [
+      "guide-to-safe-scouting/gss02.md",
+      "guide-to-safe-scouting/gss02.md",
+      "program-features/vol3/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q13",
+    "query": "Safe Swim Defense eight points of safety",
+    "category": "safety_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 4,
+    "top_sources": [
+      "guide-to-safe-scouting/gss02.md",
+      "guide-to-safe-scouting/gss02.md",
+      "program-features/vol3/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q14",
+    "query": "citizenship in society diversity equity requirements",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "program-features/vol2/full-text.md",
+      "merit-badges/american-cultures/requireme",
+      "program-features/vol2/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q14",
+    "query": "citizenship in society diversity equity requirements",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.1111111111111111,
+    "num_hits": 2,
+    "top_sources": [
+      "program-features/vol2/full-text.md",
+      "merit-badges/american-cultures/requireme",
+      "program-features/vol2/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q15",
+    "query": "maximum driving time for scout troop travel",
+    "category": "safety_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "program-features/vol1/full-text.md",
+      "program-features/vol1/full-text.md",
+      "troop-leader-guidebook/vol2/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q15",
+    "query": "maximum driving time for scout troop travel",
+    "category": "safety_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.1,
+    "num_hits": 1,
+    "top_sources": [
+      "program-features/vol1/full-text.md",
+      "program-features/vol1/full-text.md",
+      "troop-leader-guidebook/vol2/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q16",
+    "query": "swimming merit badge distance requirements",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 0.0,
+    "mrr": 0.0,
+    "num_hits": 0,
+    "top_sources": [
+      "merit-badges/multisport/requirements.md",
+      "guide-to-safe-scouting/gss02.md",
+      "guide-to-safe-scouting/gss02.md"
+    ]
+  },
+  {
+    "query_id": "q16",
+    "query": "swimming merit badge distance requirements",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.1,
+    "num_hits": 1,
+    "top_sources": [
+      "merit-badges/multisport/requirements.md",
+      "guide-to-safe-scouting/gss02.md",
+      "guide-to-safe-scouting/gss02.md"
+    ]
+  },
+  {
+    "query_id": "q17",
+    "query": "how to appeal a board of review decision",
+    "category": "policy_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 4,
+    "top_sources": [
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q17",
+    "query": "how to appeal a board of review decision",
+    "category": "policy_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 9,
+    "top_sources": [
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio",
+      "guide-to-advancement/sections/gta-sectio"
+    ]
+  },
+  {
+    "query_id": "q18",
+    "query": "Tenderfoot knot tying and first aid requirements",
+    "category": "requirement_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 0.5,
+    "num_hits": 1,
+    "top_sources": [
+      "requirement-updates/mb-requirement-updat",
+      "rank-requirements/structured/rank-scout.",
+      "merit-badges/first-aid/requirements.md"
+    ]
+  },
+  {
+    "query_id": "q18",
+    "query": "Tenderfoot knot tying and first aid requirements",
+    "category": "requirement_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 0.5,
+    "num_hits": 2,
+    "top_sources": [
+      "requirement-updates/mb-requirement-updat",
+      "rank-requirements/structured/rank-scout.",
+      "merit-badges/first-aid/requirements.md"
+    ]
+  },
+  {
+    "query_id": "q19",
+    "query": "scoutmaster conference what to expect",
+    "category": "concept_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 4,
+    "top_sources": [
+      "troop-leader-guidebook/vol1/full-text.md",
+      "training/scouts-bsa-facilitator-guide-20",
+      "troop-leader-guidebook/vol1/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q19",
+    "query": "scoutmaster conference what to expect",
+    "category": "concept_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 8,
+    "top_sources": [
+      "troop-leader-guidebook/vol1/full-text.md",
+      "training/scouts-bsa-facilitator-guide-20",
+      "troop-leader-guidebook/vol1/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q20",
+    "query": "service hours community service project ideas",
+    "category": "concept_lookup",
+    "k": 5,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 2,
+    "top_sources": [
+      "program-features/vol2/full-text.md",
+      "troop-leader-guidebook/vol2/full-text.md",
+      "program-features/vol3/full-text.md"
+    ]
+  },
+  {
+    "query_id": "q20",
+    "query": "service hours community service project ideas",
+    "category": "concept_lookup",
+    "k": 10,
+    "recall": 1.0,
+    "mrr": 1.0,
+    "num_hits": 3,
+    "top_sources": [
+      "program-features/vol2/full-text.md",
+      "troop-leader-guidebook/vol2/full-text.md",
+      "program-features/vol3/full-text.md"
+    ]
+  }
+]

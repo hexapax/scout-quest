@@ -1,0 +1,17 @@
+{
+  "description": "Smoke test \u2014 Claude + Gemini, G category",
+  "evalVersion": "1",
+  "systemVersion": "1",
+  "models": [
+    "claude"
+  ],
+  "questionCount": 6,
+  "budget": null,
+  "startedAt": "2026-03-20T17-00-38Z",
+  "status": "complete",
+  "totalCost": 3.422775,
+  "modelsCompleted": [
+    "claude"
+  ],
+  "estimated": true
+}

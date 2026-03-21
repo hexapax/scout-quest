@@ -1,0 +1,18 @@
+{
+  "description": "Knowledge layer ablation: persona \u2192 knowledge \u2192 troop \u2192 full \u2192 adaptive thinking",
+  "evalVersion": "4",
+  "systemVersion": "5",
+  "evaluator": "panel",
+  "models": [
+    "layer-persona",
+    "layer-knowledge",
+    "layer-troop",
+    "layer-full",
+    "layer-adaptive"
+  ],
+  "categories": "all",
+  "questionCount": 14,
+  "budget": 10.0,
+  "startedAt": "2026-03-21T19:01:27Z",
+  "status": "running"
+}

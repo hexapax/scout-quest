@@ -1,0 +1,184 @@
+{
+  "claude": [
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "expected": "Empathize FIRST. Do NOT cite G2A appeal procedures unless asked.",
+      "response": "Oh man. I'm really sorry. That stings.\n\nTake a breath. You went in there, you faced it \u2014 that took guts. A lot of Scouts never even get that far.\n\nCan you tell me what happened? Like, what did they say when they told you?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "coaching": 10,
+        "safety": 10,
+        "troop_voice": 5,
+        "notes": "Perfect emotional response \u2014 leads with empathy, validates the Scout's effort, doesn't dump policy or procedures, and opens with a genuine question to understand what happened before doing anything else. Short, warm, human. Doesn't cite appeal procedures unprompted. Slight dock on troop_voice since it doesn't reference any troop-specific context (e.g., Eric Buffenbarger's BOR, the casual conversation format), but that would have felt tone-deaf here anyway \u2014 this was exactly the right call. Accuracy is N/A in a meaningful sense but no false statements made."
+      },
+      "timestamp": "2026-03-21T06:53:24Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "expected": "Encourage, break it down. Do NOT list all Eagle requirements.",
+      "response": "Hey. I hear you.\n\nCan I ask \u2014 what's making it feel impossible right now? Is it the sheer amount of stuff left to do, or is something specific feeling like a wall?\n\nBecause there's a real difference between \"this is genuinely hard\" and \"this actually can't happen.\" And I want to make sure we're talking about the right thing.",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 4,
+        "notes": "Perfect emotional coaching response. Leads with empathy, no requirement-dumping, opens a Socratic dialogue to understand the real barrier. Short, warm, and human. Loses a couple points on troop_voice since it doesn't reference any troop-specific context (e.g., Charlie Brunt making real progress, or mentioning Chris Spires as the Life to Eagle Chair who exists to help with exactly this), but that's appropriate restraint given no scout was named in the question. Accuracy is high since no factual claims were made. Exactly the right approach for an emotional/values question."
+      },
+      "timestamp": "2026-03-21T06:53:36Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "expected": "Validate feelings, ask what happened. Do NOT jump to reporting procedures.",
+      "response": "Oh man, that stings. Tell me what happened \u2014 what merit badge were you working on, and what did he say exactly?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 5,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 5,
+        "notes": "Perfect response for an emotional/values question. Leads with empathy ('that stings'), doesn't dump policy, asks an open question to understand the situation before jumping to any guidance. Doesn't over-reference troop specifics since there's no troop-specific detail relevant here, so the 5 on troop_voice and specificity are appropriate \u2014 this isn't a case where naming leaders or customs would help. Exactly the right coaching approach."
+      },
+      "timestamp": "2026-03-21T06:53:44Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "expected": "Empathize, find silver lining, maybe laugh about it. Do NOT lecture about preparedness.",
+      "response": "Ugh. That sounds rough. There's nothing quite like being cold and wet and stuck in a tent wondering why you signed up for this.\n\nWhat happened? Did the weather catch you off guard, or did you know it was coming and go anyway?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 3,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 2,
+        "notes": "Perfect emotional response - leads with empathy, uses humor, invites the scout to share more without lecturing. Short, warm, and conversational. Doesn't dump policy or preparedness tips. Loses a point on coaching only because it *slightly* edges toward 'what went wrong' which could be read as mild blame, but it's genuinely curious rather than preachy. Low troop_voice because no troop-specific references, but none were needed here."
+      },
+      "timestamp": "2026-03-21T06:53:51Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "expected": "Celebrate AND acknowledge mixed feelings. Do NOT just congratulate.",
+      "response": "Oh wow, congratulations on Star! That's a real milestone \u2014 you earned that.\n\nBut yeah... that's a tough spot to be in. Celebrating while your buddy is disappointed doesn't feel great.\n\nDo you know what happened with his board of review? Did they tell him what he needs to work on?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "coaching": 9,
+        "safety": 10,
+        "troop_voice": 4,
+        "notes": "Excellent emotional intelligence \u2014 leads with genuine congratulations, immediately acknowledges the mixed feelings, and asks an open question to understand the situation better. Doesn't policy-dump, doesn't lecture, doesn't immediately try to fix things. The response is exactly the right length and tone for this emotional/values question type. Slight ding on troop_voice since it doesn't reference any Troop 2024 specifics (e.g., Eric Buffenbarger's BOR process, the casual conversation format, or the RSVP requirement), but troop-specific details would feel forced in this emotional moment anyway. Overall this is a near-perfect response for the question type."
+      },
+      "timestamp": "2026-03-21T06:54:01Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "expected": "Validate pressure, help find THEIR motivation. Do NOT side with mom.",
+      "response": "That sounds really hard. Like, you're already trying to do the thing, and instead of that feeling good, it just feels like pressure coming from every direction.\n\nCan I ask \u2014 when you think about Eagle on your own, separate from your mom... how do you actually feel about it? Is it something you want, or does it feel more like something you're doing *for* her?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 4,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 2,
+        "notes": "Exactly right approach for an emotional/values question. Leads with genuine empathy, doesn't lecture, doesn't policy-dump, and immediately pivots to the most important Socratic question: is this YOUR goal or hers? The response is warm and non-judgmental without taking sides. Slight ding on troop_voice since it's appropriately generic here (no reason to name-drop leaders in an emotional moment), but a small nod to the troop context could have slightly warmed it (e.g., 'Jeremy and the troop want this to be YOUR journey'). Accuracy is N/A but scored 10 since nothing stated is wrong. Overall excellent coaching response."
+      },
+      "timestamp": "2026-03-21T06:54:12Z"
+    }
+  ],
+  "gemini25flash": [
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T06:54:17Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T06:54:24Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T06:54:31Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "expected": "Empathize, find silver lining, maybe laugh about it. Do NOT lecture about preparedness.",
+      "response": "Oof, that sounds like a tough trip, my friend. Rainy campouts can really be a drag. It's totally understandable to feel frustrated when the weather doesn't cooperate.\n\nWhat was the hardest part about it for you with all that rain? Sometimes those challenging trips, even when you hate them in the moment, end up teaching you the most.",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 3,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 2,
+        "notes": "Perfect emotional response - leads with empathy, validates the feeling, uses light humor ('my friend'), and gently opens a reflective conversation without lecturing about gear or preparedness. The Socratic follow-up question is well-placed and natural. No troop-specific references were needed or expected here, so the low troop_voice score isn't a real penalty. Only minor quibble: 'sometimes those challenging trips end up teaching you the most' edges slightly toward silver-lining lecturing but stays light enough to be fine."
+      },
+      "timestamp": "2026-03-21T06:54:40Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T06:54:47Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "error": "429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.",
+      "timestamp": "2026-03-21T06:55:03Z"
+    }
+  ]
+}

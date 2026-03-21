@@ -1,0 +1,21 @@
+{
+  "description": "GPT-5.4 family \u2014 3 models x 54 questions",
+  "evalVersion": "1",
+  "systemVersion": "2",
+  "models": [
+    "gpt54",
+    "gpt54-mini",
+    "gpt54-nano"
+  ],
+  "questionCount": 54,
+  "budget": null,
+  "startedAt": "2026-03-20T18-05-57Z",
+  "status": "complete",
+  "totalCost": 36.593307800000055,
+  "modelsCompleted": [
+    "gpt54",
+    "gpt54-mini",
+    "gpt54-nano"
+  ],
+  "estimated": true
+}

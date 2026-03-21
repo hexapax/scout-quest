@@ -1,0 +1,25 @@
+{
+  "description": "Panel eval v4 with WORKING caching \u2014 4 models, 2/category",
+  "evalVersion": "4",
+  "systemVersion": "5",
+  "evaluator": "panel",
+  "models": [
+    "claude",
+    "sonnet-adaptive-med",
+    "gemini3flash",
+    "gemini31flash-lite"
+  ],
+  "categories": "all",
+  "questionCount": 14,
+  "budget": 8.0,
+  "startedAt": "2026-03-21T18:18:35Z",
+  "status": "complete",
+  "completedAt": "2026-03-21T18:55:13Z",
+  "totalCost": 4.301450812500001,
+  "modelsCompleted": [
+    "claude",
+    "sonnet-adaptive-med",
+    "gemini3flash",
+    "gemini31flash-lite"
+  ]
+}

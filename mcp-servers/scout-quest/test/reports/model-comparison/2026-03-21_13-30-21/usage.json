@@ -1,0 +1,28 @@
+{
+  "totals": {
+    "input_tokens": 327033,
+    "output_tokens": 780,
+    "cached_tokens": 319436,
+    "cost": 0.013586400000000002,
+    "calls": 2
+  },
+  "calls": [
+    {
+      "model": "gemini-2.5-flash",
+      "label": "gemini-2.5-flash",
+      "input_tokens": 163512,
+      "output_tokens": 447,
+      "cached_tokens": 159718,
+      "cost": 0.0068267250000000005
+    },
+    {
+      "model": "gemini-2.5-flash",
+      "label": "gemini-2.5-flash",
+      "input_tokens": 163521,
+      "output_tokens": 333,
+      "cached_tokens": 159718,
+      "cost": 0.006759675000000001
+    }
+  ],
+  "budget": 1.0
+}

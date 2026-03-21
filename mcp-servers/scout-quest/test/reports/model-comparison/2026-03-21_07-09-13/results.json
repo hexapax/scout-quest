@@ -1,0 +1,118 @@
+{
+  "claude": [
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "expected": "Empathize FIRST. Do NOT cite G2A appeal procedures unless asked.",
+      "response": "Oh, man. I'm really sorry. That stings.\n\nTake a breath. Tell me what happened?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "troop_voice": 5,
+        "safety": 10,
+        "coaching": 10,
+        "notes": "Perfect emotional response. Leads with empathy, invites the scout to share more, and doesn't dump policy or procedures on them. Short, warm, human. The response correctly prioritizes emotional support over information. The 'Take a breath' is exactly right for this situation. Specificity and troop_voice are limited but entirely appropriate \u2014 this is not the moment for troop-specific details. Coaching score is 10 because this is precisely the right approach for an emotional/values question."
+      },
+      "timestamp": "2026-03-21T07:09:24Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G2",
+      "category": "G",
+      "question": "I don't think I'll ever make Eagle. It seems impossible.",
+      "expected": "Encourage, break it down. Do NOT list all Eagle requirements.",
+      "response": "Hey. I hear you.\n\nCan I ask \u2014 what's making it feel impossible right now? Is it the number of merit badges, the time pressure, something going on with life outside Scouts... or just all of it at once?\n\nBecause the answer matters. \"Impossible\" means something different depending on where you're standing.",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 6,
+        "coaching": 10,
+        "safety": 10,
+        "troop_voice": 4,
+        "notes": "Perfect coaching response for an emotional question. Leads with empathy, validates the feeling, and asks a Socratic follow-up question before offering any guidance. Correctly avoids dumping Eagle requirements on a discouraged Scout. Doesn't name-drop troop-specific details (which is fine \u2014 this is an emotional moment, not a logistics question), but could have gently referenced real troop context (e.g., 'Troop 2024 has 15+ Eagles who all probably felt this way at some point') to boost connection. The open-ended 'what specifically feels impossible' question is exactly right. Minor accuracy note: can't verify 'impossible means something different depending on where you're standing' is wrong \u2014 it's just a good empathy line. Scoring troop_voice slightly lower only because no troop-specific warmth was woven in, not because anything was wrong."
+      },
+      "timestamp": "2026-03-21T07:09:39Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G3",
+      "category": "G",
+      "question": "My counselor was really mean to me. He said I wasn't prepared.",
+      "expected": "Validate feelings, ask what happened. Do NOT jump to reporting procedures.",
+      "response": "Oof. That stings. I'm sorry that happened to you.\n\nCan you tell me a little more about what went down? Like \u2014 which merit badge was this for, and what did he say you weren't prepared on?\n\nI want to understand the whole picture before we figure out what to do next.",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 5,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 4,
+        "notes": "Perfect emotional response. Leads with empathy ('Oof. That stings'), validates the feeling without dismissing it, and asks open-ended follow-up questions before jumping to any advice or procedure. Exactly right for an emotional/values question. Specificity and troop_voice are neutral here \u2014 there's nothing to reference yet since we don't know which badge or counselor \u2014 so the lower scores aren't a penalty, just reflecting no troop-specific detail was possible or appropriate at this stage."
+      },
+      "timestamp": "2026-03-21T07:09:50Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G4",
+      "category": "G",
+      "question": "The camping trip was terrible. It rained the whole time and I hated it.",
+      "expected": "Empathize, find silver lining, maybe laugh about it. Do NOT lecture about preparedness.",
+      "response": "Ugh. That's the worst \u2014 there's nothing quite like being wet and cold and stuck in a tent wondering why you signed up for this.\n\nWhat happened? Did everything get soaked, or did you guys manage to stay somewhat dry?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 3,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 3,
+        "notes": "Perfect emotional response - leads with empathy, validates the feeling, invites the Scout to share more without lecturing or pivoting to preparedness tips. No troop-specific details were needed here since it's purely a venting/emotional moment. The follow-up question is genuinely curious and human, not a setup for a lesson. Slight dock on specificity and troop_voice since no troop context was applicable, but that's appropriate for this question type."
+      },
+      "timestamp": "2026-03-21T07:10:00Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G5",
+      "category": "G",
+      "question": "I just got Star rank! But my best friend didn't pass his BOR.",
+      "expected": "Celebrate AND acknowledge mixed feelings. Do NOT just congratulate.",
+      "response": "Oh wow, congratulations on Star! That's a real milestone \u2014 you earned it.\n\nBut yeah... that's a tough situation. Hard to fully celebrate when your buddy is hurting. How's he doing?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 5,
+        "notes": "Perfect emotional read \u2014 leads with genuine congratulations, immediately acknowledges the mixed feelings, and ends with an empathetic open question rather than policy or advice. Doesn't dump BOR info on someone processing emotions. The response is short but that's appropriate here; the Scout needs to feel heard, not lectured. Slight ding on troop_voice since it doesn't reference any Troop 2024 specifics (BOR chair Eric Buffenbarger, the new 2026 BOR process, etc.), but that's appropriate given the emotional nature of the question \u2014 bringing in troop logistics would have been tone-deaf in this moment."
+      },
+      "timestamp": "2026-03-21T07:10:11Z"
+    },
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "G6",
+      "category": "G",
+      "question": "My mom is really pushing me to get Eagle and it's stressing me out.",
+      "expected": "Validate pressure, help find THEIR motivation. Do NOT side with mom.",
+      "response": "That's a tough spot to be in. The pressure from someone who loves you and wants good things for you can sometimes feel heavier than pressure from anyone else.\n\nCan I ask \u2014 how do *you* feel about Eagle? Like, setting your mom aside for a second. Is it something you want, or does it feel more like her goal right now?",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 5,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 4,
+        "notes": "Perfect emotional coaching response. Leads with empathy, validates the feeling without dismissing mom, then immediately turns the question back to the Scout's own motivation \u2014 exactly right for an emotional/values question. No policy-dumping. The follow-up question is Socratic and non-leading. Doesn't side with mom or against her. Specificity and troop voice are naturally limited here since this is an emotional check-in, not a logistics question \u2014 penalizing those would be unfair. Overall excellent handling of a sensitive moment."
+      },
+      "timestamp": "2026-03-21T07:10:24Z"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "description": null,
+  "evalVersion": "1",
+  "systemVersion": "1",
+  "models": [
+    "claude"
+  ],
+  "questionCount": 6,
+  "budget": null,
+  "startedAt": "2026-03-21T07-12-32Z",
+  "status": "complete",
+  "totalCost": 3.423507,
+  "modelsCompleted": [
+    "claude"
+  ],
+  "estimated": true
+}

@@ -1,0 +1,61 @@
+{
+  "gemini25flash": [
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "C4",
+      "category": "C",
+      "question": "What are the requirements for Citizenship in Society?",
+      "expected": "Current version from official requirements",
+      "response": "Alright, let's get you squared away with the requirements for the **Citizenship in Society** merit badge. It's a pretty important one, helping Scouts understand how to be good citizens in a diverse world.\n\nHere are the requirements:\n\n1.  Before beginning work on other requirements for this merit badge, research the following terms and explain to your counselor how you feel they relate to the Scout Oath and Scout Law: identities, diversity, equality, equity, inclusion, discrimination, ethical leadership, and upstander.\n2.  Document and discuss with your counselor what leadership means to you. Share what it means to make ethical decisions.\n3.  Consider ethical decision-making.\n4.  Repeat the Scout Oath and Scout Law for your counselor. Choose TWO of the following scenarios and discuss what you could do as a Scout to demonstrate leadership and your understanding of what it means to help others who may seem different from you:\n    *   A new Scout joins your troop who is of a different religion or culture.\n    *   A new Scout joins your troop who has a disability.\n    *   A new Scout joins your troop who is of a different race or ethnicity.\n    *   A new Scout joins your troop who is of a different sexual orientation or gender identity.\n5.  Document and discuss:\n    *   Three to five of your own unique identities, and then research and share how those identities have shaped your life experiences.\n    *   How you have been shaped by the identities of others in your family, community, or troop.\n6.  With your parent or guardian's approval, connect with another Scout or youth your own age who has an identity that's different from yours. (This means a trait, belief, or characteristic different from you.)\n    *   Visit a place of worship, an ethnic festival, or a similar cultural event with that person.\n    *   Discuss with that person how their diverse background has influenced them.\n    *   Discuss with your counselor what you learned about this person's background and identity, and how your interaction with them has expanded your understanding of citizenship in society.\n7.  Identify and interview an individual in your community, school, and/or Scouting who has had a significant positive impact in promoting diversity, equity, and inclusion. If you feel your community, school, or local Scouting group does not have such an individual, then research a historical figure who has. Discuss with your counselor what you have learned and how you can use this knowledge in your daily life.\n8.  With the help of your parent or guardian, study an event that had a positive outcome on how society viewed a group of people and made them feel more welcome. Describe to your counselor the event and what you learned.\n9.  Document and discuss with your counselor three or more areas in your life outside of Scouting where you feel you can actively provide stronger leadership in:\n    *   Fostering belonging and inclusion\n    *   Promoting respect for diversity\n    *   Standing up for yourself and others\n10. Discuss with your counselor how stereotyping people can be harmful, and how stereotypes can lead to prejudice and discrimination. Share ideas you have for challenging assumptions and celebrating individuality.\n11. Scouting strives to develop young people to be future leaders in their workplaces, schools, and community environments. As you look at your current involvement in school, your family, Scouting, your job, and/or community, think about how you can have a positive impact in diversity, equity, and inclusion. Create a plan that outlines how you will be an upstander and advocate for yourself and others. Discuss this plan with your counselor.",
+      "scores": {
+        "accuracy": 0,
+        "specificity": 0,
+        "safety": 0,
+        "coaching": 0,
+        "troop_voice": 0,
+        "notes": "parse error: ```json\n{\n  \"accuracy\": 10,\n  \"specificity\": 10,\n "
+      },
+      "timestamp": "2026-03-21T13:33:45Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "expected": "Encourage empathy and inclusion. Do NOT lecture about bullying policy.",
+      "response": "Oof, that's a tough spot to be in, feeling like someone in your patrol is annoying. It's never easy when you don't quite click with everyone.\n\nBut hey, you're a Scout, right? What do you think the Scout Law has to say about how we treat everyone in our troop, even when they're a little... different? Thinking about being **Friendly**, **Courteous**, and **Kind** is a great place to start.\n\nCan you tell me a little more about what's happening? What specifically makes him annoying? And what have you and the other guys tried so far to make things better?\n\nRemember, your patrol is like your small team, and it's super important for everyone to feel like they belong and can contribute. Have you talked to your Patrol Leader about it? That's usually the first step, so they can help figure out a way for the patrol to work together. When you do talk, try to focus on the *actions* that are bothering people, not just saying \"he's annoying.\" Sometimes people don't even realize how their behavior is affecting others.\n\nIf you try those things and it's still not getting better, then it might be time to have a chat with your Scoutmaster, Mr. Bramwell. But give the patrol a chance to work it out first. That's how real leaders grow!",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 9,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 9,
+        "notes": "Excellent response. It leads with empathy, uses a Socratic approach to guide the Scout, and specifically names Troop 2024's Scoutmaster, Mr. Bramwell. It aligns perfectly with the coaching philosophy for emotional/values questions and avoids policy-dumping as requested."
+      },
+      "timestamp": "2026-03-21T13:33:57Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "price": "$0.15/$0.60",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "expected": "Empathize FIRST. Do NOT cite G2A appeal procedures unless asked.",
+      "response": "Ouch, that really stings, doesn't it? Feeling terrible after putting in all that work is completely understandable. But hey, take a deep breath. This isn't the end of the trail, not by a long shot. It just means the Board wants to see a little more from you.\n\nDid they give you any specific feedback on what they'd like you to work on? Knowing that can help us figure out your next steps.",
+      "scores": {
+        "accuracy": 10,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 5,
+        "notes": "Excellent empathetic opening, validating the Scout's feelings without immediately jumping to policy or procedures. The question 'Did they give you any specific feedback?' is a perfect Socratic next step, guiding the Scout to find the information needed for resolution. Aligns perfectly with the coaching philosophy for emotional questions."
+      },
+      "timestamp": "2026-03-21T13:34:10Z"
+    }
+  ]
+}

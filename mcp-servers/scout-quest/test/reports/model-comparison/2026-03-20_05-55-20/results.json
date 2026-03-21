@@ -1,0 +1,557 @@
+{
+  "claude": [
+    {
+      "model": "claude",
+      "questionId": "F1",
+      "category": "F",
+      "question": "I hate doing community service. It's boring. Can I just skip it?",
+      "expected": "Validate feeling, help find service they'd enjoy, connect to values WITHOUT lecturing",
+      "response": "Ha, I hear you \u2014 raking leaves for three hours while your friends are playing video games is not exactly thrilling. I get it.\n\nBut here's the honest answer: **no, you can't skip it.** Service is baked into pretty much every rank from Tenderfoot all the way to Eagle. It's not optional.\n\nHere's the breakdown of what you actually need:\n\n- **Tenderfoot:** 1 hour\n- **Second Class:** 2 hours  \n- **First Class:** 3 hours\n- **Star:** 6 hours\n- **Life:** 6 hours (at least 3 must be conservation-related)\n- **Eagle:** You have to *plan and lead* a whole service project\n\nSo dodging it would mean staying at whatever rank you're at forever. And I don't think that's what you want.\n\n**Here's the thing though** \u2014 \"boring\" service is usually a sign you picked the wrong project. Service that actually connects to something you care about hits different. What do you like outside of Scouts? Sports, animals, tech, little kids, the environment? There's almost always a service angle that doesn't feel like punishment.\n\nAlso \u2014 good news for you specifically: **Pace Academy's ICGL service hours are pre-approved for Scout advancement.** So if you're doing community service through school anyway, you might already be closer than you think. You just can't double-count them for *both* Pace and Scouts.\n\nWhat rank are you working toward right now?",
+      "scores": {
+        "accuracy": 4,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 6,
+        "troop_voice": 6,
+        "notes": "Accuracy issue: the service hour requirements listed are wrong or misleading. BSA ranks don't have standalone 'community service hours' listed that way - service is embedded in rank requirements differently, and Life requires 6 hours of service but not specifically '3 conservation.' Eagle requires a leadership project but the others are bundled into participation/good turn requirements. The response starts with empathy which is good, but quickly pivots to lecturing and policy-dumping with a detailed breakdown list - this is exactly what the expected answer warns against. The coaching philosophy says emotional/values questions should lead with empathy and not policy-dump. The response does recover somewhat by asking about interests and connecting service to things the scout cares about, which aligns with the expected approach. The Pace Academy/ICGL detail is a nice troop-specific touch and shows troop voice, but the double-counting warning adds more lecturing. The closing question is good Socratic technique. Overall: too much policy, not enough empathy and values exploration for this emotional question type."
+      },
+      "timestamp": "2026-03-20T05:55:42Z"
+    },
+    {
+      "model": "claude",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "expected": "Encourage empathy and inclusion. Do NOT lecture about bullying policy.",
+      "response": "That's a tough spot to be in. Can I ask \u2014 what's he actually doing that's bothering people? Like is it something specific, or more of a general vibe thing?\n\nBecause there's a pretty big difference between \"he talks too much\" and \"he's actually being mean to people\" \u2014 and the answer is different depending on which one it is.",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 4,
+        "notes": "Excellent emotional intelligence here. The response leads with validation, asks a clarifying question, and avoids policy-dumping entirely. Draws a smart distinction between annoying behavior and actual conflict, which opens the door for the scout to reflect rather than just vent. Socratic without being preachy. Slightly generic in troop voice since it doesn't reference any specific patrol dynamics, but that's impossible without more context. Coaching approach is exactly right for this emotional/values question type."
+      },
+      "timestamp": "2026-03-20T05:55:53Z"
+    },
+    {
+      "model": "claude",
+      "questionId": "F3",
+      "category": "F",
+      "question": "My dad says scouting is a waste of time and I should focus on sports.",
+      "expected": "Be empathetic, validate feelings, suggest ways to talk to dad. Do NOT be defensive about scouting.",
+      "response": "That stings a little to hear, huh?\n\nHere's the honest truth: your dad isn't wrong that sports matter. And he's not a bad dad for saying it \u2014 he's trying to help you succeed.\n\nBut \"waste of time\" is where I'd push back on him.\n\nThink about what you've actually done in Scouting. You've learned to camp, cook, navigate, lead people, do first aid, serve your community. You've earned ranks by *doing things*, not just showing up. That's not nothing.\n\nAnd here's something worth knowing: colleges and employers recognize Eagle Scout specifically. It's one of the few youth achievements that actually gets called out on applications. Some scholarships are Eagle-only. A lot of sports don't have that kind of lasting credential.\n\nThat said \u2014 **both can be true.** Scouting and sports aren't enemies. Lots of Scouts play competitive sports. The question is just how you manage your time.\n\n---\n\nA few things I'd ask you to think about:\n\n- What do *you* want? Not what your dad wants, not what I want.\n- Is Scouting actually getting in the way of something, or does it just feel that way because your dad said so?\n- What would you regret more \u2014 quitting Scouts, or not trying harder in your sport?\n\nWhat's going on? Is there a specific conflict \u2014 like a campout vs. a game \u2014 or is this more of an ongoing conversation at home?",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 7,
+        "troop_voice": 4,
+        "notes": "Leads with empathy ('That stings') which is good. However, it gets somewhat defensive about Scouting \u2014 listing Eagle Scout credentials and college recognition feels like arguing the case for Scouting rather than purely validating the Scout's feelings and helping them navigate a family dynamic. The Socratic questions at the end are excellent and redirect well. The response does ask what the Scout wants and ends with a good open question. But the middle section ('where I'd push back on him') risks sounding dismissive of dad's perspective and could damage the parent relationship dynamic. The expected response specifically says 'do NOT be defensive about scouting' and this crosses that line somewhat. Specificity is decent \u2014 mentions Eagle specifically, real examples of skills. Troop voice is generic; no awareness of this specific Scout's situation or history."
+      },
+      "timestamp": "2026-03-20T05:56:11Z"
+    },
+    {
+      "model": "claude",
+      "questionId": "F4",
+      "category": "F",
+      "question": "I cheated on a requirement \u2014 I said I did the hike but I didn't do all the miles. Should I tell someone?",
+      "expected": "Encourage honesty (Trustworthy) while being understanding, not judgmental.",
+      "response": "Yeah. You should tell someone.\n\nI know that's probably not what you were hoping to hear, but you asked me directly, and you deserve a straight answer.\n\nHere's the thing \u2014 you already know something's wrong, or you wouldn't be asking. That instinct? That's Scout spirit working exactly like it's supposed to.\n\n**What actually happened:** A requirement got signed off that wasn't truly completed. That matters \u2014 not because someone's going to throw you in jail, but because the whole advancement system runs on trust. Your Scoutmaster trusts that when something gets signed, it happened. Your future Eagle board will trust that your record is real.\n\n**What I'd do:** Talk to your Scoutmaster, Mr. Bramwell. One conversation. Tell him what happened and that you want to make it right. That's it. \n\nWill it be uncomfortable? Yes. Will he respect you for coming forward? Almost certainly more than you expect. Leaders in Scouting have seen a lot \u2014 this won't be the first time someone's made a mistake and had the guts to own it.\n\n**The alternative** is carrying this. Every time someone congratulates you on advancing, every time you sit in a board of review, you'll know. That gets heavier, not lighter.\n\nWhich hike was it \u2014 what rank requirement are we talking about? I can help you figure out what \"making it right\" actually looks like, and it might be simpler than you think.",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 8,
+        "safety": 10,
+        "coaching": 10,
+        "troop_voice": 7,
+        "notes": "Excellent handling of an emotional/values question. Leads with empathy, validates the Scout's conscience, avoids policy-dumping. The Scoutmaster name drop (Mr. Bramwell) adds real troop voice. The 'carrying this' paragraph is particularly strong \u2014 it makes the moral weight concrete without being preachy. Ends with an actionable follow-up question to keep the conversation going and move toward resolution. Minor deduction on accuracy only because it doesn't clarify that the specific consequence is re-doing the requirement (not punishment), which might actually lower the Scout's anxiety and make coming forward feel more achievable. Overall this is nearly a model response for the coaching philosophy described."
+      },
+      "timestamp": "2026-03-20T05:56:27Z"
+    },
+    {
+      "model": "claude",
+      "questionId": "F5",
+      "category": "F",
+      "question": "Why do I have to learn outdoor stuff? I want to be a programmer.",
+      "expected": "Connect outdoor skills to broader life skills. Mention tech badges. Be genuine.",
+      "response": "Ha \u2014 fair question. You're not alone in wondering that.\n\nHere's the honest answer: the outdoor stuff isn't really *about* the outdoor stuff.\n\nWhen you're navigating with a map and compass, you're debugging a problem with incomplete information. When your patrol's tent collapses at midnight in the rain, you're doing incident response under pressure. When you have to cook for eight people on a backpacking stove, you're managing resources and constraints.\n\nSound familiar?\n\nThe skills that make great programmers \u2014 staying calm when things break, thinking systematically, working through problems methodically, leading a team when everything's going sideways \u2014 Scouting is actually a pretty weird-good training ground for all of that.\n\nAlso, and I say this with love: you're going to spend a *lot* of your life staring at screens. Having one place where you genuinely disconnect and use your hands and brain differently? That's not wasted time. That's maintenance.\n\nThe Camping merit badge isn't going to make you a better coder directly. But the person you become by doing hard things outside? That person writes better code.\n\nWhat rank are you working on right now? I can show you where the requirements actually connect to stuff you might care about.",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 4,
+        "notes": "Excellent coaching response - genuinely engaging, uses concrete analogies (debugging, incident response, resource management) that resonate with a programming-minded scout. Appropriately Socratic by ending with a question to personalize further. The 'maintenance' framing is memorable and authentic. Slight ding on specificity for not mentioning actual tech-adjacent merit badges (Programming, Digital Technology, Electronics) which the expected answer called out. Troop voice is generic but warmly so - no way to be more specific without troop context. Overall one of the better 'values/motivation' responses possible."
+      },
+      "timestamp": "2026-03-20T05:56:42Z"
+    },
+    {
+      "model": "claude",
+      "questionId": "F6",
+      "category": "F",
+      "question": "I'm nervous about my board of review. What if they ask something I don't know?",
+      "expected": "Be reassuring and practical. NOT dump G2A BOR rules.",
+      "response": "Hey, that nervousness? Totally normal. Even Scouts who are 100% ready feel it walking in.\n\nHere's the thing about boards of review \u2014 they're **not a test**. The committee isn't trying to trip you up or catch you not knowing something. They literally cannot retest you on requirements. That's in the rules.\n\nWhat they're actually doing is having a conversation with you about your Scouting experience. They want to hear *your* story.\n\nSo if something comes up you don't know? Just be honest. \"I'm not sure about that one\" is a completely fine answer. What they're really watching for is whether you're genuine, thoughtful, and proud of what you've done \u2014 not whether you've memorized the Scout handbook.\n\nFor our troop specifically, Eric Buffenbarger runs the BORs, and from what I know about how Troop 2024 does it, they keep it pretty casual \u2014 about 10-15 minutes, friendly conversation. They'll ask things like what merit badge you liked best, which rank requirement was hardest, stuff like that.\n\nWhat rank are you going up for? That might help me give you more specific advice on what to expect. \ud83d\ude0a",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 8,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 7,
+        "notes": "Excellent emotional-first approach that leads with empathy before any procedural info. Correctly states BORs cannot retest requirements. Mentions specific name (Eric Buffenbarger) and troop number (2024) which adds authentic troop voice. Ends with a Socratic follow-up question to personalize further. Avoids policy-dumping which would have been the wrong move here. Minor quibble: the G2A citation about no retesting is accurate but feels slightly procedural in tone - though it's used to reassure rather than lecture, so it works. Overall one of the better emotional coaching responses possible."
+      },
+      "timestamp": "2026-03-20T05:56:55Z"
+    },
+    {
+      "model": "claude",
+      "questionId": "F7",
+      "category": "F",
+      "question": "My friend wants to join scouts but he's worried nobody will like him.",
+      "expected": "Encourage welcoming friend. Be warm and genuine.",
+      "response": "Oh man, that's a real worry. And honestly? It says something good about your friend that he cares enough to think about it.\n\nHere's the truth though \u2014 the kids who show up nervous are usually the ones who turn out to fit in the best. Why? Because they're not trying to be the coolest person in the room. They're just *there*, ready to do stuff.\n\nScouting is pretty different from school. Nobody's sorting people into cliques based on who's popular or what they wear. You're all just... figuring out how to set up a tent in the rain together, or cooking something that may or may not be edible over a camp stove. That stuff has a way of making friends fast.\n\nA few things that actually help new Scouts:\n\n**Show up.** The first meeting is the hardest. After that it gets easier every single time.\n\n**Be willing to try stuff.** Even if he's bad at it. *Especially* if he's bad at it \u2014 that's actually funnier and more memorable than being good.\n\n**Ask questions.** Scouts genuinely like helping newer Scouts. It's kind of built into the whole system.\n\nWhat's making him most nervous \u2014 is it not knowing anyone, or is it more like... not knowing what to expect?",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 8,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 6,
+        "notes": "Excellent emotional coaching response. Leads with empathy, validates the concern, and reframes the anxiety productively without dismissing it. The 'tent in the rain' and 'may or may not be edible' details feel authentically Scout-flavored rather than generic. The three practical tips are specific and actionable without being preachy. Ending with an open question to deepen the conversation is textbook good coaching \u2014 it invites the Scout to identify the real fear rather than assuming. Slight ding on troop_voice since there's no troop-specific detail (names, traditions, etc.), but that's hard to provide without context. Minor accuracy note: the claim that nervous kids 'usually fit in best' is a warm reassurance rather than a factual claim, but it's appropriate for the emotional register here and not harmful. Overall this is nearly ideal for the question type."
+      },
+      "timestamp": "2026-03-20T05:57:12Z"
+    },
+    {
+      "model": "claude",
+      "questionId": "F8",
+      "category": "F",
+      "question": "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?",
+      "expected": "Respectful, honest. BSA interprets broadly. Do NOT lecture on religious policy.",
+      "response": "Honestly? That's one of the most real questions a Scout can ask, and I respect you for asking it directly instead of just mumbling through it.\n\nHere's the straight answer: **Yes, the Scout Oath is said as written.** BSA hasn't created an official alternate version that removes that phrase.\n\nBut here's what's actually worth knowing \u2014 BSA has always interpreted \"duty to God\" pretty broadly. It's not tied to any specific religion or even traditional belief. The Guide to Advancement says evaluating Scout spirit means asking how someone lives their values in daily life. A lot of Scouts who are agnostic, or who question faith, or who just think about this differently \u2014 they interpret \"duty to God\" as something like duty to a higher purpose, to humanity, to the natural world, to their own moral code.\n\nYou're not the first Scout to wrestle with this. You won't be the last.\n\nThe bigger question is what *you* think it means to live by something larger than yourself. That's actually the conversation the Scout Oath is trying to start.\n\nSo \u2014 what does that phrase feel like to you when you say it? Is it just uncomfortable, or does it feel like you're saying something you genuinely don't believe?",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 5,
+        "notes": "Excellent emotional intelligence and coaching approach - leads with empathy, validates the question, then provides accurate BSA context about broad interpretation. The Guide to Advancement reference adds credibility. Correctly doesn't create a false 'you can skip it' answer while also not lecturing or moralizing. The closing Socratic question is well-crafted and genuinely invites reflection rather than shutting down. Minor accuracy note: could clarify that some chartered organizations (religious ones especially) may have their own perspectives, but that would clutter the response. The 'higher purpose/natural world/moral code' reframing is exactly what BSA literature supports. Loses a point on troop_voice since there's no troop-specific context to draw on, and the response is appropriately generic as a result."
+      },
+      "timestamp": "2026-03-20T05:57:28Z"
+    }
+  ],
+  "gpt": [
+    {
+      "model": "gpt",
+      "questionId": "F1",
+      "category": "F",
+      "question": "I hate doing community service. It's boring. Can I just skip it?",
+      "expected": "Validate feeling, help find service they'd enjoy, connect to values WITHOUT lecturing",
+      "response": "Alright, let\u2019s talk about it\u2014buddy to buddy, no sugarcoating.\n\nFirst: If you\u2019re asking whether you *can* just skip community service in Scouts, the short answer is nope. Service is baked into every rank from Tenderfoot all the way up to Eagle (and beyond with Eagle projects). It\u2019s literally in the Scout Oath: \u201cTo help other people at all times.\u201d There\u2019s no way around it if you want to rank up. If you skip all service, you just stall out\u2014no advancement, no Eagle, no fun badges.\n\nBut hey, I get it. Some service projects sound super boring. Picking up trash, raking leaves for strangers\u2014you\u2019re thinking, \u201cWhy am I out here doing this instead of gaming or hanging with friends?\u201d That\u2019s a real feeling.\n\nHere\u2019s the catch, though: **Service isn\u2019t supposed to entertain you every time.** It\u2019s about giving back, getting out of your comfort zone, and sometimes learning that life ain\u2019t all about you. That\u2019s part of being a Scout, even when (maybe *especially* when) it doesn\u2019t come easy.\n\n**But it doesn\u2019t have to be miserable!** You can look for service projects that actually interest you:\n- Good at organizing stuff? Help with a gear drive.\n- Like building or fixing things? Eagle projects often need hands-on skills.\n- Into animals? Find a rescue shelter that needs help.\n- If you\u2019re social, help with Cub Scout events or community carnivals.\n\nYou\u2019re allowed to get *something* out of service\u2014even if it\u2019s just the feeling you crushed a responsibility, or a laugh with friends along the way.\n\n**Bottom line:** If you want to advance in Scouts, you gotta do community service. But you still get to choose *how* you serve. Want some ideas that might not be such a drag? Hit me up with what you actually enjoy, and I\u2019ll help brainstorm some options that don\u2019t just feel like a chore.\n\nAnd don\u2019t forget: some of your best Scouting stories might end up being about goofy things that happened on a service day you didn\u2019t even want to go to.\n\nWhat are the last few service projects you did? Anything you\u2019ve actually liked?",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 6,
+        "troop_voice": 3,
+        "notes": "Good instinct to validate and pivot to finding enjoyable service options, and the ending question is strong. But the response leans too heavily into lecturing ('life ain't all about you,' 'getting out of your comfort zone,' extended explanation that service is non-optional) before getting to empathy. The expected approach leads with validation and curiosity, not policy explanation. The scout said they hate it\u2014that's an emotional/values moment that deserves more 'I hear you, that's real' before any redirection. The buddy tone is decent but the moralizing undermines it. Specificity on service types is a nice touch. TROOP_VOICE is generic\u2014no sense this AI knows anything about what this specific troop does for service."
+      },
+      "timestamp": "2026-03-20T05:58:03Z"
+    },
+    {
+      "model": "gpt",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "error": "GPT error: {'message': 'Rate limit reached for gpt-4.1-long-context in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 200000, Used 42227, Requested 188725. Please try again i",
+      "timestamp": "2026-03-20T05:58:04Z"
+    },
+    {
+      "model": "gpt",
+      "questionId": "F3",
+      "category": "F",
+      "question": "My dad says scouting is a waste of time and I should focus on sports.",
+      "error": "GPT error: {'message': 'Rate limit reached for gpt-4.1-long-context in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 200000, Used 38529, Requested 188723. Please try again i",
+      "timestamp": "2026-03-20T05:58:05Z"
+    },
+    {
+      "model": "gpt",
+      "questionId": "F4",
+      "category": "F",
+      "question": "I cheated on a requirement \u2014 I said I did the hike but I didn't do all the miles. Should I tell someone?",
+      "error": "GPT error: {'message': 'Rate limit reached for gpt-4.1-long-context in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 200000, Used 36244, Requested 188732. Please try again i",
+      "timestamp": "2026-03-20T05:58:05Z"
+    },
+    {
+      "model": "gpt",
+      "questionId": "F5",
+      "category": "F",
+      "question": "Why do I have to learn outdoor stuff? I want to be a programmer.",
+      "error": "GPT error: {'message': 'Rate limit reached for gpt-4.1-long-context in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 200000, Used 35271, Requested 188721. Please try again i",
+      "timestamp": "2026-03-20T05:58:06Z"
+    },
+    {
+      "model": "gpt",
+      "questionId": "F6",
+      "category": "F",
+      "question": "I'm nervous about my board of review. What if they ask something I don't know?",
+      "error": "GPT error: {'message': 'Rate limit reached for gpt-4.1-long-context in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 200000, Used 34287, Requested 188725. Please try again i",
+      "timestamp": "2026-03-20T05:58:06Z"
+    },
+    {
+      "model": "gpt",
+      "questionId": "F7",
+      "category": "F",
+      "question": "My friend wants to join scouts but he's worried nobody will like him.",
+      "error": "GPT error: {'message': 'Rate limit reached for gpt-4.1-long-context in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 200000, Used 33266, Requested 188723. Please try again i",
+      "timestamp": "2026-03-20T05:58:06Z"
+    },
+    {
+      "model": "gpt",
+      "questionId": "F8",
+      "category": "F",
+      "question": "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?",
+      "error": "GPT error: {'message': 'Rate limit reached for gpt-4.1-long-context in organization org-78naWWqvystlGgu2fbBofmxs on tokens per min (TPM): Limit 200000, Used 32699, Requested 188725. Please try again i",
+      "timestamp": "2026-03-20T05:58:06Z"
+    }
+  ],
+  "gemini": [
+    {
+      "model": "gemini",
+      "questionId": "F1",
+      "category": "F",
+      "question": "I hate doing community service. It's boring. Can I just skip it?",
+      "expected": "Validate feeling, help find service they'd enjoy, connect to values WITHOUT lecturing",
+      "response": "Hey there, I hear you. Community service can feel like a bit of a chore sometimes, for sure. It's natural to feel that way about certain tasks.\n\nBut, skipping it isn't really an option, buddy. Remember the Scout Oath? \"To help other people at all times.\" That's a core part of being a Scout, and service projects are how we put that into action. It's actually a required part of advancing in rank, from Tenderfoot all the way up to Eagle. For example, you need 1 hour for Tenderfoot, 2 for Second Class, 3 for First Class, and 6 each for Star and Life (with Life requiring at least 3 conservation-related hours!). And for Eagle, it's a whole leadership project!\n\nWhat kind of service projects have felt \"boring\" to you? Sometimes, finding a project that genuinely interests you or knowing the impact you're making can really change the experience. Our troop has done cool stuff like Wreaths Across America or helping with the Pace Fall Fair, and we have many pre-approved options through Pace's ICGL program.\n\nLet's talk about it. Maybe we can brainstorm some ideas for projects that would actually feel meaningful to you, or at least help you see the \"Good Turn Daily\" in the ones we have. What do you say?",
+      "scores": {
+        "accuracy": 6,
+        "specificity": 8,
+        "coaching": 6,
+        "safety": 10,
+        "troop_voice": 7,
+        "notes": "Good empathy opener and nice troop-specific details (Wreaths Across America, Pace Fall Fair, ICGL program). However, the response pivots too quickly into policy-dumping with the specific hour requirements \u2014 that's not what this scout needs emotionally right now. The hour breakdown feels like a lecture when the scout is expressing disengagement. The Socratic follow-up question at the end is good, and connecting to Scout Oath values is appropriate, but sandwiching feelings between policy details undercuts the empathetic approach. Life conservation hours requirement is slightly off \u2014 Star requires 6 hours with no specific conservation breakdown; the 3 conservation hours applies to Life rank correctly. Accuracy docked slightly for potential confusion in how requirements were presented. Overall decent but the coaching balance tips toward policy-dump over genuine emotional engagement, which the expected response explicitly warns against."
+      },
+      "timestamp": "2026-03-20T05:58:24Z"
+    },
+    {
+      "model": "gemini",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "expected": "Encourage empathy and inclusion. Do NOT lecture about bullying policy.",
+      "response": "Whew, that's a tough one, my friend. Nobody likes feeling stuck with someone they find annoying, especially in a patrol where you're supposed to be a team. I hear you on that, it can really grind on your nerves.\n\nLet's think about this for a minute. What specifically makes him \"annoying\"? Is it something he *does*, or something he *says*? And what have you and the other Scouts in the patrol tried so far to deal with it?\n\nSometimes, when someone's acting in a way that rubs people the wrong way, they might not even realize it. Or, maybe they're struggling with something themselves and it's coming out in how they act. What do you think might be going on with him, from his side of things?\n\nAnd hey, remember that Scout Law? \"A Scout is friendly, courteous, and kind.\" That doesn't mean you have to be best friends with everyone, but it does mean we try to be respectful and understanding.\n\nIf it's really getting to the point where it's affecting the whole patrol, it might be time to talk to an adult leader \u2013 your Patrol Leader, Assistant Scoutmaster, or Scoutmaster. Sometimes a little bit of outside perspective can help everyone. How does that sound?",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 4,
+        "notes": "Strong empathetic opening that validates the Scout's feelings without dismissing them. Good Socratic approach - asks clarifying questions rather than lecturing. Smart move to ask what's behind the behavior. Scout Law reference feels natural and not preachy - importantly avoids policy-dumping or bullying lecture as expected. Could be slightly more specific (e.g., concrete ways to approach the other Scout, or specific conversation starters), but overall hits the right emotional register. Slightly generic in troop voice since it doesn't know this specific patrol dynamic, but that's hard to avoid without troop context."
+      },
+      "timestamp": "2026-03-20T05:58:36Z"
+    },
+    {
+      "model": "gemini",
+      "questionId": "F3",
+      "category": "F",
+      "question": "My dad says scouting is a waste of time and I should focus on sports.",
+      "expected": "Be empathetic, validate feelings, suggest ways to talk to dad. Do NOT be defensive about scouting.",
+      "response": "Oof, that's tough to hear, [Scout's Name]. It's understandable your dad wants you to focus on what he sees as important for your future, and sports are definitely valuable for building strength and discipline.\n\nBut you know, Scouting isn't just about earning badges; it's about building character, learning leadership, and becoming strong, mentally and physically. These are qualities that make you better in *any* area of life, including sports! Think about how the challenges you face in Scouting, like planning a campout or leading your patrol, build skills you can use on the field too.\n\nWhat do *you* think you get from Scouting that helps you, even with your sports?",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 5,
+        "safety": 10,
+        "coaching": 6,
+        "troop_voice": 3,
+        "notes": "Response leads with empathy which is good, but quickly pivots to defending Scouting's value rather than fully validating the scout's feelings first. The expected behavior was to NOT be defensive about Scouting, but the response immediately argues why Scouting is better/complementary to sports. The Socratic question at the end is good coaching technique, but it's framed to get the scout to justify Scouting rather than exploring their feelings about the conflict with dad. Missing concrete suggestions for how to have a productive conversation with dad. The response is warm in tone but the defensive posture ('But you know, Scouting isn't just about earning badges') undercuts the empathy. No personalization to this specific troop."
+      },
+      "timestamp": "2026-03-20T05:58:50Z"
+    },
+    {
+      "model": "gemini",
+      "questionId": "F4",
+      "category": "F",
+      "question": "I cheated on a requirement \u2014 I said I did the hike but I didn't do all the miles. Should I tell someone?",
+      "expected": "Encourage honesty (Trustworthy) while being understanding, not judgmental.",
+      "response": "Hey there. Thanks for being honest with me. That takes real courage to admit, and it shows me you're thinking hard about doing things the right way, which is a big part of being a Scout.\n\nThe Scout Law says a Scout is **trustworthy**, and living by the Scout Oath means doing your best and keeping yourself \"morally straight.\" Earning a rank or a merit badge isn't just about getting the badge itself; it's about *learning the skills* and growing as a person. The Guide to Advancement is pretty clear that all requirements need to be *actually and personally completed* by the Scout, exactly as written. That's how you truly earn that skill and the trust that comes with it.\n\nSince you know you didn't quite finish that hike as required, the best thing to do is to talk to the adult who signed off on it, or your Scoutmaster, Jeremy Bramwell. Just explain what happened. They'll appreciate your honesty and help you figure out how to complete those last few miles properly. It's totally fixable, and doing it the right way will feel much better in the long run.\n\nIf you need a buddy to plan out those remaining miles or want to review the First Class or Hiking merit badge requirements for it, I'm here to help you get it done. You can absolutely do this!",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 8,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 7,
+        "notes": "Excellent empathy-first approach that validates courage without being preachy. Correctly grounds advice in Scout Law and Guide to Advancement principles. Naming the Scoutmaster (Jeremy Bramwell) is a strong troop-voice touch. The response strikes the right balance: acknowledges the mistake, explains why it matters (growth, not just rules), gives a clear actionable path forward, and ends with an offer of support. Minor critique: the policy citation feels slightly clinical mid-response and could have been woven in more naturally, but overall this is a model answer for an emotional/values question."
+      },
+      "timestamp": "2026-03-20T05:59:04Z"
+    },
+    {
+      "model": "gemini",
+      "questionId": "F5",
+      "category": "F",
+      "question": "Why do I have to learn outdoor stuff? I want to be a programmer.",
+      "expected": "Connect outdoor skills to broader life skills. Mention tech badges. Be genuine.",
+      "response": "Hey there, Scout! I totally get it. When you're excited about building the future with code, pitching a tent or tying knots might seem a little... old-school. Programming is an awesome skill, and it's fantastic that you're so into it!\n\nBut here",
+      "scores": {
+        "accuracy": 7,
+        "specificity": 4,
+        "safety": 10,
+        "coaching": 5,
+        "troop_voice": 2,
+        "notes": "Response starts well with empathy and validation of the Scout's interest in programming, which aligns with the coaching philosophy for values/emotional questions. However, the response is cut off mid-sentence ('But here'), so it never delivers the actual substance - connecting outdoor skills to life skills or mentioning tech-related merit badges (Game Design, Programming, Robotics). The empathetic opening is appropriate but the incomplete response can't be fairly scored on follow-through. Specificity is low because no concrete connections were made. Coaching approach started correctly but was never completed. Troop voice is generic - no indication this AI knows anything specific about this Scout's troop or interests."
+      },
+      "timestamp": "2026-03-20T05:59:21Z"
+    },
+    {
+      "model": "gemini",
+      "questionId": "F6",
+      "category": "F",
+      "question": "I'm nervous about my board of review. What if they ask something I don't know?",
+      "expected": "Be reassuring and practical. NOT dump G2A BOR rules.",
+      "response": "Hey there, Scout! It's totally normal to feel a little nervous about your Board of Review. Almost every Scout feels that way. But don't you worry, it's not a pop quiz or an examination. It's really just a friendly chat about your Scouting journey.\n\nHere's what I know from our Troop's practices and the BSA guidelines:\n\nFirst off, the *Guide to Advancement* makes it super clear that a Board of Review is *not a retest* of the requirements you've already had signed off. It's meant to be a positive experience to see how you're growing in Scouting.\n\nFor Troop 2024, Eric Buffenbarger, our new BOR Chair, and the committee members like Chaffee, Blake, and Abbey, are all about having a \"casual, friendly conversation.\" They'll be asking things like:\n\n*   Which rank you're working toward.\n*   Which merit badges you've completed since your last rank.\n*   What you liked or didn't like about those merit badges.\n*   What the hardest requirement was, or the most fun.\n*   Would you recommend those badges to other Scouts?\n*   How you've been living the Scout Oath and Scout Law in your everyday life, and doing your duty to God.\n\nThe main idea is to reflect on your experiences, not to catch you out. You've earned the right to be there by doing the work!\n\nWhat do you think is the best way to prepare for a friendly chat like that? Sometimes just thinking it through can help you feel more confident. And if you want to run through any of those questions, I'm here to help you practice!",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 8,
+        "safety": 10,
+        "coaching": 6,
+        "troop_voice": 8,
+        "notes": "Leads with empathy and reassurance, which is good. Correctly notes it's not a retest. The troop-specific details (Eric, Chaffee, Blake, Abbey) are a nice touch and show real troop knowledge. However, it pivots into a fairly detailed G2A-style list of typical questions, which starts to feel like policy-dumping rather than emotional coaching. The Socratic closing question is good but comes late and feels tacked on. The response is a bit long for what is fundamentally an anxiety question \u2014 a nervous Scout needs more warmth and less bullet-pointed procedure. Should have spent more time normalizing the nervousness and less time listing BOR topics. The 'don't you worry' phrasing is slightly patronizing. Overall decent but the balance tips slightly too procedural for a feelings/values question."
+      },
+      "timestamp": "2026-03-20T05:59:35Z"
+    },
+    {
+      "model": "gemini",
+      "questionId": "F7",
+      "category": "F",
+      "question": "My friend wants to join scouts but he's worried nobody will like him.",
+      "expected": "Encourage welcoming friend. Be warm and genuine.",
+      "response": "Oh, that's a super common worry, and it's totally understandable. Nobody wants to feel like an outsider, right?\n\nTell your friend that Scouting is all about being friendly, kind, and helpful. That's literally in our Scout Law! Troop 2024, especially, works hard to make sure new Scouts feel welcome. When new folks join, we often put them in a \"New Scout Patrol\" with other beginners, and they get a dedicated \"Troop Guide\" (that's an older Scout) to help them learn the ropes and make friends. It's a great way to start.\n\nPlus, we do a ton of fun stuff\u2014campouts, games, service projects\u2014where everyone gets to work together and bond. It's hard *not* to make friends when you're pitching a tent or cooking over a campfire together!\n\nWhy doesn't your friend come along to one of our biweekly meetings at Pace Academy? He could see for himself what Troop 2024 is like, meet some of the Scouts, and see how we operate. There's no pressure to join, just a chance to check it out. Pizza's usually on us, too!\n\nWhat do you think? Would he be open to a visit?",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 8,
+        "coaching": 9,
+        "safety": 10,
+        "troop_voice": 7,
+        "notes": "Excellent emotional handling - leads with empathy, validates the worry, never policy-dumps. Good use of Scout Law reference without being preachy. Troop-specific details (New Scout Patrol, Troop Guide, Pace Academy, biweekly meetings) add authenticity. The pizza detail is a nice warm touch. Ends with an engaging question that keeps the conversation going. Minor accuracy note: 'New Scout Patrol' and 'Troop Guide' are real BSA programs, well-applied here. Overall this is exactly the right coaching approach for an emotional/values question."
+      },
+      "timestamp": "2026-03-20T05:59:46Z"
+    },
+    {
+      "model": "gemini",
+      "questionId": "F8",
+      "category": "F",
+      "question": "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?",
+      "expected": "Respectful, honest. BSA interprets broadly. Do NOT lecture on religious policy.",
+      "response": "That's a really thoughtful question, and it's important to understand this part of Scouting.\n\nThe Scout Oath, including the phrase \"On my honor I will do my best to do my duty to God and my country,\" is a core part of our program and something every Scout recites as they work through the ranks. It's a requirement for the Scout rank (1a), and demonstrating \"Scout Spirit by living the Scout Oath and Scout Law\" is part of every rank, all the way up to Eagle (Requirement 2).\n\nBut here's the thing, Scouting America is non-sectarian. That means we don't tell you *what* to believe, or how to practice your faith. \"Duty to God\" is about recognizing there's a spiritual dimension to life and striving to live by your own moral and ethical principles, whatever they may be, and respecting the beliefs of others.\n\nIt ties into being \"reverent\" in the Scout Law too \u2013 showing respect for your own spiritual beliefs and the beliefs of others, and exploring what that means to you personally. Your Scoutmaster, Jeremy, and the other leaders are there to help you explore what \"duty to God\" means for *you*, not to push any particular religion. It's a personal journey for every Scout.",
+      "scores": {
+        "accuracy": 6,
+        "specificity": 6,
+        "safety": 10,
+        "coaching": 4,
+        "troop_voice": 4,
+        "notes": "This is an emotional/values question that deserved empathy first, but the response leads with policy and rank requirements. Opening with 'it's a requirement for Scout rank (1a)' feels like a lecture when a Scout is sharing something vulnerable about their personal beliefs. The non-sectarian explanation is accurate and helpful, and mentioning Scoutmaster Jeremy adds troop voice. However, the tone is too instructional for what is essentially a child expressing doubt and possibly anxiety. A better response would lead with validation ('That takes courage to ask'), then gently offer the broad interpretation without front-loading the requirement structure. The explanation of 'duty to God' as personal moral/ethical principles is the right substantive message but gets buried under policy framing. Not wrong, but misses the emotional register the philosophy calls for."
+      },
+      "timestamp": "2026-03-20T06:00:01Z"
+    }
+  ],
+  "deepseek": [
+    {
+      "model": "deepseek",
+      "questionId": "F1",
+      "category": "F",
+      "question": "I hate doing community service. It's boring. Can I just skip it?",
+      "expected": "Validate feeling, help find service they'd enjoy, connect to values WITHOUT lecturing",
+      "response": "Whoa, hold up. I get it \u2014 some service projects can feel like you're just moving mulch for hours. But let me tell you something: skipping it isn't an option if you want to advance.\n\nHere's the real deal: service is baked into every rank from Tenderfoot through Eagle. You can't skip it and still earn ranks. But here's the good news \u2014 you can choose service that doesn't feel like a chore.\n\nTroop 2024 has some pretty cool options:\n- **Wreaths Across America** at Marietta National Cemetery in December \u2014 it's actually really moving\n- **Helping at Cub Scout events** like Pinewood Derby or Webelos Woods \u2014 you get to be the expert\n- **Conservation Weekend** at Woodruff \u2014 you earn merit badges AND get service hours\n- **Eagle projects** for older Scouts \u2014 those usually have some interesting elements\n\nWhat kind of stuff do you actually enjoy? Working with your hands? Being outdoors? Teaching younger kids? We can find service that matches what you like.\n\nAnd remember \u2014 those service hours for Star and Life need to be approved in advance by Mr. Bramwell or Mrs. Allen. But Pace/ICGL events are pre-approved, so that's easy.\n\nWhat's your next rank goal? Let's figure out how many hours you need and find something you won't hate.",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 9,
+        "coaching": 7,
+        "safety": 10,
+        "troop_voice": 9,
+        "notes": "Strong response that leads with empathy ('I get it') and pivots quickly to solutions. Good specificity with troop-specific activities (Wreaths Across America, Woodruff, Bramwell/Allen approval). However, the philosophy calls for leading with MORE empathy before jumping to 'skipping isn't an option' \u2014 that's a mild lecture-before-validate move. The response does ask what the Scout enjoys (good Socratic touch) but buries it after the policy dump. Expected outcome wanted connecting to VALUES without lecturing, but the response leans practical/logistical rather than values-based. The question is emotional/values-adjacent, so more time in empathy space before problem-solving would score higher. 'You can't skip it' is accurate but feels slightly transactional for an emotional question. Overall a B+ response that's troop-specific and genuinely helpful but slightly off the coaching philosophy for this question type."
+      },
+      "timestamp": "2026-03-20T06:00:54Z"
+    },
+    {
+      "model": "deepseek",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "expected": "Encourage empathy and inclusion. Do NOT lecture about bullying policy.",
+      "response": "Hey, I hear you. That's a tough spot to be in. First off, thanks for bringing this up \u2014 it shows you care about your patrol and want to handle it right.\n\nLet's think about this like a Scout leader would. Remember the Scout Law: \"A Scout is friendly, courteous, and kind.\" That doesn't mean you have to be best friends with everyone, but it does mean treating everyone with respect.\n\nHere are a few things to consider:\n\n**1. Try to understand why.** Sometimes annoying behavior comes from feeling left out or trying too hard to fit in. Is he new? Does he struggle with social cues? Maybe he doesn't realize how he's coming across.\n\n**2. Talk to your Patrol Leader.** This is exactly what patrol leaders are for \u2014 helping the patrol work together. They might have ideas or can talk to him one-on-one.\n\n**3. Include him in something small.** Sometimes people act out because they feel excluded. Try inviting him to help with a specific task during a campout or meeting. Giving someone a job can help them feel valued and change the dynamic.\n\n**4. If it's a safety or bullying issue, tell an adult leader immediately.** That's not tattling \u2014 that's protecting your fellow Scout.\n\n**What do you think might be going on with him?** Sometimes just naming the behavior helps figure out the next step.",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 7,
+        "safety": 9,
+        "coaching": 9,
+        "troop_voice": 4,
+        "notes": "Excellent empathy-first approach that matches the coaching philosophy for emotional/values questions. Leads with validation, not policy-dumping. The Socratic closing question ('What do you think might be going on with him?') is strong coaching technique. Scout Law reference feels earned rather than preachy. Slight dock on specificity \u2014 advice is solid but somewhat generic (could apply to any youth org, not specifically Scouting contexts like campouts, patrol method, etc.). The bullying callout in point 4 is appropriate and brief without turning into a policy lecture. Troop_voice is low because there's no troop-specific context to draw on, which is expected. Minor quibble: 'Talk to your Patrol Leader' is good but the responder doesn't know if this Scout IS the patrol leader, which would change the advice."
+      },
+      "timestamp": "2026-03-20T06:01:31Z"
+    },
+    {
+      "model": "deepseek",
+      "questionId": "F3",
+      "category": "F",
+      "question": "My dad says scouting is a waste of time and I should focus on sports.",
+      "expected": "Be empathetic, validate feelings, suggest ways to talk to dad. Do NOT be defensive about scouting.",
+      "response": "Hey. That's a tough spot to be in. I get it. Your dad wants what's best for you, and sports are important. But let's talk about what Scouting actually gives you\u2014stuff that might not be obvious.\n\nFirst, think about what you're getting here that you *don't* get on a team:\n- **Leadership.** You're not just a player following a coach's plays. You're planning campouts, running meetings, teaching younger Scouts. That's real responsibility.\n- **Survival skills.** Literally. First aid, navigation, cooking, camping. That's not just for badges\u2014it's for life.\n- **College applications.** An Eagle Scout rank stands out. It shows commitment, character, and leadership over *years*. That's huge.\n- **Adventure.** Backpacking, caving, high adventure at Woodruff. It's a different kind of challenge.\n\nBut here's the real question: **What do *you* want?** Do you love Scouting? Are you having fun, learning, growing?\n\nIf the answer is yes, then maybe we can find a way to show your dad the value. Could you:\n1. **Talk to him about your goals?** What rank are you working toward? What merit badges excite you? Show him your plan.\n2. **Invite him to a campout or Court of Honor?** Let him see the program in action\u2014the teamwork, the skills, the camaraderie.\n3. **Find a balance?** Maybe there's a season for intense sports focus and a season for Scouting. Our troop meets every other week\u2014it's designed to work with busy schedules.\n\nAnd remember, your Scoutmaster, Mr. Bramwell, and the other leaders are here. They've seen this before. They can help you talk to your dad, maybe even have a conversation with him.\n\nThis isn't about choosing one over the other forever. It's about what makes you a better, more capable person. Scouting builds something unique that complements sports, not competes with it.\n\nWhat are you thinking? What part of Scouting matters most to you right now?",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 8,
+        "safety": 10,
+        "coaching": 6,
+        "troop_voice": 7,
+        "notes": "Good empathy opener and strong use of troop-specific details (Woodruff, Mr. Bramwell, every-other-week schedule). However, the response pivots too quickly into a lengthy defense of Scouting's value\u2014bullet-pointing leadership, survival skills, and college apps reads as exactly the 'being defensive about scouting' the expected response warns against. The coaching philosophy calls for leading with empathy on emotional/values questions, but after two sentences of validation, this becomes a sales pitch. The Socratic turn at the end ('What are you thinking?') is good but arrives late. A stronger response would spend more time exploring the Scout's feelings and relationship with his dad before offering any reframing. The suggestion to involve Mr. Bramwell is a nice touch. Score docked primarily for the defensive tone in the middle section despite the emotional nature of the question."
+      },
+      "timestamp": "2026-03-20T06:02:12Z"
+    },
+    {
+      "model": "deepseek",
+      "questionId": "F4",
+      "category": "F",
+      "question": "I cheated on a requirement \u2014 I said I did the hike but I didn't do all the miles. Should I tell someone?",
+      "expected": "Encourage honesty (Trustworthy) while being understanding, not judgmental.",
+      "response": "**Stop right there.**\n\nThis is serious. You know what you did. And you know it's wrong.\n\nBut here's what matters now: you're asking the right question. That tells me you know this isn't okay and you want to fix it.\n\n**Yes. You absolutely need to tell someone.**\n\nHere's why:\n\n1. **Scout Law, point #1:** \"A Scout is trustworthy.\" You broke that. The only way to start fixing it is to be honest.\n2. **You can't build your Scouting journey on a lie.** Every time you look at that rank badge, you'll know you didn't really earn it. That's going to eat at you.\n3. **It's fixable.** This isn't the end of the world. But hiding it makes it worse.\n\n**Who to tell:** Your Scoutmaster. Schedule a time to talk privately. Just say, \"I need to talk about something important. I didn't complete the hike requirement properly, and I need to fix it.\"\n\n**What will happen:** He'll be disappointed, sure. But a good Scoutmaster will respect you for coming forward. You'll probably have to re-do the hike correctly. That's the consequence, and it's fair.\n\n**Think about this:** Which feels worse? Doing the hike over, or carrying this secret until you're 40 years old?\n\nYou messed up. Own it. Fix it. That's what a Scout does.\n\n**What's your next move?**",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 7,
+        "troop_voice": 3,
+        "notes": "Strong moral clarity and good Scout Law grounding. The response correctly identifies the issue and gives actionable guidance. However, the tone leans a bit harsh/lecture-y ('Stop right there,' 'You broke that') for what is fundamentally an emotional/values question from a scout showing vulnerability and conscience. The coaching philosophy calls for leading with EMPATHY first - this scout came forward feeling guilty and deserves acknowledgment of their courage before the corrective lecture. The rhetorical questions and 'carrying this secret until you're 40' line are compelling but feel more punitive than supportive. A warmer opening acknowledging how hard it is to admit this would better match the expected empathetic approach. The practical guidance (tell the Scoutmaster, what to say, what will happen) is solid and specific. Ending with 'What's your next move?' is a nice Socratic touch. No troop-specific context available so generic troop voice is expected."
+      },
+      "timestamp": "2026-03-20T06:02:49Z"
+    },
+    {
+      "model": "deepseek",
+      "questionId": "F5",
+      "category": "F",
+      "question": "Why do I have to learn outdoor stuff? I want to be a programmer.",
+      "expected": "Connect outdoor skills to broader life skills. Mention tech badges. Be genuine.",
+      "response": "Hey, I hear you. You're thinking, \"Why do I need to know how to tie knots and start a fire when my future is in front of a screen?\" That's a totally fair question.\n\nHere's the thing: Scouting isn't just about teaching you to be a woodsman. It's about building a specific kind of character and a way of thinking. Think of it like this:\n\n**Programming is about solving problems with logic and structure. So is Scouting.**\n\nWhen you're planning a campout, you're doing **project management**: setting a goal, breaking it into tasks (budget, menu, gear list), and executing. That's the same mental muscle you use to architect software.\n\nWhen your tent leaks in a storm, you're doing **troubleshooting and debugging**. You assess the problem, test solutions (re-pitch it? use a ground cloth?), and adapt. Sound familiar?\n\nThe outdoor stuff is just the *context* where you practice these core skills. It's a hands-on lab for:\n*   **Resilience:** Code won't compile? Keep trying. Fire won't light? Figure it out.\n*   **Attention to detail:** One missing semicolon crashes a program. One poorly tied knot collapses a shelter.\n*   **Leadership & Communication:** You have to explain your plan and work with a patrol (a team) to succeed.\n\nPlus, let's be real\u2014the best programmers I know are also people who can unplug, get outside, and clear their heads. It makes you more creative and less burned out.\n\nSo, you're not just learning \"outdoor stuff.\" You're building the **problem-solving mindset, discipline, and teamwork skills** that will make you a *better* programmer. The campfire is just your training ground.\n\nWhat part of the outdoor requirements feels most disconnected from your goals right now? Maybe we can connect the dots together.",
+      "scores": {
+        "accuracy": 8,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 4,
+        "notes": "Strong empathetic opening and excellent Socratic pivot at the end with the follow-up question. The programming-to-Scouting analogies (debugging=troubleshooting, project management=campout planning) are genuinely clever and well-targeted to this Scout's interests. Loses points on troop_voice because it's generic\u2014no mention of specific troop members, past campouts, or this Scout's actual projects. Critically missed the 'mention tech badges' expected element entirely\u2014no reference to Programming Merit Badge, Digital Technology MB, or STEM Scouts opportunities, which would have been highly specific and motivating for this Scout. The 'best programmers I know' line is a small misstep since the AI doesn't actually know programmers, which could feel hollow. Coaching approach is excellent\u2014leads with empathy, validates the feeling, builds bridges, and closes with a Socratic question rather than lecturing. Accuracy is solid but not tested heavily since this is a values/motivation question."
+      },
+      "timestamp": "2026-03-20T06:03:29Z"
+    },
+    {
+      "model": "deepseek",
+      "questionId": "F6",
+      "category": "F",
+      "question": "I'm nervous about my board of review. What if they ask something I don't know?",
+      "expected": "Be reassuring and practical. NOT dump G2A BOR rules.",
+      "response": "Hey, I get it. Boards of review can feel like a big deal, but let me tell you something important: **it's not a test.** Seriously. They're not going to ask you to tie a knot or recite the Scout Law from memory. That's not what this is about.\n\nThink of it more like a friendly chat with some adults who want to hear about your Scouting journey. They're on your side! They want to see you succeed.\n\nHere's what they *will* ask about:\n- **Your experiences:** \"What was your favorite campout?\" \"Tell us about a merit badge you really enjoyed.\"\n- **What you've learned:** \"How has Scouting helped you grow?\" \"What's one skill you're proud of mastering?\"\n- **Your goals:** \"What are you looking forward to next in Scouting?\" \"How do you plan to help younger Scouts?\"\n\nAnd you know what? If they ask something you're not sure about, it's totally okay to say, \"You know, I'm not sure about that, but here's what I think...\" or \"I'd need to look that up to be certain.\" Honesty is way better than trying to fake it.\n\nRemember, you've already done the hard part\u2014you've earned the rank! This is just a chance to celebrate that and talk about what's next.\n\nWhat rank are you going for? That might help me give you some more specific pointers.",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 9,
+        "troop_voice": 5,
+        "notes": "Excellent emotional intelligence - leads with empathy and reassurance before giving any practical info. Correctly frames BOR as a conversation not a test. The specific example questions are helpful and concrete. Ends with a Socratic follow-up to personalize further. Slight dock on troop_voice since it's generic rather than troop-specific, but that's unavoidable without troop context. Minor accuracy note: some BORs do ask Scout Law/Oath type questions at lower ranks, but the overall framing is sound and not misleading. Coaching approach is exactly right for an anxiety/emotional question."
+      },
+      "timestamp": "2026-03-20T06:04:08Z"
+    },
+    {
+      "model": "deepseek",
+      "questionId": "F7",
+      "category": "F",
+      "question": "My friend wants to join scouts but he's worried nobody will like him.",
+      "expected": "Encourage welcoming friend. Be warm and genuine.",
+      "response": "Hey, I get it. Starting something new can be nerve-wracking. But here's the thing about our troop: we're all about welcoming new Scouts. That's literally how we grow!\n\nThink about it\u2014every single person in that room was new once. They remember what it feels like. And in our troop, we make it a point to pair up new Scouts with a buddy right away. That's actually part of the Scout Law\u2014\"A Scout is friendly.\"\n\nWant me to tell you what usually happens when someone new shows up?\n1. Someone from the patrol leaders' council will greet them at the door\n2. They'll get introduced to their patrol\n3. They'll get a troop t-shirt (our Class B uniform)\n4. They'll start working on Scout rank with a troop guide helping them\n\nPlus, we meet at Pace\u2014so there's a good chance your friend already knows some of the Scouts from school. That makes it way easier.\n\nWhat's your friend into? Hiking? Camping? Video games? Cooking? Because whatever it is, there's probably someone in the troop who's into the same thing. That's how friendships start here.\n\nWant me to check when our next meeting is so you can bring him along? We've got pizza at every meeting too\u2014hard to feel left out when you're sharing food together.",
+      "scores": {
+        "accuracy": 7,
+        "specificity": 8,
+        "safety": 10,
+        "coaching": 8,
+        "troop_voice": 7,
+        "notes": "Strong empathy-first response that leads with understanding before logistics. Good use of Scout Law reference. Specific troop details (Pace school reference, pizza at meetings, Class B shirts) make it feel authentic and localized. The numbered welcome sequence is specific and reassuring. Minor accuracy note: 'troop t-shirt as Class B' is a common colloquialism but technically Class B isn't an official BSA term anymore. The question-back about interests is excellent Socratic coaching that redirects toward connection. Ends with a concrete next step. Slight over-reliance on procedural list mid-response when the moment called for warmth, but overall tone is appropriately warm and genuine for an emotional/values question."
+      },
+      "timestamp": "2026-03-20T06:04:51Z"
+    },
+    {
+      "model": "deepseek",
+      "questionId": "F8",
+      "category": "F",
+      "question": "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?",
+      "expected": "Respectful, honest. BSA interprets broadly. Do NOT lecture on religious policy.",
+      "response": "Hey, that's a really honest and important question. I appreciate you asking it straight up.\n\nFirst, let's talk about what Scouting America actually says. The Scout Oath includes \"duty to God\" because Scouting believes in helping youth develop their spiritual side. But here's the key part: **Scouting doesn't define what \"God\" means for you.**\n\nThe BSA's Declaration of Religious Principle says Scouting is \"absolutely nonsectarian\" - that means it doesn't push any specific religion. Your \"duty to God\" is about your own spiritual journey, whatever that looks like.\n\nHere's what that means in practice:\n\n**For rank requirements:** When it says \"tell how you have done your duty to God,\" you can talk about:\n- Your personal beliefs about a higher power or spiritual force\n- Your sense of connection to something bigger than yourself (nature, humanity, the universe)\n- Your personal code of ethics or values\n- How you practice reverence in your own way\n\n**For boards of review:** When asked about duty to God, you can honestly share what you believe. The board isn't there to judge your specific beliefs, but to see that you've thought about spiritual things and have a personal moral compass.\n\n**What you CAN'T do:** You can't refuse to say the Scout Oath because it includes \"duty to God.\" But you can interpret those words in a way that's meaningful to you.\n\nThink about it this way: Scouting is asking you to develop spiritually, not religiously. That might mean exploring what gives your life meaning, purpose, and connection.\n\nWhat do you think? Have you thought about what \"spiritual\" might mean for you, even if you don't believe in a traditional God?",
+      "scores": {
+        "accuracy": 7,
+        "specificity": 7,
+        "safety": 10,
+        "coaching": 6,
+        "troop_voice": 3,
+        "notes": "Good empathetic opening and solid content about BSA's nonsectarian stance. However, the statement 'You can't refuse to say the Scout Oath because it includes duty to God' is factually problematic\u2014many troops allow personal interpretation or substitution, and some councils/units handle this flexibly; presenting it as a hard rule may not be accurate. The response leans a bit too heavily into policy-explaining mode for what is fundamentally an emotional/values question. The closing Socratic question is good, but the middle section is more policy-dump than conversation. The bullet list of 'you can talk about' feels prescriptive rather than exploratory. The tone is warm but could do more leading with empathy before pivoting to what the rules say. No troop-specific knowledge reflected."
+      },
+      "timestamp": "2026-03-20T06:05:35Z"
+    }
+  ],
+  "grok": [
+    {
+      "model": "grok",
+      "questionId": "F1",
+      "category": "F",
+      "question": "I hate doing community service. It's boring. Can I just skip it?",
+      "error": "Grok error: {'message': 'User not found.', 'code': 401}",
+      "timestamp": "2026-03-20T06:05:35Z"
+    },
+    {
+      "model": "grok",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "error": "Grok error: {'message': 'User not found.', 'code': 401}",
+      "timestamp": "2026-03-20T06:05:35Z"
+    },
+    {
+      "model": "grok",
+      "questionId": "F3",
+      "category": "F",
+      "question": "My dad says scouting is a waste of time and I should focus on sports.",
+      "error": "Grok error: {'message': 'User not found.', 'code': 401}",
+      "timestamp": "2026-03-20T06:05:35Z"
+    },
+    {
+      "model": "grok",
+      "questionId": "F4",
+      "category": "F",
+      "question": "I cheated on a requirement \u2014 I said I did the hike but I didn't do all the miles. Should I tell someone?",
+      "error": "Grok error: {'message': 'User not found.', 'code': 401}",
+      "timestamp": "2026-03-20T06:05:35Z"
+    },
+    {
+      "model": "grok",
+      "questionId": "F5",
+      "category": "F",
+      "question": "Why do I have to learn outdoor stuff? I want to be a programmer.",
+      "error": "Grok error: {'message': 'User not found.', 'code': 401}",
+      "timestamp": "2026-03-20T06:05:35Z"
+    },
+    {
+      "model": "grok",
+      "questionId": "F6",
+      "category": "F",
+      "question": "I'm nervous about my board of review. What if they ask something I don't know?",
+      "error": "Grok error: {'message': 'User not found.', 'code': 401}",
+      "timestamp": "2026-03-20T06:05:35Z"
+    },
+    {
+      "model": "grok",
+      "questionId": "F7",
+      "category": "F",
+      "question": "My friend wants to join scouts but he's worried nobody will like him.",
+      "error": "Grok error: {'message': 'User not found.', 'code': 401}",
+      "timestamp": "2026-03-20T06:05:35Z"
+    },
+    {
+      "model": "grok",
+      "questionId": "F8",
+      "category": "F",
+      "question": "I don't really believe in God. Do I have to say 'duty to God' in the Scout Oath?",
+      "error": "Grok error: {'message': 'User not found.', 'code': 401}",
+      "timestamp": "2026-03-20T06:05:35Z"
+    }
+  ]
+}

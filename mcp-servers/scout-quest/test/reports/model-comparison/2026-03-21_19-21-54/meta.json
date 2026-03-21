@@ -1,0 +1,21 @@
+{
+  "description": "L0 vs L1 (web search): 3 questions, verify tool calls",
+  "evalVersion": "4",
+  "systemVersion": "5",
+  "evaluator": "panel",
+  "models": [
+    "layer-persona",
+    "layer-websearch"
+  ],
+  "categories": "all",
+  "questionCount": 3,
+  "budget": 3.0,
+  "startedAt": "2026-03-21T19:21:54Z",
+  "status": "complete",
+  "completedAt": "2026-03-21T19:24:32Z",
+  "totalCost": 0.07789499999999999,
+  "modelsCompleted": [
+    "layer-persona",
+    "layer-websearch"
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "gemini25flash": [
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "C4",
+      "category": "C",
+      "question": "What are the requirements for Citizenship in Society?",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T13:27:38Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "E3",
+      "category": "E",
+      "question": "Which First Class requirements could I complete at a Camping MB campout?",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T13:27:45Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "E4",
+      "category": "E",
+      "question": "I completed Swimming MB. Does that help with any rank requirements?",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T13:27:54Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "F2",
+      "category": "F",
+      "question": "This kid in my patrol is really annoying and nobody likes him. What should I do?",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T13:28:03Z"
+    },
+    {
+      "model": "gemini25flash",
+      "label": "Gemini 2.5 Flash",
+      "questionId": "G1",
+      "category": "G",
+      "question": "I failed my board of review. I feel terrible.",
+      "error": "unsupported operand type(s) for -: 'int' and 'NoneType'",
+      "timestamp": "2026-03-21T13:28:08Z"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "claude": [
+    {
+      "model": "claude",
+      "label": "Claude Sonnet 4.6",
+      "price": "$3/$15",
+      "questionId": "A1",
+      "category": "A",
+      "question": "Can a board of review reject me for not being active enough in the troop?",
+      "expected": "G2A: 'reasonable' standard, cannot hold to unwritten expectations",
+      "response": "Great question \u2014 and the answer is **it depends on what \"active enough\" actually means**.\n\nHere's the honest breakdown:\n\n---\n\n**For Tenderfoot, Second Class, and First Class ranks** \u2014 there's no \"active participation\" requirement at all. Your board of review can't reject you for attendance at those ranks. Full stop.\n\n**For Star, Life, and Eagle** \u2014 \"active participation\" *is* a requirement, but the BSA Guide to Advancement is really specific about what that means. It's **not** about counting meetings attended or campouts checked off. The official test has three parts:\n\n1. You're **registered** in the unit\n2. You're **in good standing** (not suspended for discipline reasons)\n3. You **meet the unit's reasonable documented expectations** \u2014 *or* if you didn't, you have a legit reason like other positive activities, a job, school demands, family stuff\n\nThe key word there is *documented*. If your troop has written expectations about activity level, those matter. But a board can't invent new standards on the spot or hold you to expectations that were never communicated to you.\n\n**Also important:** If your troop took time off (summer break, whatever), that time still counts toward your active participation. You can't be penalized for the troop going dormant.\n\n---\n\n**For Troop 2024 specifically** \u2014 your board of review is a pretty casual conversation. Eric Buffenbarger's team is going to ask you about your merit badges and rank experience, not grill you on attendance records.\n\nWhat rank are you working toward?",
+      "scores": {
+        "accuracy": 9,
+        "specificity": 8,
+        "safety": 10,
+        "coaching": 8,
+        "troop_voice": 7,
+        "notes": "Accurate and well-organized BSA policy explanation. Correctly explains the three-part active participation test and that attendance alone can't be the basis for rejection. The troop-specific callout naming Eric Buffenbarger and describing the casual BOR format is genuinely useful and grounded in real troop data. Coaching approach is solid \u2014 answers the direct policy question (appropriate here) and ends with a Socratic follow-up. Minor nitpick: the response could have more explicitly named the Guide to Advancement as the source and slightly more clearly stated that the standard must be 'reasonable' and 'documented in advance' per G2A language, but the spirit is captured. Expected criteria fully met."
+      },
+      "timestamp": "2026-03-21T07:06:26Z"
+    }
+  ]
+}

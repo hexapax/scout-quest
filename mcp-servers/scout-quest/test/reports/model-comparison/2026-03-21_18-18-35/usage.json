@@ -1,0 +1,936 @@
+{
+  "totals": {
+    "input_tokens": 9643438,
+    "output_tokens": 34348,
+    "cached_tokens": 8064809,
+    "cost": 4.301450812500001,
+    "calls": 112
+  },
+  "calls": [
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178219,
+      "output_tokens": 258,
+      "cached_tokens": 163705,
+      "cost": 0.0965235,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1293,
+      "output_tokens": 170,
+      "cached_tokens": 0,
+      "cost": 0.006429000000000001
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178210,
+      "output_tokens": 350,
+      "cached_tokens": 163705,
+      "cost": 0.0978765,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1474,
+      "output_tokens": 201,
+      "cached_tokens": 0,
+      "cost": 0.007436999999999999
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178212,
+      "output_tokens": 343,
+      "cached_tokens": 163705,
+      "cost": 0.0977775,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1371,
+      "output_tokens": 156,
+      "cached_tokens": 0,
+      "cost": 0.006453
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178209,
+      "output_tokens": 351,
+      "cached_tokens": 163705,
+      "cost": 0.0978885,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1512,
+      "output_tokens": 155,
+      "cached_tokens": 0,
+      "cost": 0.006861
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178203,
+      "output_tokens": 473,
+      "cached_tokens": 163705,
+      "cost": 0.09970050000000001,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1526,
+      "output_tokens": 269,
+      "cached_tokens": 0,
+      "cost": 0.008612999999999999
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178202,
+      "output_tokens": 533,
+      "cached_tokens": 163705,
+      "cost": 0.1005975,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1571,
+      "output_tokens": 169,
+      "cached_tokens": 0,
+      "cost": 0.007248
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178215,
+      "output_tokens": 241,
+      "cached_tokens": 163705,
+      "cost": 0.0962565,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1269,
+      "output_tokens": 181,
+      "cached_tokens": 0,
+      "cost": 0.006522
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178214,
+      "output_tokens": 260,
+      "cached_tokens": 163705,
+      "cost": 0.09653850000000001,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1228,
+      "output_tokens": 238,
+      "cached_tokens": 0,
+      "cost": 0.007254
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178206,
+      "output_tokens": 159,
+      "cached_tokens": 163705,
+      "cost": 0.0949995,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1057,
+      "output_tokens": 206,
+      "cached_tokens": 0,
+      "cost": 0.006261
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178207,
+      "output_tokens": 455,
+      "cached_tokens": 163705,
+      "cost": 0.0994425,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1583,
+      "output_tokens": 180,
+      "cached_tokens": 0,
+      "cost": 0.007449
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178208,
+      "output_tokens": 175,
+      "cached_tokens": 163705,
+      "cost": 0.0952455,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1123,
+      "output_tokens": 177,
+      "cached_tokens": 0,
+      "cost": 0.006024
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178209,
+      "output_tokens": 382,
+      "cached_tokens": 163705,
+      "cost": 0.0983535,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1532,
+      "output_tokens": 215,
+      "cached_tokens": 0,
+      "cost": 0.007821
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178204,
+      "output_tokens": 34,
+      "cached_tokens": 163705,
+      "cost": 0.0931185,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 810,
+      "output_tokens": 151,
+      "cached_tokens": 0,
+      "cost": 0.0046949999999999995
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178210,
+      "output_tokens": 69,
+      "cached_tokens": 163705,
+      "cost": 0.0936615,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 896,
+      "output_tokens": 129,
+      "cached_tokens": 0,
+      "cost": 0.004623
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178219,
+      "output_tokens": 572,
+      "cached_tokens": 0,
+      "cost": 0.5432370000000001,
+      "cache_creation": 163705
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1379,
+      "output_tokens": 177,
+      "cached_tokens": 0,
+      "cost": 0.006791999999999999
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178210,
+      "output_tokens": 975,
+      "cached_tokens": 163705,
+      "cost": 0.1072515,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1453,
+      "output_tokens": 139,
+      "cached_tokens": 0,
+      "cost": 0.006444
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178212,
+      "output_tokens": 836,
+      "cached_tokens": 163705,
+      "cost": 0.1051725,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1411,
+      "output_tokens": 166,
+      "cached_tokens": 0,
+      "cost": 0.006723
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178209,
+      "output_tokens": 676,
+      "cached_tokens": 163705,
+      "cost": 0.1027635,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1482,
+      "output_tokens": 193,
+      "cached_tokens": 0,
+      "cost": 0.007341
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178203,
+      "output_tokens": 1639,
+      "cached_tokens": 163705,
+      "cost": 0.1171905,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1501,
+      "output_tokens": 216,
+      "cached_tokens": 0,
+      "cost": 0.007743
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178202,
+      "output_tokens": 1094,
+      "cached_tokens": 163705,
+      "cost": 0.10901250000000001,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1413,
+      "output_tokens": 186,
+      "cached_tokens": 0,
+      "cost": 0.007029
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178215,
+      "output_tokens": 302,
+      "cached_tokens": 163705,
+      "cost": 0.09717150000000001,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1164,
+      "output_tokens": 133,
+      "cached_tokens": 0,
+      "cost": 0.005487
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178214,
+      "output_tokens": 632,
+      "cached_tokens": 163705,
+      "cost": 0.10211850000000001,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1270,
+      "output_tokens": 164,
+      "cached_tokens": 0,
+      "cost": 0.0062699999999999995
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178206,
+      "output_tokens": 807,
+      "cached_tokens": 163705,
+      "cost": 0.10471950000000001,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1422,
+      "output_tokens": 235,
+      "cached_tokens": 0,
+      "cost": 0.007790999999999999
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178207,
+      "output_tokens": 613,
+      "cached_tokens": 163705,
+      "cost": 0.1018125,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1450,
+      "output_tokens": 236,
+      "cached_tokens": 0,
+      "cost": 0.00789
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178208,
+      "output_tokens": 422,
+      "cached_tokens": 163705,
+      "cost": 0.0989505,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1393,
+      "output_tokens": 172,
+      "cached_tokens": 0,
+      "cost": 0.006759
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178209,
+      "output_tokens": 615,
+      "cached_tokens": 163705,
+      "cost": 0.1018485,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1477,
+      "output_tokens": 200,
+      "cached_tokens": 0,
+      "cost": 0.007431
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178204,
+      "output_tokens": 224,
+      "cached_tokens": 163705,
+      "cost": 0.09596850000000001,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 971,
+      "output_tokens": 177,
+      "cached_tokens": 0,
+      "cost": 0.005568
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "claude-sonnet-4-6",
+      "input_tokens": 178210,
+      "output_tokens": 185,
+      "cached_tokens": 163705,
+      "cost": 0.0954015,
+      "cache_creation": 0
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 918,
+      "output_tokens": 199,
+      "cached_tokens": 0,
+      "cost": 0.005738999999999999
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163532,
+      "output_tokens": 338,
+      "cached_tokens": 0,
+      "cost": 0.08278
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1518,
+      "output_tokens": 186,
+      "cached_tokens": 0,
+      "cost": 0.007344
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163525,
+      "output_tokens": 437,
+      "cached_tokens": 155623,
+      "cost": 0.024714875
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1595,
+      "output_tokens": 183,
+      "cached_tokens": 0,
+      "cost": 0.00753
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163525,
+      "output_tokens": 394,
+      "cached_tokens": 155623,
+      "cost": 0.024585875
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1534,
+      "output_tokens": 209,
+      "cached_tokens": 0,
+      "cost": 0.007737000000000001
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163525,
+      "output_tokens": 365,
+      "cached_tokens": 155623,
+      "cost": 0.024498875
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1551,
+      "output_tokens": 203,
+      "cached_tokens": 0,
+      "cost": 0.007698
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163518,
+      "output_tokens": 419,
+      "cached_tokens": 155623,
+      "cost": 0.024657375000000002
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1466,
+      "output_tokens": 281,
+      "cached_tokens": 0,
+      "cost": 0.008612999999999999
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163518,
+      "output_tokens": 423,
+      "cached_tokens": 155623,
+      "cost": 0.024669375
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1643,
+      "output_tokens": 176,
+      "cached_tokens": 0,
+      "cost": 0.007569
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163528,
+      "output_tokens": 179,
+      "cached_tokens": 155623,
+      "cost": 0.023942375000000002
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1172,
+      "output_tokens": 191,
+      "cached_tokens": 0,
+      "cost": 0.0063809999999999995
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163531,
+      "output_tokens": 177,
+      "cached_tokens": 155623,
+      "cost": 0.023937875
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1171,
+      "output_tokens": 249,
+      "cached_tokens": 0,
+      "cost": 0.007248
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163522,
+      "output_tokens": 349,
+      "cached_tokens": 155623,
+      "cost": 0.024449375000000002
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1502,
+      "output_tokens": 205,
+      "cached_tokens": 0,
+      "cost": 0.007580999999999999
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163523,
+      "output_tokens": 306,
+      "cached_tokens": 155623,
+      "cost": 0.024320875000000002
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1427,
+      "output_tokens": 295,
+      "cached_tokens": 0,
+      "cost": 0.008706
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163525,
+      "output_tokens": 234,
+      "cached_tokens": 155623,
+      "cost": 0.024105875000000002
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1229,
+      "output_tokens": 143,
+      "cached_tokens": 0,
+      "cost": 0.005832
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163526,
+      "output_tokens": 212,
+      "cached_tokens": 155623,
+      "cost": 0.024040375000000003
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1150,
+      "output_tokens": 167,
+      "cached_tokens": 0,
+      "cost": 0.005955
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163520,
+      "output_tokens": 239,
+      "cached_tokens": 155623,
+      "cost": 0.024118375
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1207,
+      "output_tokens": 197,
+      "cached_tokens": 0,
+      "cost": 0.006576
+    },
+    {
+      "model": "gemini-3-flash-preview",
+      "label": "gemini-3-flash-preview",
+      "input_tokens": 163526,
+      "output_tokens": 214,
+      "cached_tokens": 155623,
+      "cost": 0.024046375000000002
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1268,
+      "output_tokens": 175,
+      "cached_tokens": 0,
+      "cost": 0.006429000000000001
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163532,
+      "output_tokens": 286,
+      "cached_tokens": 0,
+      "cost": 0.041312
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1403,
+      "output_tokens": 166,
+      "cached_tokens": 0,
+      "cost": 0.006699
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163525,
+      "output_tokens": 563,
+      "cached_tokens": 147425,
+      "cost": 0.014083562499999999
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1472,
+      "output_tokens": 229,
+      "cached_tokens": 0,
+      "cost": 0.007851
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163525,
+      "output_tokens": 324,
+      "cached_tokens": 0,
+      "cost": 0.04136725
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1333,
+      "output_tokens": 177,
+      "cached_tokens": 0,
+      "cost": 0.006654
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163525,
+      "output_tokens": 486,
+      "cached_tokens": 147425,
+      "cost": 0.0139680625
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1444,
+      "output_tokens": 209,
+      "cached_tokens": 0,
+      "cost": 0.007467
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163518,
+      "output_tokens": 750,
+      "cached_tokens": 147425,
+      "cost": 0.0143623125
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1498,
+      "output_tokens": 199,
+      "cached_tokens": 0,
+      "cost": 0.0074789999999999995
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163518,
+      "output_tokens": 282,
+      "cached_tokens": 147425,
+      "cost": 0.0136603125
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1388,
+      "output_tokens": 184,
+      "cached_tokens": 0,
+      "cost": 0.006924
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163528,
+      "output_tokens": 173,
+      "cached_tokens": 147425,
+      "cost": 0.0134993125
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1087,
+      "output_tokens": 202,
+      "cached_tokens": 0,
+      "cost": 0.006291
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163531,
+      "output_tokens": 144,
+      "cached_tokens": 147425,
+      "cost": 0.0134565625
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1092,
+      "output_tokens": 131,
+      "cached_tokens": 0,
+      "cost": 0.005241
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163522,
+      "output_tokens": 967,
+      "cached_tokens": 0,
+      "cost": 0.042331
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1454,
+      "output_tokens": 228,
+      "cached_tokens": 0,
+      "cost": 0.007782000000000001
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163523,
+      "output_tokens": 534,
+      "cached_tokens": 147425,
+      "cost": 0.0140395625
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1393,
+      "output_tokens": 197,
+      "cached_tokens": 0,
+      "cost": 0.007134000000000001
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163525,
+      "output_tokens": 438,
+      "cached_tokens": 147425,
+      "cost": 0.013896062499999999
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1430,
+      "output_tokens": 193,
+      "cached_tokens": 0,
+      "cost": 0.007185
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163526,
+      "output_tokens": 374,
+      "cached_tokens": 147425,
+      "cost": 0.0138003125
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1261,
+      "output_tokens": 207,
+      "cached_tokens": 0,
+      "cost": 0.006888
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163520,
+      "output_tokens": 179,
+      "cached_tokens": 147425,
+      "cost": 0.013506312500000001
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1247,
+      "output_tokens": 185,
+      "cached_tokens": 0,
+      "cost": 0.006516
+    },
+    {
+      "model": "gemini-3.1-flash-lite-preview",
+      "label": "gemini-3.1-flash-lite-preview",
+      "input_tokens": 163526,
+      "output_tokens": 187,
+      "cached_tokens": 147425,
+      "cost": 0.013519812499999999
+    },
+    {
+      "model": "claude-sonnet-4-6",
+      "label": "panel-scorer",
+      "input_tokens": 1010,
+      "output_tokens": 143,
+      "cached_tokens": 0,
+      "cost": 0.005175000000000001
+    }
+  ],
+  "budget": 8.0
+}

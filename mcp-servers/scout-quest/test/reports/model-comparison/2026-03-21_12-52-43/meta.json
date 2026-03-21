@@ -1,0 +1,16 @@
+{
+  "description": "Testing meta.json descriptions and cost tracking",
+  "models": [
+    "claude"
+  ],
+  "categories": "G",
+  "questionCount": 6,
+  "budget": 3.5,
+  "startedAt": "2026-03-21T12:52:43Z",
+  "status": "complete",
+  "completedAt": "2026-03-21T12:52:44Z",
+  "totalCost": 0.0,
+  "modelsCompleted": [
+    "claude"
+  ]
+}
