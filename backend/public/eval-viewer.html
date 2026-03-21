@@ -533,6 +533,115 @@
     }
     .container { padding: 1rem 2rem; }
   }
+
+  /* ── Copy buttons ── */
+  .copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-muted);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.7rem;
+    transition: all 0.15s;
+    vertical-align: middle;
+  }
+  .copy-btn:hover { border-color: var(--text-muted); color: var(--text); }
+  .copy-btn.copied {
+    color: var(--green) !important;
+    border-color: var(--green) !important;
+  }
+  .copy-btn .copy-icon::before { content: "\u2398"; font-size: 0.85em; }
+  .copy-btn.copied .copy-icon::before { content: "\u2713"; }
+
+  /* ── Cost dashboard ── */
+  .cost-summary-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .cost-card {
+    background: var(--surface);
+    border: 1px solid var(--surface2);
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+  }
+  .cost-card .cost-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.35rem;
+  }
+  .cost-card .cost-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+  .cost-card .cost-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+  }
+  .cost-green { color: var(--green); }
+  .cost-yellow { color: var(--yellow); }
+  .cost-red { color: var(--red); }
+
+  .period-bar {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .period-btn {
+    padding: 0.35rem 0.8rem;
+    border: 1px solid var(--surface2);
+    background: var(--surface2);
+    color: var(--text-muted);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+  }
+  .period-btn:hover { color: var(--text); border-color: var(--text-muted); }
+  .period-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  .cost-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .cost-table th, .cost-table td {
+    padding: 0.5rem 0.6rem;
+    border-bottom: 1px solid var(--surface2);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .cost-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: var(--surface);
+  }
+  .cost-table th:first-child,
+  .cost-table td:first-child {
+    text-align: left;
+    font-weight: 600;
+  }
+
+  @media (max-width: 600px) {
+    .cost-summary-row { grid-template-columns: 1fr 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -567,10 +676,13 @@
 <!-- ═══ SECTION: Dashboard ═══ -->
 <div id="dashboard" class="container hidden">
   <!-- View tabs -->
-  <div class="tab-bar" id="view-tabs">
+  <div class="tab-bar" id="view-tabs" style="display:flex; align-items:center;">
     <button class="tab-btn active" data-view="overview">Overview</button>
     <button class="tab-btn" data-view="table">Score Table</button>
     <button class="tab-btn" data-view="compare">Comparison</button>
+    <button class="tab-btn" data-view="cost">Cost</button>
+    <span style="flex:1;"></span>
+    <button class="copy-btn" id="copy-report-btn" onclick="app.copyReport()" title="Copy score table as markdown"><span class="copy-icon"></span> Copy Report</button>
   </div>
 
   <!-- Category filter tabs -->
@@ -611,6 +723,29 @@
     </div>
     <div id="compare-diff"></div>
     <div id="compare-questions"></div>
+  </div>
+
+  <!-- Cost view -->
+  <div id="view-cost" class="hidden">
+    <div class="period-bar" id="cost-period-bar">
+      <button class="period-btn active" data-period="today" onclick="app.setCostPeriod('today')">Today</button>
+      <button class="period-btn" data-period="week" onclick="app.setCostPeriod('week')">This Week</button>
+      <button class="period-btn" data-period="month" onclick="app.setCostPeriod('month')">This Month</button>
+      <button class="period-btn" data-period="all" onclick="app.setCostPeriod('all')">All Time</button>
+    </div>
+    <div id="cost-summary-cards" class="cost-summary-row"></div>
+    <div class="card">
+      <h2>Cost by Model</h2>
+      <div class="score-table-wrap">
+        <table class="cost-table" id="cost-by-model-table"></table>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem;">
+      <h2>Cost by Run</h2>
+      <div class="score-table-wrap">
+        <table class="cost-table" id="cost-by-run-table"></table>
+      </div>
+    </div>
   </div>
 
   <!-- Question list (part of all views) -->
@@ -676,6 +811,8 @@
   let radarChart = null;
   let barChart = null;
   let pollInterval = null;
+  let costPeriod = "today";
+  let costDataCache = null;
 
   // ── DOM refs ──
   const $browser = document.getElementById("browser");
@@ -762,6 +899,65 @@
 
   function formatTimestamp(ts) {
     return ts.replace(/_/g, " ").replace(/-/g, "/").replace(/\/(\d{2})\/(\d{2}) /, "/$1/$2  ");
+  }
+
+  // ── Clipboard utility ──
+  function copyToClipboard(text, btnEl) {
+    const doCopy = (t) => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        return navigator.clipboard.writeText(t);
+      }
+      // Fallback for older browsers / non-HTTPS
+      return new Promise((resolve, reject) => {
+        const ta = document.createElement("textarea");
+        ta.value = t;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          resolve();
+        } catch (e) {
+          reject(e);
+        } finally {
+          document.body.removeChild(ta);
+        }
+      });
+    };
+
+    doCopy(text).then(() => {
+      if (btnEl) {
+        btnEl.classList.add("copied");
+        const orig = btnEl.innerHTML;
+        const origText = btnEl.textContent;
+        btnEl.innerHTML = '<span class="copy-icon"></span> Copied!';
+        setTimeout(() => {
+          btnEl.classList.remove("copied");
+          btnEl.innerHTML = orig;
+        }, 1500);
+      }
+    }).catch(() => {
+      // Silently fail
+    });
+  }
+
+  function costColorClass(val) {
+    if (val <= 5) return "cost-green";
+    if (val <= 20) return "cost-yellow";
+    return "cost-red";
+  }
+
+  function formatCost(val) {
+    if (val == null) return "$0.00";
+    return "$" + val.toFixed(4);
+  }
+
+  function formatTokens(val) {
+    if (!val) return "0";
+    if (val >= 1_000_000) return (val / 1_000_000).toFixed(1) + "M";
+    if (val >= 1_000) return (val / 1_000).toFixed(1) + "K";
+    return val.toString();
   }
 
   // ── API ──
@@ -991,6 +1187,11 @@
     document.getElementById("view-overview").classList.toggle("hidden", activeView !== "overview");
     document.getElementById("view-table").classList.toggle("hidden", activeView !== "table");
     document.getElementById("view-compare").classList.toggle("hidden", activeView !== "compare");
+    document.getElementById("view-cost").classList.toggle("hidden", activeView !== "cost");
+
+    // Hide category tabs and question list when viewing cost
+    document.getElementById("category-tabs").classList.toggle("hidden", activeView === "cost");
+    document.getElementById("question-list").classList.toggle("hidden", activeView === "cost");
 
     if (activeView === "overview") {
       renderSummaryCards(models);
@@ -1000,9 +1201,11 @@
       renderScoreTable(data, models);
     } else if (activeView === "compare") {
       renderCompareView(data, models);
+    } else if (activeView === "cost") {
+      loadCostDashboard();
     }
 
-    renderQuestionList(data, models);
+    if (activeView !== "cost") renderQuestionList(data, models);
   }
 
   // ── Summary Cards ──
@@ -1184,14 +1387,16 @@
     const filtered = activeCategory === "all" ? questions : questions.filter(q => q.category === activeCategory);
 
     const $el = document.getElementById("question-list");
-    let html = '<div class="card"><h2>Questions</h2><div class="score-table-wrap"><table class="score-table"><thead><tr><th>ID</th><th>Question</th>';
+    let html = '<div class="card"><h2>Questions</h2><div class="score-table-wrap"><table class="score-table"><thead><tr><th></th><th>ID</th><th>Question</th>';
     for (const m of models) {
       html += `<th>${esc(m.label.length > 12 ? m.label.substring(0, 12) + "..." : m.label)}</th>`;
     }
     html += '</tr></thead><tbody>';
 
     for (const q of filtered) {
+      const locator = `eval://${currentTimestamp || "local"}/${q.id}`;
       html += `<tr>
+        <td style="padding:0.3rem;"><button class="copy-btn" onclick="event.stopPropagation(); app.copyLocator('${esc(locator)}', this)" title="Copy locator"><span class="copy-icon"></span></button></td>
         <td class="clickable" onclick="app.drillDown('${esc(q.id)}')" style="color:var(--blue)">${esc(q.id)}</td>
         <td class="clickable" onclick="app.drillDown('${esc(q.id)}')" style="white-space:normal; min-width:200px;">${esc(q.question.substring(0, 80))}${q.question.length > 80 ? "..." : ""}</td>`;
 
@@ -1317,6 +1522,10 @@
   function drillDown(questionId) {
     if (!currentData) return;
     showSection("drilldown");
+    // Update hash for deep linking (without triggering hashchange)
+    if (currentTimestamp && currentTimestamp !== "local") {
+      history.replaceState(null, "", `#${currentTimestamp}/${questionId}`);
+    }
     const tsLabel = currentTimestamp === "local" ? "Local File" : formatTimestamp(currentTimestamp);
     updateBreadcrumb([
       { label: tsLabel, click: currentTimestamp === "local" ? "app.goBackToDash()" : `app.openReport('${esc(currentTimestamp)}')` },
@@ -1368,8 +1577,9 @@
         ${qInfo.expected ? `<div class="expected"><strong>Expected:</strong> ${esc(qInfo.expected)}</div>` : ""}
       </div>
 
-      <div style="margin-bottom:0.75rem;">
+      <div style="margin-bottom:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
         <button class="btn small" onclick="app.narrateQuestion('${esc(questionId)}')">Narrate All Responses</button>
+        <button class="copy-btn" onclick="app.copyQuestion('${esc(questionId)}', this)" title="Copy all responses as markdown"><span class="copy-icon"></span> Copy Responses</button>
       </div>
 
       <div class="response-grid">`;
@@ -1378,6 +1588,7 @@
       const entry = m.entries.find(e => e.questionId === questionId);
       const isBest = m.key === bestOverallKey;
 
+      const modelLocator = `eval://${currentTimestamp || "local"}/${esc(m.key)}/${esc(questionId)}`;
       html += `<div class="response-card ${isBest ? 'best-overall' : ''}">
         <div class="card-header">
           <div>
@@ -1385,7 +1596,10 @@
             ${m.price ? `<span class="model-price">${esc(m.price)}</span>` : ""}
             ${isBest ? '<span style="font-size:0.7rem; color:var(--green); margin-left:0.5rem;">BEST</span>' : ""}
           </div>
-          <button class="play-btn" onclick="event.stopPropagation(); app.narrateResponse('${esc(m.key)}', '${esc(questionId)}')">Play</button>
+          <div style="display:flex; gap:0.35rem; align-items:center;">
+            <button class="copy-btn" onclick="event.stopPropagation(); app.copyLocator('${modelLocator}', this)" title="Copy locator"><span class="copy-icon"></span></button>
+            <button class="play-btn" onclick="event.stopPropagation(); app.narrateResponse('${esc(m.key)}', '${esc(questionId)}')">Play</button>
+          </div>
         </div>`;
 
       if (entry && entry.error) {
@@ -1678,6 +1892,219 @@
     document.getElementById("voice-narrate-all").addEventListener("click", narrateAll);
   }
 
+  // ── Copy Report (markdown score table) ──
+  function copyReport(btn) {
+    if (!currentData) return;
+    const models = getModels(currentData).map(m => ({
+      ...m,
+      filtered: filterByCategory(m.entries, activeCategory),
+      filteredAvg: avgScore(filterByCategory(m.entries, activeCategory))
+    }));
+    models.sort((a, b) => (b.filteredAvg.overall || 0) - (a.filteredAvg.overall || 0));
+
+    let md = `## Eval Run: ${currentTimestamp || "local"}\n\n`;
+    md += "| Model | Price | Acc | Spec | Safe | Coach | Troop | Avg |\n";
+    md += "|-------|-------|-----|------|------|-------|-------|-----|\n";
+    for (const m of models) {
+      const a = m.filteredAvg;
+      md += `| ${m.label} | ${m.price || "--"} | ${(a.accuracy || 0).toFixed(1)} | ${(a.specificity || 0).toFixed(1)} | ${(a.safety || 0).toFixed(1)} | ${(a.coaching || 0).toFixed(1)} | ${(a.troop_voice || 0).toFixed(1)} | ${(a.overall || 0).toFixed(1)} |\n`;
+    }
+    copyToClipboard(md, btn || document.getElementById("copy-report-btn"));
+  }
+
+  // ── Copy Question drill-down (all models' responses) ──
+  function copyQuestion(questionId, btn) {
+    if (!currentData) return;
+    const models = getModels(currentData);
+    let qInfo = null;
+    for (const m of models) {
+      const e = m.entries.find(e => e.questionId === questionId);
+      if (e) { qInfo = e; break; }
+    }
+    if (!qInfo) return;
+
+    let md = `## ${questionId}: ${qInfo.question}\n\n`;
+    if (qInfo.expected) md += `**Expected:** ${qInfo.expected}\n\n`;
+    md += "---\n\n";
+
+    for (const m of models) {
+      const entry = m.entries.find(e => e.questionId === questionId);
+      md += `### ${m.label}`;
+      if (m.price) md += ` (${m.price})`;
+      md += "\n\n";
+
+      if (entry && entry.error) {
+        md += `**Error:** ${entry.error}\n\n`;
+      } else if (entry && entry.response) {
+        md += `${entry.response}\n\n`;
+        if (entry.scores) {
+          md += `**Scores:** Acc ${entry.scores.accuracy || 0} | Spec ${entry.scores.specificity || 0} | Safe ${entry.scores.safety || 0} | Coach ${entry.scores.coaching || 0} | Troop ${entry.scores.troop_voice || 0}\n`;
+          const dims = SCORE_DIMS.map(d => entry.scores[d] || 0);
+          const avg = dims.reduce((a, b) => a + b, 0) / dims.length;
+          md += `**Avg:** ${avg.toFixed(1)}\n`;
+          if (entry.scores.notes) md += `**Evaluator:** ${entry.scores.notes}\n`;
+          md += "\n";
+        }
+      } else {
+        md += "No response data\n\n";
+      }
+      md += "---\n\n";
+    }
+
+    copyToClipboard(md, btn);
+  }
+
+  // ── Copy locator string ──
+  function copyLocator(locator, btn) {
+    // Also generate a URL hash for the viewer
+    const hashPart = locator.replace("eval://", "");
+    const url = `${window.location.origin}${window.location.pathname}#${hashPart}`;
+    copyToClipboard(url, btn);
+  }
+
+  // ── Cost Dashboard ──
+  async function fetchCostData(period) {
+    try {
+      const res = await fetch(`/api/eval/cost?period=${encodeURIComponent(period)}`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  function setCostPeriod(period) {
+    costPeriod = period;
+    document.querySelectorAll("#cost-period-bar .period-btn").forEach(btn =>
+      btn.classList.toggle("active", btn.dataset.period === period)
+    );
+    costDataCache = null;
+    loadCostDashboard();
+  }
+
+  async function loadCostDashboard() {
+    const $cards = document.getElementById("cost-summary-cards");
+    const $modelTable = document.getElementById("cost-by-model-table");
+    const $runTable = document.getElementById("cost-by-run-table");
+
+    $cards.innerHTML = '<div class="cost-card"><div class="cost-label">Loading...</div></div>';
+    $modelTable.innerHTML = "";
+    $runTable.innerHTML = "";
+
+    const data = await fetchCostData(costPeriod);
+    if (!data) {
+      $cards.innerHTML = '<div class="cost-card"><div class="cost-label">No cost data available</div><div class="cost-value cost-green">$0.00</div></div>';
+      return;
+    }
+    costDataCache = data;
+
+    // Summary cards
+    const t = data.total;
+    const costVal = t.cost || 0;
+    const costClass = costColorClass(costVal);
+    $cards.innerHTML = `
+      <div class="cost-card">
+        <div class="cost-label">Total Spend</div>
+        <div class="cost-value ${costClass}">${formatCost(costVal)}</div>
+        <div class="cost-sub">${data.period}</div>
+      </div>
+      <div class="cost-card">
+        <div class="cost-label">API Calls</div>
+        <div class="cost-value">${(t.calls || 0).toLocaleString()}</div>
+      </div>
+      <div class="cost-card">
+        <div class="cost-label">Input Tokens</div>
+        <div class="cost-value">${formatTokens(t.inputTokens || 0)}</div>
+        <div class="cost-sub">${formatTokens(t.cachedTokens || 0)} cached</div>
+      </div>
+      <div class="cost-card">
+        <div class="cost-label">Output Tokens</div>
+        <div class="cost-value">${formatTokens(t.outputTokens || 0)}</div>
+      </div>`;
+
+    // By model table
+    if (data.byModel && data.byModel.length > 0) {
+      let mHtml = "<thead><tr><th>Model</th><th>Calls</th><th>Input Tokens</th><th>Cached</th><th>Output Tokens</th><th>Cost</th></tr></thead><tbody>";
+      for (const m of data.byModel) {
+        const cc = costColorClass(m.cost || 0);
+        mHtml += `<tr>
+          <td>${esc(m.model || "unknown")}</td>
+          <td>${(m.calls || 0).toLocaleString()}</td>
+          <td>${formatTokens(m.inputTokens || 0)}</td>
+          <td>${formatTokens(m.cachedTokens || 0)}</td>
+          <td>${formatTokens(m.outputTokens || 0)}</td>
+          <td class="${cc}" style="font-weight:600;">${formatCost(m.cost)}</td>
+        </tr>`;
+      }
+      mHtml += "</tbody>";
+      $modelTable.innerHTML = mHtml;
+    } else {
+      $modelTable.innerHTML = '<tbody><tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No model data</td></tr></tbody>';
+    }
+
+    // By run table
+    if (data.byRun && data.byRun.length > 0) {
+      let rHtml = "<thead><tr><th>Run</th><th>Models</th><th>Calls</th><th>Cost</th></tr></thead><tbody>";
+      for (const r of data.byRun) {
+        const cc = costColorClass(r.cost || 0);
+        const runLabel = r.runId || "unknown";
+        const modelsStr = (r.models || []).join(", ");
+        rHtml += `<tr>
+          <td>${esc(runLabel)}</td>
+          <td style="font-size:0.8rem; color:var(--text-muted); white-space:normal; max-width:300px;">${esc(modelsStr)}</td>
+          <td>${(r.calls || 0).toLocaleString()}</td>
+          <td class="${cc}" style="font-weight:600;">${formatCost(r.cost)}</td>
+        </tr>`;
+      }
+      rHtml += "</tbody>";
+      $runTable.innerHTML = rHtml;
+    } else {
+      $runTable.innerHTML = '<tbody><tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No run data</td></tr></tbody>';
+    }
+  }
+
+  // ── Hash-based deep linking ──
+  function parseHash() {
+    const hash = window.location.hash.replace(/^#/, "");
+    if (!hash) return null;
+    // Format: run_timestamp/model_key/question_id  OR  run_timestamp/question_id
+    const parts = hash.split("/");
+    if (parts.length >= 1) {
+      return {
+        run: parts[0],
+        model: parts.length === 3 ? parts[1] : null,
+        question: parts.length === 3 ? parts[2] : (parts.length === 2 ? parts[1] : null),
+      };
+    }
+    return null;
+  }
+
+  async function handleHashNavigation() {
+    const target = parseHash();
+    if (!target || !target.run) return;
+
+    try {
+      const data = await fetchReport(target.run);
+      currentTimestamp = target.run;
+      currentData = data;
+      if (target.question) {
+        // Navigate to question drill-down
+        loadDashboard(data);
+        drillDown(target.question);
+      } else {
+        loadDashboard(data);
+        showSection("dashboard");
+        updateBreadcrumb([{ label: formatTimestamp(target.run) }]);
+      }
+    } catch {
+      // Hash target not found; just load browser normally
+    }
+  }
+
+  window.addEventListener("hashchange", () => {
+    handleHashNavigation();
+  });
+
   // ── Public API (for onclick handlers) ──
   window.app = {
     goHome,
@@ -1689,12 +2116,22 @@
     narrateResponse,
     narrateQuestion,
     narrateAll,
+    copyReport,
+    copyQuestion,
+    copyLocator,
+    setCostPeriod,
   };
 
   // ── Init ──
   initDragDrop();
   initVoiceBar();
-  loadBrowser();
+
+  // Check for hash-based deep link on load
+  if (window.location.hash) {
+    handleHashNavigation();
+  } else {
+    loadBrowser();
+  }
 
 })();
 </script>
