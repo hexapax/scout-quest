@@ -2161,9 +2161,23 @@
   }
 
   // ── Cost Dashboard ──
+  // The cost tab has two modes:
+  // 1. When viewing a specific eval run: shows cost for THAT run (from usage.json or MongoDB)
+  // 2. When on the report browser: shows global cost by time period (from MongoDB)
+
   async function fetchCostData(period) {
     try {
       const res = await fetch(`/api/eval/cost?period=${encodeURIComponent(period)}`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  async function fetchRunCost(runId) {
+    try {
+      const res = await fetch(`/api/eval/cost?run=${encodeURIComponent(runId)}`);
       if (!res.ok) return null;
       return await res.json();
     } catch {
@@ -2184,12 +2198,63 @@
     const $cards = document.getElementById("cost-summary-cards");
     const $modelTable = document.getElementById("cost-by-model-table");
     const $runTable = document.getElementById("cost-by-run-table");
+    const $periodBar = document.getElementById("cost-period-bar");
+    const $runTableCard = $runTable.closest(".card");
 
     $cards.innerHTML = '<div class="cost-card"><div class="cost-label">Loading...</div></div>';
     $modelTable.innerHTML = "";
     $runTable.innerHTML = "";
 
-    const data = await fetchCostData(costPeriod);
+    // If viewing a specific run, show run-specific cost (no period selector)
+    const isRunView = currentTimestamp && currentTimestamp !== "local";
+    let data;
+
+    if (isRunView) {
+      // Hide period selector and run table, show run-specific data
+      if ($periodBar) $periodBar.style.display = "none";
+      if ($runTableCard) $runTableCard.style.display = "none";
+      data = await fetchRunCost(currentTimestamp);
+      // Fallback to usage.json if no MongoDB data
+      if (!data || (data.total && data.total.calls === 0)) {
+        try {
+          const usageRes = await fetch(`/api/eval/reports/${encodeURIComponent(currentTimestamp)}/usage`);
+          if (usageRes.ok) {
+            const usageData = await usageRes.json();
+            if (usageData && usageData.totals) {
+              data = {
+                period: "this run",
+                total: {
+                  cost: usageData.totals.cost,
+                  calls: usageData.totals.calls,
+                  inputTokens: usageData.totals.input_tokens,
+                  outputTokens: usageData.totals.output_tokens,
+                  cachedTokens: usageData.totals.cached_tokens,
+                },
+                byModel: [],
+              };
+              // Build byModel from usage calls
+              const byM = {};
+              for (const c of (usageData.calls || [])) {
+                const key = c.label || c.model;
+                if (!byM[key]) byM[key] = { model: key, cost: 0, calls: 0, inputTokens: 0, outputTokens: 0, cachedTokens: 0 };
+                byM[key].cost += c.cost || 0;
+                byM[key].calls += 1;
+                byM[key].inputTokens += c.input_tokens || 0;
+                byM[key].outputTokens += c.output_tokens || 0;
+                byM[key].cachedTokens += c.cached_tokens || 0;
+              }
+              data.byModel = Object.values(byM).sort((a, b) => b.cost - a.cost);
+            }
+          }
+        } catch {}
+      }
+    } else {
+      // Global view — show period selector and run table
+      if ($periodBar) $periodBar.style.display = "";
+      if ($runTableCard) $runTableCard.style.display = "";
+      data = await fetchCostData(costPeriod);
+    }
+
     if (!data) {
       $cards.innerHTML = '<div class="cost-card"><div class="cost-label">No cost data available</div><div class="cost-value cost-green">$0.00</div></div>';
       return;
@@ -2200,11 +2265,12 @@
     const t = data.total;
     const costVal = t.cost || 0;
     const costClass = costColorClass(costVal);
+    const periodLabel = isRunView ? "This Run" : data.period;
     $cards.innerHTML = `
       <div class="cost-card">
         <div class="cost-label">Total Spend</div>
         <div class="cost-value ${costClass}">${formatCost(costVal)}</div>
-        <div class="cost-sub">${data.period}</div>
+        <div class="cost-sub">${esc(periodLabel)}</div>
       </div>
       <div class="cost-card">
         <div class="cost-label">API Calls</div>
@@ -2240,15 +2306,15 @@
       $modelTable.innerHTML = '<tbody><tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No model data</td></tr></tbody>';
     }
 
-    // By run table
-    if (data.byRun && data.byRun.length > 0) {
+    // By run table (only in global view)
+    if (!isRunView && data.byRun && data.byRun.length > 0) {
       let rHtml = "<thead><tr><th>Run</th><th>Models</th><th>Calls</th><th>Cost</th></tr></thead><tbody>";
       for (const r of data.byRun) {
         const cc = costColorClass(r.cost || 0);
         const runLabel = r.runId || "unknown";
         const modelsStr = (r.models || []).join(", ");
-        rHtml += `<tr>
-          <td>${esc(runLabel)}</td>
+        rHtml += `<tr class="clickable" onclick="app.openReport('${esc(runLabel)}')">
+          <td>${esc(formatTimestamp(runLabel))}</td>
           <td style="font-size:0.8rem; color:var(--text-muted); white-space:normal; max-width:300px;">${esc(modelsStr)}</td>
           <td>${(r.calls || 0).toLocaleString()}</td>
           <td class="${cc}" style="font-weight:600;">${formatCost(r.cost)}</td>
@@ -2256,7 +2322,7 @@
       }
       rHtml += "</tbody>";
       $runTable.innerHTML = rHtml;
-    } else {
+    } else if (!isRunView) {
       $runTable.innerHTML = '<tbody><tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No run data</td></tr></tbody>';
     }
   }

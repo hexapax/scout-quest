@@ -272,18 +272,36 @@ export function createEvalReportsRouter(): Router {
     }
   }
 
+  // Serve usage.json for a specific run (fallback when no MongoDB data)
+  router.get("/api/eval/reports/:ts/usage", async (req: Request, res: Response) => {
+    try {
+      const ts = Array.isArray(req.params.ts) ? req.params.ts[0] : req.params.ts;
+      const filePath = path.join(REPORTS_DIR, ts, "usage.json");
+      const content = await readFile(filePath, "utf-8");
+      res.json(JSON.parse(content));
+    } catch {
+      res.status(404).json({ error: "No usage data for this run" });
+    }
+  });
+
   // Cost summary + breakdowns by model and run
+  // Supports ?period=today|week|month|all OR ?run=<run_id> for a specific run
   router.get("/api/eval/cost", async (req: Request, res: Response) => {
     try {
+      const runId = req.query.run as string | undefined;
       const period = (req.query.period as string) || "today";
-      const startDate = getPeriodStart(period);
       const db = getScoutQuestDb();
       const col = db.collection("eval_usage");
 
-      // Total for period
+      // Build match filter: either by run_id or by time period
+      const match = runId
+        ? { run_id: runId }
+        : { timestamp: { $gte: getPeriodStart(period) } };
+
+      // Total
       const [totalResult] = await col
         .aggregate([
-          { $match: { timestamp: { $gte: startDate } } },
+          { $match: match },
           {
             $group: {
               _id: null,
@@ -300,7 +318,7 @@ export function createEvalReportsRouter(): Router {
       // By model
       const byModel = await col
         .aggregate([
-          { $match: { timestamp: { $gte: startDate } } },
+          { $match: match },
           {
             $group: {
               _id: "$label",
@@ -318,7 +336,7 @@ export function createEvalReportsRouter(): Router {
       // By run
       const byRun = await col
         .aggregate([
-          { $match: { timestamp: { $gte: startDate } } },
+          { $match: match },
           {
             $group: {
               _id: "$run_id",
@@ -333,8 +351,7 @@ export function createEvalReportsRouter(): Router {
         .toArray();
 
       res.json({
-        period,
-        startDate: startDate.toISOString(),
+        period: runId ? `run:${runId}` : period,
         total: totalResult
           ? {
               cost: totalResult.totalCost,
