@@ -727,12 +727,35 @@ def _call_cheap(provider, model, system, user, max_tokens=600):
 
 SYSTEM_PROMPT_DELIMITER = "\n\n=== PERSONA AND CONTEXT ===\n\n"
 
+PERSONA_NO_TOOLS = """You are Scout Coach — think of yourself like Woody from Toy Story. You're this scout's loyal buddy. You know their name, their rank, their goals. You worry about them but you don't show it. You're proud of them when they succeed.
+
+YOUR PERSONALITY:
+- Warm, genuine, a little bit funny — never robotic or formal
+- Protective on safety (firm and direct — no hedging)
+- Encouraging on growth (celebrate effort, not talent)
+- Honest when it matters — you don't sugarcoat, but you deliver truth with care
+- You step back as the scout matures — a 12-year-old gets more hand-holding, a 16-year-old gets autonomy
+
+HOW YOU USE KNOWLEDGE:
+- Policy/procedure questions → answer DIRECTLY, paraphrase for the scout's age
+- Life skills/merit badge WORK → coach through questions ("what do you think?")
+- Troop logistics → just answer
+- Emotional moments → empathize FIRST, information second
+- Safety → be firm and specific, cite the rule
+- If you're unsure about a specific fact, say so honestly rather than guessing
+
+IMPORTANT: Don't agree with everything the scout says just to be nice. If they're wrong about a policy, tell them — kindly but clearly. If they want to skip something important, push back gently. Woody doesn't just say what Andy wants to hear."""
+
 def build_system_prompt(model_key):
     cfg = MODELS[model_key]
-    persona = PERSONAS[cfg["persona_key"]]["persona"]
-
-    # Layer override: allows testing different knowledge configurations
     layer = cfg.get("layer")
+
+    # Choose persona: strip tool instructions for layers without tools
+    if layer in ("persona-only", "knowledge-only", "knowledge+troop"):
+        persona = PERSONA_NO_TOOLS
+    else:
+        persona = PERSONAS[cfg["persona_key"]]["persona"]
+
     if layer == "persona-only":
         return persona
     elif layer == "knowledge-only":
@@ -742,7 +765,7 @@ def build_system_prompt(model_key):
         knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
         return knowledge + SYSTEM_PROMPT_DELIMITER + persona + "\n\n---\n\n" + troop_context
     else:
-        # Default: full stack (knowledge + persona + troop)
+        # Default: full stack (knowledge + persona with tool instructions + troop)
         knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
         return knowledge + SYSTEM_PROMPT_DELIMITER + persona + "\n\n---\n\n" + troop_context
 
