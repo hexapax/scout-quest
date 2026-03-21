@@ -1,0 +1,27 @@
+{
+  "provider": "elevenlabs",
+  "model": "eleven_v3",
+  "voices": {
+    "scout": {
+      "name": "Liam - Energetic, Social Media Creator",
+      "voice_id": "TX3LPaxmHKxFdv7VOQHJ",
+      "tags": ["nervous", "quiet", "hesitant", "small voice"],
+      "settings": {"stability": 0.3, "similarity_boost": 0.5, "style": 0.7}
+    },
+    "coach": {
+      "name": "Scoutmaster1",
+      "voice_id": "chZcGerJ39wwnXKPa0Ki",
+      "tags": ["warm", "encouraging", "gentle", "firm"],
+      "settings": {"stability": 0.5, "similarity_boost": 0.75, "style": 0.3}
+    },
+    "narrator": {
+      "name": "Brian - Deep, Resonant and Comforting",
+      "voice_id": "nPczCjzI2devNBz1zQrb",
+      "tags": ["professional", "measured", "calm", "authoritative"],
+      "settings": {"stability": 0.9, "similarity_boost": 0.5, "style": 0.1}
+    }
+  },
+  "secrets": {
+    "api_key_secret": "projects/hexapax-devbox/secrets/elevenlabs-admin-api-key"
+  }
+}

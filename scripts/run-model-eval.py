@@ -360,7 +360,7 @@ def _call_with_retry(fn, retries=2, backoff=5):
 
 def call_anthropic(model_id, thinking_budget=0, adaptive_effort=None):
     """Factory for Anthropic API callers with prompt caching."""
-    def call(messages, system_prompt, max_tokens=1500):
+    def call(messages, system_prompt, max_tokens=2500):
         import httpx
         key = os.environ.get("ANTHROPIC_API_KEY", "")
         def do_call():
@@ -457,7 +457,7 @@ def _do_brave_search(query):
 
 def call_anthropic_with_tools(model_id, tools=None, adaptive_effort=None):
     """Anthropic caller with tool use support (for web search layer)."""
-    def call(messages, system_prompt, max_tokens=1500):
+    def call(messages, system_prompt, max_tokens=2500):
         import httpx
         key = os.environ.get("ANTHROPIC_API_KEY", "")
         call._tool_log = []  # reset per call
@@ -562,7 +562,7 @@ def call_anthropic_with_tools(model_id, tools=None, adaptive_effort=None):
 def call_openai_compat(model_id, base_url="https://api.openai.com/v1", key_env="OPENAI_API_KEY", label="OpenAI"):
     """Factory for OpenAI-compatible API callers (OpenAI, DeepSeek, OpenRouter)."""
     _use_completion_tokens = model_id.startswith("gpt-5")
-    def call(messages, system_prompt, max_tokens=1500):
+    def call(messages, system_prompt, max_tokens=2500):
         import httpx
         key = os.environ.get(key_env, "")
         def do_call():
@@ -592,7 +592,7 @@ def call_openai_compat(model_id, base_url="https://api.openai.com/v1", key_env="
 
 def call_gemini(model_id):
     """Factory for Google Gemini API callers using system_instruction."""
-    def call(messages, system_prompt, max_tokens=1500):
+    def call(messages, system_prompt, max_tokens=2500):
         from google import genai
         from google.genai import types
         gc = genai.Client(api_key=os.environ.get("GOOGLE_KEY", ""))
@@ -1152,7 +1152,11 @@ def main():
     parser.add_argument("--questions", type=str, default=None,
         help="Specific question IDs to run (e.g., --questions C4,E3,E4,F1,G1)")
     parser.add_argument("--evaluator", type=str, default="claude",
-        help="Evaluator model: claude (default), gemini, gpt")
+        help="Evaluator model: claude, gemini, gpt, gpt54, deepseek, grok, panel")
+    parser.add_argument("--max-response-tokens", type=int, default=2500,
+        help="Max tokens for model responses (default: 2500)")
+    parser.add_argument("--max-tool-rounds", type=int, default=6,
+        help="Max web search rounds per question (default: 6)")
     parser.add_argument("--eval-version", type=str, default="2",
         help="Eval system version (see docs/eval-changelog.md). Default: 2 (troop-aware evaluator)")
     parser.add_argument("--system-version", type=str, default="5",
@@ -1263,7 +1267,8 @@ def main():
             try:
                 response = cfg["call"](
                     [{"role": "user", "content": q["q"]}],
-                    system_prompt)
+                    system_prompt,
+                    max_tokens=args.max_response_tokens)
                 scores = evaluate(q["q"], response, q["expect"],
                     evaluator=args.evaluator, eval_notes=q.get("eval_notes", ""))
                 dims = ["accuracy","specificity","safety","coaching","troop_voice"]
