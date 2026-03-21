@@ -475,6 +475,32 @@
   .assessor-section:last-child { border-bottom: none; }
   .assessor-section strong { color: var(--blue); }
 
+  /* Tool call display */
+  .tool-calls-panel {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .tool-call-entry {
+    border-bottom: 1px solid var(--surface2);
+    padding: 0.4rem 0.6rem;
+  }
+  .tool-call-entry:last-child { border-bottom: none; }
+  .tool-call-header {
+    cursor: pointer;
+    font-size: 0.8rem;
+  }
+  .tool-call-result {
+    display: none;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    padding: 0.4rem 0;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .tool-call-entry.expanded .tool-call-result { display: block; }
+
   .response-text code {
     background: var(--surface2);
     padding: 0.1em 0.3em;
@@ -1809,6 +1835,24 @@
       if (entry && entry.error) {
         html += `<div class="error-text">${esc(entry.error)}</div>`;
       } else if (entry && entry.response) {
+        // Tool calls (if any — shown before response)
+        if (entry.tool_calls && entry.tool_calls.length > 0) {
+          html += '<div class="tool-calls-panel">';
+          html += `<div class="assessor-toggle" onclick="this.parentElement.classList.toggle(\'expanded\')">${entry.tool_calls.length} Tool Call${entry.tool_calls.length > 1 ? 's' : ''}</div>`;
+          html += '<div class="assessor-details">';
+          for (const tc of entry.tool_calls) {
+            html += `<div class="tool-call-entry">
+              <div class="tool-call-header" onclick="this.parentElement.classList.toggle('expanded')">
+                <span style="color:var(--blue); font-weight:600;">${esc(tc.tool)}</span>
+                <span style="color:var(--text-muted); margin-left:0.5rem;">${esc(tc.query || '')}</span>
+                <span style="color:var(--text-muted); font-size:0.7rem; margin-left:0.5rem;">Round ${tc.round || '?'}</span>
+              </div>
+              <div class="tool-call-result">${renderMd(tc.result || 'No result')}</div>
+            </div>`;
+          }
+          html += '</div></div>';
+        }
+
         html += `<div class="response-text">${renderMd(entry.response)}</div>`;
 
         if (entry.scores) {

@@ -416,6 +416,129 @@ def call_anthropic(model_id, thinking_budget=0, adaptive_effort=None):
         return _call_with_retry(do_call)
     return call
 
+WEB_SEARCH_TOOL = {
+    "name": "web_search",
+    "description": "Search the web for current BSA policy, merit badge requirements, scouting procedures, or other factual information. Use when you need to verify or look up specific facts.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "query": {"type": "string", "description": "Search query"}
+        },
+        "required": ["query"]
+    }
+}
+
+def _do_brave_search(query):
+    """Call Brave Search API and return formatted results."""
+    import httpx
+    brave_key = os.environ.get("BRAVE_API_KEY", "")
+    if not brave_key:
+        # Try loading from secret manager
+        try:
+            import subprocess
+            brave_key = subprocess.check_output(
+                ["gcloud", "secrets", "versions", "access", "latest",
+                 "--secret", "brave-devbox", "--project", "hexapax-devbox"],
+                text=True, timeout=5).strip()
+            os.environ["BRAVE_API_KEY"] = brave_key
+        except:
+            return "Web search unavailable — no API key."
+    r = httpx.get("https://api.search.brave.com/res/v1/web/search",
+        params={"q": query, "count": 5},
+        headers={"X-Subscription-Token": brave_key, "Accept": "application/json"},
+        timeout=15)
+    results = r.json().get("web", {}).get("results", [])
+    if not results:
+        return "No results found."
+    return "\n\n".join(
+        f"**{r['title']}**\n{r.get('description', '')}\nURL: {r.get('url', '')}"
+        for r in results[:5]
+    )
+
+def call_anthropic_with_tools(model_id, tools=None, adaptive_effort=None):
+    """Anthropic caller with tool use support (for web search layer)."""
+    def call(messages, system_prompt, max_tokens=1500):
+        import httpx
+        key = os.environ.get("ANTHROPIC_API_KEY", "")
+        call._tool_log = []  # reset per call
+
+        parts = system_prompt.split(SYSTEM_PROMPT_DELIMITER, 1)
+        if len(parts) == 2:
+            system_value = [
+                {"type": "text", "text": parts[0], "cache_control": {"type": "ephemeral"}},
+                {"type": "text", "text": parts[1]},
+            ]
+        else:
+            system_value = [
+                {"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}
+            ]
+
+        body = {
+            "model": model_id,
+            "system": system_value,
+            "messages": [{"role": m["role"], "content": m["content"]} for m in messages],
+            "max_tokens": max_tokens,
+        }
+        if tools:
+            body["tools"] = tools
+        if adaptive_effort:
+            body["max_tokens"] = 16000
+            body["thinking"] = {"type": "adaptive"}
+            body["output_config"] = {"effort": adaptive_effort}
+
+        # Tool use loop (max 3 tool calls per question)
+        for tool_round in range(4):
+            resp = httpx.post("https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                json=body, timeout=180)
+            d = resp.json()
+
+            u = d.get("usage", {})
+            cache_read = u.get("cache_read_input_tokens", 0)
+            cache_create = u.get("cache_creation_input_tokens", 0)
+            total_input = u.get("input_tokens", 0) + cache_read + cache_create
+            usage.record(model_id,
+                input_tokens=total_input,
+                output_tokens=u.get("output_tokens", 0),
+                cached_tokens=cache_read,
+                label=model_id,
+                extra={"cache_creation": cache_create})
+
+            if d.get("stop_reason") == "tool_use" and "content" in d:
+                # Handle tool call
+                tool_block = next((b for b in d["content"] if b["type"] == "tool_use"), None)
+                if tool_block and tool_block["name"] == "web_search":
+                    query = tool_block["input"].get("query", "")
+                    sys.stdout.write(f"[search: {query[:40]}] ")
+                    sys.stdout.flush()
+                    search_result = _do_brave_search(query)
+
+                    # Log the tool call and result
+                    call._tool_log.append({
+                        "tool": tool_block["name"],
+                        "query": query,
+                        "result": search_result[:1000],
+                        "round": tool_round + 1,
+                    })
+
+                    # Continue conversation with tool result
+                    body["messages"].append({"role": "assistant", "content": d["content"]})
+                    body["messages"].append({"role": "user", "content": [
+                        {"type": "tool_result", "tool_use_id": tool_block["id"], "content": search_result}
+                    ]})
+                    continue
+
+            # Extract final text
+            if "content" in d:
+                text_parts = [b["text"] for b in d["content"] if b.get("type") == "text"]
+                if text_parts:
+                    return text_parts[0]
+                return d["content"][0].get("text", str(d["content"]))
+            raise Exception(f"Anthropic error: {d.get('error', d)}")
+
+        raise Exception("Max tool rounds exceeded")
+    return call
+
 def call_openai_compat(model_id, base_url="https://api.openai.com/v1", key_env="OPENAI_API_KEY", label="OpenAI"):
     """Factory for OpenAI-compatible API callers (OpenAI, DeepSeek, OpenRouter)."""
     _use_completion_tokens = model_id.startswith("gpt-5")
@@ -632,12 +755,20 @@ MODELS = {
         "label": "L0: Persona Only",
         "price": "$3/$15",
     },
+    "layer-websearch": {
+        "call": call_anthropic_with_tools("claude-sonnet-4-6", tools=[WEB_SEARCH_TOOL]),
+        "persona_key": "claude",
+        "knowledge": "full",
+        "layer": "persona-only",  # persona + web search, no cached knowledge
+        "label": "L1: + Web Search",
+        "price": "$3/$15+search",
+    },
     "layer-knowledge": {
         "call": call_anthropic("claude-sonnet-4-6"),
         "persona_key": "claude",
         "knowledge": "full",
         "layer": "knowledge-only",
-        "label": "L1: + BSA Knowledge",
+        "label": "L2: + BSA Knowledge",
         "price": "$3/$15",
     },
     "layer-troop": {
@@ -645,21 +776,21 @@ MODELS = {
         "persona_key": "claude",
         "knowledge": "full",
         "layer": "knowledge+troop",
-        "label": "L2: + Troop Context",
+        "label": "L3: + Troop Context",
         "price": "$3/$15",
     },
     "layer-full": {
         "call": call_anthropic("claude-sonnet-4-6"),
         "persona_key": "claude",
         "knowledge": "full",
-        "label": "L3: Full Stack",
+        "label": "L4: Full Stack",
         "price": "$3/$15",
     },
     "layer-adaptive": {
         "call": call_anthropic("claude-sonnet-4-6", adaptive_effort="medium"),
         "persona_key": "claude",
         "knowledge": "full",
-        "label": "L4: + Adaptive Thinking",
+        "label": "L5: + Adaptive Thinking",
         "price": "$3/$15 adaptive",
     },
 }
@@ -1119,13 +1250,18 @@ def main():
                 avg = sum(scores.get(d,0) for d in dims) / len(dims)
                 cost_so_far = f" [${usage.totals['cost']:.2f}]" if usage.budget else ""
                 print(f"avg={avg:.1f} [A:{scores.get('accuracy',0)} S:{scores.get('specificity',0)} C:{scores.get('coaching',0)} T:{scores.get('troop_voice',0)}]{cost_so_far}")
-                results.append({
+                result_entry = {
                     "model": model_key, "label": cfg["label"], "price": cfg["price"],
                     "questionId": q["id"], "category": q["cat"],
                     "question": q["q"], "expected": q["expect"],
                     "response": response, "scores": scores,
                     "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                })
+                }
+                # Capture tool call log if present
+                call_fn = cfg["call"]
+                if hasattr(call_fn, "_tool_log") and call_fn._tool_log:
+                    result_entry["tool_calls"] = call_fn._tool_log
+                results.append(result_entry)
                 consecutive_errors = 0
             except BudgetExceeded as e:
                 print(f"\n  BUDGET EXCEEDED: {e}")
