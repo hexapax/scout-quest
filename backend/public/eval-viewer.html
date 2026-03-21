@@ -440,6 +440,35 @@
   }
   .evaluator-notes strong { color: var(--text); }
 
+  .response-text code {
+    background: var(--surface2);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    font-size: 0.85em;
+  }
+  .response-text pre {
+    background: var(--surface2);
+    padding: 0.75em;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 0.5em 0;
+  }
+  .response-text pre code {
+    background: none;
+    padding: 0;
+  }
+  .response-text ul, .response-text ol {
+    margin: 0.25em 0;
+    padding-left: 1.5em;
+  }
+  .response-text strong { color: var(--text); }
+  .evaluator-notes code {
+    background: var(--surface2);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    font-size: 0.85em;
+  }
+
   /* ── Comparison mode ── */
   .compare-controls {
     display: flex;
@@ -493,6 +522,34 @@
     font-size: 0.8rem;
   }
   .voice-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .voice-role-select {
+    max-width: 120px;
+    font-size: 0.7rem;
+  }
+  .voice-toggles {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    align-items: center;
+  }
+  .voice-toggles input { margin-right: 0.2rem; }
+  @media (max-width: 768px) {
+    #voice-bar {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .voice-controls {
+      width: 100%;
+      order: 10;
+    }
+  }
 
   /* ── Progress monitor ── */
   .progress-monitor .model-progress {
@@ -556,8 +613,7 @@
     color: var(--green) !important;
     border-color: var(--green) !important;
   }
-  .copy-btn .copy-icon::before { content: "\u2398"; font-size: 0.85em; }
-  .copy-btn.copied .copy-icon::before { content: "\u2713"; }
+  .copy-btn .copy-icon { display: none; }
 
   /* ── Cost dashboard ── */
   .cost-summary-row {
@@ -684,7 +740,7 @@
     <button class="tab-btn" data-view="compare">Comparison</button>
     <button class="tab-btn" data-view="cost">Cost</button>
     <span style="flex:1;"></span>
-    <button class="copy-btn" id="copy-report-btn" onclick="app.copyReport()" title="Copy score table as markdown"><span class="copy-icon"></span> Copy Report</button>
+    <button class="copy-btn" id="copy-report-btn" onclick="app.copyReport()" title="Copy score table as markdown">Copy Report</button>
   </div>
 
   <!-- Category filter tabs -->
@@ -771,7 +827,26 @@
   <button class="voice-btn" id="voice-pause" title="Pause">Pause</button>
   <button class="voice-btn" id="voice-stop" title="Stop">Stop</button>
   <div class="voice-status" id="voice-status">Ready</div>
-  <select id="voice-select" title="Voice"></select>
+  <div class="voice-controls">
+    <label style="font-size:0.7rem; color:var(--text-muted);">Speed</label>
+    <select id="voice-speed" title="Speed">
+      <option value="1">1x</option>
+      <option value="1.25">1.25x</option>
+      <option value="1.5">1.5x</option>
+      <option value="1.75">1.75x</option>
+      <option value="2">2x</option>
+    </select>
+    <label style="font-size:0.7rem; color:var(--text-muted);">Scout</label>
+    <select id="voice-scout" title="Scout voice" class="voice-role-select"></select>
+    <label style="font-size:0.7rem; color:var(--text-muted);">Coach</label>
+    <select id="voice-coach" title="Coach voice" class="voice-role-select"></select>
+    <label style="font-size:0.7rem; color:var(--text-muted);">Narrator</label>
+    <select id="voice-narrator" title="Narrator voice" class="voice-role-select"></select>
+  </div>
+  <div class="voice-toggles">
+    <label><input type="checkbox" id="voice-include-eval" checked> Eval</label>
+    <label><input type="checkbox" id="voice-include-rebuttal" checked> Rebuttal</label>
+  </div>
   <button class="voice-btn" id="voice-narrate-all" title="Narrate all responses">Narrate All</button>
 </div>
 
@@ -830,6 +905,53 @@
     const d = document.createElement("div");
     d.textContent = str;
     return d.innerHTML;
+  }
+
+  function renderMd(text) {
+    if (!text) return "";
+    // Simple markdown renderer — handles bold, italic, headers, lists, code
+    let html = esc(text);
+    // Code blocks (must be before inline code)
+    html = html.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Bold+italic
+    html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    // Bold
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    // Italic
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    // Headers (h1-h3)
+    html = html.replace(/^### (.+)$/gm, '<h4 style="margin:0.5em 0 0.25em;">$1</h4>');
+    html = html.replace(/^## (.+)$/gm, '<h3 style="margin:0.5em 0 0.25em;">$1</h3>');
+    html = html.replace(/^# (.+)$/gm, '<h2 style="margin:0.5em 0 0.25em;">$1</h2>');
+    // Horizontal rule
+    html = html.replace(/^---$/gm, '<hr style="border-color:var(--surface2); margin:0.75em 0;">');
+    // Unordered lists
+    html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul style="margin:0.25em 0; padding-left:1.5em;">$&</ul>');
+    // Numbered lists
+    html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+    // Line breaks (double newline = paragraph, single = br)
+    html = html.replace(/\n\n/g, '</p><p style="margin:0.5em 0;">');
+    html = html.replace(/\n/g, '<br>');
+    return '<p style="margin:0.5em 0;">' + html + '</p>';
+  }
+
+  function stripMd(text) {
+    if (!text) return "";
+    return text
+      .replace(/```[\s\S]*?```/g, "")  // code blocks
+      .replace(/`([^`]+)`/g, "$1")      // inline code
+      .replace(/\*\*\*(.+?)\*\*\*/g, "$1")
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/^#{1,4} /gm, "")
+      .replace(/^---$/gm, "")
+      .replace(/^[\-\*] /gm, "")
+      .replace(/^\d+\. /gm, "")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
   }
 
   function scoreColor(val) {
@@ -946,7 +1068,7 @@
         btnEl.classList.add("copied");
         const orig = btnEl.innerHTML;
         const origText = btnEl.textContent;
-        btnEl.innerHTML = '<span class="copy-icon"></span> Copied!';
+        btnEl.innerHTML = 'Copied!';
         setTimeout(() => {
           btnEl.classList.remove("copied");
           btnEl.innerHTML = orig;
@@ -1443,7 +1565,7 @@
     for (const q of filtered) {
       const locator = `eval://${currentTimestamp || "local"}/${q.id}`;
       html += `<tr>
-        <td style="padding:0.3rem;"><button class="copy-btn" onclick="event.stopPropagation(); app.copyLocator('${esc(locator)}', this)" title="Copy locator"><span class="copy-icon"></span></button></td>
+        <td style="padding:0.3rem;"><button class="copy-btn" onclick="event.stopPropagation(); app.copyLocator('${esc(locator)}', this)" title="Copy locator">Link</button></td>
         <td class="clickable" onclick="app.drillDown('${esc(q.id)}')" style="color:var(--blue)">${esc(q.id)}</td>
         <td class="clickable" onclick="app.drillDown('${esc(q.id)}')" style="white-space:normal; min-width:200px;">${esc(q.question.substring(0, 80))}${q.question.length > 80 ? "..." : ""}</td>`;
 
@@ -1626,7 +1748,7 @@
 
       <div style="margin-bottom:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
         <button class="btn small" onclick="app.narrateQuestion('${esc(questionId)}')">Narrate All Responses</button>
-        <button class="copy-btn" onclick="app.copyQuestion('${esc(questionId)}', this)" title="Copy all responses as markdown"><span class="copy-icon"></span> Copy Responses</button>
+        <button class="copy-btn" onclick="app.copyQuestion('${esc(questionId)}', this)" title="Copy all responses as markdown">Copy Responses</button>
       </div>
 
       <div class="response-grid">`;
@@ -1644,7 +1766,7 @@
             ${isBest ? '<span style="font-size:0.7rem; color:var(--green); margin-left:0.5rem;">BEST</span>' : ""}
           </div>
           <div style="display:flex; gap:0.35rem; align-items:center;">
-            <button class="copy-btn" onclick="event.stopPropagation(); app.copyLocator('${modelLocator}', this)" title="Copy locator"><span class="copy-icon"></span></button>
+            <button class="copy-btn" onclick="event.stopPropagation(); app.copyLocator('${modelLocator}', this)" title="Copy locator">Link</button>
             <button class="play-btn" onclick="event.stopPropagation(); app.narrateResponse('${esc(m.key)}', '${esc(questionId)}')">Play</button>
           </div>
         </div>`;
@@ -1652,7 +1774,7 @@
       if (entry && entry.error) {
         html += `<div class="error-text">${esc(entry.error)}</div>`;
       } else if (entry && entry.response) {
-        html += `<div class="response-text">${esc(entry.response)}</div>`;
+        html += `<div class="response-text">${renderMd(entry.response)}</div>`;
 
         if (entry.scores) {
           html += '<div class="score-bars">';
@@ -1672,7 +1794,7 @@
           html += '</div>';
 
           if (entry.scores.notes) {
-            html += `<div class="evaluator-notes"><strong>Evaluator:</strong> ${esc(entry.scores.notes)}</div>`;
+            html += `<div class="evaluator-notes"><strong>Evaluator:</strong> ${renderMd(entry.scores.notes)}</div>`;
           }
         }
       } else {
@@ -1730,34 +1852,57 @@
   }
 
   function populateVoiceSelector() {
-    const $select = document.getElementById("voice-select");
     const voices = synth.getVoices();
     if (voices.length === 0) {
-      // Voices may load async
       synth.onvoiceschanged = () => populateVoiceSelector();
       return;
     }
-    let html = "";
     const enVoices = voices.filter(v => v.lang.startsWith("en"));
     const list = enVoices.length > 0 ? enVoices : voices;
-    for (const v of list) {
-      html += `<option value="${esc(v.name)}">${esc(v.name)} (${esc(v.lang)})</option>`;
+
+    const optionsHtml = list.map(v =>
+      `<option value="${esc(v.name)}">${esc(v.name.replace(/^(Microsoft |Google |Apple )/, ""))} (${esc(v.lang)})</option>`
+    ).join("");
+
+    for (const id of ["voice-scout", "voice-coach", "voice-narrator"]) {
+      document.getElementById(id).innerHTML = optionsHtml;
     }
-    $select.innerHTML = html;
+
+    // Try to auto-select sensible defaults
+    const findVoice = (keywords) => list.find(v => keywords.some(k => v.name.toLowerCase().includes(k)));
+
+    const scoutVoice = findVoice(["samantha", "karen", "zira", "female"]);
+    const coachVoice = findVoice(["daniel", "david", "james", "male", "guy"]);
+    const narratorVoice = findVoice(["aaron", "thomas", "richard", "baritone"]);
+
+    if (scoutVoice) document.getElementById("voice-scout").value = scoutVoice.name;
+    if (coachVoice) document.getElementById("voice-coach").value = coachVoice.name;
+    if (narratorVoice) document.getElementById("voice-narrator").value = narratorVoice.name;
   }
 
-  function getSelectedVoice() {
-    const name = document.getElementById("voice-select").value;
-    return synth.getVoices().find(v => v.name === name) || null;
+  function getVoiceForRole(role) {
+    const id = role === "scout" ? "voice-scout" : role === "coach" ? "voice-coach" : "voice-narrator";
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return synth.getVoices().find(v => v.name === el.value) || null;
+  }
+
+  function getSpeed() {
+    return parseFloat(document.getElementById("voice-speed")?.value || "1");
+  }
+
+  function includeEval() {
+    return document.getElementById("voice-include-eval")?.checked ?? true;
   }
 
   function speak(text, opts = {}) {
     return new Promise((resolve) => {
       const utter = new SpeechSynthesisUtterance(text);
-      const voice = getSelectedVoice();
+      const role = opts.role || "coach";
+      const voice = getVoiceForRole(role);
       if (voice) utter.voice = voice;
       utter.pitch = opts.pitch || 1;
-      utter.rate = opts.rate || 1;
+      utter.rate = (opts.rate || 1) * getSpeed();
       utter.volume = opts.volume || 1;
       utter.onend = resolve;
       utter.onerror = resolve;
@@ -1778,22 +1923,22 @@
     const entry = model.entries.find(e => e.questionId === questionId);
     if (!entry) return;
 
-    // Question (higher pitch)
+    // Question (scout voice, higher pitch)
     updateVoiceStatus(`Question ${questionId}...`);
-    await speak(entry.question, { pitch: 1.15, rate: 1.0 });
+    await speak(entry.question, { role: "scout", pitch: 1.1 });
     if (!isNarrating) return;
 
-    // Response (normal)
+    // Response (coach voice)
     if (entry.response) {
       updateVoiceStatus(`${model.label} response...`);
-      await speak(entry.response, { pitch: 1.0, rate: 1.0 });
+      await speak(stripMd(entry.response), { role: "coach" });
       if (!isNarrating) return;
     }
 
-    // Evaluator notes (deeper, slower)
-    if (entry.scores && entry.scores.notes) {
+    // Evaluator notes (narrator voice, only if eval toggle is on)
+    if (includeEval() && entry.scores && entry.scores.notes) {
       updateVoiceStatus("Evaluator notes...");
-      await speak(entry.scores.notes, { pitch: 0.85, rate: 0.9 });
+      await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85 });
     }
 
     isNarrating = false;
@@ -1813,18 +1958,18 @@
       if (!entry || entry.error) continue;
 
       updateVoiceStatus(`Question ${questionId}...`);
-      await speak(entry.question, { pitch: 1.15, rate: 1.0 });
+      await speak(entry.question, { role: "scout", pitch: 1.1 });
       if (!isNarrating) break;
 
       if (entry.response) {
         updateVoiceStatus(`${m.label} response...`);
-        await speak(entry.response, { pitch: 1.0, rate: 1.0 });
+        await speak(stripMd(entry.response), { role: "coach" });
         if (!isNarrating) break;
       }
 
-      if (entry.scores && entry.scores.notes) {
+      if (includeEval() && entry.scores && entry.scores.notes) {
         updateVoiceStatus(`${m.label} evaluator notes...`);
-        await speak(entry.scores.notes, { pitch: 0.85, rate: 0.9 });
+        await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85 });
         if (!isNarrating) break;
       }
     }
@@ -1851,18 +1996,18 @@
         if (!entry || entry.error) continue;
 
         updateVoiceStatus(`${q.id} - Question...`);
-        await speak(entry.question, { pitch: 1.15, rate: 1.0 });
+        await speak(entry.question, { role: "scout", pitch: 1.1 });
         if (!isNarrating) break;
 
         if (entry.response) {
           updateVoiceStatus(`${q.id} - ${m.label}...`);
-          await speak(entry.response, { pitch: 1.0, rate: 1.0 });
+          await speak(stripMd(entry.response), { role: "coach" });
           if (!isNarrating) break;
         }
 
-        if (entry.scores && entry.scores.notes) {
+        if (includeEval() && entry.scores && entry.scores.notes) {
           updateVoiceStatus(`${q.id} - ${m.label} notes...`);
-          await speak(entry.scores.notes, { pitch: 0.85, rate: 0.9 });
+          await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85 });
           if (!isNarrating) break;
         }
       }
