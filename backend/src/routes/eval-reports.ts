@@ -129,6 +129,9 @@ export function createEvalReportsRouter(): Router {
       // Filter to directories matching timestamp pattern
       const reports: {
         timestamp: string;
+        description: string | null;
+        status: string | null;
+        totalCost: number | null;
         modelCount: number;
         questionCount: number;
         models: { key: string; label: string; avgOverall: number }[];
@@ -139,9 +142,21 @@ export function createEvalReportsRouter(): Router {
         const data = await readResults(dir);
         if (!data) continue;
 
+        // Read optional meta.json for description
+        let meta: { description?: string; status?: string; totalCost?: number } = {};
+        try {
+          const metaRaw = await readFile(path.join(REPORTS_DIR, dir, "meta.json"), "utf-8");
+          meta = JSON.parse(metaRaw);
+        } catch {
+          // no meta.json — older run
+        }
+
         const summary = computeSummary(data);
         reports.push({
           timestamp: dir,
+          description: meta.description ?? null,
+          status: meta.status ?? null,
+          totalCost: meta.totalCost ?? null,
           modelCount: summary.modelCount,
           questionCount: summary.questionCount,
           models: summary.models.map((m) => ({

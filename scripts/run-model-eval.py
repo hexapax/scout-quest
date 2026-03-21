@@ -662,6 +662,8 @@ def main():
         help="Question category filter (A-G) or 'all'")
     parser.add_argument("--budget", type=float, default=None,
         help="Maximum USD to spend on this run (e.g., --budget 5.00). Stops when exceeded.")
+    parser.add_argument("--desc", type=str, default=None,
+        help="Description of what this eval is testing (shown in viewer)")
     args = parser.parse_args()
 
     keys = load_all_keys()
@@ -703,7 +705,22 @@ def main():
 
     print(f"Models: {', '.join(MODELS[m]['label'] for m in models_to_test)}")
     print(f"Questions: {len(questions)}")
+    if args.desc:
+        print(f"Description: {args.desc}")
     print(f"Output: {run_dir}\n")
+
+    # Write run metadata (readable by the eval viewer for descriptions)
+    meta = {
+        "description": args.desc,
+        "models": models_to_test,
+        "categories": args.category,
+        "questionCount": len(questions),
+        "budget": args.budget,
+        "startedAt": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "status": "running",
+    }
+    with open(run_dir / "meta.json", "w") as f:
+        json.dump(meta, f, indent=2)
 
     all_results = {}
     budget_stopped = False
@@ -828,6 +845,14 @@ def main():
     # Save usage data alongside results
     with open(run_dir / "usage.json", "w") as f:
         json.dump(usage.to_dict(), f, indent=2)
+
+    # Update meta.json with completion status
+    meta["status"] = "budget_stopped" if budget_stopped else "complete"
+    meta["completedAt"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    meta["totalCost"] = usage.totals["cost"]
+    meta["modelsCompleted"] = list(all_results.keys())
+    with open(run_dir / "meta.json", "w") as f:
+        json.dump(meta, f, indent=2)
 
     usage.summary()
 

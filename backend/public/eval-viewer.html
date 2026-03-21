@@ -155,7 +155,9 @@
   .model-chip .score {
     color: var(--text);
     font-weight: 600;
-    margin-left: 0.3rem;
+    margin-left: 0.4rem;
+    padding-left: 0.4rem;
+    border-left: 1px solid var(--text-muted);
   }
 
   /* Drop zone */
@@ -898,7 +900,12 @@
   }
 
   function formatTimestamp(ts) {
-    return ts.replace(/_/g, " ").replace(/-/g, "/").replace(/\/(\d{2})\/(\d{2}) /, "/$1/$2  ");
+    // "2026-03-21_07-12-32" → "2026-03-21 07:12:32"
+    const parts = ts.split("_");
+    if (parts.length === 2) {
+      return parts[0] + "  " + parts[1].replace(/-/g, ":");
+    }
+    return ts;
   }
 
   // ── Clipboard utility ──
@@ -1021,15 +1028,27 @@
         `<span class="model-chip">${esc(m.label)}<span class="score">${m.avgOverall ? m.avgOverall.toFixed(1) : "--"}</span></span>`
       ).join("");
 
+      const descHtml = r.description
+        ? `<div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.4rem;">${esc(r.description)}</div>`
+        : "";
+      const costHtml = r.totalCost != null
+        ? `<span style="color:var(--text-muted);">$${r.totalCost.toFixed(2)}</span>`
+        : "";
+      const statusBadge = r.status === "budget_stopped"
+        ? '<span style="color:var(--yellow); font-size:0.7rem; margin-left:0.5rem;">[budget stopped]</span>'
+        : "";
+
       html += `
         <div class="report-item" onclick="app.openReport('${esc(r.timestamp)}')">
           <div class="meta">
-            <span class="ts">${esc(formatTimestamp(r.timestamp))}</span>
+            <span class="ts">${esc(formatTimestamp(r.timestamp))}${statusBadge}</span>
             <span class="stats">
               <span>${r.modelCount} models</span>
               <span>${r.questionCount} questions</span>
+              ${costHtml}
             </span>
           </div>
+          ${descHtml}
           <div class="models-row">${modelChips}</div>
         </div>`;
     }
@@ -1103,7 +1122,8 @@
     if (data) {
       const models = getModels(data);
       for (const m of models) {
-        const mPct = Math.round(m.entries.length / 54 * 100);
+        const expectedQ = status.totalExpected || 54;
+      const mPct = Math.round(m.entries.length / expectedQ * 100);
         html += `
           <div class="model-progress">
             <span class="model-name-pm">${esc(m.label)}</span>
@@ -1112,7 +1132,7 @@
                 <div class="progress-bar-inner" style="width:${mPct}%; background:${scoreColor(m.avgScores.overall || 5)}"></div>
               </div>
             </div>
-            <span class="pm-count">${m.entries.length}/54 (${m.avgScores.overall ? m.avgScores.overall.toFixed(1) : "--"})</span>
+            <span class="pm-count">${m.entries.length}/${expectedQ} (${m.avgScores.overall ? m.avgScores.overall.toFixed(1) : "--"})</span>
           </div>`;
       }
     }
