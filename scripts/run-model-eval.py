@@ -454,11 +454,18 @@ def call_gemini(model_id):
             u = getattr(resp, "usage_metadata", None)
             if u:
                 usage.record(model_id,
-                    input_tokens=getattr(u, "prompt_token_count", 0),
-                    output_tokens=getattr(u, "candidates_token_count", 0),
-                    cached_tokens=getattr(u, "cached_content_token_count", 0),
+                    input_tokens=getattr(u, "prompt_token_count", 0) or 0,
+                    output_tokens=getattr(u, "candidates_token_count", 0) or 0,
+                    cached_tokens=getattr(u, "cached_content_token_count", 0) or 0,
                     label=model_id)
-            return resp.text
+            text = resp.text
+            if not text:
+                # Try to extract from candidates
+                if resp.candidates:
+                    text = resp.candidates[0].content.parts[0].text
+            if not text:
+                raise Exception("Gemini returned empty response")
+            return text
         return _call_with_retry(do_call)
     return call
 
@@ -618,12 +625,23 @@ def build_system_prompt(model_key):
     knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
     return knowledge + "\n\n---\n\n" + persona + "\n\n---\n\n" + troop_context
 
-def evaluate(question, response, expected):
-    """Score a response using Claude Sonnet evaluator with troop context."""
-    key = os.environ.get("ANTHROPIC_API_KEY", "")
+def evaluate(question, response, expected, evaluator="claude"):
+    """Score a response using the configured evaluator model."""
     eval_prompt = build_eval_prompt()
     import httpx
-    def do_eval():
+
+    def _parse_scores(text):
+        # Strip markdown code fences (Gemini wraps JSON in ```json...```)
+        clean = re.sub(r'```(?:json)?\s*', '', text).strip()
+        try:
+            return json.loads(clean)
+        except Exception:
+            m = re.search(r'\{[^{}]*\}', clean)
+            if m: return json.loads(m.group())
+            return {"accuracy":0,"specificity":0,"safety":0,"coaching":0,"troop_voice":0,"notes":"parse error: "+text[:50]}
+
+    def _eval_claude():
+        key = os.environ.get("ANTHROPIC_API_KEY", "")
         eval_system = [
             {"type": "text", "text": eval_prompt,
              "cache_control": {"type": "ephemeral"}}
@@ -646,13 +664,54 @@ def evaluate(question, response, expected):
             label="evaluator",
             extra={"cache_creation": cache_create})
         text = d["content"][0]["text"] if "content" in d else "{}"
-        try:
-            return json.loads(text)
-        except Exception:
-            m = re.search(r'\{[\s\S]*\}', text)
-            if m: return json.loads(m.group())
-            return {"accuracy":0,"specificity":0,"safety":0,"coaching":0,"troop_voice":0,"notes":"parse error: "+text[:50]}
-    return _call_with_retry(do_eval)
+        return _parse_scores(text)
+
+    def _eval_gemini():
+        from google import genai
+        from google.genai import types
+        gc = genai.Client(api_key=os.environ.get("GOOGLE_KEY", ""))
+        resp = gc.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}",
+            config=types.GenerateContentConfig(
+                system_instruction=eval_prompt,
+                max_output_tokens=1024,
+            ))
+        u = getattr(resp, "usage_metadata", None)
+        if u:
+            usage.record("gemini-2.5-flash",
+                input_tokens=getattr(u, "prompt_token_count", 0) or 0,
+                output_tokens=getattr(u, "candidates_token_count", 0) or 0,
+                cached_tokens=getattr(u, "cached_content_token_count", 0) or 0,
+                label="evaluator")
+        text = resp.text
+        if not text and resp.candidates:
+            text = resp.candidates[0].content.parts[0].text
+        return _parse_scores(text or "{}")
+
+    def _eval_gpt():
+        key = os.environ.get("OPENAI_API_KEY", "")
+        resp = httpx.post("https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={"model": "gpt-4.1-mini", "max_tokens": 500,
+                  "messages": [
+                      {"role": "system", "content": eval_prompt},
+                      {"role": "user", "content": f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}"}
+                  ]},
+            timeout=60)
+        d = resp.json()
+        u = d.get("usage", {})
+        usage.record("gpt-4.1-mini",
+            input_tokens=u.get("prompt_tokens", 0),
+            output_tokens=u.get("completion_tokens", 0),
+            cached_tokens=u.get("prompt_tokens_details", {}).get("cached_tokens", 0),
+            label="evaluator")
+        if "choices" in d:
+            return _parse_scores(d["choices"][0]["message"]["content"])
+        return {"accuracy":0,"specificity":0,"safety":0,"coaching":0,"troop_voice":0,"notes":"GPT eval error"}
+
+    eval_fn = {"claude": _eval_claude, "gemini": _eval_gemini, "gpt": _eval_gpt}.get(evaluator, _eval_claude)
+    return _call_with_retry(eval_fn)
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-model Scout Coach evaluation")
@@ -664,6 +723,12 @@ def main():
         help="Maximum USD to spend on this run (e.g., --budget 5.00). Stops when exceeded.")
     parser.add_argument("--desc", type=str, default=None,
         help="Description of what this eval is testing (shown in viewer)")
+    parser.add_argument("--sample", type=int, default=None,
+        help="Sample N questions per category instead of all (e.g., --sample 2 = 14 questions)")
+    parser.add_argument("--questions", type=str, default=None,
+        help="Specific question IDs to run (e.g., --questions C4,E3,E4,F1,G1)")
+    parser.add_argument("--evaluator", type=str, default="claude",
+        help="Evaluator model: claude (default), gemini, gpt")
     parser.add_argument("--eval-version", type=str, default="2",
         help="Eval system version (see docs/eval-changelog.md). Default: 2 (troop-aware evaluator)")
     parser.add_argument("--system-version", type=str, default="5",
@@ -707,6 +772,26 @@ def main():
         cats = args.category.upper().split(",")
         questions = [q for q in questions if q["cat"] in cats]
 
+    # Specific question IDs
+    if args.questions:
+        qids = [qid.strip() for qid in args.questions.split(",")]
+        questions = [q for q in questions if q["id"] in qids]
+
+    # Sample N per category
+    if args.sample and not args.questions:
+        import random
+        random.seed(42)  # deterministic sampling
+        by_cat = {}
+        for q in questions:
+            by_cat.setdefault(q["cat"], []).append(q)
+        sampled = []
+        for cat in sorted(by_cat):
+            pool = by_cat[cat]
+            n = min(args.sample, len(pool))
+            sampled.extend(random.sample(pool, n))
+        questions = sampled
+        print(f"Sampled {args.sample}/category = {len(questions)} questions")
+
     print(f"Models: {', '.join(MODELS[m]['label'] for m in models_to_test)}")
     print(f"Questions: {len(questions)}")
     if args.desc:
@@ -718,6 +803,7 @@ def main():
         "description": args.desc,
         "evalVersion": args.eval_version,
         "systemVersion": args.system_version,
+        "evaluator": args.evaluator,
         "models": models_to_test,
         "categories": args.category,
         "questionCount": len(questions),
@@ -746,6 +832,7 @@ def main():
         print(f"  Knowledge: {cfg['knowledge']}, Persona: {cfg['persona_key']}\n")
 
         results = []
+        consecutive_errors = 0
         for q in questions:
             sys.stdout.write(f"  {q['id']}: {q['q'][:50]}... ")
             sys.stdout.flush()
@@ -753,7 +840,7 @@ def main():
                 response = cfg["call"](
                     [{"role": "user", "content": q["q"]}],
                     system_prompt)
-                scores = evaluate(q["q"], response, q["expect"])
+                scores = evaluate(q["q"], response, q["expect"], evaluator=args.evaluator)
                 dims = ["accuracy","specificity","safety","coaching","troop_voice"]
                 avg = sum(scores.get(d,0) for d in dims) / len(dims)
                 cost_so_far = f" [${usage.totals['cost']:.2f}]" if usage.budget else ""
@@ -765,11 +852,13 @@ def main():
                     "response": response, "scores": scores,
                     "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 })
+                consecutive_errors = 0
             except BudgetExceeded as e:
                 print(f"\n  BUDGET EXCEEDED: {e}")
                 budget_stopped = True
                 raise
             except Exception as e:
+                consecutive_errors += 1
                 print(f"ERROR: {str(e)[:100]}")
                 results.append({
                     "model": model_key, "label": cfg["label"],
@@ -777,6 +866,9 @@ def main():
                     "question": q["q"], "error": str(e)[:200],
                     "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 })
+                if consecutive_errors >= 2:
+                    print(f"\n  FAIL-FAST: 2 consecutive errors for {cfg['label']}, skipping remaining questions.")
+                    break
 
         all_results[model_key] = results
 
