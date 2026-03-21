@@ -223,12 +223,26 @@ export function createEvalReportsRouter(): Router {
         completedQuestions += entries.length;
       }
 
-      const totalExpected = modelKeys.length * EXPECTED_QUESTIONS_PER_MODEL;
+      // Read meta.json for expected question count and explicit status
+      let meta: { questionCount?: number; models?: string[]; status?: string } = {};
+      try {
+        const metaRaw = await readFile(path.join(REPORTS_DIR, timestamp, "meta.json"), "utf-8");
+        meta = JSON.parse(metaRaw);
+      } catch {
+        // no meta.json — use defaults
+      }
 
-      // Consider complete if file hasn't been modified in 30+ seconds
+      const expectedModels = meta.models?.length || modelKeys.length;
+      const expectedPerModel = meta.questionCount || EXPECTED_QUESTIONS_PER_MODEL;
+      const totalExpected = expectedModels * expectedPerModel;
+
+      // Complete if meta says so, or if file stale AND all expected models present
       const mtime = fileStat.mtime.getTime();
       const now = Date.now();
-      const isComplete = now - mtime > 30_000;
+      const metaComplete = meta.status === "complete" || meta.status === "budget_stopped";
+      const staleFile = now - mtime > 30_000;
+      const allModelsPresent = modelKeys.length >= expectedModels;
+      const isComplete = metaComplete || (staleFile && allModelsPresent);
 
       res.json({
         timestamp,

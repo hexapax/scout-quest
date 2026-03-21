@@ -440,6 +440,41 @@
   }
   .evaluator-notes strong { color: var(--text); }
 
+  /* Panel assessor details (collapsible) */
+  .assessor-panel {
+    margin-top: 0.5rem;
+    border: 1px solid var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .assessor-toggle {
+    padding: 0.5rem 0.75rem;
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .assessor-toggle::before { content: "[ + ] "; }
+  .assessor-panel.expanded .assessor-toggle::before { content: "[ - ] "; }
+  .assessor-details {
+    display: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .assessor-panel.expanded .assessor-details { display: block; }
+  .assessor-section {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--surface2);
+  }
+  .assessor-section:last-child { border-bottom: none; }
+  .assessor-section strong { color: var(--blue); }
+
   .response-text code {
     background: var(--surface2);
     padding: 0.1em 0.3em;
@@ -1795,6 +1830,21 @@
 
           if (entry.scores.notes) {
             html += `<div class="evaluator-notes"><strong>Evaluator:</strong> ${renderMd(entry.scores.notes)}</div>`;
+          }
+
+          // Panel assessor narratives (if present)
+          if (entry.scores._assessments) {
+            const a = entry.scores._assessments;
+            const assessorLabels = { claims: "Claim Extraction (DeepSeek)", coaching: "Coaching Style (GPT-nano)", troop: "Troop References (Grok)" };
+            html += '<div class="assessor-panel">';
+            html += '<div class="assessor-toggle" onclick="this.parentElement.classList.toggle(\'expanded\')">Panel Assessor Details</div>';
+            html += '<div class="assessor-details">';
+            for (const [key, label] of Object.entries(assessorLabels)) {
+              if (a[key]) {
+                html += `<div class="assessor-section"><strong>${esc(label)}:</strong>${renderMd(a[key])}</div>`;
+              }
+            }
+            html += '</div></div>';
           }
         }
       } else {
