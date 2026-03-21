@@ -366,7 +366,7 @@ def call_anthropic(model_id, thinking_budget=0, adaptive_effort=None):
         def do_call():
             # Split system prompt into cacheable knowledge block + persona
             # The knowledge block (177K tokens) gets cached; persona is small and varies
-            parts = system_prompt.split("\n\n---\n\n", 1)
+            parts = system_prompt.split(SYSTEM_PROMPT_DELIMITER, 1)
             if len(parts) == 2:
                 system_value = [
                     {"type": "text", "text": parts[0],
@@ -686,11 +686,13 @@ def _call_cheap(provider, model, system, user, max_tokens=600):
         return d["choices"][0]["message"]["content"]
     raise Exception(f"Panel assessor error ({model}): {d.get('error', d)}")
 
+SYSTEM_PROMPT_DELIMITER = "\n\n=== PERSONA AND CONTEXT ===\n\n"
+
 def build_system_prompt(model_key):
     cfg = MODELS[model_key]
     persona = PERSONAS[cfg["persona_key"]]["persona"]
     knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
-    return knowledge + "\n\n---\n\n" + persona + "\n\n---\n\n" + troop_context
+    return knowledge + SYSTEM_PROMPT_DELIMITER + persona + "\n\n---\n\n" + troop_context
 
 def evaluate(question, response, expected, evaluator="claude", eval_notes=""):
     """Score a response using the configured evaluator model."""
