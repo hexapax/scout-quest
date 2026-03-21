@@ -431,5 +431,100 @@ export function createEvalReportsRouter(): Router {
     }
   });
 
+  // ── Eval Results from MongoDB ──
+
+  // Get all results for a question across all runs (for ranking/analysis)
+  router.get("/api/eval/results/by-question/:questionId", async (req: Request, res: Response) => {
+    try {
+      const db = getScoutQuestDb();
+      const col = db.collection("eval_results");
+      const questionId = req.params.questionId as string;
+
+      const results = await col
+        .find({ question_id: questionId })
+        .sort({ timestamp: -1 })
+        .limit(200)
+        .toArray();
+
+      res.json({
+        questionId,
+        count: results.length,
+        results: results.map((r) => ({
+          runId: r.run_id,
+          model: r.model,
+          label: r.label,
+          evalVersion: r.eval_version,
+          response: r.response,
+          responseHash: r.response_hash,
+          scores: r.scores,
+          notes: r.scores_notes,
+          assessments: r.scores_assessments,
+          error: r.error,
+          timestamp: r.timestamp,
+        })),
+      });
+    } catch (err) {
+      console.error("Eval results by question error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Get question-level stats (for question quality analysis)
+  router.get("/api/eval/questions/stats", async (_req: Request, res: Response) => {
+    try {
+      const db = getScoutQuestDb();
+      const col = db.collection("eval_results");
+
+      const stats = await col
+        .aggregate([
+          { $match: { scores: { $exists: true } } },
+          {
+            $group: {
+              _id: "$question_id",
+              responseCount: { $sum: 1 },
+              models: { $addToSet: "$model" },
+              runs: { $addToSet: "$run_id" },
+              avgAccuracy: { $avg: "$scores.accuracy" },
+              avgCoaching: { $avg: "$scores.coaching" },
+              avgTroopVoice: { $avg: "$scores.troop_voice" },
+              scores: {
+                $push: {
+                  accuracy: "$scores.accuracy",
+                  coaching: "$scores.coaching",
+                  troop_voice: "$scores.troop_voice",
+                },
+              },
+            },
+          },
+          { $sort: { _id: 1 } },
+        ])
+        .toArray();
+
+      res.json(
+        stats.map((s) => {
+          const accScores = s.scores.map((sc: { accuracy: number }) => sc.accuracy);
+          const accVariance =
+            accScores.length > 1
+              ? accScores.reduce((sum: number, v: number) => sum + Math.pow(v - s.avgAccuracy, 2), 0) /
+                accScores.length
+              : 0;
+          return {
+            questionId: s._id,
+            responseCount: s.responseCount,
+            modelCount: s.models.length,
+            runCount: s.runs.length,
+            avgAccuracy: Math.round(s.avgAccuracy * 10) / 10,
+            avgCoaching: Math.round(s.avgCoaching * 10) / 10,
+            avgTroopVoice: Math.round(s.avgTroopVoice * 10) / 10,
+            accuracyVariance: Math.round(accVariance * 100) / 100,
+          };
+        }),
+      );
+    } catch (err) {
+      console.error("Eval question stats error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return router;
 }

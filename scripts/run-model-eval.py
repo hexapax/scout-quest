@@ -1223,6 +1223,14 @@ def main():
     global usage
     usage = UsageTracker(run_id=timestamp, budget=args.budget, db_collection=db_collection)
 
+    # eval_results collection for dual-write
+    eval_results_col = None
+    if db_collection is not None:
+        eval_results_col = db_collection.database["eval_results"]
+        eval_results_col.create_index([("run_id", 1), ("model", 1), ("question_id", 1)])
+        eval_results_col.create_index("question_id")
+        eval_results_col.create_index("response_hash")
+
     if args.budget:
         print(f"Budget: ${args.budget:.2f} (will stop when exceeded)")
 
@@ -1319,6 +1327,37 @@ def main():
                     result_entry["tool_calls"] = call_fn._tool_log
                 results.append(result_entry)
                 consecutive_errors = 0
+
+                # Dual-write to MongoDB
+                if eval_results_col is not None:
+                    import hashlib
+                    resp_hash = hashlib.sha256(response.encode()).hexdigest()[:16]
+                    try:
+                        eval_results_col.insert_one({
+                            "run_id": timestamp,
+                            "eval_version": args.eval_version,
+                            "system_version": args.system_version,
+                            "evaluator": args.evaluator,
+                            "model": model_key,
+                            "label": cfg["label"],
+                            "price": cfg["price"],
+                            "layer": cfg.get("layer"),
+                            "question_id": q["id"],
+                            "question_type": q.get("question_type", ""),
+                            "category": q["cat"],
+                            "question": q["q"],
+                            "expected": q["expect"],
+                            "eval_notes": q.get("eval_notes", ""),
+                            "response": response,
+                            "response_hash": resp_hash,
+                            "scores": {d: scores.get(d, 0) for d in dims},
+                            "scores_notes": scores.get("notes", ""),
+                            "scores_assessments": scores.get("_assessments"),
+                            "tool_calls": result_entry.get("tool_calls"),
+                            "timestamp": datetime.now(timezone.utc),
+                        })
+                    except Exception:
+                        pass  # silent degradation
             except BudgetExceeded as e:
                 print(f"\n  BUDGET EXCEEDED: {e}")
                 budget_stopped = True
@@ -1332,6 +1371,21 @@ def main():
                     "question": q["q"], "error": str(e)[:200],
                     "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                 })
+                # Write error to MongoDB
+                if eval_results_col is not None:
+                    try:
+                        eval_results_col.insert_one({
+                            "run_id": timestamp,
+                            "eval_version": args.eval_version,
+                            "model": model_key,
+                            "label": cfg["label"],
+                            "question_id": q["id"],
+                            "category": q["cat"],
+                            "error": str(e)[:500],
+                            "timestamp": datetime.now(timezone.utc),
+                        })
+                    except Exception:
+                        pass
                 if consecutive_errors >= 2:
                     print(f"\n  FAIL-FAST: 2 consecutive errors for {cfg['label']}, skipping remaining questions.")
                     break
