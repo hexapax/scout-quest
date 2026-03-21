@@ -6,6 +6,7 @@ import { chatHandler } from "./chat.js";
 import { createBsaTokenRouter } from "./routes/bsa-token.js";
 import { createActionsRouter } from "./routes/actions.js";
 import { createProgressRouter } from "./routes/progress.js";
+import { createEvalReportsRouter } from "./routes/eval-reports.js";
 
 const app = express();
 
@@ -22,6 +23,9 @@ app.use("/", createActionsRouter());
 
 // Progress API (for progress micro-app)
 app.use("/", createProgressRouter());
+
+// Eval reports API (for eval viewer micro-app)
+app.use("/", createEvalReportsRouter());
 
 // Serve static micro-app files
 import { join, dirname } from "path";
