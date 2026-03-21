@@ -664,6 +664,10 @@ def main():
         help="Maximum USD to spend on this run (e.g., --budget 5.00). Stops when exceeded.")
     parser.add_argument("--desc", type=str, default=None,
         help="Description of what this eval is testing (shown in viewer)")
+    parser.add_argument("--eval-version", type=str, default="2",
+        help="Eval system version (see docs/eval-changelog.md). Default: 2 (troop-aware evaluator)")
+    parser.add_argument("--system-version", type=str, default="5",
+        help="System under eval version (see docs/eval-changelog.md). Default: 5 (caching + cost tracking)")
     args = parser.parse_args()
 
     keys = load_all_keys()
@@ -712,6 +716,8 @@ def main():
     # Write run metadata (readable by the eval viewer for descriptions)
     meta = {
         "description": args.desc,
+        "evalVersion": args.eval_version,
+        "systemVersion": args.system_version,
         "models": models_to_test,
         "categories": args.category,
         "questionCount": len(questions),

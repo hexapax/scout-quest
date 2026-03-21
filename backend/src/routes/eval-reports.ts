@@ -132,6 +132,8 @@ export function createEvalReportsRouter(): Router {
         description: string | null;
         status: string | null;
         totalCost: number | null;
+        evalVersion: string | null;
+        systemVersion: string | null;
         modelCount: number;
         questionCount: number;
         models: { key: string; label: string; avgOverall: number }[];
@@ -143,7 +145,7 @@ export function createEvalReportsRouter(): Router {
         if (!data) continue;
 
         // Read optional meta.json for description
-        let meta: { description?: string; status?: string; totalCost?: number } = {};
+        let meta: { description?: string; status?: string; totalCost?: number; evalVersion?: string; systemVersion?: string } = {};
         try {
           const metaRaw = await readFile(path.join(REPORTS_DIR, dir, "meta.json"), "utf-8");
           meta = JSON.parse(metaRaw);
@@ -157,6 +159,8 @@ export function createEvalReportsRouter(): Router {
           description: meta.description ?? null,
           status: meta.status ?? null,
           totalCost: meta.totalCost ?? null,
+          evalVersion: meta.evalVersion ?? null,
+          systemVersion: meta.systemVersion ?? null,
           modelCount: summary.modelCount,
           questionCount: summary.questionCount,
           models: summary.models.map((m) => ({

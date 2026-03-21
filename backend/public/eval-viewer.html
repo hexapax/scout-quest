@@ -1045,11 +1045,14 @@
       const statusBadge = r.status === "budget_stopped"
         ? '<span style="color:var(--yellow); font-size:0.7rem; margin-left:0.5rem;">[budget stopped]</span>'
         : "";
+      const versionBadges = (r.evalVersion || r.systemVersion)
+        ? `<span style="font-size:0.65rem; color:var(--text-muted); margin-left:0.5rem;">${r.evalVersion ? "eval:" + esc(r.evalVersion) : ""} ${r.systemVersion ? "sys:" + esc(r.systemVersion) : ""}</span>`
+        : "";
 
       html += `
         <div class="report-item" onclick="app.openReport('${esc(r.timestamp)}')">
           <div class="meta">
-            <span class="ts">${esc(formatTimestamp(r.timestamp))}${statusBadge}</span>
+            <span class="ts">${esc(formatTimestamp(r.timestamp))}${statusBadge}${versionBadges}</span>
             <span class="stats">
               <span>${r.modelCount} models</span>
               <span>${r.questionCount} questions</span>
