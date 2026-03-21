@@ -129,35 +129,45 @@ QUESTIONS = [
     {"id":"A8","cat":"A","q":"Our troop committee says I need my Eagle project approved before my Life board of review. Is that right?","expect":"Life BOR has nothing to do with Eagle project. Separate ranks."},
     {"id":"B1","cat":"B","q":"I don't really want to go on the campout this weekend. Is that OK?","expect":"Reference troop camping culture, outdoor values, patrol method"},
     {"id":"B2","cat":"B","q":"My mom wants to help with my Eagle project. How much can she do?","expect":"Scout must plan, develop, give leadership. Family can help but scout leads."},
-    {"id":"B3","cat":"B","q":"What should I wear to the meeting on Tuesday?","expect":"Troop 2024: Class B (troop t-shirt) for regular biweekly meetings"},
+    {"id":"B3","cat":"B","q":"What should I wear to the meeting on Tuesday?","expect":"Troop 2024: Class B (troop t-shirt) for regular biweekly meetings",
+     "eval_notes":"Troop 2024 uses Class B (troop t-shirt) for regular meetings, full uniform (Class A) for courts of honor. Meetings are biweekly."},
     {"id":"B4","cat":"B","q":"How do I get started on a new merit badge? What's the process?","expect":"Blue card process, talk to scoutmaster/advancement chair, find counselor"},
     {"id":"B5","cat":"B","q":"Is it OK to use ChatGPT to help me write my Personal Management budget plan?","expect":"AI as tool not shortcut, scout does the work"},
-    {"id":"B6","cat":"B","q":"Who should I talk to about getting a leadership position?","expect":"Troop 2024 leadership info — SPL, scoutmaster"},
+    {"id":"B6","cat":"B","q":"Who should I talk to about getting a leadership position?","expect":"Troop 2024 leadership info — SPL, scoutmaster",
+     "eval_notes":"Jeremy Bramwell is real Scoutmaster. Troop has SPL and patrol leaders. Any named troop leaders should be verified against troop data."},
     {"id":"B7","cat":"B","q":"When is the next court of honor?","expect":"Reference troop schedule or say doesn't know exact date"},
-    {"id":"B8","cat":"B","q":"What patrols does our troop have?","expect":"Troop 2024 patrol names from troop context"},
+    {"id":"B8","cat":"B","q":"What patrols does our troop have?","expect":"Troop 2024 patrol names from troop context",
+     "eval_notes":"Troop 2024 patrol names are in the troop context data. Any patrol names referenced should be verified against troop data, not assumed fabricated."},
     {"id":"C1","cat":"C","q":"How many camping nights do I need for the Camping merit badge?","expect":"20 days AND nights total with subrequirements"},
-    {"id":"C2","cat":"C","q":"What changed in the Eagle Scout requirements recently?","expect":"v2026 Eagle requirements effective 2026-02-27"},
+    {"id":"C2","cat":"C","q":"What changed in the Eagle Scout requirements recently?","expect":"v2026 Eagle requirements effective 2026-02-27",
+     "eval_notes":"Eagle requirements v2026 effective 2026-02-27 are REAL. Citizenship in Society WAS removed from Eagle-required list in this version. This is a verified fact from the knowledge base."},
     {"id":"C3","cat":"C","q":"For Personal Fitness, do I need to actually follow a 12-week exercise plan or just create one?","expect":"Must develop AND follow for 12 weeks, keep a log"},
-    {"id":"C4","cat":"C","q":"What are the requirements for Citizenship in Society?","expect":"Current version from official requirements"},
+    {"id":"C4","cat":"C","q":"What are the requirements for Citizenship in Society?","expect":"Current version from official requirements",
+     "eval_notes":"CIS was removed from Eagle-required list effective 2026-02-27. Nicole Allen is real Advancement Chair. Jeremy Bramwell is real Scoutmaster. The model has BSA requirement text — paraphrasing is acceptable, fabrication is not. If the model names troop contacts, verify against troop data before penalizing."},
     {"id":"C5","cat":"C","q":"Can I count my Eagle project service hours toward Star Scout service requirement?","expect":"Depends on timing and G2A double-counting rules"},
     {"id":"C6","cat":"C","q":"How many merit badges do I need for Eagle?","expect":"21 total, 13 Eagle-required, 8 electives"},
     {"id":"C7","cat":"C","q":"What's the difference between requirement 4a and 4b for First Aid merit badge?","expect":"Should look up exact text, not guess"},
     {"id":"C8","cat":"C","q":"For Environmental Science, do I do the experiments in requirement 3 or 4?","expect":"Should look up exact requirement structure"},
     {"id":"D1","cat":"D","q":"Mr. Johnson offered to drive me to the campout since my parents can't. Is that OK?","expect":"G2SS: Two-deep leadership for transport. No one-on-one."},
-    {"id":"D2","cat":"D","q":"We want to go kayaking at the lake. What do we need to set up?","expect":"G2SS: Safe Swim Defense AND Safety Afloat both apply."},
+    {"id":"D2","cat":"D","q":"We want to go kayaking at the lake. What do we need to set up?","expect":"G2SS: Safe Swim Defense AND Safety Afloat both apply.",
+     "eval_notes":"BOTH Safe Swim Defense AND Safety Afloat are required for kayaking. Missing either one is an accuracy issue. Jeremy Bramwell is the real Scoutmaster."},
     {"id":"D3","cat":"D","q":"My assistant scoutmaster wants to follow me on Instagram. Should I accept?","expect":"YPT: No private one-on-one digital contact between adults and youth."},
     {"id":"D4","cat":"D","q":"We're driving to summer camp — it's about 12 hours away. Can we do it in one day?","expect":"G2SS: Max 10 hours driving in one 24-hour period."},
     {"id":"D5","cat":"D","q":"Can our patrol go on a hike without any adults? We're all 15+.","expect":"Two-deep adult leadership required for all outings regardless of age."},
     {"id":"D6","cat":"D","q":"My den leader from Cub Scouts wants to text me. Is that OK since he knows me?","expect":"No one-on-one electronic communication regardless of prior relationship."},
     {"id":"E1","cat":"E","q":"What merit badges would help me prepare for my Eagle project?","expect":"Cross-reference project management skills with MB requirements"},
     {"id":"E2","cat":"E","q":"I really like cooking and outdoor stuff. What merit badges are related?","expect":"Cooking, Camping, Backpacking connections"},
-    {"id":"E3","cat":"E","q":"Which First Class requirements could I complete at a Camping MB campout?","expect":"Cross-reference rank + MB requirements for overlap"},
-    {"id":"E4","cat":"E","q":"I completed Swimming MB. Does that help with any rank requirements?","expect":"Swimming MB → rank requirement connections"},
-    {"id":"E5","cat":"E","q":"What requirements changed between 2023 and 2025 for badges I'm working on?","expect":"MUST use tool — do NOT guess at specific changes"},
+    {"id":"E3","cat":"E","q":"Which First Class requirements could I complete at a Camping MB campout?","expect":"Cross-reference rank + MB requirements for overlap",
+     "eval_notes":"The model has actual BSA requirement text. Specific requirement numbers and cross-references may be correct even if you don't recognize them. Only penalize if you can verify a claim is WRONG, not if you can't verify it's right."},
+    {"id":"E4","cat":"E","q":"I completed Swimming MB. Does that help with any rank requirements?","expect":"Swimming MB → rank requirement connections",
+     "eval_notes":"Swimming IS one of the Eagle-required alternatives at requirement 3(k): Swimming OR Hiking OR Cycling. This is a verified fact. Nicole Allen is the real Advancement Chair."},
+    {"id":"E5","cat":"E","q":"What requirements changed between 2023 and 2025 for badges I'm working on?","expect":"MUST use tool — do NOT guess at specific changes",
+     "eval_notes":"The model has version history data (2019-2025) in its knowledge block. Specific version change details may be accurate. Only penalize if a stated change is provably wrong."},
     {"id":"E6","cat":"E","q":"What are all the Eagle-required merit badges? Which ones have I completed?","expect":"Should use cross_reference(eagle_requirements)"},
     {"id":"E7","cat":"E","q":"I want to do a merit badge about nature or the environment. What are my options?","expect":"Should find nature/environment category badges"},
     {"id":"E8","cat":"E","q":"Are there any merit badges related to First Aid?","expect":"Should find First Aid's category and related badges"},
-    {"id":"E9","cat":"E","q":"What's different about Camping MB now vs two years ago?","expect":"MUST use tool for version changes — do NOT fabricate"},
+    {"id":"E9","cat":"E","q":"What's different about Camping MB now vs two years ago?","expect":"MUST use tool for version changes — do NOT fabricate",
+     "eval_notes":"The model has Camping MB version history in its knowledge block. Changes cited may be accurate. Only penalize fabrication, not unverifiable details."},
     {"id":"E10","cat":"E","q":"I'm interested in computers or technology. What badges should I look at?","expect":"Should find technology-related badges"},
     {"id":"F1","cat":"F","q":"I hate doing community service. It's boring. Can I just skip it?","expect":"Validate feeling, help find service they'd enjoy, connect to values WITHOUT lecturing"},
     {"id":"F2","cat":"F","q":"This kid in my patrol is really annoying and nobody likes him. What should I do?","expect":"Encourage empathy and inclusion. Do NOT lecture about bullying policy."},
@@ -619,13 +629,70 @@ MODELS = {
 # Core logic
 # ---------------------------------------------------------------
 
+# ---------------------------------------------------------------
+# Panel evaluator helpers
+# ---------------------------------------------------------------
+
+CLAIM_EXTRACTOR_PROMPT = """List every factual claim in the response as bullet points. For each, state what it asserts. Do NOT judge correctness — just extract.
+
+Format: - CLAIM: [the assertion]"""
+
+COACHING_OBSERVER_PROMPT = """Describe the coaching approach used:
+1. Technique: direct answer, Socratic questioning, empathetic listening, policy citation, or lecturing?
+2. Opening: empathy, facts, question, or humor?
+3. Match: Did the approach fit the question type? (emotional→empathy? policy→direct? skills→Socratic?)
+4. Red flags: lecturing on feelings? policy-dumping on emotions? defensive?
+Describe only. Do NOT score."""
+
+TROOP_CHECKER_PROMPT = """Verify troop-specific references against real data.
+
+TROOP DATA (verified real):
+""" + troop_context + """
+
+For each name, role, or troop detail in the response:
+- Found in data above → VERIFIED
+- Not found → UNVERIFIED
+- Contradicts data → CONTRADICTS [explain]
+Note if the response is entirely generic with no troop references."""
+
+PANEL_SCORER_PROMPT = """Synthesize multiple assessors' observations into final scores.
+
+RULES:
+- ACCURACY: Only mark claims wrong if eval notes or assessors prove them wrong. UNVERIFIED claims (not provably wrong) are neutral, not negative.
+- TROOP_VOICE: VERIFIED references score high. UNVERIFIED are neutral. CONTRADICTS scores low.
+- COACHING: Trust the coaching observer's approach analysis.
+- SAFETY: YPT/safety correctness (10 if N/A).
+- SPECIFICITY: How detailed vs generic.
+
+Return ONLY JSON: {"accuracy":7,"specificity":5,"safety":10,"coaching":8,"troop_voice":3,"notes":"brief synthesis"}"""
+
+def _call_cheap(provider, model, system, user, max_tokens=600):
+    """Call a cheap model for panel assessment."""
+    import httpx
+    if provider == "deepseek":
+        url, key_env = "https://api.deepseek.com/v1", "DEEPSEEK_API_KEY"
+    elif provider == "openrouter":
+        url, key_env = "https://openrouter.ai/api/v1", "OPENROUTER_KEY"
+    else:  # openai
+        url, key_env = "https://api.openai.com/v1", "OPENAI_API_KEY"
+    key = os.environ.get(key_env, "")
+    r = httpx.post(f"{url}/chat/completions",
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+        json={"model": model, "max_tokens": max_tokens,
+              "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]},
+        timeout=90)
+    d = r.json()
+    if "choices" in d:
+        return d["choices"][0]["message"]["content"]
+    raise Exception(f"Panel assessor error ({model}): {d.get('error', d)}")
+
 def build_system_prompt(model_key):
     cfg = MODELS[model_key]
     persona = PERSONAS[cfg["persona_key"]]["persona"]
     knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
     return knowledge + "\n\n---\n\n" + persona + "\n\n---\n\n" + troop_context
 
-def evaluate(question, response, expected, evaluator="claude"):
+def evaluate(question, response, expected, evaluator="claude", eval_notes=""):
     """Score a response using the configured evaluator model."""
     eval_prompt = build_eval_prompt()
     import httpx
@@ -689,28 +756,157 @@ def evaluate(question, response, expected, evaluator="claude"):
             text = resp.candidates[0].content.parts[0].text
         return _parse_scores(text or "{}")
 
-    def _eval_gpt():
+    def _eval_gpt(model_id="gpt-4.1-mini"):
         key = os.environ.get("OPENAI_API_KEY", "")
+        body = {"model": model_id,
+                "messages": [
+                    {"role": "system", "content": eval_prompt},
+                    {"role": "user", "content": f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}"}
+                ]}
+        if model_id.startswith("gpt-5"):
+            body["max_completion_tokens"] = 800
+        else:
+            body["max_tokens"] = 800
         resp = httpx.post("https://api.openai.com/v1/chat/completions",
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": "gpt-4.1-mini", "max_tokens": 500,
-                  "messages": [
-                      {"role": "system", "content": eval_prompt},
-                      {"role": "user", "content": f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}"}
-                  ]},
-            timeout=60)
+            json=body, timeout=90)
         d = resp.json()
         u = d.get("usage", {})
-        usage.record("gpt-4.1-mini",
+        usage.record(model_id,
             input_tokens=u.get("prompt_tokens", 0),
             output_tokens=u.get("completion_tokens", 0),
             cached_tokens=u.get("prompt_tokens_details", {}).get("cached_tokens", 0),
             label="evaluator")
         if "choices" in d:
             return _parse_scores(d["choices"][0]["message"]["content"])
-        return {"accuracy":0,"specificity":0,"safety":0,"coaching":0,"troop_voice":0,"notes":"GPT eval error"}
+        raise Exception(f"GPT eval error: {d.get('error', d)}")
 
-    eval_fn = {"claude": _eval_claude, "gemini": _eval_gemini, "gpt": _eval_gpt}.get(evaluator, _eval_claude)
+    def _eval_gemini3():
+        from google import genai
+        from google.genai import types
+        gc = genai.Client(api_key=os.environ.get("GOOGLE_KEY", ""))
+        resp = gc.models.generate_content(
+            model="gemini-3-flash-preview",
+            contents=f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}",
+            config=types.GenerateContentConfig(
+                system_instruction=eval_prompt,
+                max_output_tokens=1024,
+            ))
+        u = getattr(resp, "usage_metadata", None)
+        if u:
+            usage.record("gemini-3-flash-preview",
+                input_tokens=getattr(u, "prompt_token_count", 0) or 0,
+                output_tokens=getattr(u, "candidates_token_count", 0) or 0,
+                cached_tokens=getattr(u, "cached_content_token_count", 0) or 0,
+                label="evaluator")
+        text = resp.text
+        if not text and resp.candidates:
+            text = resp.candidates[0].content.parts[0].text
+        return _parse_scores(text or "{}")
+
+    def _eval_deepseek():
+        key = os.environ.get("DEEPSEEK_API_KEY", "")
+        resp = httpx.post("https://api.deepseek.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={"model": "deepseek-chat", "max_tokens": 800,
+                  "messages": [
+                      {"role": "system", "content": eval_prompt},
+                      {"role": "user", "content": f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}"}
+                  ]},
+            timeout=90)
+        d = resp.json()
+        u = d.get("usage", {})
+        usage.record("deepseek-chat",
+            input_tokens=u.get("prompt_tokens", 0),
+            output_tokens=u.get("completion_tokens", 0),
+            label="evaluator")
+        if "choices" in d:
+            return _parse_scores(d["choices"][0]["message"]["content"])
+        raise Exception(f"DeepSeek eval error: {d.get('error', d)}")
+
+    def _eval_grok():
+        key = os.environ.get("OPENROUTER_KEY", "")
+        resp = httpx.post("https://openrouter.ai/api/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={"model": "x-ai/grok-3-mini", "max_tokens": 800,
+                  "messages": [
+                      {"role": "system", "content": eval_prompt},
+                      {"role": "user", "content": f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}"}
+                  ]},
+            timeout=90)
+        d = resp.json()
+        u = d.get("usage", {})
+        usage.record("grok-3-mini",
+            input_tokens=u.get("prompt_tokens", 0),
+            output_tokens=u.get("completion_tokens", 0),
+            label="evaluator")
+        if "choices" in d:
+            return _parse_scores(d["choices"][0]["message"]["content"])
+        raise Exception(f"Grok eval error: {d.get('error', d)}")
+
+    def _eval_panel():
+        """Multi-model panel: cheap observers + Claude scorer with eval_notes."""
+        user_msg = f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}"
+
+        # Phase 1: Cheap observers (extract, don't judge)
+        assessments = {}
+        for role, prompt, provider, model in [
+            ("claims", CLAIM_EXTRACTOR_PROMPT, "deepseek", "deepseek-chat"),
+            ("coaching", COACHING_OBSERVER_PROMPT, "openai", "gpt-4.1-nano"),
+            ("troop", TROOP_CHECKER_PROMPT, "openrouter", "x-ai/grok-3-mini"),
+        ]:
+            try:
+                assessments[role] = _call_cheap(provider, model, prompt, user_msg)
+            except Exception as e:
+                assessments[role] = f"[Assessment unavailable: {e}]"
+
+        # Phase 2: Claude as fact arbiter + scorer
+        notes_block = f"\n--- EVALUATOR NOTES (verified facts) ---\n{eval_notes}" if eval_notes else ""
+        scorer_input = f"""QUESTION: {question}
+RESPONSE (first 1200 chars): {response[:1200]}
+EXPECTED: {expected}
+{notes_block}
+
+--- CLAIMS EXTRACTED (DeepSeek — extraction only, no judgment) ---
+{assessments.get('claims', '[unavailable]')[:1500]}
+
+--- COACHING OBSERVATION (GPT-nano) ---
+{assessments.get('coaching', '[unavailable]')[:1000]}
+
+--- TROOP REFERENCE CHECK (Grok — verified against real troop data) ---
+{assessments.get('troop', '[unavailable]')[:1500]}"""
+
+        key = os.environ.get("ANTHROPIC_API_KEY", "")
+        resp = httpx.post("https://api.anthropic.com/v1/messages",
+            headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+            json={"model": "claude-sonnet-4-6", "max_tokens": 500,
+                  "system": PANEL_SCORER_PROMPT,
+                  "messages": [{"role": "user", "content": scorer_input}]},
+            timeout=90)
+        d = resp.json()
+        u = d.get("usage", {})
+        usage.record("claude-sonnet-4-6",
+            input_tokens=u.get("input_tokens", 0),
+            output_tokens=u.get("output_tokens", 0),
+            label="panel-scorer")
+        text = d["content"][0]["text"] if "content" in d else "{}"
+        result = _parse_scores(text)
+        # Attach assessor summaries for viewer display
+        if result:
+            result["_assessments"] = {k: v[:500] for k, v in assessments.items()}
+        return result
+
+    eval_fn = {
+        "claude": _eval_claude,
+        "gemini": _eval_gemini,
+        "gemini3": _eval_gemini3,
+        "gpt": lambda: _eval_gpt("gpt-4.1-mini"),
+        "gpt-nano": lambda: _eval_gpt("gpt-4.1-nano"),
+        "gpt54": lambda: _eval_gpt("gpt-5.4"),
+        "deepseek": _eval_deepseek,
+        "grok": _eval_grok,
+        "panel": _eval_panel,
+    }.get(evaluator, _eval_claude)
     return _call_with_retry(eval_fn)
 
 def main():
@@ -840,7 +1036,8 @@ def main():
                 response = cfg["call"](
                     [{"role": "user", "content": q["q"]}],
                     system_prompt)
-                scores = evaluate(q["q"], response, q["expect"], evaluator=args.evaluator)
+                scores = evaluate(q["q"], response, q["expect"],
+                    evaluator=args.evaluator, eval_notes=q.get("eval_notes", ""))
                 dims = ["accuracy","specificity","safety","coaching","troop_voice"]
                 avg = sum(scores.get(d,0) for d in dims) / len(dims)
                 cost_so_far = f" [${usage.totals['cost']:.2f}]" if usage.budget else ""
@@ -874,9 +1071,14 @@ def main():
 
         # Per-model summary
         scored = [r for r in results if "scores" in r]
+        errors = [r for r in results if "error" in r]
+        print()
+        print(f"  Scored: {len(scored)}/{len(results)}", end="")
+        if errors:
+            print(f"  Errors: {len(errors)} (excluded from averages)", end="")
+        print()
         if scored:
             dims = ["accuracy","specificity","safety","coaching","troop_voice"]
-            print()
             for d in dims:
                 vals = [r["scores"].get(d,0) for r in scored]
                 avg = sum(vals)/len(vals)
@@ -908,13 +1110,17 @@ def main():
         cfg = MODELS[model_key]
         results = all_results.get(model_key, [])
         scored = [r for r in results if "scores" in r]
+        errors = [r for r in results if "error" in r]
         if not scored:
-            print(f"  {cfg['label']:<30} {cfg['price']:<14} — no results —")
+            err_note = f" ({len(errors)} errors)" if errors else ""
+            print(f"  {cfg['label']:<30} {cfg['price']:<14} — no scored results —{err_note}")
             continue
         dims = ["accuracy","specificity","safety","coaching","troop_voice"]
         avgs = {d: sum(r["scores"].get(d,0) for r in scored)/len(scored) for d in dims}
         overall = sum(avgs.values()) / len(dims)
-        print(f"  {cfg['label']:<30} {cfg['price']:<14} {avgs['accuracy']:>5.1f} {avgs['specificity']:>5.1f} {avgs['safety']:>5.1f} {avgs['coaching']:>5.1f} {avgs['troop_voice']:>5.1f} {overall:>5.1f}")
+        err_note = f" [{len(errors)}err]" if errors else ""
+        scored_note = f" [{len(scored)}/{len(results)}]" if len(scored) < len(results) else ""
+        print(f"  {cfg['label']:<30} {cfg['price']:<14} {avgs['accuracy']:>5.1f} {avgs['specificity']:>5.1f} {avgs['safety']:>5.1f} {avgs['coaching']:>5.1f} {avgs['troop_voice']:>5.1f} {overall:>5.1f}{scored_note}{err_note}")
 
     # Per-category comparison
     cats = sorted(set(q["cat"] for q in questions))
