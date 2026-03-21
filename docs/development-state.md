@@ -149,6 +149,36 @@ Domains registered:
 - [x] Experiment reports generated
 - [ ] **Not integrated with CI** — manual runs on devbox only
 
+### Evaluation Framework v2 (Built 2026-03-20/21)
+- [x] **Eval Runner** (`scripts/run-model-eval.py`) — 54 questions, 7 categories, YAML eval sets
+- [x] **Eval Viewer** (`eval.hexapax.com`) — web app for browsing results, drill-down, voice narration
+- [x] **12-model comparison** — Claude, GPT-4.1/5.4, Gemini 2.5/3.x, DeepSeek tested
+- [x] **Adaptive thinking sweep** — medium effort is sweet spot (8.0 avg)
+- [x] **Panel evaluator** — DeepSeek/GPT-nano/Grok observe, Claude scores
+- [x] **Prompt caching** — 88% cost reduction on Anthropic model calls
+- [x] **Budget enforcement** — `--budget` flag, fail-fast on errors
+- [x] **MongoDB dual-write** — eval_results (1,387 docs), eval_usage, eval_rankings, eval_embeddings
+- [x] **Cost tracking** — real-time per-call tracking, viewer cost dashboard
+- [x] **Listwise ranking** — Borda count from 3 cheap judges, cross-validates scores
+- [x] **Embedding clustering** — Gemini embedding-001, cached in MongoDB
+- [x] **ElevenLabs TTS** — v3 voices (Liam/Scoutmaster1/Brian), viewer integration
+- [x] **Eval set versioning** — v5 with rubric-style eval_notes, question types
+- [x] **Web search tool** — Brave Search integration for layer ablation
+- [ ] **Viewer runner tab** — configure + launch evals from browser
+- [ ] **Bug tracking** — auto-detect failures, triage workflow
+- [ ] **Layer ablation** — L0-L5 with working web search (partially tested)
+- [ ] **Bradley-Terry proper** — currently using Borda count, BT would give confidence intervals
+
+### Key Eval Findings
+- **Claude Sonnet 4.6 Adaptive Medium** is the best Scout Coach model (8.0 avg)
+- **Gemini 3 Flash Preview** is best value at $0.50/$3 (7.6-8.0 depending on evaluator)
+- **Opus underperforms Sonnet** on coaching — overthinks emotional questions
+- **The Blind Evaluator Problem** — evaluator lacked the model's knowledge, penalized correct troop references
+- **Panel evaluation** is more accurate and cheaper than single-model evaluation
+- **Ranking cross-validation** shows score-rank disagreements on 3/3 pilot questions — scoring has blind spots
+- **Prompt caching was broken** by delimiter collision — fixed, saving ~$300 per full run
+- **Total API spend**: ~$400 (2026-03-20/21), now tracked per-call in MongoDB
+
 ## Critical Path to MVP
 
 The minimum needed to run a pilot with 2-3 scouts from the troop:
@@ -184,7 +214,8 @@ The minimum needed to run a pilot with 2-3 scouts from the troop:
 
 | Issue | Severity | Status |
 |-------|----------|--------|
-| AI hallucinates MCP tool calls | High | Instructions updated 2026-02-22, needs retest |
+| AI hallucinates MCP tool calls | High | Instructions updated 2026-02-22, needs retest. Eval confirms models attempt tool calls when tools not available — persona now has tool-free variant. |
+| Eval scoring inconsistency | Medium | Panel evaluator + ranking cross-validation identifies blind spots. Score-rank disagreement on 3/3 pilot questions — investigating. |
 | BSA automated auth endpoint 503 | High | `my.scouting.org/api/users/{username}/authenticate` returns 503. Workaround: manual Chrome login + CDP token extraction. See `docs/scoutbook-data-refresh.md` |
 | Admin panel shows only ai-chat conversations | Medium | Need second LibreChat DB connection or config fix |
 | Scoutbook API has no documented rate limits | Medium | Using conservative 1 req/sec with randomized timing |
@@ -197,6 +228,8 @@ The minimum needed to run a pilot with 2-3 scouts from the troop:
 |-------|-----------|
 | No scout data in MongoDB | **Resolved 2026-03-15** — 20 scouts, 419 advancement, 2,535 requirements loaded via Chrome CDP capture + mongosh import |
 | gcloud gsutil re-auth failures | Switched to `gcloud storage cp` |
+| Prompt caching broken | **Resolved 2026-03-21** — delimiter collision with BSA knowledge doc (78 occurrences of `---`). Fixed with unique delimiter. Saved ~$300/run. |
+| Blind evaluator penalizing correct answers | **Resolved 2026-03-21** — evaluator lacked troop context and BSA facts. Fixed with panel evaluator + eval_notes. See `docs/reports/2026-03-21-eval-framework-discovery.md`. |
 
 ## Scoutbook API Data Available
 
