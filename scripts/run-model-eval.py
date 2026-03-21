@@ -486,12 +486,16 @@ def call_anthropic_with_tools(model_id, tools=None, adaptive_effort=None):
             body["thinking"] = {"type": "adaptive"}
             body["output_config"] = {"effort": adaptive_effort}
 
-        # Tool use loop (max 3 tool calls per question)
-        for tool_round in range(4):
+        # Tool use loop (max 5 search calls per question)
+        max_rounds = 6
+        for tool_round in range(max_rounds):
             resp = httpx.post("https://api.anthropic.com/v1/messages",
                 headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                 json=body, timeout=180)
             d = resp.json()
+
+            if "error" in d:
+                raise Exception(f"Anthropic error: {d['error']}")
 
             u = d.get("usage", {})
             cache_read = u.get("cache_read_input_tokens", 0)
@@ -505,38 +509,54 @@ def call_anthropic_with_tools(model_id, tools=None, adaptive_effort=None):
                 extra={"cache_creation": cache_create})
 
             if d.get("stop_reason") == "tool_use" and "content" in d:
-                # Handle tool call
-                tool_block = next((b for b in d["content"] if b["type"] == "tool_use"), None)
-                if tool_block and tool_block["name"] == "web_search":
-                    query = tool_block["input"].get("query", "")
-                    sys.stdout.write(f"[search: {query[:40]}] ")
-                    sys.stdout.flush()
-                    search_result = _do_brave_search(query)
+                # Handle ALL tool_use blocks in the response
+                tool_blocks = [b for b in d["content"] if b["type"] == "tool_use"]
+                tool_results = []
+                for tb in tool_blocks:
+                    if tb["name"] == "web_search":
+                        query = tb["input"].get("query", "")
+                        sys.stdout.write(f"[search: {query[:40]}] ")
+                        sys.stdout.flush()
+                        search_result = _do_brave_search(query)
+                        call._tool_log.append({
+                            "tool": tb["name"], "query": query,
+                            "result": search_result[:1000],
+                            "round": tool_round + 1,
+                        })
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": tb["id"],
+                            "content": search_result
+                        })
+                    else:
+                        # Unknown tool — return error
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": tb["id"],
+                            "content": f"Tool '{tb['name']}' is not available.",
+                            "is_error": True,
+                        })
 
-                    # Log the tool call and result
-                    call._tool_log.append({
-                        "tool": tool_block["name"],
-                        "query": query,
-                        "result": search_result[:1000],
-                        "round": tool_round + 1,
-                    })
+                body["messages"].append({"role": "assistant", "content": d["content"]})
+                body["messages"].append({"role": "user", "content": tool_results})
+                continue
 
-                    # Continue conversation with tool result
-                    body["messages"].append({"role": "assistant", "content": d["content"]})
-                    body["messages"].append({"role": "user", "content": [
-                        {"type": "tool_result", "tool_use_id": tool_block["id"], "content": search_result}
-                    ]})
-                    continue
-
-            # Extract final text
+            # Not a tool_use response — extract final text
             if "content" in d:
                 text_parts = [b["text"] for b in d["content"] if b.get("type") == "text"]
                 if text_parts:
-                    return text_parts[0]
-                return d["content"][0].get("text", str(d["content"]))
-            raise Exception(f"Anthropic error: {d.get('error', d)}")
+                    return "\n\n".join(text_parts)
+                return str(d["content"])
+            raise Exception(f"Anthropic error: {d}")
 
-        raise Exception("Max tool rounds exceeded")
+        # Hit max rounds — return what we have so far
+        sys.stdout.write("[max searches] ")
+        # Try to get text from the last response
+        if d and "content" in d:
+            text_parts = [b["text"] for b in d["content"] if b.get("type") == "text"]
+            if text_parts:
+                return "\n\n".join(text_parts)
+        return "[Model exhausted search attempts without producing a final answer]"
     return call
 
 def call_openai_compat(model_id, base_url="https://api.openai.com/v1", key_env="OPENAI_API_KEY", label="OpenAI"):
