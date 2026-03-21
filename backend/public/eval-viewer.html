@@ -833,21 +833,29 @@
   }
 
   function scoreColor(val) {
+    if (val == null) return "var(--text-muted)";
     if (val >= 8) return "var(--green)";
     if (val >= 5) return "var(--yellow)";
     return "var(--red)";
   }
 
   function scoreColorClass(val) {
+    if (val == null) return "muted";
     if (val >= 8) return "green";
     if (val >= 5) return "yellow";
     return "red";
   }
 
   function scoreBg(val) {
+    if (val == null) return "rgba(136,153,170,0.15)";
     if (val >= 8) return "rgba(46,204,113,0.2)";
     if (val >= 5) return "rgba(241,196,15,0.2)";
     return "rgba(231,76,60,0.2)";
+  }
+
+  function fmtScore(val) {
+    if (val == null || val === undefined) return "--";
+    return val.toFixed(1);
   }
 
   function avgScore(entries) {
@@ -1233,18 +1241,23 @@
     const $el = document.getElementById("summary-cards");
     let html = "";
     models.forEach((m, i) => {
-      const overall = m.filteredAvg.overall || 0;
+      const overall = m.filteredAvg.overall;
+      const hasErrors = m.entries.some(e => e.error);
+      const hasScores = overall != null;
       const dimHtml = SCORE_DIMS.map(d => {
-        const v = m.filteredAvg[d] || 0;
-        return `<span class="dim-score" style="background:${scoreBg(v)}; color:${scoreColor(v)}">${DIM_LABELS[d].substring(0,4)} ${v.toFixed(1)}</span>`;
+        const v = m.filteredAvg[d];
+        return `<span class="dim-score" style="background:${scoreBg(v)}; color:${scoreColor(v)}">${DIM_LABELS[d].substring(0,4)} ${fmtScore(v)}</span>`;
       }).join("");
+
+      const overallLabel = hasScores ? fmtScore(overall) : (hasErrors ? "ERR" : "--");
+      const overallColor = hasScores ? scoreColor(overall) : (hasErrors ? "var(--red)" : "var(--text-muted)");
 
       html += `
         <div class="summary-card">
           <div class="rank">#${i + 1}</div>
           <div class="model-name">${esc(m.label)}</div>
           <div class="price-tag">${esc(m.price)}</div>
-          <div class="avg-score" style="color:${scoreColor(overall)}">${overall.toFixed(1)}</div>
+          <div class="avg-score" style="color:${overallColor}">${overallLabel}</div>
           <div class="dim-scores">${dimHtml}</div>
         </div>`;
     });
@@ -1256,7 +1269,8 @@
     const ctx = document.getElementById("radar-chart").getContext("2d");
     if (radarChart) radarChart.destroy();
 
-    const datasets = models.map((m, i) => ({
+    const scoredModels = models.filter(m => m.filteredAvg.overall != null);
+    const datasets = scoredModels.map((m, i) => ({
       label: m.label,
       data: SCORE_DIMS.map(d => m.filteredAvg[d] || 0),
       borderColor: MODEL_COLORS[i % MODEL_COLORS.length],
@@ -1378,9 +1392,15 @@
         return { entry, avg, dims };
       });
 
-      for (const ms of modelScores) {
-        if (!ms) {
-          html += '<td><span class="score-cell-colored" style="background:rgba(231,76,60,0.2); color:var(--red);">ERR</span></td>';
+      for (let mi = 0; mi < models.length; mi++) {
+        const ms = modelScores[mi];
+        const entry = models[mi].entries.find(e => e.questionId === q.id);
+        if (!ms && entry && entry.error) {
+          // Actual error — flag it
+          html += '<td><span class="score-cell-colored" style="background:rgba(231,76,60,0.2); color:var(--red); cursor:help;" title="' + esc(entry.error) + '">ERR</span></td>';
+        } else if (!ms) {
+          // Not run (budget stopped, category filtered, etc)
+          html += '<td><span class="score-cell-colored" style="background:rgba(136,153,170,0.1); color:var(--text-muted);">--</span></td>';
         } else {
           const isBest = ms.avg === bestScore && bestScore > 0;
           html += `<td><span class="score-cell-colored" style="background:${scoreBg(ms.avg)}; color:${scoreColor(ms.avg)}; ${isBest ? 'outline:1px solid var(--green);' : ''}">${ms.avg.toFixed(1)}</span></td>`;
@@ -1392,8 +1412,12 @@
     // Averages row
     html += '<tr style="border-top:2px solid var(--surface2);font-weight:700;"><td>AVERAGE</td>';
     for (const m of models) {
-      const avg = m.filteredAvg.overall || 0;
-      html += `<td><span class="score-cell-colored" style="background:${scoreBg(avg)}; color:${scoreColor(avg)}">${avg.toFixed(1)}</span></td>`;
+      const avg = m.filteredAvg.overall;
+      const hasErrors = m.entries.some(e => e.error);
+      const label = avg != null ? fmtScore(avg) : (hasErrors ? "ERR" : "--");
+      const color = avg != null ? scoreColor(avg) : (hasErrors ? "var(--red)" : "var(--text-muted)");
+      const bg = avg != null ? scoreBg(avg) : (hasErrors ? "rgba(231,76,60,0.2)" : "rgba(136,153,170,0.1)");
+      html += `<td><span class="score-cell-colored" style="background:${bg}; color:${color}">${label}</span></td>`;
     }
     html += "</tr></tbody>";
 
@@ -1927,7 +1951,13 @@
     md += "|-------|-------|-----|------|------|-------|-------|-----|\n";
     for (const m of models) {
       const a = m.filteredAvg;
-      md += `| ${m.label} | ${m.price || "--"} | ${(a.accuracy || 0).toFixed(1)} | ${(a.specificity || 0).toFixed(1)} | ${(a.safety || 0).toFixed(1)} | ${(a.coaching || 0).toFixed(1)} | ${(a.troop_voice || 0).toFixed(1)} | ${(a.overall || 0).toFixed(1)} |\n`;
+      const hasErrors = m.entries.some(e => e.error);
+      const allSkipped = !a.overall && !hasErrors;
+      if (a.overall != null) {
+        md += `| ${m.label} | ${m.price || "--"} | ${fmtScore(a.accuracy)} | ${fmtScore(a.specificity)} | ${fmtScore(a.safety)} | ${fmtScore(a.coaching)} | ${fmtScore(a.troop_voice)} | ${fmtScore(a.overall)} |\n`;
+      } else {
+        md += `| ${m.label} | ${m.price || "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} |\n`;
+      }
     }
     copyToClipboard(md, btn || document.getElementById("copy-report-btn"));
   }
