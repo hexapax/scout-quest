@@ -623,6 +623,45 @@ MODELS = {
         "label": "DeepSeek V3",
         "price": "$0.14/$0.28",
     },
+    # --- Knowledge layer ablation (all use Claude Sonnet) ---
+    "layer-persona": {
+        "call": call_anthropic("claude-sonnet-4-6"),
+        "persona_key": "claude",
+        "knowledge": "full",
+        "layer": "persona-only",
+        "label": "L0: Persona Only",
+        "price": "$3/$15",
+    },
+    "layer-knowledge": {
+        "call": call_anthropic("claude-sonnet-4-6"),
+        "persona_key": "claude",
+        "knowledge": "full",
+        "layer": "knowledge-only",
+        "label": "L1: + BSA Knowledge",
+        "price": "$3/$15",
+    },
+    "layer-troop": {
+        "call": call_anthropic("claude-sonnet-4-6"),
+        "persona_key": "claude",
+        "knowledge": "full",
+        "layer": "knowledge+troop",
+        "label": "L2: + Troop Context",
+        "price": "$3/$15",
+    },
+    "layer-full": {
+        "call": call_anthropic("claude-sonnet-4-6"),
+        "persona_key": "claude",
+        "knowledge": "full",
+        "label": "L3: Full Stack",
+        "price": "$3/$15",
+    },
+    "layer-adaptive": {
+        "call": call_anthropic("claude-sonnet-4-6", adaptive_effort="medium"),
+        "persona_key": "claude",
+        "knowledge": "full",
+        "label": "L4: + Adaptive Thinking",
+        "price": "$3/$15 adaptive",
+    },
 }
 
 # ---------------------------------------------------------------
@@ -691,8 +730,21 @@ SYSTEM_PROMPT_DELIMITER = "\n\n=== PERSONA AND CONTEXT ===\n\n"
 def build_system_prompt(model_key):
     cfg = MODELS[model_key]
     persona = PERSONAS[cfg["persona_key"]]["persona"]
-    knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
-    return knowledge + SYSTEM_PROMPT_DELIMITER + persona + "\n\n---\n\n" + troop_context
+
+    # Layer override: allows testing different knowledge configurations
+    layer = cfg.get("layer")
+    if layer == "persona-only":
+        return persona
+    elif layer == "knowledge-only":
+        knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
+        return knowledge + SYSTEM_PROMPT_DELIMITER + persona
+    elif layer == "knowledge+troop":
+        knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
+        return knowledge + SYSTEM_PROMPT_DELIMITER + persona + "\n\n---\n\n" + troop_context
+    else:
+        # Default: full stack (knowledge + persona + troop)
+        knowledge = knowledge_full if cfg["knowledge"] == "full" else knowledge_compact
+        return knowledge + SYSTEM_PROMPT_DELIMITER + persona + "\n\n---\n\n" + troop_context
 
 def evaluate(question, response, expected, evaluator="claude", eval_notes=""):
     """Score a response using the configured evaluator model."""
