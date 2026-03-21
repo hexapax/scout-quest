@@ -7,6 +7,7 @@ Aggregates rankings via Borda count and implied Bradley-Terry preferences.
 
 Usage:
   python3 run-ranking.py --question G1 [--judges gpt-nano,deepseek,grok] [--chunk-size 6] [--budget 1.00]
+  python3 run-ranking.py --question G1 --no-embeddings   # force prefix-based clustering
 
 Reads from: MongoDB scoutquest.eval_results
 Writes to:  MongoDB scoutquest.eval_rankings
@@ -54,6 +55,7 @@ def load_all_keys():
     load_key("OPENAI_API_KEY", "OPENAI_API_KEY", "openai-api-key")
     load_key("DEEPSEEK_API_KEY", "DEEPSEEK_API_KEY", "deepseek-api-key")
     load_key("OPENROUTER_KEY", "OPENROUTER_KEY", "openrouter-api-key")
+    load_key("GOOGLE_KEY", "GOOGLE_KEY")
 
 # ---------------------------------------------------------------
 # Judge callers
@@ -122,8 +124,8 @@ YOUR RANKING (format: best > ... > worst, then reasons):"""
 # ---------------------------------------------------------------
 
 def cluster_responses(responses, max_clusters=7):
-    """Simple clustering by response length and content similarity.
-    For a proper implementation, use embeddings. This is a fast approximation."""
+    """Simple clustering by response prefix word overlap (fallback method).
+    For better results, use cluster_responses_by_embedding() instead."""
     if len(responses) <= max_clusters:
         return [[r] for r in responses]
 
@@ -156,6 +158,103 @@ def cluster_responses(responses, max_clusters=7):
         clusters[0].extend(smallest)
 
     return clusters
+
+
+# ---------------------------------------------------------------
+# Embedding-based clustering
+# ---------------------------------------------------------------
+
+_embeddings_col = None
+
+def _get_embeddings_col():
+    """Lazy accessor for the eval_embeddings MongoDB collection."""
+    global _embeddings_col
+    if _embeddings_col is None:
+        from pymongo import MongoClient
+        db = MongoClient("mongodb://localhost:27017")["scoutquest"]
+        _embeddings_col = db["eval_embeddings"]
+    return _embeddings_col
+
+
+def get_embedding(text, response_hash):
+    """Get embedding for text, using MongoDB cache when available.
+
+    Uses Google Gemini text-embedding-004 model. Embeds first 500 chars
+    to keep costs down (free tier eligible).
+    """
+    col = _get_embeddings_col()
+
+    # Check MongoDB cache first
+    cached = col.find_one({"_id": response_hash})
+    if cached:
+        return cached["embedding"]
+
+    # Generate via Gemini
+    from google import genai
+    gc = genai.Client(api_key=os.environ.get("GOOGLE_KEY", ""))
+    result = gc.models.embed_content(model="gemini-embedding-001", contents=text[:500])
+    embedding = result.embeddings[0].values
+
+    # Cache in MongoDB
+    col.insert_one({
+        "_id": response_hash,
+        "embedding": embedding,
+        "model": "text-embedding-004",
+        "text_preview": text[:200],
+        "created_at": datetime.now(timezone.utc),
+    })
+    return embedding
+
+
+def cluster_responses_by_embedding(responses, max_clusters=7):
+    """Cluster responses using cosine similarity on Gemini embeddings.
+
+    Uses AgglomerativeClustering with cosine distance and average linkage.
+    Falls back to prefix-based cluster_responses() if sklearn is unavailable
+    or embedding generation fails.
+    """
+    if len(responses) <= max_clusters:
+        return [[r] for r in responses]
+
+    try:
+        import numpy as np
+        from sklearn.cluster import AgglomerativeClustering
+    except ImportError:
+        print("  sklearn not available, using prefix clustering")
+        return cluster_responses(responses, max_clusters)
+
+    # Check for GOOGLE_KEY before attempting embeddings
+    if not os.environ.get("GOOGLE_KEY"):
+        # Try loading from dotenv / secrets
+        load_key("GOOGLE_KEY", "GOOGLE_KEY")
+    if not os.environ.get("GOOGLE_KEY"):
+        print("  GOOGLE_KEY not set, using prefix clustering")
+        return cluster_responses(responses, max_clusters)
+
+    # Get embeddings for all responses
+    embeddings = []
+    try:
+        for r in responses:
+            emb = get_embedding(r["response"], r["response_hash"])
+            embeddings.append(emb)
+    except Exception as e:
+        print(f"  Embedding generation failed ({e}), using prefix clustering")
+        return cluster_responses(responses, max_clusters)
+
+    # Cluster using cosine distance
+    X = np.array(embeddings)
+    n_clusters = min(max_clusters, len(responses))
+    clustering = AgglomerativeClustering(
+        n_clusters=n_clusters, metric="cosine", linkage="average"
+    )
+    labels = clustering.fit_predict(X)
+
+    # Group responses by cluster label
+    clusters = {}
+    for i, label in enumerate(labels):
+        clusters.setdefault(label, []).append(responses[i])
+
+    return list(clusters.values())
 
 
 def pick_representatives(clusters):
@@ -266,6 +365,8 @@ def main():
         help="Number of responses per ranking chunk (default: 6)")
     parser.add_argument("--budget", type=float, default=1.0,
         help="Max USD to spend")
+    parser.add_argument("--no-embeddings", action="store_true",
+        help="Force prefix-based clustering instead of embedding-based")
     parser.add_argument("--desc", type=str, default=None)
     args = parser.parse_args()
 
@@ -296,7 +397,10 @@ def main():
     print(f"  Total responses: {len(all_results)}")
 
     # Cluster responses
-    clusters = cluster_responses(all_results, max_clusters=args.chunk_size * 2)
+    if args.no_embeddings:
+        clusters = cluster_responses(all_results, max_clusters=args.chunk_size * 2)
+    else:
+        clusters = cluster_responses_by_embedding(all_results, max_clusters=args.chunk_size * 2)
     representatives = pick_representatives(clusters)
     print(f"  Clusters: {len(clusters)} → {len(representatives)} representatives")
     for i, rep in enumerate(representatives):
@@ -410,6 +514,7 @@ def main():
         "question": question_text,
         "question_type": question_type,
         "method": "listwise_borda",
+        "clustering": "prefix" if args.no_embeddings else "embedding",
         "chunk_size": len(representatives),
         "judges": judge_keys,
         "representatives": [{

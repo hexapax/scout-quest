@@ -551,66 +551,77 @@
     right: 0;
     background: var(--surface);
     border-top: 2px solid var(--accent);
-    padding: 0.5rem 1rem;
+    padding: 0.3rem 0.75rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    gap: 0.4rem;
     z-index: 200;
   }
   #voice-bar.hidden { display: none; }
   #voice-bar .voice-status {
     flex: 1;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
-    min-width: 100px;
-  }
-  #voice-bar select {
-    padding: 0.3rem;
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--surface2);
-    border-radius: 4px;
-    font-size: 0.8rem;
+    min-width: 60px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .voice-btn {
-    padding: 0.3rem 0.7rem;
+    padding: 0.2rem 0.5rem;
     background: var(--surface2);
     border: 1px solid var(--surface2);
     color: var(--text);
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
   .voice-btn:hover { border-color: var(--blue); color: var(--blue); }
-  .voice-controls {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    flex-wrap: wrap;
+  .voice-btn.gear-btn {
+    font-size: 0.85rem;
+    padding: 0.2rem 0.45rem;
   }
-  .voice-role-select {
-    max-width: 120px;
-    font-size: 0.7rem;
+
+  /* ── TTS Settings Dialog ── */
+  .tts-dialog-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; display:flex; align-items:center; justify-content:center; }
+  .tts-dialog { background:var(--surface); border:1px solid var(--surface2); border-radius:8px; padding:1.5rem; max-width:400px; width:90%; }
+  .tts-dialog h3 { margin-bottom:1rem; color:var(--text); }
+  .tts-dialog label { display:block; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted); }
+  .tts-dialog select, .tts-dialog input[type="checkbox"] { margin-bottom:0.75rem; }
+  .tts-dialog select {
+    width:100%;
+    padding:0.35rem;
+    background:var(--surface2);
+    color:var(--text);
+    border:1px solid var(--surface2);
+    border-radius:4px;
+    font-size:0.8rem;
   }
-  .voice-toggles {
-    display: flex;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    align-items: center;
-  }
-  .voice-toggles input { margin-right: 0.2rem; }
-  @media (max-width: 768px) {
-    #voice-bar {
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-    .voice-controls {
-      width: 100%;
-      order: 10;
-    }
-  }
+  .tts-dialog .checkbox-row { display:flex; align-items:center; gap:0.4rem; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-muted); }
+  .tts-dialog .checkbox-row input { margin:0; }
+  .tts-dialog .btn-row { display:flex; gap:0.5rem; justify-content:flex-end; margin-top:1rem; }
+  .tts-dialog .el-voices { display:none; }
+  .tts-dialog .el-voices.visible { display:block; }
+  .tts-dialog .section-divider { border-top:1px solid var(--surface2); margin:0.75rem 0; }
+
+  /* ── Ranking Section ── */
+  .ranking-section { margin-top:1.5rem; }
+  .ranking-section h3 { margin-bottom:0.25rem; }
+  .ranking-section .text-muted { font-size:0.8rem; color:var(--text-muted); margin-bottom:0.75rem; }
+  .ranking-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+  .ranking-table th, .ranking-table td { padding:0.5rem 0.6rem; border-bottom:1px solid var(--surface2); text-align:center; }
+  .ranking-table th { color:var(--text-muted); font-weight:600; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.03em; background:var(--surface); }
+  .ranking-table th:first-child, .ranking-table td:first-child { text-align:center; width:50px; }
+  .ranking-table td:nth-child(2) { text-align:left; font-weight:600; }
+  .ranking-table .rank-cell { font-weight:700; font-size:1rem; }
+  .ranking-table .rank-1 { color:var(--green); }
+  .ranking-table .rank-2 { color:var(--blue); }
+  .ranking-table .rank-3 { color:var(--yellow); }
+  .ranking-table .disagree { background:rgba(241,196,15,0.15); }
+  .judge-agreement { font-size:0.8rem; margin:0.5rem 0; }
+  .judge-agreement .unanimous { color:var(--green); font-weight:600; }
+  .judge-agreement .split { color:var(--yellow); font-weight:600; }
+  .judge-details-section { margin-top:0.75rem; }
 
   /* ── Progress monitor ── */
   .progress-monitor .model-progress {
@@ -888,8 +899,50 @@
   <button class="voice-btn" id="voice-pause" title="Pause">Pause</button>
   <button class="voice-btn" id="voice-stop" title="Stop">Stop</button>
   <div class="voice-status" id="voice-status">Ready</div>
-  <div class="voice-controls">
-    <label style="font-size:0.7rem; color:var(--text-muted);">Speed</label>
+  <button class="voice-btn gear-btn" id="voice-settings-btn" title="TTS Settings">&#9881;</button>
+  <button class="voice-btn" id="voice-narrate-all" title="Narrate all responses">Narrate All</button>
+</div>
+
+<!-- ═══ TTS Settings Dialog (hidden by default) ═══ -->
+<div id="tts-dialog-overlay" class="tts-dialog-overlay" style="display:none;">
+  <div class="tts-dialog">
+    <h3>Voice Settings</h3>
+
+    <label>Provider</label>
+    <select id="tts-provider">
+      <option value="browser">Browser (free)</option>
+      <option value="elevenlabs">ElevenLabs (v3)</option>
+    </select>
+
+    <!-- Browser voice selectors (shown when provider=browser) -->
+    <div id="browser-voices">
+      <label>Scout Voice</label>
+      <select id="voice-scout" title="Scout voice"></select>
+      <label>Coach Voice</label>
+      <select id="voice-coach" title="Coach voice"></select>
+      <label>Narrator Voice</label>
+      <select id="voice-narrator" title="Narrator voice"></select>
+    </div>
+
+    <!-- ElevenLabs voice selectors (shown when provider=elevenlabs) -->
+    <div id="el-voices" class="el-voices">
+      <label>Scout Voice</label>
+      <select id="el-voice-scout">
+        <option value="TX3LPaxmHKxFdv7VOQHJ" selected>Liam (Energetic)</option>
+      </select>
+      <label>Coach Voice</label>
+      <select id="el-voice-coach">
+        <option value="chZcGerJ39wwnXKPa0Ki" selected>Scoutmaster1</option>
+      </select>
+      <label>Narrator Voice</label>
+      <select id="el-voice-narrator">
+        <option value="nPczCjzI2devNBz1zQrb" selected>Brian (Deep, Resonant)</option>
+      </select>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <label>Speed</label>
     <select id="voice-speed" title="Speed">
       <option value="1">1x</option>
       <option value="1.25">1.25x</option>
@@ -897,18 +950,23 @@
       <option value="1.75">1.75x</option>
       <option value="2">2x</option>
     </select>
-    <label style="font-size:0.7rem; color:var(--text-muted);">Scout</label>
-    <select id="voice-scout" title="Scout voice" class="voice-role-select"></select>
-    <label style="font-size:0.7rem; color:var(--text-muted);">Coach</label>
-    <select id="voice-coach" title="Coach voice" class="voice-role-select"></select>
-    <label style="font-size:0.7rem; color:var(--text-muted);">Narrator</label>
-    <select id="voice-narrator" title="Narrator voice" class="voice-role-select"></select>
+
+    <div class="section-divider"></div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="voice-include-eval" checked>
+      <label for="voice-include-eval" style="margin:0;">Include evaluator notes</label>
+    </div>
+    <div class="checkbox-row">
+      <input type="checkbox" id="voice-include-rebuttal" checked>
+      <label for="voice-include-rebuttal" style="margin:0;">Include rebuttal</label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" id="tts-dialog-cancel">Cancel</button>
+      <button class="btn primary" id="tts-dialog-save">Save</button>
+    </div>
   </div>
-  <div class="voice-toggles">
-    <label><input type="checkbox" id="voice-include-eval" checked> Eval</label>
-    <label><input type="checkbox" id="voice-include-rebuttal" checked> Rebuttal</label>
-  </div>
-  <button class="voice-btn" id="voice-narrate-all" title="Narrate all responses">Narrate All</button>
 </div>
 
 <script>
@@ -1899,11 +1957,23 @@
     }
 
     html += '</div>';
+
+    // Add placeholder for rankings (loaded async)
+    html += '<div id="ranking-container"></div>';
+
     $drilldown.innerHTML = html;
 
     // Show voice bar
     showVoiceBar();
     window.scrollTo(0, 0);
+
+    // Fetch and render rankings asynchronously
+    fetchRankings(questionId).then(rankingData => {
+      const container = document.getElementById("ranking-container");
+      if (container && rankingData) {
+        container.innerHTML = renderRankingSection(rankingData, models, questionId);
+      }
+    });
   }
 
   function goBackToDash() {
@@ -1931,9 +2001,80 @@
   let voiceQueue = [];
   let isNarrating = false;
   let currentUtterance = null;
+  let currentAudio = null;
   let narrateAllMode = false;
   let narrateAllQuestions = [];
   let narrateAllIndex = 0;
+
+  // TTS settings (loaded from localStorage)
+  let ttsSettings = {
+    provider: "browser",
+    elScout: "TX3LPaxmHKxFdv7VOQHJ",
+    elCoach: "chZcGerJ39wwnXKPa0Ki",
+    elNarrator: "nPczCjzI2devNBz1zQrb",
+    speed: "1",
+    includeEval: true,
+    includeRebuttal: true,
+  };
+
+  function loadTtsSettings() {
+    try {
+      const saved = localStorage.getItem("ttsSettings");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        ttsSettings = { ...ttsSettings, ...parsed };
+      }
+    } catch {}
+    // Apply to UI
+    applyTtsSettingsToUI();
+  }
+
+  function saveTtsSettings() {
+    ttsSettings.provider = document.getElementById("tts-provider").value;
+    ttsSettings.elScout = document.getElementById("el-voice-scout").value;
+    ttsSettings.elCoach = document.getElementById("el-voice-coach").value;
+    ttsSettings.elNarrator = document.getElementById("el-voice-narrator").value;
+    ttsSettings.speed = document.getElementById("voice-speed").value;
+    ttsSettings.includeEval = document.getElementById("voice-include-eval").checked;
+    ttsSettings.includeRebuttal = document.getElementById("voice-include-rebuttal").checked;
+    localStorage.setItem("ttsSettings", JSON.stringify(ttsSettings));
+    closeTtsDialog();
+  }
+
+  function applyTtsSettingsToUI() {
+    const providerEl = document.getElementById("tts-provider");
+    if (providerEl) providerEl.value = ttsSettings.provider;
+    const speedEl = document.getElementById("voice-speed");
+    if (speedEl) speedEl.value = ttsSettings.speed;
+    const evalEl = document.getElementById("voice-include-eval");
+    if (evalEl) evalEl.checked = ttsSettings.includeEval;
+    const rebuttalEl = document.getElementById("voice-include-rebuttal");
+    if (rebuttalEl) rebuttalEl.checked = ttsSettings.includeRebuttal;
+    const elScout = document.getElementById("el-voice-scout");
+    if (elScout) elScout.value = ttsSettings.elScout;
+    const elCoach = document.getElementById("el-voice-coach");
+    if (elCoach) elCoach.value = ttsSettings.elCoach;
+    const elNarrator = document.getElementById("el-voice-narrator");
+    if (elNarrator) elNarrator.value = ttsSettings.elNarrator;
+    toggleProviderUI();
+  }
+
+  function toggleProviderUI() {
+    const provider = document.getElementById("tts-provider")?.value || "browser";
+    const browserVoices = document.getElementById("browser-voices");
+    const elVoices = document.getElementById("el-voices");
+    if (browserVoices) browserVoices.style.display = provider === "browser" ? "block" : "none";
+    if (elVoices) elVoices.classList.toggle("visible", provider === "elevenlabs");
+  }
+
+  function openTtsDialog() {
+    applyTtsSettingsToUI();
+    document.getElementById("tts-dialog-overlay").style.display = "flex";
+  }
+
+  function closeTtsDialog() {
+    document.getElementById("tts-dialog-overlay").style.display = "none";
+  }
 
   function showVoiceBar() {
     document.getElementById("voice-bar").classList.remove("hidden");
@@ -1959,7 +2100,8 @@
     ).join("");
 
     for (const id of ["voice-scout", "voice-coach", "voice-narrator"]) {
-      document.getElementById(id).innerHTML = optionsHtml;
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = optionsHtml;
     }
 
     // Try to auto-select sensible defaults
@@ -1981,15 +2123,49 @@
     return synth.getVoices().find(v => v.name === el.value) || null;
   }
 
+  function getElVoiceIdForRole(role) {
+    if (role === "scout") return ttsSettings.elScout;
+    if (role === "coach") return ttsSettings.elCoach;
+    return ttsSettings.elNarrator;
+  }
+
   function getSpeed() {
-    return parseFloat(document.getElementById("voice-speed")?.value || "1");
+    return parseFloat(ttsSettings.speed || "1");
   }
 
   function includeEval() {
-    return document.getElementById("voice-include-eval")?.checked ?? true;
+    return ttsSettings.includeEval;
+  }
+
+  function includeRebuttal() {
+    return ttsSettings.includeRebuttal;
+  }
+
+  // Determine audio tags based on question category
+  function getAudioTags(role, category) {
+    const tags = [];
+    if (category === "F" || category === "G") {
+      // coaching_values / over_policy
+      if (role === "scout") tags.push("[nervous]");
+      if (role === "coach") tags.push("[warm, encouraging]");
+    } else if (category === "D") {
+      // safety
+      if (role === "coach") tags.push("[serious, firm]");
+    } else if (category === "A" || category === "C") {
+      // policy / requirements
+      if (role === "coach") tags.push("[clear, direct]");
+    }
+    return tags.join(" ");
   }
 
   function speak(text, opts = {}) {
+    if (ttsSettings.provider === "elevenlabs") {
+      return speakElevenLabs(text, opts);
+    }
+    return speakBrowser(text, opts);
+  }
+
+  function speakBrowser(text, opts = {}) {
     return new Promise((resolve) => {
       const utter = new SpeechSynthesisUtterance(text);
       const role = opts.role || "coach";
@@ -2005,6 +2181,52 @@
     });
   }
 
+  async function speakElevenLabs(text, opts = {}) {
+    const role = opts.role || "coach";
+    const voiceId = getElVoiceIdForRole(role);
+    const category = opts.category || "";
+    const audioTags = getAudioTags(role, category);
+    const taggedText = audioTags ? audioTags + " " + stripMd(text) : stripMd(text);
+
+    try {
+      const res = await fetch("/api/tts/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: taggedText, voice_id: voiceId }),
+      });
+      if (!res.ok) {
+        console.error("ElevenLabs TTS error:", res.status);
+        // Fallback to browser TTS
+        return speakBrowser(text, opts);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      return new Promise((resolve) => {
+        const audio = new Audio(url);
+        audio.playbackRate = getSpeed();
+        currentAudio = audio;
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          currentAudio = null;
+          resolve();
+        };
+        audio.onerror = () => {
+          URL.revokeObjectURL(url);
+          currentAudio = null;
+          resolve();
+        };
+        audio.play().catch(() => {
+          URL.revokeObjectURL(url);
+          currentAudio = null;
+          resolve();
+        });
+      });
+    } catch (err) {
+      console.error("ElevenLabs fetch error:", err);
+      return speakBrowser(text, opts);
+    }
+  }
+
   async function narrateResponse(modelKey, questionId) {
     if (!currentData) return;
     stopNarration();
@@ -2017,22 +2239,24 @@
     const entry = model.entries.find(e => e.questionId === questionId);
     if (!entry) return;
 
+    const category = entry.category || "";
+
     // Question (scout voice, higher pitch)
     updateVoiceStatus(`Question ${questionId}...`);
-    await speak(entry.question, { role: "scout", pitch: 1.1 });
+    await speak(entry.question, { role: "scout", pitch: 1.1, category });
     if (!isNarrating) return;
 
     // Response (coach voice)
     if (entry.response) {
       updateVoiceStatus(`${model.label} response...`);
-      await speak(stripMd(entry.response), { role: "coach" });
+      await speak(stripMd(entry.response), { role: "coach", category });
       if (!isNarrating) return;
     }
 
     // Evaluator notes (narrator voice, only if eval toggle is on)
     if (includeEval() && entry.scores && entry.scores.notes) {
       updateVoiceStatus("Evaluator notes...");
-      await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85 });
+      await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85, category });
     }
 
     isNarrating = false;
@@ -2051,19 +2275,21 @@
       const entry = m.entries.find(e => e.questionId === questionId);
       if (!entry || entry.error) continue;
 
+      const category = entry.category || "";
+
       updateVoiceStatus(`Question ${questionId}...`);
-      await speak(entry.question, { role: "scout", pitch: 1.1 });
+      await speak(entry.question, { role: "scout", pitch: 1.1, category });
       if (!isNarrating) break;
 
       if (entry.response) {
         updateVoiceStatus(`${m.label} response...`);
-        await speak(stripMd(entry.response), { role: "coach" });
+        await speak(stripMd(entry.response), { role: "coach", category });
         if (!isNarrating) break;
       }
 
       if (includeEval() && entry.scores && entry.scores.notes) {
         updateVoiceStatus(`${m.label} evaluator notes...`);
-        await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85 });
+        await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85, category });
         if (!isNarrating) break;
       }
     }
@@ -2078,6 +2304,12 @@
     isNarrating = true;
     narrateAllMode = true;
 
+    // If ElevenLabs, try the dialogue endpoint for batch narration
+    if (ttsSettings.provider === "elevenlabs") {
+      await narrateAllElevenLabs();
+      return;
+    }
+
     const questions = getQuestions(currentData);
     const filtered = activeCategory === "all" ? questions : questions.filter(q => q.category === activeCategory);
     const models = getModels(currentData);
@@ -2089,19 +2321,21 @@
         const entry = m.entries.find(e => e.questionId === q.id);
         if (!entry || entry.error) continue;
 
+        const category = entry.category || "";
+
         updateVoiceStatus(`${q.id} - Question...`);
-        await speak(entry.question, { role: "scout", pitch: 1.1 });
+        await speak(entry.question, { role: "scout", pitch: 1.1, category });
         if (!isNarrating) break;
 
         if (entry.response) {
           updateVoiceStatus(`${q.id} - ${m.label}...`);
-          await speak(stripMd(entry.response), { role: "coach" });
+          await speak(stripMd(entry.response), { role: "coach", category });
           if (!isNarrating) break;
         }
 
         if (includeEval() && entry.scores && entry.scores.notes) {
           updateVoiceStatus(`${q.id} - ${m.label} notes...`);
-          await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85 });
+          await speak(stripMd(entry.scores.notes), { role: "narrator", pitch: 0.85, category });
           if (!isNarrating) break;
         }
       }
@@ -2112,25 +2346,232 @@
     updateVoiceStatus("Done");
   }
 
+  async function narrateAllElevenLabs() {
+    const questions = getQuestions(currentData);
+    const filtered = activeCategory === "all" ? questions : questions.filter(q => q.category === activeCategory);
+    const models = getModels(currentData);
+
+    // Build dialogue inputs
+    const dialogueInputs = [];
+    for (const q of filtered) {
+      for (const m of models) {
+        const entry = m.entries.find(e => e.questionId === q.id);
+        if (!entry || entry.error) continue;
+        const category = entry.category || "";
+        const scoutTags = getAudioTags("scout", category);
+        const coachTags = getAudioTags("coach", category);
+
+        dialogueInputs.push({
+          text: (scoutTags ? scoutTags + " " : "") + stripMd(entry.question),
+          voice_id: getElVoiceIdForRole("scout"),
+        });
+
+        if (entry.response) {
+          dialogueInputs.push({
+            text: (coachTags ? coachTags + " " : "") + stripMd(entry.response),
+            voice_id: getElVoiceIdForRole("coach"),
+          });
+        }
+
+        if (includeEval() && entry.scores && entry.scores.notes) {
+          dialogueInputs.push({
+            text: stripMd(entry.scores.notes),
+            voice_id: getElVoiceIdForRole("narrator"),
+          });
+        }
+      }
+    }
+
+    if (dialogueInputs.length === 0) {
+      isNarrating = false;
+      narrateAllMode = false;
+      updateVoiceStatus("Nothing to narrate");
+      return;
+    }
+
+    updateVoiceStatus("Requesting dialogue audio...");
+    try {
+      const res = await fetch("/api/tts/dialogue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ inputs: dialogueInputs }),
+      });
+
+      if (!res.ok) {
+        // Fallback: narrate one by one with browser TTS
+        updateVoiceStatus("Dialogue API failed, falling back...");
+        ttsSettings.provider = "browser";
+        narrateAllMode = false;
+        await narrateAll();
+        ttsSettings.provider = "elevenlabs";
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      updateVoiceStatus("Playing dialogue...");
+      await new Promise((resolve) => {
+        const audio = new Audio(url);
+        audio.playbackRate = getSpeed();
+        currentAudio = audio;
+        audio.onended = () => { URL.revokeObjectURL(url); currentAudio = null; resolve(); };
+        audio.onerror = () => { URL.revokeObjectURL(url); currentAudio = null; resolve(); };
+        audio.play().catch(() => { URL.revokeObjectURL(url); currentAudio = null; resolve(); });
+      });
+    } catch (err) {
+      console.error("Dialogue fetch error:", err);
+    }
+
+    isNarrating = false;
+    narrateAllMode = false;
+    updateVoiceStatus("Done");
+  }
+
   function pauseNarration() {
-    synth.pause();
+    if (ttsSettings.provider === "elevenlabs" && currentAudio) {
+      currentAudio.pause();
+    } else {
+      synth.pause();
+    }
     updateVoiceStatus("Paused");
   }
 
   function resumeNarration() {
-    synth.resume();
+    if (ttsSettings.provider === "elevenlabs" && currentAudio) {
+      currentAudio.play();
+    } else {
+      synth.resume();
+    }
     updateVoiceStatus("Resumed");
   }
 
   function stopNarration() {
     isNarrating = false;
     narrateAllMode = false;
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio = null;
+    }
     synth.cancel();
     updateVoiceStatus("Stopped");
   }
 
   function updateVoiceStatus(msg) {
     document.getElementById("voice-status").textContent = msg;
+  }
+
+  // ── Rankings ──
+  async function fetchRankings(questionId) {
+    try {
+      const res = await fetch(`/api/eval/rankings/${encodeURIComponent(questionId)}`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch {
+      return null;
+    }
+  }
+
+  function renderRankingSection(rankingData, models, questionId) {
+    if (!rankingData || !rankingData.aggregate || rankingData.aggregate.length === 0) return "";
+
+    const aggregate = rankingData.aggregate;
+    const judges = rankingData.judges || [];
+
+    // Build model score lookup for disagreement highlighting
+    const scoreByLabel = {};
+    for (const m of models) {
+      const entry = m.entries.find(e => e.questionId === questionId);
+      if (entry && entry.scores) {
+        const dims = SCORE_DIMS.map(d => entry.scores[d] || 0);
+        const avg = dims.reduce((a, b) => a + b, 0) / dims.length;
+        scoreByLabel[m.label] = avg;
+      }
+    }
+
+    // Sort aggregate by rank
+    const sorted = [...aggregate].sort((a, b) => a.rank - b.rank);
+
+    // Determine score-based ranking for disagreement detection
+    const scoreRanked = Object.entries(scoreByLabel)
+      .sort((a, b) => b[1] - a[1])
+      .map((pair, i) => ({ label: pair[0], scoreRank: i + 1 }));
+    const scoreRankMap = {};
+    for (const sr of scoreRanked) scoreRankMap[sr.label] = sr.scoreRank;
+
+    // Check judge agreement
+    let agreementHtml = "";
+    if (judges.length > 1) {
+      const firstRankSets = judges.map(j => {
+        const jRanks = j.rankings || [];
+        return jRanks.length > 0 ? jRanks[0]?.label : null;
+      });
+      const allSame = firstRankSets.every(r => r === firstRankSets[0]);
+      if (allSame) {
+        agreementHtml = '<div class="judge-agreement"><span class="unanimous">Unanimous</span> — all judges agree on #1</div>';
+      } else {
+        agreementHtml = '<div class="judge-agreement"><span class="split">Split</span> — judges disagree on #1</div>';
+      }
+    }
+
+    // Build ranking table
+    let tableHtml = `
+      <div class="ranking-section card">
+        <h3>Response Rankings</h3>
+        <p class="text-muted">Listwise ranking by ${judges.length} independent judge${judges.length !== 1 ? "s" : ""} (Borda count aggregation)</p>
+        ${agreementHtml}
+        <div class="score-table-wrap">
+          <table class="ranking-table">
+            <thead><tr><th>Rank</th><th>Model</th><th>Borda</th><th>Score</th></tr></thead>
+            <tbody>`;
+
+    for (const item of sorted) {
+      const rankClass = item.rank <= 3 ? `rank-${item.rank}` : "";
+      const scoreVal = scoreByLabel[item.label];
+      const scoreStr = scoreVal != null ? scoreVal.toFixed(1) : "--";
+      const scoreRank = scoreRankMap[item.label];
+      const disagrees = scoreRank != null && item.rank !== scoreRank;
+
+      tableHtml += `<tr class="${disagrees ? "disagree" : ""}">
+        <td class="rank-cell ${rankClass}">#${item.rank}</td>
+        <td>${esc(item.label)}</td>
+        <td>${item.borda != null ? item.borda : "--"}</td>
+        <td><span class="score-cell-colored" style="background:${scoreBg(scoreVal)}; color:${scoreColor(scoreVal)}">${scoreStr}</span>${disagrees ? ' <span style="font-size:0.7rem; color:var(--yellow);" title="Rank disagrees with score">(scored #' + scoreRank + ')</span>' : ""}</td>
+      </tr>`;
+    }
+
+    tableHtml += '</tbody></table></div>';
+
+    // Judge details (collapsible)
+    if (judges.length > 0) {
+      tableHtml += '<div class="judge-details-section">';
+      for (let ji = 0; ji < judges.length; ji++) {
+        const judge = judges[ji];
+        const jLabel = judge.name || judge.model || `Judge ${ji + 1}`;
+        const jRankStr = (judge.rankings || []).map((r, i) => `#${i + 1} ${r.label}`).join(", ");
+
+        tableHtml += `<div class="assessor-panel">
+          <div class="assessor-toggle" onclick="this.parentElement.classList.toggle('expanded')">${esc(jLabel)}: ${esc(jRankStr)}</div>
+          <div class="assessor-details">`;
+
+        if (judge.reasoning) {
+          tableHtml += `<div class="assessor-section">${renderMd(judge.reasoning)}</div>`;
+        }
+        if (judge.rankings) {
+          for (const r of judge.rankings) {
+            if (r.reasoning) {
+              tableHtml += `<div class="assessor-section"><strong>${esc(r.label)}:</strong> ${renderMd(r.reasoning)}</div>`;
+            }
+          }
+        }
+
+        tableHtml += '</div></div>';
+      }
+      tableHtml += '</div>';
+    }
+
+    tableHtml += '</div>';
+    return tableHtml;
   }
 
   // ── Drag and Drop ──
@@ -2171,11 +2612,26 @@
   // ── Voice bar event handlers ──
   function initVoiceBar() {
     document.getElementById("voice-play").addEventListener("click", () => {
-      if (synth.paused) resumeNarration();
+      if (ttsSettings.provider === "elevenlabs" && currentAudio && currentAudio.paused) {
+        resumeNarration();
+      } else if (synth.paused) {
+        resumeNarration();
+      }
     });
     document.getElementById("voice-pause").addEventListener("click", pauseNarration);
     document.getElementById("voice-stop").addEventListener("click", stopNarration);
     document.getElementById("voice-narrate-all").addEventListener("click", narrateAll);
+
+    // TTS settings dialog
+    document.getElementById("voice-settings-btn").addEventListener("click", openTtsDialog);
+    document.getElementById("tts-dialog-save").addEventListener("click", saveTtsSettings);
+    document.getElementById("tts-dialog-cancel").addEventListener("click", closeTtsDialog);
+    document.getElementById("tts-provider").addEventListener("change", toggleProviderUI);
+
+    // Close dialog on overlay click
+    document.getElementById("tts-dialog-overlay").addEventListener("click", (e) => {
+      if (e.target === document.getElementById("tts-dialog-overlay")) closeTtsDialog();
+    });
   }
 
   // ── Copy Report (markdown score table) ──
@@ -2483,6 +2939,7 @@
   // ── Init ──
   initDragDrop();
   initVoiceBar();
+  loadTtsSettings();
 
   // Check for hash-based deep link on load
   if (window.location.hash) {

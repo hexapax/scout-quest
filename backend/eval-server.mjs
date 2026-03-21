@@ -15,7 +15,17 @@ app.get("/", (_req, res) => res.redirect("/eval-viewer.html"));
 
 const port = Number(process.env.PORT || 9090);
 
-// Connect to MongoDB (for cost tracking), then start server
+// Load keys from .env for TTS and other services
+import { readFileSync } from "fs";
+try {
+  for (const line of readFileSync("/home/devuser/LibreChat/.env", "utf-8").split("\n")) {
+    if (line.includes("=") && !line.startsWith("#")) {
+      const [k, ...v] = line.split("=");
+      if (!process.env[k]) process.env[k] = v.join("=");
+    }
+  }
+} catch {}
+
 // MongoDB URI for devbox: localhost, not docker hostname
 process.env.MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/scoutquest";
 

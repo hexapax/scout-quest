@@ -526,5 +526,147 @@ export function createEvalReportsRouter(): Router {
     }
   });
 
+  // ── TTS Proxy Endpoints ──
+
+  function getElevenLabsApiKey(): string | null {
+    if (process.env.ELEVENLABS_API_KEY) return process.env.ELEVENLABS_API_KEY;
+    try {
+      // Synchronous fallback: voice-config.json is tiny, read at first call
+      const fs = require("fs");
+      const configPath = path.resolve(__dirname, "../../../experiments/voice-config.json");
+      const config = JSON.parse(fs.readFileSync(configPath, "utf-8"));
+      // The config has a GCP secret path, not the actual key — env var is the real source
+      return config.secrets?.api_key_secret ? null : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Multi-voice dialogue: POST /api/tts/dialogue
+  router.post("/api/tts/dialogue", async (req: Request, res: Response) => {
+    try {
+      const apiKey = getElevenLabsApiKey();
+      if (!apiKey) {
+        res.status(500).json({ error: "ELEVENLABS_API_KEY not configured" });
+        return;
+      }
+
+      const { inputs, model_id } = req.body as {
+        inputs: { text: string; voice_id: string }[];
+        model_id?: string;
+      };
+
+      if (!inputs || !Array.isArray(inputs) || inputs.length === 0) {
+        res.status(400).json({ error: "inputs array is required" });
+        return;
+      }
+
+      const body: Record<string, unknown> = { inputs };
+      if (model_id) body.model_id = model_id;
+
+      const upstream = await fetch("https://api.elevenlabs.io/v1/text-to-dialogue", {
+        method: "POST",
+        headers: {
+          "xi-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!upstream.ok) {
+        const errText = await upstream.text();
+        console.error("ElevenLabs dialogue error:", upstream.status, errText);
+        res.status(upstream.status).json({ error: `ElevenLabs API error: ${upstream.status}`, detail: errText });
+        return;
+      }
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      const arrayBuf = await upstream.arrayBuffer();
+      res.send(Buffer.from(arrayBuf));
+    } catch (err) {
+      console.error("TTS dialogue proxy error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Single-voice speech: POST /api/tts/speak
+  router.post("/api/tts/speak", async (req: Request, res: Response) => {
+    try {
+      const apiKey = getElevenLabsApiKey();
+      if (!apiKey) {
+        res.status(500).json({ error: "ELEVENLABS_API_KEY not configured" });
+        return;
+      }
+
+      const { text, voice_id, model_id } = req.body as {
+        text: string;
+        voice_id: string;
+        model_id?: string;
+      };
+
+      if (!text || !voice_id) {
+        res.status(400).json({ error: "text and voice_id are required" });
+        return;
+      }
+
+      const body: Record<string, unknown> = { text };
+      if (model_id) body.model_id = model_id;
+
+      const upstream = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voice_id)}`, {
+        method: "POST",
+        headers: {
+          "xi-api-key": apiKey,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!upstream.ok) {
+        const errText = await upstream.text();
+        console.error("ElevenLabs speak error:", upstream.status, errText);
+        res.status(upstream.status).json({ error: `ElevenLabs API error: ${upstream.status}`, detail: errText });
+        return;
+      }
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      const arrayBuf = await upstream.arrayBuffer();
+      res.send(Buffer.from(arrayBuf));
+    } catch (err) {
+      console.error("TTS speak proxy error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // ── Rankings Endpoint ──
+
+  // Get ranking results for a specific question
+  router.get("/api/eval/rankings/:questionId", async (req: Request, res: Response) => {
+    try {
+      const db = getScoutQuestDb();
+      const col = db.collection("eval_rankings");
+      const questionId = req.params.questionId as string;
+
+      const rankings = await col
+        .find({ question_id: questionId })
+        .sort({ timestamp: -1 })
+        .toArray();
+
+      res.json({
+        questionId,
+        rankings: rankings.map((r) => ({
+          timestamp: r.timestamp,
+          method: r.method,
+          judges: r.judges,
+          aggregate: r.aggregate,
+          representatives: r.representatives,
+          judgeRankings: r.judgeRankings,
+        })),
+      });
+    } catch (err) {
+      console.error("Eval rankings error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return router;
 }
