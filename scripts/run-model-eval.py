@@ -115,10 +115,39 @@ knowledge_compact = KNOWLEDGE_COMPACT.read_text() if KNOWLEDGE_COMPACT.exists() 
 troop_context = TROOP_CONTEXT.read_text() if TROOP_CONTEXT.exists() else ""
 
 # ---------------------------------------------------------------
-# Questions
+# Questions — loaded from YAML eval set or hardcoded fallback
 # ---------------------------------------------------------------
 
-QUESTIONS = [
+EVAL_SET_DIR = PROJECT_ROOT / "eval-sets"
+DEFAULT_EVAL_SET = "scout-coach-v5.yaml"
+
+def load_eval_set(name=None):
+    """Load questions from a YAML eval set file."""
+    import yaml
+    path = EVAL_SET_DIR / (name or DEFAULT_EVAL_SET)
+    if path.exists():
+        with open(path) as f:
+            es = yaml.safe_load(f)
+        questions = []
+        for q in es.get("questions", []):
+            if not q.get("enabled", True):
+                continue
+            questions.append({
+                "id": q["id"],
+                "cat": q["category"],
+                "q": q["question"],
+                "expect": q.get("expected", ""),
+                "eval_notes": q.get("eval_notes", ""),
+                "question_type": q.get("question_type", ""),
+            })
+        print(f"Eval set: {es.get('name', '?')} v{es.get('version', '?')} ({len(questions)} questions enabled)")
+        return questions, es
+    print(f"Eval set not found: {path}, using hardcoded questions")
+    return None, None
+
+# Try to load from YAML, fall back to hardcoded
+_loaded_questions, _loaded_eval_set = load_eval_set()
+QUESTIONS = _loaded_questions or [
     {"id":"A1","cat":"A","q":"Can a board of review reject me for not being active enough in the troop?","expect":"G2A: 'reasonable' standard, cannot hold to unwritten expectations"},
     {"id":"A2","cat":"A","q":"My scoutmaster says I have to redo a merit badge requirement because a different counselor started it. Is that true?","expect":"G2A: Scouts need not pass all requirements with same counselor. Partials have no expiration except 18th birthday."},
     {"id":"A3","cat":"A","q":"Do partial merit badge completions expire? My troop says they expire after 6 months.","expect":"G2A: Units must NOT establish expiration dates beyond 18th birthday."},
@@ -183,7 +212,7 @@ QUESTIONS = [
     {"id":"G4","cat":"G","q":"The camping trip was terrible. It rained the whole time and I hated it.","expect":"Empathize, find silver lining, maybe laugh about it. Do NOT lecture about preparedness."},
     {"id":"G5","cat":"G","q":"I just got Star rank! But my best friend didn't pass his BOR.","expect":"Celebrate AND acknowledge mixed feelings. Do NOT just congratulate."},
     {"id":"G6","cat":"G","q":"My mom is really pushing me to get Eagle and it's stressing me out.","expect":"Validate pressure, help find THEIR motivation. Do NOT side with mom."},
-]
+]  # end of hardcoded fallback
 
 # Evaluator prompt — built dynamically to include troop context
 EVAL_PROMPT_TEMPLATE = """You are an expert evaluator for a Boy Scout AI coaching system ("Scout Quest").
@@ -1157,7 +1186,9 @@ def main():
         help="Max tokens for model responses (default: 2500)")
     parser.add_argument("--max-tool-rounds", type=int, default=6,
         help="Max web search rounds per question (default: 6)")
-    parser.add_argument("--eval-version", type=str, default="2",
+    parser.add_argument("--eval-set", type=str, default=None,
+        help="YAML eval set file (e.g., scout-coach-v5.yaml). Default: latest in eval-sets/")
+    parser.add_argument("--eval-version", type=str, default="5",
         help="Eval system version (see docs/eval-changelog.md). Default: 2 (troop-aware evaluator)")
     parser.add_argument("--system-version", type=str, default="5",
         help="System under eval version (see docs/eval-changelog.md). Default: 5 (caching + cost tracking)")
