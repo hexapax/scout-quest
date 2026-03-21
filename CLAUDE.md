@@ -155,3 +155,34 @@ When a command would require quotes-within-quotes or shell expansions that trip 
 - **Dead ends must include:** why it failed, source links, and a "Revisit if:" condition
 - **Key constraint:** MCP tools only work on native LibreChat endpoints (`openAI`, `anthropic`, `google`, `bedrock`). Custom endpoints (OpenRouter, DeepSeek) cannot use MCP tools. See `docs/future-research.md` for details.
 - **Multi-session safety:** check `git status` before editing shared config files — another session may have uncommitted changes. Use git worktrees for parallel implementation work.
+
+## Evaluation System
+
+A comprehensive AI evaluation framework lives in this repo. **Read `docs/DOCS-INDEX.md` for the full documentation map.**
+
+### Quick Reference
+- **Eval runner:** `scripts/run-model-eval.py` — reads from YAML eval sets in `eval-sets/`
+- **Eval viewer:** `eval.hexapax.com` (served from `backend/public/eval-viewer.html` via Cloudflare tunnel on port 9090)
+- **Ranking:** `scripts/run-ranking.py` — listwise ranking with embedding clustering
+- **Results:** MongoDB `scoutquest` database (eval_results, eval_usage, eval_rankings, eval_embeddings)
+- **Reports:** `docs/reports/` and `mcp-servers/scout-quest/test/reports/model-comparison/`
+- **Chain tests:** `mcp-servers/scout-quest/test/` (TypeScript harness, 18 scenarios — needs porting to new framework)
+
+### Key Commands
+```bash
+# Run a sparse eval with panel evaluator and budget
+python3 scripts/run-model-eval.py --model claude --sample 2 --evaluator panel --budget 5.00 --desc "description"
+
+# Run ranking for a question
+python3 scripts/run-ranking.py --question G1
+
+# Restart eval viewer after changes
+cd backend && npx tsc --project tsconfig.json && sudo systemctl restart eval-viewer
+```
+
+### Cost Guidelines
+- **Always use `--budget` flag** — API spend can escalate quickly ($400 in one day)
+- **Use `--sample 2` for iteration** (14 questions vs 54)
+- **Never average errors into scores** — errors are missing data, not zero
+- **Stop on consecutive failures** — fail-fast is built in (2 errors = skip model)
+- **Prompt caching delimiter:** uses `=== PERSONA AND CONTEXT ===` (not `---` which collides with BSA docs)
