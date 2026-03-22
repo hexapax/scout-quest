@@ -21,7 +21,21 @@ const REPORTS_DIR = path.resolve(
   "../../../mcp-servers/scout-quest/test/reports/model-comparison",
 );
 
-const SCORE_DIMS = ["accuracy", "specificity", "safety", "coaching", "troop_voice"] as const;
+// Default knowledge dimensions — used as fallback when data doesn't specify
+const DEFAULT_SCORE_DIMS = ["accuracy", "specificity", "safety", "coaching", "troop_voice"] as const;
+
+// Detect dimensions from data: use whatever keys appear in the first scored entry
+function detectDimensions(data: ResultsData): string[] {
+  for (const entries of Object.values(data)) {
+    for (const entry of entries) {
+      if (entry.scores && !entry.error) {
+        // Return all score keys except meta fields
+        return Object.keys(entry.scores).filter(k => !["notes", "_assessments"].includes(k));
+      }
+    }
+  }
+  return [...DEFAULT_SCORE_DIMS];
+}
 
 // Expected number of questions per model (7 categories, ~8 questions each)
 const EXPECTED_QUESTIONS_PER_MODEL = 54;
@@ -62,6 +76,8 @@ async function readResults(ts: string): Promise<ResultsData | null> {
 }
 
 function computeSummary(data: ResultsData) {
+  const dims = detectDimensions(data);
+
   const models: {
     key: string;
     label: string;
@@ -82,14 +98,15 @@ function computeSummary(data: ResultsData) {
 
     const avgScores: Record<string, number> = {};
     if (scored.length > 0) {
-      for (const dim of SCORE_DIMS) {
-        const sum = scored.reduce((acc, e) => acc + (e.scores?.[dim] ?? 0), 0);
+      for (const dim of dims) {
+        const sum = scored.reduce((acc, e) => acc + ((e.scores as any)?.[dim] ?? 0), 0);
         avgScores[dim] = Math.round((sum / scored.length) * 10) / 10;
       }
       // overall average
-      const allDims = SCORE_DIMS.map((d) => avgScores[d]);
-      avgScores.overall =
-        Math.round((allDims.reduce((a, b) => a + b, 0) / allDims.length) * 10) / 10;
+      const dimValues = dims.map((d) => avgScores[d]).filter(v => v !== undefined);
+      avgScores.overall = dimValues.length > 0
+        ? Math.round((dimValues.reduce((a, b) => a + b, 0) / dimValues.length) * 10) / 10
+        : 0;
     }
 
     models.push({
@@ -134,6 +151,8 @@ export function createEvalReportsRouter(): Router {
         totalCost: number | null;
         evalVersion: string | null;
         systemVersion: string | null;
+        spectre: string;
+        dimensions: string[];
         modelCount: number;
         questionCount: number;
         models: { key: string; label: string; avgOverall: number }[];
@@ -145,7 +164,7 @@ export function createEvalReportsRouter(): Router {
         if (!data) continue;
 
         // Read optional meta.json for description
-        let meta: { description?: string; status?: string; totalCost?: number; evalVersion?: string; systemVersion?: string } = {};
+        let meta: { description?: string; status?: string; totalCost?: number; evalVersion?: string; systemVersion?: string; perspective?: string; spectre?: string; dimensions?: string[] } = {};
         try {
           const metaRaw = await readFile(path.join(REPORTS_DIR, dir, "meta.json"), "utf-8");
           meta = JSON.parse(metaRaw);
@@ -154,6 +173,7 @@ export function createEvalReportsRouter(): Router {
         }
 
         const summary = computeSummary(data);
+        const dims = detectDimensions(data);
         reports.push({
           timestamp: dir,
           description: meta.description ?? null,
@@ -161,6 +181,8 @@ export function createEvalReportsRouter(): Router {
           totalCost: meta.totalCost ?? null,
           evalVersion: meta.evalVersion ?? null,
           systemVersion: meta.systemVersion ?? null,
+          spectre: meta.spectre ?? meta.perspective ?? "knowledge",
+          dimensions: meta.dimensions ?? dims,
           modelCount: summary.modelCount,
           questionCount: summary.questionCount,
           models: summary.models.map((m) => ({

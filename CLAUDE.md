@@ -156,22 +156,48 @@ When a command would require quotes-within-quotes or shell expansions that trip 
 - **Key constraint:** MCP tools only work on native LibreChat endpoints (`openAI`, `anthropic`, `google`, `bedrock`). Custom endpoints (OpenRouter, DeepSeek) cannot use MCP tools. See `docs/future-research.md` for details.
 - **Multi-session safety:** check `git status` before editing shared config files — another session may have uncommitted changes. Use git worktrees for parallel implementation work.
 
+## Git Hygiene & Eval Reproducibility
+
+- **Commit before eval**: Always commit changes to tracked files before running evals. The eval runner will warn if there are uncommitted changes to versioned components (knowledge docs, eval sets, personas, harness code).
+- **Don't amend eval-anchored commits**: Once an eval run references a commit, don't rebase or amend it. The eval results store the commit hash — if the commit disappears, you lose the ability to reconstruct what was evaluated.
+- **Cross-repo provenance**: The knowledge doc in `backend/knowledge/interim-bsa-knowledge.md` is generated from the `scout-corpus` repo. When regenerating, include the scout-corpus commit hash in the file header. Example: `_Generated from scout-corpus@a1b2c3d on 2026-03-22._`
+- **Version fingerprints**: Every eval run captures content hashes + git commit references for all versioned components. These are stored in MongoDB and meta.json. Use `versions` field to understand what changed between runs. See `docs/eval-version-chain.md` for the full version provenance chain.
+
 ## Evaluation System
 
 A comprehensive AI evaluation framework lives in this repo. **Read `docs/DOCS-INDEX.md` for the full documentation map.**
 
 ### Quick Reference
-- **Eval runner:** `scripts/run-model-eval.py` — reads from YAML eval sets in `eval-sets/`
+- **Unified eval runner:** `scripts/run-eval.py` — multi-perspective, multi-axis evaluation
+- **Legacy eval runner:** `scripts/run-model-eval.py` — original single-perspective runner (still works)
 - **Eval viewer:** `eval.hexapax.com` (served from `backend/public/eval-viewer.html` via Cloudflare tunnel on port 9090)
 - **Ranking:** `scripts/run-ranking.py` — listwise ranking with embedding clustering
-- **Results:** MongoDB `scoutquest` database (eval_results, eval_usage, eval_rankings, eval_embeddings)
+- **Results:** MongoDB `scoutquest` database (eval_results with `perspective` field, eval_usage, eval_rankings, eval_embeddings)
 - **Reports:** `docs/reports/` and `mcp-servers/scout-quest/test/reports/model-comparison/`
-- **Chain tests:** `mcp-servers/scout-quest/test/` (TypeScript harness, 18 scenarios — needs porting to new framework)
+- **Chain tests:** `mcp-servers/scout-quest/test/` (TypeScript harness, integrated as `chain` perspective)
+- **Framework:** `scripts/eval_framework.py` (EvalPerspective protocol), `scripts/eval_panel.py` (shared panel evaluator)
+- **Perspectives:** `scripts/perspectives/knowledge.py`, `scripts/perspectives/chain.py`
+- **Configs:** `eval-sets/configs.yaml` (RunConfig definitions with inheritance — replaces MODELS dict)
 
 ### Key Commands
 ```bash
-# Run a sparse eval with panel evaluator and budget
-python3 scripts/run-model-eval.py --model claude --sample 2 --evaluator panel --budget 5.00 --desc "description"
+# Unified runner — knowledge perspective (default)
+python3 scripts/run-eval.py --config claude --sample 2 --budget 5.00 --desc "description"
+
+# Chain perspective
+python3 scripts/run-eval.py --perspective chain --chain chore-streak --config claude --budget 5.00
+
+# Ablation sweep across layers
+python3 scripts/run-eval.py --config layer-L0,layer-L1,layer-L2,layer-L3 --sample 2 --budget 10.00
+
+# Override config axes
+python3 scripts/run-eval.py --config claude --layer persona-only --knowledge none
+
+# List available perspectives and configs
+python3 scripts/run-eval.py --list
+
+# Legacy runner (still works)
+python3 scripts/run-model-eval.py --model claude --sample 2 --evaluator panel --budget 5.00
 
 # Run ranking for a question
 python3 scripts/run-ranking.py --question G1

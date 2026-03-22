@@ -201,6 +201,8 @@ const { values: args } = parseArgs({
     "mongo-uri": { type: "string", default: "" },
     thinking: { type: "boolean", default: false },
     "thinking-budget": { type: "string", default: "2000" },
+    "json-output": { type: "string", default: "" },
+    layer: { type: "string", default: "full" },
   },
   allowPositionals: true,
 });
@@ -369,10 +371,15 @@ async function runScenarioMode(config: HarnessConfig, db: Db, scenarioIds: strin
   writeFileSync(outputPath, report, "utf-8");
   console.log(`\nReport written to ${outputPath}`);
 
-  // JSON captures — one file per scenario, in timestamped subdirectory
-  const outputDir = dirname(outputPath);
-  const runTimestamp = new Date().toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
-  const runDir = join(outputDir, "scenarios", runTimestamp);
+  // JSON captures — use --json-output if specified, otherwise timestamped subdirectory
+  let runDir: string;
+  if (args["json-output"]) {
+    runDir = args["json-output"];
+  } else {
+    const outputDir = dirname(outputPath);
+    const runTimestamp = new Date().toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
+    runDir = join(outputDir, "scenarios", runTimestamp);
+  }
   mkdirSync(runDir, { recursive: true });
   for (const capture of captures) {
     const jsonPath = join(runDir, `${capture.scenario.id}.json`);
@@ -543,10 +550,15 @@ async function runChainMode(config: HarnessConfig, db: Db): Promise<void> {
   const { writeFileSync, mkdirSync } = await import("node:fs");
   const { dirname, join } = await import("node:path");
 
-  const outputDir = dirname(args.output!);
-  // Use timestamped subdirectory so history accumulates
-  const runTimestamp = chainStart.toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
-  const chainDir = join(outputDir, chain.id, runTimestamp);
+  // Use --json-output if specified, otherwise derive from --output
+  let chainDir: string;
+  if (args["json-output"]) {
+    chainDir = args["json-output"];
+  } else {
+    const outputDir = dirname(args.output!);
+    const runTimestamp = chainStart.toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
+    chainDir = join(outputDir, chain.id, runTimestamp);
+  }
   mkdirSync(chainDir, { recursive: true });
 
   // Write chain summary JSON
@@ -561,13 +573,17 @@ async function runChainMode(config: HarnessConfig, db: Db): Promise<void> {
     console.log(`Step capture written to ${stepPath}`);
   }
 
-  // Symlink latest for convenience
-  const latestLink = join(outputDir, chain.id, "latest");
-  try {
-    const { unlinkSync, symlinkSync } = await import("node:fs");
-    try { unlinkSync(latestLink); } catch {}
-    symlinkSync(runTimestamp, latestLink);
-  } catch {}
+  // Symlink latest for convenience (only when using default output path)
+  if (!args["json-output"]) {
+    const baseDir = dirname(args.output!);
+    const runTimestamp = chainStart.toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
+    const latestLink = join(baseDir, chain.id, "latest");
+    try {
+      const { unlinkSync, symlinkSync } = await import("node:fs");
+      try { unlinkSync(latestLink); } catch {}
+      symlinkSync(runTimestamp, latestLink);
+    } catch {}
+  }
 
   // Print chain summary
   console.log(`\n╔══════════════════════════════════════════════════╗`);
@@ -627,11 +643,36 @@ async function runScenario(
 
   // Build system prompt — use endpoint override if provided, otherwise default to scout
   const scoutDoc = await db.collection("scouts").findOne({ email: config.scoutEmail });
-  const systemPrompt = endpointOverride
-    ? endpointOverride.systemPrompt
-    : SCOUT_INSTRUCTIONS.replace("{SCOUT_PROFILE}", JSON.stringify(scoutDoc, null, 2));
-  const toolDefs = endpointOverride?.toolDefinitions ?? SCOUT_TOOL_DEFINITIONS;
-  const toolDispatch = endpointOverride?.dispatch ?? ((d: Db, name: string, a: Record<string, unknown>) => dispatchToolCall(d, config.scoutEmail, name, a));
+  const layer = args.layer || "full";
+  let systemPrompt: string;
+  let toolDefs: AnthropicToolDef[];
+  let toolDispatch: (d: Db, name: string, a: Record<string, unknown>) => Promise<string>;
+
+  if (endpointOverride) {
+    systemPrompt = endpointOverride.systemPrompt;
+    toolDefs = endpointOverride.toolDefinitions;
+    toolDispatch = endpointOverride.dispatch;
+  } else if (layer === "persona-only") {
+    // Strip tool instructions and knowledge — pure persona test
+    systemPrompt = `You are Scout Coach — a warm, genuine coaching buddy for scouts.
+Be encouraging, honest, and age-appropriate. Guide without doing work for the scout.
+Policy → answer directly. Skills → be Socratic. Emotions → empathize first.
+
+SCOUT PROFILE:
+${JSON.stringify(scoutDoc, null, 2)}`;
+    toolDefs = [];  // No tools available
+    toolDispatch = async () => "Tools are not available in this configuration.";
+  } else if (layer === "no-tools") {
+    // Full knowledge prompt but no tools registered
+    systemPrompt = SCOUT_INSTRUCTIONS.replace("{SCOUT_PROFILE}", JSON.stringify(scoutDoc, null, 2));
+    toolDefs = [];
+    toolDispatch = async () => "Tools are not available in this configuration.";
+  } else {
+    // "full" — default behavior
+    systemPrompt = SCOUT_INSTRUCTIONS.replace("{SCOUT_PROFILE}", JSON.stringify(scoutDoc, null, 2));
+    toolDefs = SCOUT_TOOL_DEFINITIONS;
+    toolDispatch = (d: Db, name: string, a: Record<string, unknown>) => dispatchToolCall(d, config.scoutEmail, name, a);
+  }
 
   const transcript: TranscriptMessage[] = [];
   const startTime = new Date();

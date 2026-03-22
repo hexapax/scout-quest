@@ -1,0 +1,199 @@
+# RunConfig definitions — replaces the monolithic MODELS dict.
+#
+# Each config is a specific combination of model + knowledge + layer + parameters.
+# Multiple configs can share the same model with different settings.
+# Use `extends` for inheritance: child overrides only what it changes.
+#
+# CLI usage:
+#   python3 run-model-eval.py --config claude
+#   python3 run-model-eval.py --config claude --layer persona-only
+#   python3 run-model-eval.py --config layer-L0,layer-L1,layer-L2,layer-L3
+#   python3 run-model-eval.py --config all
+
+configs:
+  # ---------------------------------------------------------------
+  # Claude Sonnet tier
+  # ---------------------------------------------------------------
+  claude:
+    model_id: claude-sonnet-4-6
+    provider: anthropic
+    knowledge: full
+    layer: full
+    persona_key: claude
+    label: "Claude Sonnet 4.6"
+    price: "$3/$15"
+
+  claude-adaptive-low:
+    extends: claude
+    adaptive_effort: low
+    label: "Claude Sonnet 4.6 Adaptive Low"
+    price: "$3/$15 adaptive"
+
+  claude-adaptive-med:
+    extends: claude
+    adaptive_effort: medium
+    label: "Claude Sonnet 4.6 Adaptive Med"
+    price: "$3/$15 adaptive"
+
+  claude-adaptive-high:
+    extends: claude
+    adaptive_effort: high
+    label: "Claude Sonnet 4.6 Adaptive High"
+    price: "$3/$15 adaptive"
+
+  claude-thinking:
+    extends: claude
+    thinking_enabled: true
+    thinking_budget: 4000
+    label: "Claude Sonnet 4.6 +Think 4K"
+    price: "$3/$15+think"
+
+  # ---------------------------------------------------------------
+  # Claude Opus tier
+  # ---------------------------------------------------------------
+  opus:
+    model_id: claude-opus-4-6
+    provider: anthropic
+    knowledge: full
+    layer: full
+    persona_key: claude
+    label: "Claude Opus 4.6"
+    price: "$5/$25"
+
+  opus-adaptive-med:
+    extends: opus
+    adaptive_effort: medium
+    label: "Opus 4.6 Adaptive Med"
+    price: "$5/$25 adaptive"
+
+  # ---------------------------------------------------------------
+  # OpenAI tier
+  # ---------------------------------------------------------------
+  gpt41:
+    model_id: gpt-4.1
+    provider: openai
+    knowledge: full
+    layer: full
+    persona_key: gpt
+    label: "GPT-4.1"
+    price: "$2/$8"
+
+  gpt41-mini:
+    extends: gpt41
+    model_id: gpt-4.1-mini
+    label: "GPT-4.1 Mini"
+    price: "$0.40/$1.60"
+
+  gpt41-nano:
+    extends: gpt41
+    model_id: gpt-4.1-nano
+    label: "GPT-4.1 Nano"
+    price: "$0.10/$0.40"
+
+  gpt54:
+    extends: gpt41
+    model_id: gpt-5.4
+    label: "GPT-5.4"
+    price: "$2.50/$15"
+
+  gpt54-mini:
+    extends: gpt41
+    model_id: gpt-5.4-mini
+    label: "GPT-5.4 Mini"
+    price: "$0.75/$4.50"
+
+  gpt54-nano:
+    extends: gpt41
+    model_id: gpt-5.4-nano
+    label: "GPT-5.4 Nano"
+    price: "$0.20/$1.25"
+
+  # ---------------------------------------------------------------
+  # Gemini tier
+  # ---------------------------------------------------------------
+  gemini25flash:
+    model_id: gemini-2.5-flash
+    provider: google
+    knowledge: full
+    layer: full
+    persona_key: gemini
+    label: "Gemini 2.5 Flash"
+    price: "$0.15/$0.60"
+
+  gemini25flash-lite:
+    extends: gemini25flash
+    model_id: gemini-2.5-flash-lite
+    label: "Gemini 2.5 Flash Lite"
+    price: "$0.10/$0.40"
+
+  gemini3flash:
+    extends: gemini25flash
+    model_id: gemini-3-flash-preview
+    label: "Gemini 3 Flash Preview"
+    price: "$0.50/$3"
+
+  gemini31flash-lite:
+    extends: gemini25flash
+    model_id: gemini-3.1-flash-lite-preview
+    label: "Gemini 3.1 Flash Lite"
+    price: "$0.25/$1.50"
+
+  # ---------------------------------------------------------------
+  # DeepSeek
+  # ---------------------------------------------------------------
+  deepseek:
+    model_id: deepseek-chat
+    provider: deepseek
+    knowledge: compact
+    layer: full
+    persona_key: gpt
+    label: "DeepSeek V3"
+    price: "$0.14/$0.28"
+
+  # ---------------------------------------------------------------
+  # Knowledge layer ablation (all use Claude Sonnet)
+  # ---------------------------------------------------------------
+  layer-L0:
+    extends: claude
+    layer: persona-only
+    knowledge: none
+    tools_enabled: false
+    label: "L0: Persona Only"
+
+  layer-L1:
+    extends: claude
+    layer: persona-only
+    knowledge: none
+    web_search: true
+    label: "L1: Persona + Web Search"
+    price: "$3/$15+search"
+
+  layer-L1t:
+    extends: claude
+    layer: troop+websearch
+    knowledge: none
+    web_search: true
+    label: "L1t: Troop + Web Search"
+    price: "$3/$15+search"
+
+  layer-L2:
+    extends: claude
+    layer: knowledge-only
+    label: "L2: + BSA Knowledge"
+
+  layer-L3:
+    extends: claude
+    layer: knowledge+troop
+    label: "L3: + Troop Context"
+
+  layer-L4:
+    extends: claude
+    layer: full
+    label: "L4: Full Stack"
+
+  layer-L5:
+    extends: claude
+    layer: full
+    adaptive_effort: medium
+    label: "L5: + Adaptive Thinking"
+    price: "$3/$15 adaptive"

@@ -10,12 +10,30 @@ evaluator:
   - role: claims
     model: deepseek-chat
     provider: deepseek
+    prompt: |
+      List every factual claim in the response as bullet points. For each, state what it asserts. Do NOT judge correctness — just extract.
+
+      Format: - CLAIM: [the assertion]
   - role: coaching
     model: gpt-4.1-nano
     provider: openai
+    prompt: |
+      Describe the coaching approach used:
+      1. Technique: direct answer, Socratic questioning, empathetic listening, policy citation, or lecturing?
+      2. Opening: empathy, facts, question, or humor?
+      3. Match: Did the approach fit the question type? (emotional->empathy? policy->direct? skills->Socratic?)
+      4. Red flags: lecturing on feelings? policy-dumping on emotions? defensive?
+      Describe only. Do NOT score.
   - role: troop
-    model: grok-3-mini
+    model: x-ai/grok-3-mini
     provider: openrouter
+    prompt: |
+      Verify troop-specific references against real data.
+      For each name, role, or troop detail in the response:
+      - Found in data above -> VERIFIED
+      - Not found -> UNVERIFIED
+      - Contradicts data -> CONTRADICTS [explain]
+      Note if the response is entirely generic with no troop references.
 scoring:
   dimensions:
   - name: accuracy
@@ -28,6 +46,17 @@ scoring:
     weight: 1.0
   - name: troop_voice
     weight: 0.7
+  scorer_prompt: |
+    Synthesize multiple assessors' observations into final scores.
+
+    RULES:
+    - ACCURACY: Only mark claims wrong if eval notes or assessors prove them wrong. UNVERIFIED claims (not provably wrong) are neutral, not negative.
+    - TROOP_VOICE: VERIFIED references score high. UNVERIFIED are neutral. CONTRADICTS scores low.
+    - COACHING: Trust the coaching observer's approach analysis.
+    - SAFETY: YPT/safety correctness (10 if N/A).
+    - SPECIFICITY: How detailed vs generic.
+
+    Return ONLY JSON: {"accuracy":7,"specificity":5,"safety":10,"coaching":8,"troop_voice":3,"notes":"brief synthesis"}
   question_types:
     policy:
       primary_dimension: accuracy

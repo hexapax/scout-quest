@@ -772,6 +772,104 @@
   @media (max-width: 600px) {
     .cost-summary-row { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ── Chain/Session Transcript Display ── */
+  .response-text:has(.transcript-view) {
+    max-height: 600px;
+  }
+  .transcript-view {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+  .transcript-step-separator {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.75rem 0 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .transcript-step-separator::before,
+  .transcript-step-separator::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--surface2);
+  }
+  .transcript-step-separator:first-child { margin-top: 0; }
+  .transcript-turn {
+    padding: 0.6rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    max-width: 85%;
+    word-break: break-word;
+  }
+  .transcript-turn.coach {
+    background: rgba(52, 152, 219, 0.12);
+    border: 1px solid rgba(52, 152, 219, 0.2);
+    align-self: flex-start;
+    border-top-left-radius: 2px;
+  }
+  .transcript-turn.coach .turn-label {
+    color: var(--blue);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.3rem;
+  }
+  .transcript-turn.scout {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    align-self: flex-end;
+    border-top-right-radius: 2px;
+  }
+  .transcript-turn.scout .turn-label {
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.3rem;
+    text-align: right;
+  }
+  .transcript-tool-call {
+    align-self: flex-start;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--surface2);
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+    max-width: 90%;
+    margin-left: 1.5rem;
+    word-break: break-all;
+  }
+  .transcript-tool-call .tool-label {
+    color: var(--orange);
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.2rem;
+  }
+  .transcript-tool-call .tool-name {
+    color: var(--blue);
+    font-weight: 600;
+  }
+  .transcript-tool-call .tool-result {
+    color: var(--text-muted);
+    margin-top: 0.15rem;
+    opacity: 0.85;
+  }
 </style>
 </head>
 <body>
@@ -984,14 +1082,21 @@
     G: "Over-Policy Detection"
   };
 
-  const SCORE_DIMS = ["accuracy", "specificity", "safety", "coaching", "troop_voice"];
-  const DIM_LABELS = {
-    accuracy: "Accuracy",
-    specificity: "Specificity",
-    safety: "Safety",
-    coaching: "Coaching",
-    troop_voice: "Troop Voice"
+  // Dynamic score dimensions — set when a report loads
+  let SCORE_DIMS = ["accuracy", "specificity", "safety", "coaching", "troop_voice"];
+  const DEFAULT_DIM_LABELS = {
+    accuracy: "Accuracy", specificity: "Specificity", safety: "Safety",
+    coaching: "Coaching", troop_voice: "Troop Voice",
+    // Chain dimensions
+    tool_accuracy: "Tool Acc", coaching_quality: "Coaching", state_awareness: "State",
+    character_voice: "Character",
   };
+  // Generate labels dynamically — use known labels or title-case the name
+  function getDimLabel(dim) {
+    return DEFAULT_DIM_LABELS[dim] || dim.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  // Backwards-compat alias
+  const DIM_LABELS = new Proxy({}, { get: (_, prop) => getDimLabel(String(prop)) });
 
   const MODEL_COLORS = [
     "#e94560", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6",
@@ -1071,6 +1176,129 @@
       .replace(/^\d+\. /gm, "")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
+  }
+
+  // ── Chain/Session Transcript Rendering ──
+  function isTranscript(text) {
+    // Detect chain transcript format by looking for [COACH]: or [SCOUT]: markers
+    return text && (/\[COACH\]:/.test(text) || /\[SCOUT\]:/.test(text));
+  }
+
+  function renderTranscript(text) {
+    if (!text) return "";
+    // Split into lines and build structured transcript HTML
+    const lines = text.split('\n');
+    let html = '<div class="transcript-view">';
+    let currentTurn = null;  // {type, lines[]}
+    let currentToolLines = null; // accumulate multi-line tool calls
+
+    function flushTurn() {
+      if (!currentTurn) return;
+      const content = currentTurn.lines.join('\n').trim();
+      if (!content) { currentTurn = null; return; }
+      const cls = currentTurn.type;
+      const label = cls === 'coach' ? 'Coach' : 'Scout';
+      html += `<div class="transcript-turn ${cls}">`;
+      html += `<div class="turn-label">${label}</div>`;
+      html += `<div class="turn-content">${renderMd(content)}</div>`;
+      html += '</div>';
+      currentTurn = null;
+    }
+
+    function flushTool() {
+      if (!currentToolLines) return;
+      const raw = currentToolLines.join('\n').trim();
+      if (!raw) { currentToolLines = null; return; }
+      // Parse tool call: [TOOL CALL] name(args) -> result
+      // Or: [TOOL CALL] name({...}) -> result
+      html += `<div class="transcript-tool-call">`;
+      html += `<div class="tool-label">Tool Call</div>`;
+      // Split on arrow to separate call from result
+      const arrowIdx = raw.indexOf('\u2192');
+      if (arrowIdx >= 0) {
+        const callPart = raw.substring(0, arrowIdx).trim();
+        const resultPart = raw.substring(arrowIdx + 1).trim();
+        // Extract function name if possible
+        const fnMatch = callPart.match(/^([a-zA-Z_]\w*)\(/);
+        if (fnMatch) {
+          html += `<div><span class="tool-name">${esc(fnMatch[1])}</span><span>${esc(callPart.substring(fnMatch[1].length))}</span></div>`;
+        } else {
+          html += `<div>${esc(callPart)}</div>`;
+        }
+        html += `<div class="tool-result">${esc(resultPart)}</div>`;
+      } else {
+        html += `<div>${esc(raw)}</div>`;
+      }
+      html += '</div>';
+      currentToolLines = null;
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      // Step separator: === STEP: ... ===
+      const stepMatch = trimmed.match(/^=== STEP:\s*(.+?)\s*===$/);
+      if (stepMatch) {
+        flushTool();
+        flushTurn();
+        html += `<div class="transcript-step-separator">${esc(stepMatch[1])}</div>`;
+        continue;
+      }
+
+      // Tool call line: "  [TOOL CALL] ..."
+      if (trimmed.startsWith('[TOOL CALL]')) {
+        flushTool();
+        // Don't flush current turn — tool calls appear inline within coach turns
+        const toolContent = trimmed.replace(/^\[TOOL CALL\]\s*/, '');
+        currentToolLines = [toolContent];
+        continue;
+      }
+
+      // Continuation of a tool call (indented lines after [TOOL CALL] that aren't new turns)
+      if (currentToolLines && trimmed && !trimmed.startsWith('[COACH]:') && !trimmed.startsWith('[SCOUT]:') && !stepMatch) {
+        currentToolLines.push(trimmed);
+        continue;
+      }
+
+      // Coach turn
+      if (trimmed.startsWith('[COACH]:')) {
+        flushTool();
+        flushTurn();
+        const content = trimmed.replace(/^\[COACH\]:\s*/, '');
+        currentTurn = { type: 'coach', lines: [content] };
+        continue;
+      }
+
+      // Scout turn
+      if (trimmed.startsWith('[SCOUT]:')) {
+        flushTool();
+        flushTurn();
+        const content = trimmed.replace(/^\[SCOUT\]:\s*/, '');
+        currentTurn = { type: 'scout', lines: [content] };
+        continue;
+      }
+
+      // Blank line — could separate within a turn
+      if (!trimmed) {
+        if (currentToolLines) {
+          flushTool();
+        } else if (currentTurn) {
+          currentTurn.lines.push('');
+        }
+        continue;
+      }
+
+      // Continuation of current turn
+      if (currentTurn) {
+        currentTurn.lines.push(line);
+      }
+    }
+
+    flushTool();
+    flushTurn();
+    html += '</div>';
+    return html;
   }
 
   function scoreColor(val) {
@@ -1286,6 +1514,9 @@
       const statusBadge = r.status === "budget_stopped"
         ? '<span style="color:var(--yellow); font-size:0.7rem; margin-left:0.5rem;">[budget stopped]</span>'
         : "";
+      const spectreBadge = r.spectre && r.spectre !== "knowledge"
+        ? `<span style="font-size:0.65rem; color:var(--accent); margin-left:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">[${esc(r.spectre)}]</span>`
+        : "";
       const versionBadges = (r.evalVersion || r.systemVersion)
         ? `<span style="font-size:0.65rem; color:var(--text-muted); margin-left:0.5rem;">${r.evalVersion ? "eval:" + esc(r.evalVersion) : ""} ${r.systemVersion ? "sys:" + esc(r.systemVersion) : ""}</span>`
         : "";
@@ -1293,10 +1524,10 @@
       html += `
         <div class="report-item" onclick="app.openReport('${esc(r.timestamp)}')">
           <div class="meta">
-            <span class="ts">${esc(formatTimestamp(r.timestamp))}${statusBadge}${versionBadges}</span>
+            <span class="ts">${esc(formatTimestamp(r.timestamp))}${spectreBadge}${statusBadge}${versionBadges}</span>
             <span class="stats">
-              <span>${r.modelCount} models</span>
-              <span>${r.questionCount} questions</span>
+              <span>${r.modelCount} ${r.modelCount === 1 ? 'config' : 'configs'}</span>
+              <span>${r.questionCount} ${r.spectre === 'chain' ? 'chains' : 'questions'}</span>
               ${costHtml}
             </span>
           </div>
@@ -1410,9 +1641,29 @@
     activeCategory = "all";
     activeView = "overview";
     compareModels = [];
+
+    // Detect score dimensions from data
+    const detectedDims = detectDimsFromData(data);
+    if (detectedDims.length > 0) {
+      SCORE_DIMS = detectedDims;
+    } else {
+      SCORE_DIMS = ["accuracy", "specificity", "safety", "coaching", "troop_voice"];
+    }
+
     buildCategoryTabs();
     buildViewTabs();
     renderDashboard();
+  }
+
+  function detectDimsFromData(data) {
+    for (const entries of Object.values(data)) {
+      for (const entry of entries) {
+        if (entry.scores && !entry.error) {
+          return Object.keys(entry.scores).filter(k => !["notes", "_assessments"].includes(k));
+        }
+      }
+    }
+    return [];
   }
 
   function buildCategoryTabs() {
@@ -1911,7 +2162,11 @@
           html += '</div></div>';
         }
 
-        html += `<div class="response-text">${renderMd(entry.response)}</div>`;
+        if (isTranscript(entry.response)) {
+          html += `<div class="response-text">${renderTranscript(entry.response)}</div>`;
+        } else {
+          html += `<div class="response-text">${renderMd(entry.response)}</div>`;
+        }
 
         if (entry.scores) {
           html += '<div class="score-bars">';
@@ -2008,7 +2263,7 @@
 
   // TTS settings (loaded from localStorage)
   let ttsSettings = {
-    provider: "browser",
+    provider: "elevenlabs",
     elScout: "TX3LPaxmHKxFdv7VOQHJ",
     elCoach: "chZcGerJ39wwnXKPa0Ki",
     elNarrator: "nPczCjzI2devNBz1zQrb",

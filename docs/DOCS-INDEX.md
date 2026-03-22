@@ -29,6 +29,7 @@ Start with **strategy.md** for why this project exists, then **development-state
 | [eval-perspectives.md](eval-perspectives.md) | 7 evaluation perspectives with cross-validation strategy | Planning what to test next |
 | [eval-changelog.md](eval-changelog.md) | Versioned history of eval system AND system under evaluation | Interpreting scores across runs |
 | [eval-runner-design.md](eval-runner-design.md) | Eval runner UI, eval sets, bug tracking, shifting goalposts | Building eval tooling |
+| [eval-version-chain.md](eval-version-chain.md) | Version provenance chain — how versions flow through the eval system | Before comparing eval results across runs, or investigating score changes |
 | [eval-data-architecture.md](eval-data-architecture.md) | MongoDB schema, GCS assets, migration plan | Working on eval data pipeline |
 
 ### Reports (chronological findings)
@@ -95,15 +96,30 @@ API costs are tracked per-call in MongoDB. Key guidelines:
 | Data store | MongoDB | Already running, fits eval documents | Need SQL joins or pgvector |
 | Eval viewer | Single HTML file | Matches codebase pattern, no build step | Needs React-level interactivity |
 
-## What's Not Built Yet
+## What's Not Built Yet — Prioritized Backlog
 
-| Component | Priority | Blocked By |
-|-----------|----------|-----------|
-| Viewer runner tab (launch evals from browser) | High | Nothing — ready to build |
-| Chain test integration with new eval framework | High | Porting TypeScript harness |
-| Safety/adversarial test questions | High | Nothing — need to write questions |
-| Bug tracking system | Medium | Nothing — design exists |
-| Layer ablation (L0-L5) | Medium | FalkorDB not on devbox for L4 |
-| Bradley-Terry with confidence intervals | Low | Borda count is sufficient for now |
-| TTS audio caching in GCS | Low | Nothing — nice to have |
-| Response embedding for all historical results | Low | Running but not critical |
+| # | Component | Priority | Status | Blocked By |
+|---|-----------|----------|--------|-----------|
+| 1 | **ElevenLabs voices in viewer** — wire as primary TTS, browser as fallback | High | Ready | Nothing |
+| 2 | **Viewer chain display** — transcript viewer, tool call log, DB diff, hallucination badges | High | Ready | Nothing |
+| 3 | **Safety/adversarial spectre** — red-team questions as a new eval spectre | High | Ready | Need to write questions |
+| 4 | **Eval Genie** — AI-powered multivariate analysis of eval data via R | Medium | [Planned](plans/2026-03-22-eval-genie-design.md) | Nothing |
+| 5 | **Viewer runner tab** — configure + launch evals from browser | Medium | Ready | Nothing |
+| 6 | **Rankings for chains** — extend run-ranking.py with `--perspective chain` | Medium | Ready | Nothing |
+| 7 | **Layer ablation with chains** — run chains with L0-L3 layer configs | Medium | Ready | Nothing |
+| 8 | **Bug tracking system** — auto-detect failures, triage workflow | Medium | Design exists | Nothing |
+| 9 | **Bradley-Terry with confidence intervals** | Low | Borda sufficient for now | Nothing |
+| 10 | **TTS audio caching in GCS** | Low | Nice to have | Nothing |
+
+### Recently Completed (2026-03-22)
+
+| Component | Status |
+|-----------|--------|
+| **Chain spectre integration** — unified multi-perspective eval framework | Done |
+| **Perspective interface (EvalPerspective protocol)** — extensible plugin system | Done |
+| **RunConfig multi-axis system** — model/layer/knowledge/params as independent axes | Done |
+| **Unified eval runner** (`scripts/run-eval.py`) with `--spectre`, `--config` | Done |
+| **Panel evaluator extraction** — config-driven, perspective-agnostic | Done |
+| **MongoDB migration** — 1,387 docs backfilled with perspective + config axes | Done |
+| **Viewer dynamic dimensions** — auto-detect score dimensions from data | Done |
+| **Spectre badges in viewer** — [CHAIN] labels on non-knowledge runs | Done |
