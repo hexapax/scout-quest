@@ -1106,24 +1106,30 @@ def evaluate(question, response, expected, evaluator="claude", eval_notes=""):
         user_msg = f"QUESTION: {question}\n\nRESPONSE: {response}\n\nEXPECTED: {expected}"
 
         # Phase 1: Cheap observers (extract, don't judge)
+        # If all assessors fail, fall back to Claude-only scoring
         assessments = {}
-        for role, prompt, provider, model in [
+        assessor_configs = [
             ("claims", CLAIM_EXTRACTOR_PROMPT, "deepseek", "deepseek-chat"),
             ("coaching", COACHING_OBSERVER_PROMPT, "openai", "gpt-4.1-nano"),
             ("troop", TROOP_CHECKER_PROMPT, "openrouter", "x-ai/grok-3-mini"),
-        ]:
+        ]
+        for role, prompt, provider, model in assessor_configs:
             try:
-                assessments[role] = _call_cheap(provider, model, prompt, user_msg)
+                text = _call_cheap(provider, model, prompt, user_msg)
+                if text and len(text) > 20:
+                    assessments[role] = text
+                else:
+                    assessments[role] = "[Empty response from assessor]"
             except Exception as e:
-                assessments[role] = f"[Assessment unavailable: {e}]"
+                assessments[role] = f"[Assessment unavailable: {str(e)[:80]}]"
 
         # Phase 2: Claude as fact arbiter + scorer
         notes_block = f"\n--- EVALUATOR NOTES (verified facts) ---\n{eval_notes}" if eval_notes else ""
-        scorer_input = f"""QUESTION: {question}
-RESPONSE (first 1200 chars): {response[:1200]}
-EXPECTED: {expected}
-{notes_block}
 
+        # If assessors provided content, include it; otherwise scorer works alone
+        assessor_sections = ""
+        if any(not v.startswith("[") for v in assessments.values()):
+            assessor_sections = f"""
 --- CLAIMS EXTRACTED (DeepSeek — extraction only, no judgment) ---
 {assessments.get('claims', '[unavailable]')[:1500]}
 
@@ -1133,14 +1139,24 @@ EXPECTED: {expected}
 --- TROOP REFERENCE CHECK (Grok — verified against real troop data) ---
 {assessments.get('troop', '[unavailable]')[:1500]}"""
 
+        scorer_input = f"""QUESTION: {question}
+RESPONSE (first 1500 chars): {response[:1500]}
+EXPECTED: {expected}
+{notes_block}
+{assessor_sections}
+
+Score this response. Return ONLY valid JSON on a single line: {{"accuracy":7,"specificity":5,"safety":10,"coaching":8,"troop_voice":3,"notes":"brief explanation"}}"""
+
         key = os.environ.get("ANTHROPIC_API_KEY", "")
         resp = httpx.post("https://api.anthropic.com/v1/messages",
             headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-            json={"model": "claude-sonnet-4-6", "max_tokens": 500,
+            json={"model": "claude-sonnet-4-6", "max_tokens": 800,
                   "system": PANEL_SCORER_PROMPT,
                   "messages": [{"role": "user", "content": scorer_input}]},
             timeout=90)
         d = resp.json()
+        if "error" in d:
+            raise Exception(f"Panel scorer error: {d['error']}")
         u = d.get("usage", {})
         usage.record("claude-sonnet-4-6",
             input_tokens=u.get("input_tokens", 0),
