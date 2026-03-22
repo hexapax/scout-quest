@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eval Runner — Scout Quest</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --surface2: #0f3460;
+    --text: #e0e0e0;
+    --text-muted: #8899aa;
+    --accent: #e94560;
+    --green: #2ecc71;
+    --yellow: #f1c40f;
+    --red: #e74c3c;
+    --blue: #3498db;
+    --purple: #9b59b6;
+    --orange: #e67e22;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.5;
+    font-size: 16px;
+  }
+
+  .hidden { display: none !important; }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--surface2);
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  header .inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  header h1 {
+    font-size: 1.3rem;
+    color: var(--accent);
+  }
+  header .nav-links {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+  }
+  header .nav-links a {
+    color: var(--blue);
+    text-decoration: none;
+  }
+  header .nav-links a:hover { text-decoration: underline; }
+
+  /* ── Layout ── */
+  .container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  @media (max-width: 900px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--surface2);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+  .card h2 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    color: var(--text);
+  }
+  .card h3 {
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-muted);
+  }
+
+  /* ── Form elements ── */
+  label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+    margin-top: 0.75rem;
+  }
+  label:first-child { margin-top: 0; }
+
+  select, input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 0.45rem 0.6rem;
+    background: var(--surface2);
+    border: 1px solid #1a3a6a;
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  select:focus, input:focus {
+    border-color: var(--accent);
+  }
+  select { cursor: pointer; }
+
+  .inline-fields {
+    display: flex;
+    gap: 0.75rem;
+  }
+  .inline-fields > div { flex: 1; }
+
+  /* ── Config checkboxes ── */
+  .config-group {
+    margin-top: 0.75rem;
+    border: 1px solid var(--surface2);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .config-group-header {
+    padding: 0.4rem 0.75rem;
+    background: var(--surface2);
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+  .config-group-header:hover { background: #153570; }
+  .config-group-header .chevron {
+    transition: transform 0.15s;
+    font-size: 0.7rem;
+  }
+  .config-group-header.collapsed .chevron { transform: rotate(-90deg); }
+  .config-group-body {
+    padding: 0.4rem 0.5rem;
+  }
+  .config-group-body.collapsed { display: none; }
+
+  .config-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.35rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .config-item:hover { background: var(--surface2); }
+  .config-item input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
+  .config-item .config-label { flex: 1; }
+  .config-item .config-price {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  /* ── Separator ── */
+  .sep {
+    border: 0;
+    border-top: 1px solid var(--surface2);
+    margin: 1rem 0;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-block;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--surface2);
+    background: var(--surface2);
+    color: var(--text);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+    font-weight: 600;
+  }
+  .btn.primary:hover { opacity: 0.9; }
+  .btn.primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn.danger {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+  }
+  .btn.danger:hover { opacity: 0.9; }
+  .btn-row {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  /* ── Cost estimate ── */
+  .cost-estimate {
+    margin-top: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: var(--surface2);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cost-estimate .cost-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--green);
+  }
+  .cost-estimate .cost-value.warn { color: var(--yellow); }
+  .cost-estimate .cost-value.danger { color: var(--red); }
+
+  /* ── Version panel ── */
+  .version-grid {
+    display: grid;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+  }
+  .version-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .version-row:last-child { border-bottom: none; }
+  .version-label { color: var(--text-muted); }
+  .version-hash {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+    color: var(--blue);
+  }
+  .dirty-warning {
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    background: rgba(241, 196, 15, 0.1);
+    border: 1px solid rgba(241, 196, 15, 0.3);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: var(--yellow);
+  }
+
+  /* ── Monitor view ── */
+  .monitor-panel {
+    border: 2px solid var(--green);
+    animation: pulse-border 2s ease-in-out infinite;
+  }
+  @keyframes pulse-border {
+    0%, 100% { border-color: var(--green); }
+    50% { border-color: rgba(46, 204, 113, 0.3); }
+  }
+  .monitor-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .monitor-header .live-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: blink 1.5s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .monitor-header h2 { margin-bottom: 0; }
+
+  .progress-bar-container {
+    background: var(--surface2);
+    border-radius: 6px;
+    height: 24px;
+    overflow: hidden;
+    margin: 0.75rem 0;
+    position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    border-radius: 6px;
+    transition: width 0.5s ease;
+  }
+  .progress-bar-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    line-height: 24px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .monitor-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+    font-size: 0.85rem;
+  }
+  .monitor-stat-label { color: var(--text-muted); }
+
+  .monitor-log {
+    margin-top: 0.75rem;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    padding: 0.5rem;
+    background: var(--bg);
+    border-radius: 6px;
+  }
+  .monitor-log .log-entry {
+    padding: 0.15rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .monitor-log .score-good { color: var(--green); }
+  .monitor-log .score-ok { color: var(--yellow); }
+  .monitor-log .score-bad { color: var(--red); }
+
+  /* ── Recent launches ── */
+  .launches-card { margin-top: 1rem; }
+  .launch-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .launch-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    background: var(--surface2);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .launch-item .launch-time {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    min-width: 80px;
+  }
+  .launch-item .launch-configs {
+    flex: 1;
+  }
+  .launch-item .launch-status {
+    font-size: 0.78rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+  }
+  .launch-item .launch-status.running {
+    background: rgba(46, 204, 113, 0.15);
+    color: var(--green);
+  }
+  .launch-item .launch-status.complete {
+    background: rgba(52, 152, 219, 0.15);
+    color: var(--blue);
+  }
+  .launch-item .launch-status.stopped {
+    background: rgba(231, 76, 60, 0.15);
+    color: var(--red);
+  }
+  .launch-item a {
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 0.8rem;
+  }
+  .launch-item a:hover { text-decoration: underline; }
+
+  /* ── Loading ── */
+  .loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+  }
+  .loading::after {
+    content: '';
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--text-muted);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-left: 0.5rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .toast.error { border-color: var(--red); color: var(--red); }
+  .toast.success { border-color: var(--green); color: var(--green); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="inner">
+    <h1>Eval Runner</h1>
+    <div class="nav-links">
+      <a href="/eval-viewer.html">View Results</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Config + Version panels -->
+  <div class="main-grid">
+
+    <!-- ── Config panel ── -->
+    <div id="config-panel" class="card">
+      <h2>Configure Eval Run</h2>
+
+      <div class="inline-fields">
+        <div>
+          <label for="spectre-select">Perspective</label>
+          <select id="spectre-select">
+            <option value="knowledge" selected>Knowledge</option>
+            <option value="chain">Chain</option>
+            <option value="safety">Safety</option>
+          </select>
+        </div>
+        <div>
+          <label for="eval-set-select">Eval Set</label>
+          <select id="eval-set-select">
+            <option value="">Loading...</option>
+          </select>
+        </div>
+      </div>
+
+      <hr class="sep">
+
+      <h3>Model Configs</h3>
+      <div id="config-groups">
+        <div class="loading">Loading configs</div>
+      </div>
+
+      <hr class="sep">
+
+      <div class="inline-fields">
+        <div>
+          <label for="sample-input">Sample per category</label>
+          <input type="number" id="sample-input" min="0" max="20" placeholder="All">
+        </div>
+        <div>
+          <label for="budget-input">Budget ($)</label>
+          <input type="number" id="budget-input" min="0.10" step="0.50" value="5.00">
+        </div>
+      </div>
+
+      <label for="questions-input">Specific questions (comma-sep IDs, optional)</label>
+      <input type="text" id="questions-input" placeholder="e.g. A1,B3,G7">
+
+      <label for="desc-input">Description</label>
+      <input type="text" id="desc-input" placeholder="What are you testing?">
+
+      <div class="cost-estimate" id="cost-estimate">
+        <span>Estimated cost:</span>
+        <span class="cost-value" id="cost-value">--</span>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" id="launch-btn" disabled>Launch Eval Run</button>
+        <span id="launch-status" style="font-size:0.85rem; color:var(--text-muted)"></span>
+      </div>
+    </div>
+
+    <!-- ── Monitor panel (replaces config panel when running) ── -->
+    <div id="monitor-panel" class="card monitor-panel hidden">
+      <div class="monitor-header">
+        <div class="live-dot"></div>
+        <h2 id="monitor-title">Running...</h2>
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="monitor-progress" style="width: 0%"></div>
+        <div class="progress-bar-text" id="monitor-progress-text">0%</div>
+      </div>
+
+      <div class="monitor-stats">
+        <div><span class="monitor-stat-label">Cost:</span> <span id="monitor-cost">$0.00</span></div>
+        <div><span class="monitor-stat-label">Budget:</span> <span id="monitor-budget">$5.00</span></div>
+        <div><span class="monitor-stat-label">Duration:</span> <span id="monitor-duration">0s</span></div>
+        <div><span class="monitor-stat-label">Questions:</span> <span id="monitor-questions">0/0</span></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn danger" id="stop-btn">Stop Run</button>
+        <a href="#" id="view-results-link" class="hidden" style="color:var(--blue);text-decoration:none;font-size:0.9rem">Open in Viewer</a>
+      </div>
+
+      <div class="monitor-log" id="monitor-log"></div>
+    </div>
+
+    <!-- ── Version panel ── -->
+    <div class="card" id="version-panel">
+      <h2>Version Info</h2>
+      <div class="version-grid" id="version-grid">
+        <div class="loading">Loading</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Recent launches ── -->
+  <div class="card launches-card">
+    <h2>Recent Launches</h2>
+    <div id="recent-launches" class="launch-list">
+      <div class="loading">Loading recent runs</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let allConfigs = {};   // { configName: { model_id, label, price, provider, ... } }
+let evalSets = [];     // [{ name, file, perspective, version, questionCount }]
+let versions = null;   // version fingerprint from API
+let activeMonitor = null; // { runId, startedAt, budget, configs, pollTimer }
+
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', async () => {
+  await Promise.all([
+    loadConfigs(),
+    loadEvalSets(),
+    loadVersions(),
+    loadRecentRuns(),
+  ]);
+  updateCostEstimate();
+  checkForActiveRuns();
+});
+
+// ---------------------------------------------------------------------------
+// Data loading
+// ---------------------------------------------------------------------------
+async function loadConfigs() {
+  try {
+    const resp = await fetch('/api/eval/configs');
+    const data = await resp.json();
+    allConfigs = data.configs || {};
+    renderConfigGroups();
+  } catch (e) {
+    document.getElementById('config-groups').innerHTML =
+      '<div style="color:var(--red);font-size:0.85rem">Failed to load configs</div>';
+  }
+}
+
+async function loadEvalSets() {
+  try {
+    const resp = await fetch('/api/eval/eval-sets');
+    evalSets = await resp.json();
+    renderEvalSetDropdown();
+  } catch (e) {
+    console.error('Failed to load eval sets:', e);
+  }
+}
+
+async function loadVersions() {
+  try {
+    const resp = await fetch('/api/eval/versions');
+    versions = await resp.json();
+    renderVersionPanel();
+  } catch (e) {
+    document.getElementById('version-grid').innerHTML =
+      '<div style="color:var(--red);font-size:0.85rem">Failed to load versions</div>';
+  }
+}
+
+async function loadRecentRuns() {
+  try {
+    const resp = await fetch('/api/eval/reports');
+    const reports = await resp.json();
+    renderRecentRuns(reports.slice(0, 10));
+  } catch (e) {
+    document.getElementById('recent-launches').innerHTML =
+      '<div style="color:var(--text-muted);font-size:0.85rem">No recent runs found</div>';
+  }
+}
+
+async function checkForActiveRuns() {
+  try {
+    const resp = await fetch('/api/eval/launch/active');
+    const runs = await resp.json();
+    const alive = runs.filter(r => r.alive);
+    if (alive.length > 0) {
+      const run = alive[0];
+      startMonitoring(run.runId, run.configs, parseFloat(document.getElementById('budget-input').value) || 5);
+    }
+  } catch (e) {
+    // Ignore
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Rendering — config groups
+// ---------------------------------------------------------------------------
+function renderConfigGroups() {
+  const container = document.getElementById('config-groups');
+
+  // Group by provider tier
+  const groups = {};
+  const providerLabels = {
+    anthropic: 'Anthropic (Claude)',
+    openai: 'OpenAI (GPT)',
+    google: 'Google (Gemini)',
+    deepseek: 'DeepSeek',
+    _layers: 'Knowledge Layers',
+  };
+
+  for (const [name, cfg] of Object.entries(allConfigs)) {
+    let group = cfg.provider || 'other';
+    if (name.startsWith('layer-')) group = '_layers';
+    if (!groups[group]) groups[group] = [];
+    groups[group].push({ name, ...cfg });
+  }
+
+  // Order: anthropic, openai, google, deepseek, _layers, other
+  const order = ['anthropic', 'openai', 'google', 'deepseek', '_layers'];
+  const sorted = order.filter(g => groups[g]).concat(
+    Object.keys(groups).filter(g => !order.includes(g))
+  );
+
+  container.innerHTML = '';
+
+  for (const groupKey of sorted) {
+    const items = groups[groupKey];
+    const groupEl = document.createElement('div');
+    groupEl.className = 'config-group';
+
+    const headerEl = document.createElement('div');
+    headerEl.className = 'config-group-header';
+    headerEl.innerHTML = `
+      <span>${providerLabels[groupKey] || groupKey}</span>
+      <span class="chevron">&#9660;</span>
+    `;
+
+    const bodyEl = document.createElement('div');
+    bodyEl.className = 'config-group-body';
+
+    // Collapse layers and lesser-known by default
+    if (groupKey === '_layers' || groupKey === 'deepseek') {
+      headerEl.classList.add('collapsed');
+      bodyEl.classList.add('collapsed');
+    }
+
+    headerEl.addEventListener('click', () => {
+      headerEl.classList.toggle('collapsed');
+      bodyEl.classList.toggle('collapsed');
+    });
+
+    for (const item of items) {
+      const itemEl = document.createElement('label');
+      itemEl.className = 'config-item';
+      itemEl.innerHTML = `
+        <input type="checkbox" value="${item.name}" data-questions="${item.questionCount || 54}">
+        <span class="config-label">${item.label || item.name}</span>
+        <span class="config-price">${item.price || ''}</span>
+      `;
+      itemEl.querySelector('input').addEventListener('change', () => {
+        updateCostEstimate();
+        updateLaunchButton();
+      });
+      bodyEl.appendChild(itemEl);
+    }
+
+    groupEl.appendChild(headerEl);
+    groupEl.appendChild(bodyEl);
+    container.appendChild(groupEl);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Rendering — eval set dropdown
+// ---------------------------------------------------------------------------
+function renderEvalSetDropdown() {
+  const sel = document.getElementById('eval-set-select');
+  sel.innerHTML = '';
+
+  for (const es of evalSets) {
+    const opt = document.createElement('option');
+    opt.value = es.file;
+    opt.textContent = `${es.name} v${es.version} (${es.questionCount}q)`;
+    if (es.file.includes('scout-coach-v5')) opt.selected = true;
+    sel.appendChild(opt);
+  }
+
+  sel.addEventListener('change', updateCostEstimate);
+}
+
+// ---------------------------------------------------------------------------
+// Rendering — version panel
+// ---------------------------------------------------------------------------
+function renderVersionPanel() {
+  if (!versions) return;
+  const grid = document.getElementById('version-grid');
+
+  const rows = [
+    { label: 'System FP', value: 'SYS-' + (versions.system_fingerprint || '?') },
+    { label: 'Eval FP', value: 'EVL-' + (versions.eval_fingerprint || '?') },
+    { label: 'Git HEAD', value: versions.git_head || '?' },
+  ];
+
+  // Add component hashes
+  if (versions.knowledge_doc) {
+    rows.push({ label: 'Knowledge', value: versions.knowledge_doc.hash });
+  }
+  if (versions.troop_context) {
+    rows.push({ label: 'Troop ctx', value: versions.troop_context.hash });
+  }
+
+  let html = rows.map(r =>
+    `<div class="version-row">
+      <span class="version-label">${r.label}</span>
+      <span class="version-hash">${r.value}</span>
+    </div>`
+  ).join('');
+
+  // Dirty files warning
+  const dirty = versions.git_dirty || [];
+  if (dirty.length > 0) {
+    html += `<div class="dirty-warning">
+      <strong>Uncommitted changes:</strong><br>
+      ${dirty.map(f => '&bull; ' + f).join('<br>')}
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+// ---------------------------------------------------------------------------
+// Rendering — recent runs
+// ---------------------------------------------------------------------------
+function renderRecentRuns(reports) {
+  const container = document.getElementById('recent-launches');
+
+  if (!reports || reports.length === 0) {
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:0.85rem;padding:0.5rem">No recent runs</div>';
+    return;
+  }
+
+  container.innerHTML = reports.map(r => {
+    const time = r.timestamp.split('_')[1]?.replace(/-/g, ':') || r.timestamp;
+    const date = r.timestamp.split('_')[0] || '';
+    const models = (r.models || []).map(m => m.label || m.key).join(', ');
+    const status = r.status || (r.modelCount > 0 ? 'complete' : 'unknown');
+    const statusClass = status === 'complete' || status === 'budget_stopped' ? 'complete' : 'stopped';
+    const cost = r.totalCost != null ? '$' + r.totalCost.toFixed(2) : '';
+    const desc = r.description ? ` — ${r.description}` : '';
+
+    return `<div class="launch-item">
+      <span class="launch-time" title="${date}">${time}</span>
+      <span class="launch-configs">${models || r.spectre}${desc} (${r.questionCount}q)</span>
+      ${cost ? `<span style="color:var(--text-muted);font-size:0.8rem">${cost}</span>` : ''}
+      <span class="launch-status ${statusClass}">${status}</span>
+      <a href="/eval-viewer.html#${r.timestamp}">View</a>
+    </div>`;
+  }).join('');
+}
+
+// ---------------------------------------------------------------------------
+// Cost estimation
+// ---------------------------------------------------------------------------
+function getSelectedConfigs() {
+  const checks = document.querySelectorAll('#config-groups input[type="checkbox"]:checked');
+  return Array.from(checks).map(c => c.value);
+}
+
+function getQuestionCount() {
+  const sel = document.getElementById('eval-set-select');
+  const selected = evalSets.find(es => es.file === sel.value);
+  let total = selected?.questionCount || 54;
+
+  const sample = parseInt(document.getElementById('sample-input').value, 10);
+  if (sample > 0) {
+    // Rough estimate: 7 categories * sample
+    total = Math.min(total, 7 * sample);
+  }
+
+  const specific = document.getElementById('questions-input').value.trim();
+  if (specific) {
+    total = specific.split(',').filter(Boolean).length;
+  }
+
+  return total;
+}
+
+// Per-question cost estimates by config name
+const COST_MAP = {
+  'claude': 0.08, 'claude-adaptive-low': 0.06, 'claude-adaptive-med': 0.07,
+  'claude-adaptive-high': 0.09, 'claude-thinking': 0.12,
+  'opus': 0.20, 'opus-adaptive-med': 0.18,
+  'gpt41': 0.06, 'gpt41-mini': 0.02, 'gpt41-nano': 0.01,
+  'gpt54': 0.10, 'gpt54-mini': 0.04, 'gpt54-nano': 0.02,
+  'gemini25flash': 0.015, 'gemini25flash-lite': 0.01,
+  'gemini3flash': 0.04, 'gemini31flash-lite': 0.02,
+  'deepseek': 0.01,
+};
+
+function updateCostEstimate() {
+  const configs = getSelectedConfigs();
+  const qCount = getQuestionCount();
+
+  if (configs.length === 0) {
+    document.getElementById('cost-value').textContent = '--';
+    document.getElementById('cost-value').className = 'cost-value';
+    return;
+  }
+
+  let total = 0;
+  for (const c of configs) {
+    const perQ = COST_MAP[c] ?? (c.startsWith('layer-') ? 0.08 : 0.05);
+    total += perQ * qCount;
+  }
+
+  total = Math.round(total * 100) / 100;
+  const el = document.getElementById('cost-value');
+  el.textContent = '$' + total.toFixed(2);
+
+  const budget = parseFloat(document.getElementById('budget-input').value) || 5;
+  if (total > budget) {
+    el.className = 'cost-value danger';
+  } else if (total > budget * 0.7) {
+    el.className = 'cost-value warn';
+  } else {
+    el.className = 'cost-value';
+  }
+}
+
+function updateLaunchButton() {
+  const btn = document.getElementById('launch-btn');
+  const configs = getSelectedConfigs();
+  btn.disabled = configs.length === 0;
+}
+
+// Recalculate on input changes
+document.getElementById('sample-input').addEventListener('input', updateCostEstimate);
+document.getElementById('budget-input').addEventListener('input', updateCostEstimate);
+document.getElementById('questions-input').addEventListener('input', updateCostEstimate);
+
+// ---------------------------------------------------------------------------
+// Launch
+// ---------------------------------------------------------------------------
+document.getElementById('launch-btn').addEventListener('click', async () => {
+  const configs = getSelectedConfigs();
+  if (configs.length === 0) return;
+
+  const btn = document.getElementById('launch-btn');
+  btn.disabled = true;
+  btn.textContent = 'Launching...';
+
+  const body = {
+    spectre: document.getElementById('spectre-select').value,
+    evalSet: document.getElementById('eval-set-select').value,
+    configs,
+    budget: parseFloat(document.getElementById('budget-input').value) || 5,
+  };
+
+  const sample = parseInt(document.getElementById('sample-input').value, 10);
+  if (sample > 0) body.sample = sample;
+
+  const questions = document.getElementById('questions-input').value.trim();
+  if (questions) body.questions = questions;
+
+  const desc = document.getElementById('desc-input').value.trim();
+  if (desc) body.description = desc;
+
+  try {
+    const resp = await fetch('/api/eval/launch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const result = await resp.json();
+
+    if (!resp.ok) {
+      showToast(result.error || 'Launch failed', 'error');
+      btn.disabled = false;
+      btn.textContent = 'Launch Eval Run';
+      return;
+    }
+
+    showToast(`Eval launched (pid=${result.pid})`, 'success');
+    startMonitoring(result.runId, configs, body.budget);
+  } catch (e) {
+    showToast('Network error: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Launch Eval Run';
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Monitor
+// ---------------------------------------------------------------------------
+function startMonitoring(runId, configs, budget) {
+  document.getElementById('config-panel').classList.add('hidden');
+  document.getElementById('monitor-panel').classList.remove('hidden');
+
+  const configLabels = configs.map(c => allConfigs[c]?.label || c).join(', ');
+  document.getElementById('monitor-title').textContent = `Running: ${configLabels}`;
+  document.getElementById('monitor-budget').textContent = '$' + (budget || 0).toFixed(2);
+  document.getElementById('monitor-log').innerHTML = '';
+
+  const startTime = Date.now();
+
+  activeMonitor = {
+    runId,
+    startedAt: startTime,
+    budget,
+    configs,
+  };
+
+  // Update duration timer
+  const durationTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    const min = Math.floor(elapsed / 60);
+    const sec = elapsed % 60;
+    document.getElementById('monitor-duration').textContent =
+      min > 0 ? `${min}m ${sec}s` : `${sec}s`;
+  }, 1000);
+
+  // Poll for status
+  let lastQuestionCount = 0;
+  const pollTimer = setInterval(async () => {
+    try {
+      // Look for the report directory that was just created
+      // The run-eval.py creates a timestamped directory, poll reports to find newest
+      const reportsResp = await fetch('/api/eval/reports');
+      const reports = await reportsResp.json();
+
+      if (reports.length === 0) return;
+
+      // Find the newest report (most likely our run)
+      const newest = reports[0];
+      const statusResp = await fetch(`/api/eval/reports/${newest.timestamp}/status`);
+      const status = await statusResp.json();
+
+      // Update progress
+      const completed = status.completedQuestions || 0;
+      const total = status.totalExpected || 1;
+      const pct = Math.min(100, Math.round((completed / total) * 100));
+
+      document.getElementById('monitor-progress').style.width = pct + '%';
+      document.getElementById('monitor-progress-text').textContent =
+        `${completed}/${total} (${pct}%)`;
+      document.getElementById('monitor-questions').textContent =
+        `${completed}/${total}`;
+
+      // Try to get cost from usage endpoint
+      try {
+        const costResp = await fetch(`/api/eval/cost?run=${newest.timestamp}`);
+        const costData = await costResp.json();
+        if (costData.total?.cost) {
+          document.getElementById('monitor-cost').textContent =
+            '$' + costData.total.cost.toFixed(2);
+        }
+      } catch {
+        // Cost endpoint may not be available
+      }
+
+      // Add log entries for new questions
+      if (completed > lastQuestionCount) {
+        // Fetch full data to get latest scores
+        try {
+          const dataResp = await fetch(`/api/eval/reports/${newest.timestamp}`);
+          const data = await dataResp.json();
+          const log = document.getElementById('monitor-log');
+
+          for (const [modelKey, entries] of Object.entries(data)) {
+            const arr = entries;
+            // Show last few entries
+            const recent = arr.slice(lastQuestionCount > 0 ? -Math.min(3, completed - lastQuestionCount) : -1);
+            for (const entry of recent) {
+              if (entry.scores) {
+                const dims = Object.entries(entry.scores)
+                  .filter(([k]) => !['notes', '_assessments'].includes(k))
+                  .slice(0, 4);
+                const dimStr = dims.map(([k,v]) => `${k.slice(0,4).toUpperCase()}:${v}`).join(' ');
+                const vals = dims.map(([,v]) => v);
+                const avg = vals.length > 0 ? (vals.reduce((a,b) => a+b, 0) / vals.length) : 0;
+                const cls = avg >= 7 ? 'score-good' : avg >= 5 ? 'score-ok' : 'score-bad';
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.innerHTML = `<span class="${cls}">${entry.questionId || '?'} avg=${avg.toFixed(1)} [${dimStr}]</span>`;
+                log.prepend(logEntry);
+              }
+            }
+          }
+        } catch {
+          // Ignore data fetch errors
+        }
+        lastQuestionCount = completed;
+      }
+
+      // Check completion
+      if (status.isComplete) {
+        clearInterval(pollTimer);
+        clearInterval(durationTimer);
+        completeMonitoring(newest.timestamp);
+      }
+    } catch (e) {
+      // Ignore poll errors
+    }
+  }, 3000);
+
+  activeMonitor.pollTimer = pollTimer;
+  activeMonitor.durationTimer = durationTimer;
+
+  // Stop button
+  document.getElementById('stop-btn').onclick = async () => {
+    try {
+      await fetch(`/api/eval/launch/${runId}/stop`, { method: 'POST' });
+      clearInterval(pollTimer);
+      clearInterval(durationTimer);
+      showToast('Run stopped', 'success');
+      exitMonitoring();
+    } catch (e) {
+      showToast('Failed to stop: ' + e.message, 'error');
+    }
+  };
+}
+
+function completeMonitoring(timestamp) {
+  const panel = document.getElementById('monitor-panel');
+  panel.classList.remove('monitor-panel');
+  panel.style.borderColor = 'var(--blue)';
+
+  const dot = panel.querySelector('.live-dot');
+  if (dot) {
+    dot.style.background = 'var(--blue)';
+    dot.style.animation = 'none';
+  }
+
+  document.getElementById('monitor-title').textContent = 'Complete';
+  document.getElementById('stop-btn').classList.add('hidden');
+
+  const link = document.getElementById('view-results-link');
+  link.classList.remove('hidden');
+  link.href = `/eval-viewer.html#${timestamp}`;
+  link.textContent = 'Open in Viewer';
+
+  // Add a "Back" button
+  const backBtn = document.createElement('button');
+  backBtn.className = 'btn';
+  backBtn.textContent = 'New Run';
+  backBtn.onclick = exitMonitoring;
+  link.parentElement.appendChild(backBtn);
+
+  // Refresh recent runs
+  loadRecentRuns();
+}
+
+function exitMonitoring() {
+  if (activeMonitor?.pollTimer) clearInterval(activeMonitor.pollTimer);
+  if (activeMonitor?.durationTimer) clearInterval(activeMonitor.durationTimer);
+  activeMonitor = null;
+
+  document.getElementById('monitor-panel').classList.add('hidden');
+  document.getElementById('monitor-panel').classList.add('monitor-panel');
+  document.getElementById('monitor-panel').style.borderColor = '';
+  document.getElementById('config-panel').classList.remove('hidden');
+  document.getElementById('stop-btn').classList.remove('hidden');
+  document.getElementById('view-results-link').classList.add('hidden');
+
+  // Reset launch button
+  const btn = document.getElementById('launch-btn');
+  btn.disabled = false;
+  btn.textContent = 'Launch Eval Run';
+
+  // Remove any extra buttons added during completion
+  const extraBtns = document.querySelectorAll('#monitor-panel .btn-row .btn:not(.danger)');
+  extraBtns.forEach(b => { if (b.textContent === 'New Run') b.remove(); });
+
+  loadRecentRuns();
+}
+
+// ---------------------------------------------------------------------------
+// Toast
+// ---------------------------------------------------------------------------
+function showToast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+</script>
+</body>
+</html>
