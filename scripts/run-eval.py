@@ -420,6 +420,7 @@ Examples:
                                 doc = chain_persp.to_mongo_doc(
                                     ss, timestamp, args.eval_version, args.system_version)
                                 doc["question_id"] = f"{item.id}/{ss.execution.item.id}"
+                                doc["versions"] = versions
                                 try:
                                     eval_results_col.insert_one(doc)
                                 except Exception:
@@ -453,6 +454,7 @@ Examples:
                     if eval_results_col is not None:
                         doc = perspective.to_mongo_doc(
                             scored, timestamp, args.eval_version, args.system_version)
+                        doc["versions"] = versions
                         try:
                             eval_results_col.insert_one(doc)
                         except Exception:
@@ -508,6 +510,7 @@ Examples:
                                 "question_id": item.id,
                                 "category": item.category,
                                 "error": str(e)[:500],
+                                "versions": versions,
                                 "timestamp": datetime.now(timezone.utc),
                             })
                         except Exception:
