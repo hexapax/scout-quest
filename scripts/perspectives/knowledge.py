@@ -433,6 +433,17 @@ def _do_brave_search(query: str) -> str:
     import httpx
     brave_key = os.environ.get("BRAVE_API_KEY", "")
     if not brave_key:
+        # Try LibreChat .env
+        from pathlib import Path
+        env_path = Path("/home/devuser/LibreChat/.env")
+        if env_path.exists():
+            for line in env_path.read_text().splitlines():
+                if line.startswith("BRAVE_API_KEY="):
+                    brave_key = line.split("=", 1)[1].strip()
+                    os.environ["BRAVE_API_KEY"] = brave_key
+                    break
+    if not brave_key:
+        # Try GCP Secret Manager
         try:
             import subprocess
             brave_key = subprocess.check_output(

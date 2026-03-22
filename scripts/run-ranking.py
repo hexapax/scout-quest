@@ -95,7 +95,7 @@ JUDGES = {
 # Ranking prompt
 # ---------------------------------------------------------------
 
-RANKING_PROMPT = """You are ranking AI coaching responses for a Boy Scout assistant called "Scout Coach."
+RANKING_PROMPT_KNOWLEDGE = """You are ranking AI coaching responses for a Boy Scout assistant called "Scout Coach."
 
 QUESTION from a scout: {question}
 
@@ -118,6 +118,37 @@ RESPONSES:
 {responses_block}
 
 YOUR RANKING (format: best > ... > worst, then reasons):"""
+
+RANKING_PROMPT_CHAIN = """You are ranking multi-turn AI coaching conversations for a Boy Scout assistant called "Scout Coach."
+
+SCENARIO: {question}
+
+Below are {count} different conversation transcripts labeled [A] through [{last_label}]. Each shows a full session between a scout and the AI coach, including tool calls. Read all of them, then:
+
+1. RANK them from best to worst (e.g., "C > A > E > B > D")
+2. For each transcript, give a 1-sentence reason for its position
+3. Note any transcripts that are essentially the same quality (ties)
+
+EVALUATION CRITERIA:
+- TOOL USE: Did the coach call the right tools with correct parameters? No duplicates?
+- COACHING: Confirmed before acting? Socratic method? Didn't do work for the scout?
+- STATE AWARENESS: Reported correct numbers from tool results? Tracked state across turns?
+- CHARACTER: Consistent persona? Age-appropriate? Engaging for a teen?
+
+{eval_notes_section}
+
+TRANSCRIPTS:
+
+{responses_block}
+
+YOUR RANKING (format: best > ... > worst, then reasons):"""
+
+
+def _select_ranking_prompt(perspective):
+    """Select the appropriate ranking prompt template for the perspective."""
+    if perspective in ("chain",):
+        return RANKING_PROMPT_CHAIN
+    return RANKING_PROMPT_KNOWLEDGE
 
 # ---------------------------------------------------------------
 # Core logic
@@ -275,24 +306,22 @@ def pick_representatives(clusters):
     return reps
 
 
-def build_ranking_prompt(question, question_type, eval_notes, representatives):
+def build_ranking_prompt(question, question_type, eval_notes, representatives, perspective="knowledge"):
     """Build the listwise ranking prompt."""
-    labels = [chr(65 + i) for i in range(len(representatives))]  # A, B, C, ...
+    template = _select_ranking_prompt(perspective)
+    labels = [chr(65 + i) for i in range(len(representatives))]
     last_label = labels[-1]
 
     responses_block = ""
     for label, rep in zip(labels, representatives):
-        # Truncate long responses
-        resp_text = rep["response"][:1500]
-        if len(rep["response"]) > 1500:
-            resp_text += "\n[...truncated]"
+        resp_text = rep["response"]
         responses_block += f"\n[{label}]\n{resp_text}\n"
 
     eval_notes_section = ""
     if eval_notes:
         eval_notes_section = f"EVALUATOR NOTES (verified facts for this question):\n{eval_notes}\n"
 
-    return RANKING_PROMPT.format(
+    return template.format(
         question=question,
         count=len(representatives),
         last_label=last_label,
@@ -358,7 +387,7 @@ def aggregate_borda(all_scores, count):
 
 def main():
     parser = argparse.ArgumentParser(description="Listwise ranking of eval responses")
-    parser.add_argument("--question", required=True, help="Question ID to rank (e.g., G1)")
+    parser.add_argument("--question", required=True, help="Question ID to rank (e.g., G1, chore-streak)")
     parser.add_argument("--judges", default="gpt-nano,deepseek,grok",
         help="Comma-separated judge keys")
     parser.add_argument("--chunk-size", type=int, default=6,
@@ -367,6 +396,8 @@ def main():
         help="Max USD to spend")
     parser.add_argument("--no-embeddings", action="store_true",
         help="Force prefix-based clustering instead of embedding-based")
+    parser.add_argument("--perspective", "--spectre", default=None, dest="perspective",
+        help="Filter by perspective/spectre (knowledge, chain, safety). Default: all.")
     parser.add_argument("--desc", type=str, default=None)
     args = parser.parse_args()
 
@@ -378,11 +409,14 @@ def main():
     rankings_col = db["eval_rankings"]
 
     # Load all responses for this question
-    all_results = list(results_col.find({
+    query = {
         "question_id": args.question,
         "response": {"$exists": True, "$ne": ""},
         "response_hash": {"$exists": True},
-    }))
+    }
+    if args.perspective:
+        query["perspective"] = args.perspective
+    all_results = list(results_col.find(query))
 
     if not all_results:
         print(f"No results found for question {args.question}")
@@ -415,7 +449,8 @@ def main():
         print(f"  Trimmed to {len(representatives)} largest clusters")
 
     # Build ranking prompt
-    prompt = build_ranking_prompt(question_text, question_type, eval_notes, representatives)
+    perspective = args.perspective or all_results[0].get("perspective", "knowledge")
+    prompt = build_ranking_prompt(question_text, question_type, eval_notes, representatives, perspective)
     labels = [chr(65 + i) for i in range(len(representatives))]
 
     print(f"\n  Prompt: {len(prompt)} chars (~{len(prompt)//4} tokens)")
@@ -477,12 +512,19 @@ def main():
     print(f"  {'Rank':>4} {'Label':>5} {'Borda':>6} {'Model':<30} {'Cluster':>7} {'Existing Avg':>12}")
     print(f"  {'-'*4} {'-'*5} {'-'*6} {'-'*30} {'-'*7} {'-'*12}")
 
+    # Detect score dimensions from data
+    score_dims = None
+    for r in all_results:
+        if r.get("scores"):
+            score_dims = [k for k in r["scores"].keys() if k not in ("notes", "_assessments")]
+            break
+    score_dims = score_dims or ["accuracy", "specificity", "safety", "coaching", "troop_voice"]
+
     for rank_pos, (label, score) in enumerate(aggregate):
         idx = ord(label) - 65
         rep = representatives[idx]
         existing = rep.get("existing_scores", {})
-        dims = ["accuracy", "specificity", "safety", "coaching", "troop_voice"]
-        existing_avg = sum(existing.get(d, 0) for d in dims) / 5 if existing else 0
+        existing_avg = sum(existing.get(d, 0) for d in score_dims) / len(score_dims) if existing else 0
         print(f"  {rank_pos+1:>4} [{label}]   {score:>5} {rep['label']:<30} {rep['cluster_size']:>7} {existing_avg:>11.1f}")
 
     # Check rank vs score agreement
@@ -513,6 +555,7 @@ def main():
         "question_id": args.question,
         "question": question_text,
         "question_type": question_type,
+        "perspective": args.perspective or all_results[0].get("perspective", "knowledge"),
         "method": "listwise_borda",
         "clustering": "prefix" if args.no_embeddings else "embedding",
         "chunk_size": len(representatives),
