@@ -47,38 +47,67 @@ from perspectives.knowledge import (
 # EvalEngine
 # ---------------------------------------------------------------------------
 
-def _auto_respond(assistant_text: str, turn: int) -> str | None:
-    """Generate a simple follow-up as the scout to continue the conversation.
+def _auto_respond(assistant_text: str, turn: int, question: str = "") -> str | None:
+    """Use a cheap LLM to decide if the response needs a follow-up.
 
-    Returns None if the model gave a complete answer (no question asked,
-    substantial content delivered). Returns a short scout-like follow-up
-    if the model asked a question or gave a brief Socratic opener.
+    A coach using Socratic method might ask a question instead of answering
+    directly. The scout should respond naturally so the coach can continue.
+
+    Returns None if the response is complete (no follow-up needed).
+    Returns a short scout reply if the coach asked a question or gave
+    an incomplete opener.
+
+    Uses GPT-4.1-nano (~$0.001 per call) for the decision + response.
     """
-    text = assistant_text.strip()
+    import httpx
 
-    # If the model asked a question, answer it naturally
-    if text.endswith("?") or "?" in text.split("\n")[-1]:
-        # Short responses with questions = Socratic opener, needs follow-up
-        if len(text) < 500:
-            responses = [
-                "Yeah, I guess so. Can you tell me more?",
-                "Hmm, I'm not sure. What do you think?",
-                "I don't know, that's why I'm asking you!",
-                "Yeah, but what does that have to do with my question?",
-                "Ok, go on...",
-            ]
-            import random
-            return random.choice(responses)
-        # Longer responses with trailing questions = model is being thorough + checking in
-        # Still worth continuing if turn 0
-        if turn == 0:
-            return "That makes sense. Is there anything else I should know?"
+    key = os.environ.get("OPENAI_API_KEY", "")
+    if not key:
+        # Fallback: simple heuristic
+        text = assistant_text.strip()
+        if text.endswith("?") and len(text) < 500:
+            return "Yeah, I guess so. Can you tell me more?"
+        if len(text) < 200 and turn == 0:
+            return "Can you tell me more about that?"
+        return None
 
-    # If response is very short (< 200 chars), it's probably incomplete
-    if len(text) < 200 and turn == 0:
-        return "Can you tell me more about that?"
+    prompt = f"""You are a 14-year-old Boy Scout in a conversation with your AI coaching assistant.
+The coach just responded to your question. Decide:
 
-    # Otherwise the model gave a substantial answer — done
+1. Did the coach give a COMPLETE answer? (explained the topic, gave specific info, addressed your concern)
+2. Or did the coach ask YOU a question / give a brief opener that needs a reply to continue?
+
+If COMPLETE: respond with exactly "DONE" (nothing else).
+If NEEDS REPLY: respond as the scout would — casual, brief, age-appropriate. 1-2 sentences max.
+Be natural. A teen would say "yeah" or "I dunno" not "Thank you for asking."
+
+YOUR ORIGINAL QUESTION: {question}
+
+COACH'S RESPONSE:
+{assistant_text[:1000]}"""
+
+    try:
+        r = httpx.post("https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={"model": "gpt-4.1-nano", "max_tokens": 100,
+                  "messages": [{"role": "user", "content": prompt}]},
+            timeout=30)
+        d = r.json()
+        if "choices" in d:
+            reply = d["choices"][0]["message"]["content"].strip()
+            upper = reply.upper()
+            if upper == "DONE" or upper.startswith("DONE"):
+                return None
+            # Clean up — remove quotes, meta-responses
+            reply = reply.strip('"').strip("'")
+            # Filter out meta-responses like "NEEDS REPLY" that aren't actual scout speech
+            if reply.upper().startswith("NEEDS") or reply.upper().startswith("INCOMPLETE"):
+                return "Yeah... can you tell me more?"
+            return reply if len(reply) > 2 else None
+    except Exception:
+        pass
+
+    # Fallback on error
     return None
 
 
@@ -254,9 +283,9 @@ class EvalEngine:
             if max_turns == 1:
                 break
 
-            # Multi-turn: auto-respond as scout to elicit more from the model
-            # For Socratic models that ask questions, this lets them deliver substance
-            follow_up = _auto_respond(assistant_text, turn)
+            # Multi-turn: ask a cheap LLM if the response needs a follow-up
+            # Catches Socratic openers and lets the model deliver substance
+            follow_up = _auto_respond(assistant_text, turn, question=item.description)
             if follow_up is None:
                 break  # Model gave a complete answer, no need to continue
 
