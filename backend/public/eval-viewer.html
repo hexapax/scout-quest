@@ -1337,7 +1337,16 @@
     D: "Safety/YPT",
     E: "Cross-Reference",
     F: "Values Coaching",
-    G: "Over-Policy Detection"
+    G: "Over-Policy Detection",
+    // Chain spectre categories
+    chain: "Chain Sessions",
+    tool_use: "Tool Use",
+    state_check: "State Check",
+    coaching: "Coaching",
+    // Safety spectre categories
+    S: "Safety / YPT",
+    M: "Manipulation",
+    // Note: B and E overlap with knowledge — context-dependent
   };
 
   // Dynamic score dimensions — set when a report loads
@@ -1944,9 +1953,19 @@
 
   function buildCategoryTabs() {
     const $tabs = document.getElementById("category-tabs");
+    // Only show categories present in the current data
+    const catsInData = new Set();
+    if (currentData) {
+      for (const entries of Object.values(currentData)) {
+        for (const e of entries) {
+          if (e.category) catsInData.add(e.category);
+        }
+      }
+    }
     let html = '<button class="tab-btn active" data-cat="all" onclick="app.setCategory(\'all\')">All</button>';
-    for (const [key, label] of Object.entries(CATEGORIES)) {
-      html += `<button class="tab-btn" data-cat="${key}" onclick="app.setCategory('${key}')">${key}: ${esc(label)}</button>`;
+    for (const cat of catsInData) {
+      const label = CATEGORIES[cat] || cat;
+      html += `<button class="tab-btn" data-cat="${cat}" onclick="app.setCategory('${cat}')">${cat}: ${esc(label)}</button>`;
     }
     $tabs.innerHTML = html;
   }
