@@ -659,18 +659,24 @@ function renderConfigGroups() {
     openai: 'OpenAI (GPT)',
     google: 'Google (Gemini)',
     deepseek: 'DeepSeek',
-    _layers: 'Knowledge Layers',
+    _variants: 'Model Variants (adaptive, thinking)',
+    _layers: 'Ablation Layers (test conditions)',
   };
 
   for (const [name, cfg] of Object.entries(allConfigs)) {
     let group = cfg.provider || 'other';
-    if (name.startsWith('layer-')) group = '_layers';
+    // Ablation configs go in their own group
+    const isAblation = name.startsWith('layer-') || name.startsWith('gemini3-L');
+    if (isAblation) group = '_layers';
+    // Sub-configs (adaptive, thinking) go in a variants group
+    const isVariant = name.includes('adaptive') || name.includes('thinking');
+    if (isVariant) group = '_variants';
     if (!groups[group]) groups[group] = [];
     groups[group].push({ name, ...cfg });
   }
 
   // Order: anthropic, openai, google, deepseek, _layers, other
-  const order = ['anthropic', 'openai', 'google', 'deepseek', '_layers'];
+  const order = ['anthropic', 'openai', 'google', 'deepseek', '_variants', '_layers'];
   const sorted = order.filter(g => groups[g]).concat(
     Object.keys(groups).filter(g => !order.includes(g))
   );
@@ -693,7 +699,7 @@ function renderConfigGroups() {
     bodyEl.className = 'config-group-body';
 
     // Collapse layers and lesser-known by default
-    if (groupKey === '_layers' || groupKey === 'deepseek') {
+    if (groupKey === '_layers' || groupKey === '_variants' || groupKey === 'deepseek') {
       headerEl.classList.add('collapsed');
       bodyEl.classList.add('collapsed');
     }
