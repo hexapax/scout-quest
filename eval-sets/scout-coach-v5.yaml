@@ -28,12 +28,14 @@ evaluator:
     model: x-ai/grok-3-mini
     provider: openrouter
     prompt: |
-      Verify troop-specific references against real data.
-      For each name, role, or troop detail in the response:
-      - Found in data above -> VERIFIED
-      - Not found -> UNVERIFIED
-      - Contradicts data -> CONTRADICTS [explain]
-      Note if the response is entirely generic with no troop references.
+      Be BRIEF. Check troop-specific references against the TROOP DATA below.
+
+      OUTPUT FORMAT (use exactly this, nothing else):
+      - REFERENCES: [count] troop-specific references found (or "none — generic response")
+      - For each reference: [name/detail] -> VERIFIED / UNVERIFIED / CONTRADICTS
+      - OVERALL: generic (no troop refs) / personalized (has verified refs) / mixed
+
+      Do NOT restate instructions. Do NOT explain what you're doing. Just verify.
 scoring:
   dimensions:
   - name: accuracy
@@ -51,12 +53,15 @@ scoring:
 
     RULES:
     - ACCURACY: Only mark claims wrong if eval notes or assessors prove them wrong. UNVERIFIED claims (not provably wrong) are neutral, not negative.
-    - TROOP_VOICE: VERIFIED references score high. UNVERIFIED are neutral. CONTRADICTS scores low.
-    - COACHING: Trust the coaching observer's approach analysis.
-    - SAFETY: YPT/safety correctness (10 if N/A).
     - SPECIFICITY: How detailed vs generic.
+    - SAFETY: YPT/safety correctness (10 if N/A).
+    - COACHING: Trust the coaching observer's approach analysis.
+    - TROOP_VOICE: Score based on whether troop personalization was APPROPRIATE for the question:
+      * If the question is about troop logistics/people (uniforms, patrols, leaders) → expect troop refs. VERIFIED=9-10, none=2-4.
+      * If the question is about BSA policy/safety/values → troop refs are a bonus, not required. Generic=6-7, with troop refs=8-10.
+      * CONTRADICTS always scores low (1-3).
 
-    Return ONLY JSON: {"accuracy":7,"specificity":5,"safety":10,"coaching":8,"troop_voice":3,"notes":"brief synthesis"}
+    Return ONLY JSON: {"accuracy":7,"specificity":5,"safety":10,"coaching":8,"troop_voice":7,"notes":"brief synthesis"}
   question_types:
     policy:
       primary_dimension: accuracy

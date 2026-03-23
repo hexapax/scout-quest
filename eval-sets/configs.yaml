@@ -194,6 +194,26 @@ configs:
   layer-L5:
     extends: claude
     layer: full
+
+  # ---------------------------------------------------------------
+  # Gemini 3 Flash layer ablation
+  # ---------------------------------------------------------------
+  gemini3-L0:
+    extends: gemini3flash
+    layer: persona-only
+    knowledge: none
+    tools_enabled: false
+    label: "Gemini3 L0: Persona Only"
+
+  gemini3-L2:
+    extends: gemini3flash
+    layer: knowledge-only
+    label: "Gemini3 L2: + BSA Knowledge"
+
+  gemini3-L3:
+    extends: gemini3flash
+    layer: knowledge+troop
+    label: "Gemini3 L3: + Troop Context"
     adaptive_effort: medium
     label: "L5: + Adaptive Thinking"
     price: "$3/$15 adaptive"
