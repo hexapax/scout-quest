@@ -833,6 +833,7 @@ export function createEvalReportsRouter(): Router {
   const PIVOT_FIELDS = new Set([
     "model_id", "perspective", "layer", "category", "question_id",
     "config_id", "provider", "eval_version", "run_id",
+    "domain",
   ]);
 
   const SCORE_META_KEYS = new Set(["notes", "_assessments"]);
@@ -842,6 +843,10 @@ export function createEvalReportsRouter(): Router {
     A: "Advancement Policy", B: "Troop Logistics", C: "Requirement Details",
     D: "Safety & YPT", E: "Cross-Reference", F: "Values Coaching", G: "Over-Policy Detection",
     S: "Safety Adversarial", M: "Manipulation", chain: "Chain Sessions",
+    // v6 domains
+    advancement: "Advancement Policy", logistics: "Troop Logistics",
+    requirements: "Requirements", safety: "Safety & YPT",
+    values: "Values & Coaching", cross_reference: "Cross-Reference",
   };
 
   // Model display names

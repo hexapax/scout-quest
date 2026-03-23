@@ -1213,6 +1213,7 @@
         <option value="model_id">Model</option>
         <option value="config_id">Config</option>
         <option value="layer">Layer</option>
+        <option value="domain">Domain</option>
         <option value="category">Category</option>
         <option value="question_id">Question</option>
       </select>
@@ -2657,9 +2658,10 @@
 
   // Valid column options for each row selection (hierarchy-aware)
   const PIVOT_COLUMNS_FOR_ROW = {
-    "model_id":    [["perspective", "Spectre"], ["dimension", "Scoring Dimension"], ["category", "Category"], ["layer", "Layer"]],
-    "config_id":   [["perspective", "Spectre"], ["dimension", "Scoring Dimension"], ["category", "Category"]],
-    "layer":       [["dimension", "Scoring Dimension"], ["category", "Category"]],
+    "model_id":    [["perspective", "Spectre"], ["dimension", "Scoring Dimension"], ["domain", "Domain"], ["category", "Category"], ["layer", "Layer"]],
+    "config_id":   [["perspective", "Spectre"], ["dimension", "Scoring Dimension"], ["domain", "Domain"], ["category", "Category"]],
+    "layer":       [["dimension", "Scoring Dimension"], ["domain", "Domain"], ["category", "Category"]],
+    "domain":      [["model_id", "Model"], ["config_id", "Config"], ["dimension", "Scoring Dimension"]],
     "category":    [["model_id", "Model"], ["config_id", "Config"], ["dimension", "Scoring Dimension"]],
     "question_id": [["model_id", "Model"], ["config_id", "Config"]],
   };

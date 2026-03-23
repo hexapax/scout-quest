@@ -616,22 +616,33 @@ class KnowledgePerspective:
         for q in raw_questions:
             if not q.get("enabled", True):
                 continue
+            # Use domain as category if available (v6+), fallback to category (v5)
+            cat = q.get("domain", q.get("category", ""))
             items.append(EvalItem(
                 id=q["id"],
                 perspective=eval_set.perspective,
                 item_type="question",
-                category=q.get("category", ""),
+                category=cat,
                 description=q.get("question", ""),
                 expected=q.get("expected", ""),
                 eval_notes=q.get("eval_notes", ""),
                 question_type=q.get("question_type", ""),
+                metadata={
+                    "domain": q.get("domain"),
+                    "capabilities": q.get("capabilities", []),
+                    "dimensions": q.get("dimensions", []),
+                    "max_turns": q.get("max_turns", 1),
+                },
             ))
 
         # Apply filters
         category = filters.get("category")
         if category and category != "all":
-            cats = [c.strip().upper() for c in category.split(",")]
-            items = [i for i in items if i.category in cats]
+            cats = [c.strip() for c in category.split(",")]
+            # Match by category OR domain (case-insensitive for old A-G style)
+            items = [i for i in items if i.category in cats
+                     or i.category.upper() in [c.upper() for c in cats]
+                     or i.metadata.get("domain") in cats]
 
         questions = filters.get("questions")
         if questions:
@@ -712,6 +723,9 @@ class KnowledgePerspective:
             "item_type": "question",
             "category": item.category,
             "question_type": item.question_type,
+            "domain": item.metadata.get("domain") or item.category,
+            "capabilities": item.metadata.get("capabilities", []),
+            "applicable_dimensions": item.metadata.get("dimensions", []),
             "question": item.description,
             "expected": item.expected,
             "eval_notes": item.eval_notes,
