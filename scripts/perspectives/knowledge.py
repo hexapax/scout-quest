@@ -685,7 +685,8 @@ class KnowledgePerspective:
         layer = get_layer(config.layer)
         tools = ToolRegistry()
         engine = EvalEngine(config, layer, tools, usage)
-        return engine.run(item, max_turns=1)
+        max_turns = item.metadata.get("max_turns", 1)
+        return engine.run(item, max_turns=max_turns)
 
     def format_for_evaluation(self, result: ExecutionResult) -> tuple[str, str]:
         """Format for panel evaluator: (response, question+expected)."""

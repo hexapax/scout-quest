@@ -47,6 +47,41 @@ from perspectives.knowledge import (
 # EvalEngine
 # ---------------------------------------------------------------------------
 
+def _auto_respond(assistant_text: str, turn: int) -> str | None:
+    """Generate a simple follow-up as the scout to continue the conversation.
+
+    Returns None if the model gave a complete answer (no question asked,
+    substantial content delivered). Returns a short scout-like follow-up
+    if the model asked a question or gave a brief Socratic opener.
+    """
+    text = assistant_text.strip()
+
+    # If the model asked a question, answer it naturally
+    if text.endswith("?") or "?" in text.split("\n")[-1]:
+        # Short responses with questions = Socratic opener, needs follow-up
+        if len(text) < 500:
+            responses = [
+                "Yeah, I guess so. Can you tell me more?",
+                "Hmm, I'm not sure. What do you think?",
+                "I don't know, that's why I'm asking you!",
+                "Yeah, but what does that have to do with my question?",
+                "Ok, go on...",
+            ]
+            import random
+            return random.choice(responses)
+        # Longer responses with trailing questions = model is being thorough + checking in
+        # Still worth continuing if turn 0
+        if turn == 0:
+            return "That makes sense. Is there anything else I should know?"
+
+    # If response is very short (< 200 chars), it's probably incomplete
+    if len(text) < 200 and turn == 0:
+        return "Can you tell me more about that?"
+
+    # Otherwise the model gave a substantial answer — done
+    return None
+
+
 class EvalEngine:
     """Unified eval engine — handles single-turn through multi-session.
 
@@ -219,9 +254,16 @@ class EvalEngine:
             if max_turns == 1:
                 break
 
-            # TODO: Multi-turn with scout simulator (future)
-            # For now, single-turn only
-            break
+            # Multi-turn: auto-respond as scout to elicit more from the model
+            # For Socratic models that ask questions, this lets them deliver substance
+            follow_up = _auto_respond(assistant_text, turn)
+            if follow_up is None:
+                break  # Model gave a complete answer, no need to continue
+
+            user_msg = follow_up
+            messages.append({"role": "user", "content": user_msg})
+            transcript.append({"role": "user", "content": user_msg})
+            sys.stdout.write(f" [turn {turn+2}]")
 
         elapsed_ms = int((time.time() - start) * 1000)
 
