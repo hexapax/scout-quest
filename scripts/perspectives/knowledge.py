@@ -580,9 +580,18 @@ def _make_gemini_caller(config: RunConfig, usage: UsageTracker):
 
             text = resp.text
             if not text and resp.candidates:
-                text = resp.candidates[0].content.parts[0].text
+                try:
+                    candidate = resp.candidates[0]
+                    if candidate.content and candidate.content.parts:
+                        text = candidate.content.parts[0].text
+                except (AttributeError, IndexError):
+                    pass
             if not text:
-                raise Exception("Gemini returned empty response")
+                # Include finish reason for debugging
+                fr = None
+                if resp.candidates:
+                    fr = getattr(resp.candidates[0], "finish_reason", None)
+                raise Exception(f"Gemini returned empty response (finish_reason={fr})")
             return text
 
         return _call_with_retry(do_call)
