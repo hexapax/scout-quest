@@ -656,56 +656,25 @@ class KnowledgePerspective:
 
     def execute(self, item: EvalItem, config: RunConfig,
                 usage: UsageTracker | None = None, **kwargs) -> ExecutionResult:
-        """Execute a single question against the model."""
+        """Execute a single question against the model.
+
+        Uses the unified EvalEngine which handles tool dispatch for
+        Anthropic models and falls back to legacy callers for others.
+        All tools are registered (model sees them); authorization is
+        controlled by the layer config. Unauthorized tool calls are
+        logged as behavioral signals.
+        """
         if usage is None:
             usage = UsageTracker()
 
-        system_prompt = build_system_prompt(config)
-        caller = _make_caller(config, usage)
+        from eval_engine import EvalEngine
+        from eval_tools import ToolRegistry
+        from eval_layers import get_layer
 
-        start = time.time()
-        try:
-            response = caller(
-                [{"role": "user", "content": item.description}],
-                system_prompt,
-                max_tokens=config.max_tokens,
-            )
-            elapsed_ms = int((time.time() - start) * 1000)
-
-            # Capture tool call log if present
-            tool_calls = getattr(caller, "_tool_log", None) or []
-
-            # Check limit proximity
-            limits = getattr(caller, "_limits", {})
-            if limits:
-                limit_parts = []
-                if "truncated" in limits:
-                    limit_parts.append("TRUNCATED (hit max_tokens)")
-                if "token_limit" in limits:
-                    tl = limits["token_limit"]
-                    limit_parts.append(f"tokens: {tl['output_tokens']}/{tl['max_tokens']} ({tl['utilization']:.0%})")
-                if limit_parts:
-                    sys.stdout.write(f" [LIMIT: {', '.join(limit_parts)}]")
-
-            return ExecutionResult(
-                item=item,
-                config=config,
-                response_text=response,
-                raw_data={"tool_calls": tool_calls, "limits": limits},
-                timing_ms=elapsed_ms,
-            )
-        except BudgetExceeded:
-            raise
-        except Exception as e:
-            elapsed_ms = int((time.time() - start) * 1000)
-            return ExecutionResult(
-                item=item,
-                config=config,
-                response_text="",
-                raw_data={},
-                timing_ms=elapsed_ms,
-                error=str(e)[:500],
-            )
+        layer = get_layer(config.layer)
+        tools = ToolRegistry()
+        engine = EvalEngine(config, layer, tools, usage)
+        return engine.run(item, max_turns=1)
 
     def format_for_evaluation(self, result: ExecutionResult) -> tuple[str, str]:
         """Format for panel evaluator: (response, question+expected)."""
