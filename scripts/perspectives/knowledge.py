@@ -705,13 +705,39 @@ class KnowledgePerspective:
             test_state.cleanup()
 
     def format_for_evaluation(self, result: ExecutionResult) -> tuple[str, str]:
-        """Format for panel evaluator: (response, question+expected)."""
+        """Format for panel evaluator: (response + tool calls, question+expected)."""
         item = result.item
         content = result.response_text
+
+        # Append tool call summary so the panel can evaluate tool usage
+        tool_calls = result.raw_data.get("tool_calls", [])
+        if tool_calls:
+            tool_lines = ["\n\n--- TOOL CALLS MADE DURING THIS RESPONSE ---"]
+            for tc in tool_calls:
+                if isinstance(tc, dict):
+                    name = tc.get("name", "?")
+                    auth = "OK" if tc.get("authorized", True) else "DENIED"
+                    args = tc.get("args", {})
+                    result_text = tc.get("result", {})
+                    if isinstance(result_text, dict):
+                        result_text = result_text.get("result") or result_text.get("error", "")
+                    tool_lines.append(f"- {name}({args}) [{auth}] → {str(result_text)[:200]}")
+            content += "\n".join(tool_lines)
+
+        unauthorized = result.raw_data.get("unauthorized_calls", [])
+        if unauthorized:
+            content += "\n\n--- UNAUTHORIZED TOOL CALLS (model tried but layer denied) ---"
+            for tc in unauthorized:
+                if isinstance(tc, dict):
+                    content += f"\n- {tc.get('name', '?')}({tc.get('args', {})}) → DENIED"
+
         context = (
             f"QUESTION: {item.description}\n\n"
             f"EXPECTED: {item.expected}"
         )
+        if item.metadata.get("dimensions"):
+            context += f"\n\nAPPLICABLE DIMENSIONS: {', '.join(item.metadata['dimensions'])}"
+
         return content, context
 
     def to_mongo_doc(self, scored: ScoredResult, run_id: str,
