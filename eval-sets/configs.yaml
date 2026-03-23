@@ -152,46 +152,66 @@ configs:
 
   # ---------------------------------------------------------------
   # Ablation layers — model-agnostic test conditions
-  # Apply to any model via: --config <model> --layer <layer-value>
+  #
+  # Each layer controls what context the model gets:
+  #   P = Persona (coaching character, ~300 tokens)
+  #   K = BSA Knowledge (177K cached doc)
+  #   T = Troop Context (11K cached — roster, schedule, leaders)
+  #   W = Web Search (Brave API, live lookup)
+  #
+  # Apply to any model: --config <model> --layer <layer-value>
   # Or use these configs directly (default to Claude for backward compat)
   # ---------------------------------------------------------------
-  layer-L0:
+
+  # P only — baseline, model training alone
+  layer-P:
     extends: claude
     layer: persona-only
     knowledge: none
     tools_enabled: false
-    label: "Persona Only (no knowledge, no tools)"
+    label: "Persona Only"
 
-  layer-L1:
+  # P + W — can the model search for what it needs?
+  layer-PW:
     extends: claude
     layer: persona-only
     knowledge: none
     web_search: true
     label: "Persona + Web Search"
-    price: "+search"
 
-  layer-L1t:
+  # P + T — troop personalization without BSA knowledge
+  layer-PT:
+    extends: claude
+    layer: troop-only
+    knowledge: none
+    label: "Persona + Troop"
+
+  # P + T + W — troop context with web search instead of knowledge doc
+  layer-PTW:
     extends: claude
     layer: troop+websearch
     knowledge: none
     web_search: true
-    label: "Troop Context + Web Search"
-    price: "+search"
+    label: "Persona + Troop + Web Search"
 
-  layer-L2:
+  # P + K — BSA knowledge without troop personalization
+  layer-PK:
     extends: claude
     layer: knowledge-only
-    label: "BSA Knowledge Only"
+    label: "Persona + Knowledge"
 
-  layer-L3:
+  # P + K + T — knowledge + personalization (production default)
+  layer-PKT:
     extends: claude
     layer: knowledge+troop
-    label: "Knowledge + Troop Context"
+    label: "Persona + Knowledge + Troop"
 
-  layer-L4:
+  # P + K + T + W — everything
+  layer-PKTW:
     extends: claude
-    layer: full
-    label: "Full Stack"
+    layer: knowledge+troop
+    web_search: true
+    label: "Persona + Knowledge + Troop + Web Search"
     adaptive_effort: medium
     label: "L5: + Adaptive Thinking"
     price: "$3/$15 adaptive"

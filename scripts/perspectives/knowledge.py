@@ -126,18 +126,32 @@ def build_system_prompt(config: RunConfig) -> str:
         if doc_path.exists():
             knowledge = doc_path.read_text()
 
+    # Layer definitions — what context the model gets:
+    #   P = Persona (coaching character)
+    #   K = BSA Knowledge (177K cached doc)
+    #   T = Troop Context (11K cached, roster/schedule/leaders)
+    #   W = Web search tool (configured separately via config.web_search)
+    #
+    # Layer              P  K  T  Tokens    Use case
+    # persona-only       ✓  ·  ·  300       Baseline — model training only
+    # troop-only         ✓  ·  ✓  12K       Troop personalization without knowledge
+    # knowledge-only     ✓  ✓  ·  177K      BSA knowledge without troop personalization
+    # knowledge+troop    ✓  ✓  ✓  189K      Knowledge + personalization (production default)
+    # troop+websearch    ✓  ·  ✓  12K+W     Can search replace 177K knowledge doc?
+    #
+    # "full" = knowledge+troop (the default for production configs)
+    # Web search (W) is orthogonal — any layer can add it via config.web_search
+
     if layer == "persona-only":
         return persona
+    elif layer == "troop-only":
+        return _troop_context + TROOP_CONTEXT_DELIMITER + persona
     elif layer == "knowledge-only":
         return knowledge + SYSTEM_PROMPT_DELIMITER + persona
-    elif layer == "knowledge+troop":
-        # Knowledge (cached) + troop (cached) + persona (small, uncached)
-        return knowledge + SYSTEM_PROMPT_DELIMITER + _troop_context + TROOP_CONTEXT_DELIMITER + persona
     elif layer == "troop+websearch":
-        # Troop context (cached) + persona (small, uncached) — no BSA knowledge, uses web search
         return _troop_context + TROOP_CONTEXT_DELIMITER + persona
     else:
-        # Default: full stack (knowledge + troop + persona)
+        # "full", "knowledge+troop", or any unrecognized → knowledge + troop + persona
         return knowledge + SYSTEM_PROMPT_DELIMITER + _troop_context + TROOP_CONTEXT_DELIMITER + persona
 
 
