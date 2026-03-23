@@ -829,5 +829,305 @@ export function createEvalReportsRouter(): Router {
     }
   });
 
+  // ── Pivot Endpoint — dynamic multi-dimensional aggregation ──
+
+  const PIVOT_FIELDS = new Set([
+    "model_id", "perspective", "layer", "category", "question_id",
+    "config_id", "provider", "eval_version", "run_id",
+  ]);
+
+  const SCORE_META_KEYS = new Set(["notes", "_assessments"]);
+
+  router.get("/api/eval/pivot", async (req: Request, res: Response) => {
+    try {
+      const rowField = (req.query.rows as string) || "model_id";
+      const colField = (req.query.columns as string) || "perspective";
+      const metric = (req.query.metric as string) || "overall_avg";
+      const scoringDim = req.query.scoring_dim as string | undefined;
+      const filtersRaw = req.query.filters as string | undefined;
+
+      // Validate row field
+      if (!PIVOT_FIELDS.has(rowField)) {
+        res.status(400).json({ error: `Invalid rows field: ${rowField}` });
+        return;
+      }
+      // Validate column field (allow "dimension" as special case)
+      if (colField !== "dimension" && !PIVOT_FIELDS.has(colField)) {
+        res.status(400).json({ error: `Invalid columns field: ${colField}` });
+        return;
+      }
+
+      // Parse filters: "layer:full,perspective:knowledge" -> { layer: "full", perspective: "knowledge" }
+      const filters: Record<string, string> = {};
+      if (filtersRaw) {
+        for (const pair of filtersRaw.split(",")) {
+          const idx = pair.indexOf(":");
+          if (idx > 0) {
+            const key = pair.slice(0, idx).trim();
+            const val = pair.slice(idx + 1).trim();
+            if (key && val) filters[key] = val;
+          }
+        }
+      }
+
+      const db = getScoutQuestDb();
+      const col = db.collection("eval_results");
+
+      // Build $match stage
+      const matchStage: Record<string, unknown> = {
+        scores: { $exists: true },
+        error: { $exists: false },
+      };
+      for (const [k, v] of Object.entries(filters)) {
+        // Try numeric coercion for eval_version etc.
+        const numVal = Number(v);
+        if (!isNaN(numVal) && String(numVal) === v) {
+          // Match either string or number for flexibility
+          matchStage[k] = { $in: [v, numVal] };
+        } else {
+          matchStage[k] = v;
+        }
+      }
+
+      if (colField === "dimension") {
+        // ── Special case: expand scoring dimension keys as columns ──
+        // Group only by row field, then compute per-dimension stats in code
+
+        const pipeline = [
+          { $match: matchStage },
+          {
+            $group: {
+              _id: `$${rowField}`,
+              scoreDocs: { $push: "$scores" },
+              labels: { $push: "$label" },
+              count: { $sum: 1 },
+            },
+          },
+          { $sort: { _id: 1 as const } },
+        ];
+
+        const results = await col.aggregate(pipeline).toArray();
+
+        // Collect all dimension keys across all groups
+        const allDims = new Set<string>();
+        for (const r of results) {
+          for (const scoreDoc of r.scoreDocs as Record<string, unknown>[]) {
+            for (const k of Object.keys(scoreDoc)) {
+              if (!SCORE_META_KEYS.has(k)) allDims.add(k);
+            }
+          }
+        }
+
+        const columns = [...allDims].sort();
+        const rows: string[] = [];
+        const cells: Record<string, Record<string, { value: number; n: number; std: number | null } | null>> = {};
+        const rowLabels: Record<string, string> = {};
+
+        for (const r of results) {
+          const rowKey = r._id as string;
+          rows.push(rowKey);
+          // Use the most common label
+          const labels = (r.labels as string[]).filter(Boolean);
+          rowLabels[rowKey] = labels[0] || rowKey;
+
+          cells[rowKey] = {};
+          const scoreDocs = r.scoreDocs as Record<string, number>[];
+
+          for (const dim of columns) {
+            const vals = scoreDocs
+              .map((s) => s[dim])
+              .filter((v): v is number => v != null && typeof v === "number");
+
+            if (vals.length === 0) {
+              cells[rowKey][dim] = null;
+            } else {
+              const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+              let std: number | null = null;
+              if (vals.length > 1) {
+                const variance = vals.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / vals.length;
+                std = Math.round(Math.sqrt(variance) * 100) / 100;
+              }
+              cells[rowKey][dim] = {
+                value: Math.round(mean * 100) / 100,
+                n: vals.length,
+                std,
+              };
+            }
+          }
+        }
+
+        const totalDocs = results.reduce((sum, r) => sum + (r.count as number), 0);
+
+        res.json({
+          rows,
+          columns,
+          cells,
+          row_labels: rowLabels,
+          column_labels: Object.fromEntries(columns.map((c) => [c, c])),
+          metadata: {
+            total_docs_queried: totalDocs,
+            filters_applied: filters,
+            metric: "dimension_avg",
+          },
+        });
+        return;
+      }
+
+      // ── Standard pivot: group by row × column ──
+
+      const pipeline = [
+        { $match: matchStage },
+        {
+          $group: {
+            _id: { row: `$${rowField}`, col: `$${colField}` },
+            scoreDocs: { $push: "$scores" },
+            labels: { $push: "$label" },
+            count: { $sum: 1 },
+          },
+        },
+      ];
+
+      const results = await col.aggregate(pipeline).toArray();
+
+      // Collect unique rows and columns
+      const rowSet = new Set<string>();
+      const colSet = new Set<string>();
+
+      for (const r of results) {
+        const id = r._id as { row: string; col: string };
+        if (id.row) rowSet.add(id.row);
+        if (id.col) colSet.add(id.col);
+      }
+
+      const rows = [...rowSet].sort();
+      const columns = [...colSet].sort();
+      const cells: Record<string, Record<string, { value: number; n: number; std: number | null } | null>> = {};
+      const rowLabels: Record<string, string> = {};
+      const columnLabels: Record<string, string> = {};
+
+      // Build lookup: "row|col" -> result
+      const lookup = new Map<string, typeof results[0]>();
+      for (const r of results) {
+        const id = r._id as { row: string; col: string };
+        lookup.set(`${id.row}|${id.col}`, r);
+        // Capture labels
+        const labels = (r.labels as string[]).filter(Boolean);
+        if (labels[0] && !rowLabels[id.row]) rowLabels[id.row] = labels[0];
+      }
+
+      let totalDocs = 0;
+
+      for (const row of rows) {
+        cells[row] = {};
+        for (const column of columns) {
+          const r = lookup.get(`${row}|${column}`);
+          if (!r) {
+            cells[row][column] = null;
+            continue;
+          }
+
+          totalDocs += r.count as number;
+          const scoreDocs = r.scoreDocs as Record<string, number>[];
+          const n = r.count as number;
+
+          if (metric === "count") {
+            cells[row][column] = { value: n, n, std: null };
+            continue;
+          }
+
+          // Compute per-document values based on metric
+          const docValues: number[] = [];
+
+          for (const scoreDoc of scoreDocs) {
+            if (metric === "overall_avg") {
+              // Average across all scoring dimensions
+              const dims = Object.keys(scoreDoc).filter((k) => !SCORE_META_KEYS.has(k));
+              const vals = dims.map((d) => scoreDoc[d]).filter((v): v is number => v != null && typeof v === "number");
+              if (vals.length > 0) {
+                docValues.push(vals.reduce((a, b) => a + b, 0) / vals.length);
+              }
+            } else if (metric === "avg" && scoringDim) {
+              const v = scoreDoc[scoringDim];
+              if (v != null && typeof v === "number") docValues.push(v);
+            } else if (metric === "min" || metric === "max" || metric === "std") {
+              // For min/max/std, compute on overall_avg per doc (or specific dim)
+              if (scoringDim) {
+                const v = scoreDoc[scoringDim];
+                if (v != null && typeof v === "number") docValues.push(v);
+              } else {
+                const dims = Object.keys(scoreDoc).filter((k) => !SCORE_META_KEYS.has(k));
+                const vals = dims.map((d) => scoreDoc[d]).filter((v): v is number => v != null && typeof v === "number");
+                if (vals.length > 0) {
+                  docValues.push(vals.reduce((a, b) => a + b, 0) / vals.length);
+                }
+              }
+            }
+          }
+
+          if (docValues.length === 0) {
+            cells[row][column] = null;
+            continue;
+          }
+
+          let value: number;
+          let std: number | null = null;
+
+          switch (metric) {
+            case "min":
+              value = Math.min(...docValues);
+              break;
+            case "max":
+              value = Math.max(...docValues);
+              break;
+            case "std": {
+              const mean = docValues.reduce((a, b) => a + b, 0) / docValues.length;
+              const variance = docValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / docValues.length;
+              value = Math.round(Math.sqrt(variance) * 100) / 100;
+              break;
+            }
+            default: {
+              // avg or overall_avg — compute mean
+              value = docValues.reduce((a, b) => a + b, 0) / docValues.length;
+              // Also compute std
+              if (docValues.length > 1) {
+                const variance = docValues.reduce((sum, v) => sum + Math.pow(v - value, 2), 0) / docValues.length;
+                std = Math.round(Math.sqrt(variance) * 100) / 100;
+              }
+              value = Math.round(value * 100) / 100;
+              break;
+            }
+          }
+
+          cells[row][column] = { value, n, std };
+        }
+
+        // Fallback row label to the row value itself
+        if (!rowLabels[row]) rowLabels[row] = row;
+      }
+
+      // Build column labels — just use the column value (could be enriched later)
+      for (const c of columns) {
+        columnLabels[c] = c;
+      }
+
+      res.json({
+        rows,
+        columns,
+        cells,
+        row_labels: rowLabels,
+        column_labels: columnLabels,
+        metadata: {
+          total_docs_queried: totalDocs,
+          filters_applied: filters,
+          metric,
+          ...(scoringDim ? { scoring_dim: scoringDim } : {}),
+        },
+      });
+    } catch (err) {
+      console.error("Pivot error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return router;
 }

@@ -110,6 +110,101 @@
   .btn.primary:hover { opacity: 0.9; }
   .btn.small { padding: 0.25rem 0.6rem; font-size: 0.75rem; }
 
+  /* ── Pivot Controls ── */
+  .pivot-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--surface2);
+  }
+  .pivot-axis label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+  .pivot-axis select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.35rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+  .pivot-filters {
+    display: flex;
+    flex-direction: column;
+  }
+  .pivot-filters > div {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .pivot-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(52,152,219,0.2);
+    color: var(--blue);
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+  }
+  .pivot-filter-chip .remove {
+    cursor: pointer;
+    opacity: 0.7;
+    font-size: 0.85rem;
+  }
+  .pivot-filter-chip .remove:hover { opacity: 1; }
+
+  /* ── Pivot Table ── */
+  .pivot-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--surface2);
+  }
+  .pivot-table th {
+    background: var(--surface2);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.6rem 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .pivot-table th:first-child { text-align: left; }
+  .pivot-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 0.9rem;
+  }
+  .pivot-table td:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pivot-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .pivot-cell-null { color: var(--text-muted); opacity: 0.5; }
+  .pivot-cell-best { font-weight: 700; }
+  .pivot-cell-n { display: block; font-size: 0.6rem; color: var(--text-muted); margin-top: 1px; }
+
   /* ── Report Browser ── */
   #browser { padding-top: 1rem; }
   .report-list { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -1102,9 +1197,62 @@
   </div>
 </div>
 
-<!-- ═══ SECTION: Portfolio Dashboard ═══ -->
+<!-- ═══ SECTION: Pivot Viewer / Portfolio Dashboard ═══ -->
 <div id="portfolio" class="container hidden">
-  <div class="portfolio-grid"></div>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <h2 style="margin:0; color:var(--text);">Eval Pivot Viewer</h2>
+    <div>
+      <a onclick="app.loadBrowser()" style="color:var(--blue); cursor:pointer; margin-right:1rem;">Run History</a>
+      <a href="/run" style="color:var(--accent); cursor:pointer;">Launch Run &rarr;</a>
+    </div>
+  </div>
+  <div class="pivot-controls">
+    <div class="pivot-axis">
+      <label>Rows</label>
+      <select id="pivot-rows" onchange="app.updatePivot()">
+        <option value="model_id">Model</option>
+        <option value="config_id">Config</option>
+        <option value="layer">Layer</option>
+        <option value="category">Category</option>
+        <option value="question_id">Question</option>
+        <option value="perspective">Spectre</option>
+        <option value="provider">Provider</option>
+      </select>
+    </div>
+    <div class="pivot-axis">
+      <label>Columns</label>
+      <select id="pivot-cols" onchange="app.updatePivot()">
+        <option value="perspective">Spectre</option>
+        <option value="dimension">Scoring Dimension</option>
+        <option value="model_id">Model</option>
+        <option value="category">Category</option>
+        <option value="layer">Layer</option>
+      </select>
+    </div>
+    <div class="pivot-axis">
+      <label>Metric</label>
+      <select id="pivot-metric" onchange="app.updatePivot()">
+        <option value="overall_avg">Overall Average</option>
+        <option value="count">Count</option>
+      </select>
+    </div>
+    <div class="pivot-axis pivot-filters">
+      <label>Filters</label>
+      <div id="pivot-filter-chips"></div>
+      <button class="btn small" onclick="app.addPivotFilter()">+ Filter</button>
+    </div>
+    <div class="pivot-axis">
+      <label>Presets</label>
+      <select id="pivot-preset" onchange="app.loadPreset()">
+        <option value="">-- Presets --</option>
+        <option value="model-comparison">Model Comparison</option>
+        <option value="ablation">Layer Ablation</option>
+        <option value="category-breakdown">Category Breakdown</option>
+        <option value="spectre-coverage">Spectre Coverage</option>
+      </select>
+    </div>
+  </div>
+  <div id="pivot-table"></div>
 </div>
 
 <!-- ═══ Voice Narration Bar ═══ -->
@@ -2492,108 +2640,189 @@
     });
   }
 
-  // ── Portfolio Dashboard ──
-  async function loadPortfolio() {
-    showSection("portfolio");
-    updateBreadcrumb([]);
+  // ── Pivot Viewer ──
 
-    const $grid = document.querySelector(".portfolio-grid");
-    $grid.innerHTML = '<div class="loading-msg">Loading portfolio...</div>';
+  const PIVOT_PRESETS = {
+    "model-comparison": { rows: "model_id", columns: "perspective", metric: "overall_avg", filters: { layer: "full" } },
+    "ablation": { rows: "layer", columns: "dimension", metric: "overall_avg", filters: { model_id: "claude-sonnet-4-6" } },
+    "category-breakdown": { rows: "category", columns: "model_id", metric: "overall_avg", filters: { perspective: "knowledge" } },
+    "spectre-coverage": { rows: "config_id", columns: "perspective", metric: "count", filters: {} },
+  };
+
+  let pivotFilters = {};
+  let pivotLoading = false;
+
+  function loadPreset() {
+    const sel = document.getElementById("pivot-preset");
+    const key = sel.value;
+    if (!key || !PIVOT_PRESETS[key]) return;
+    const preset = PIVOT_PRESETS[key];
+
+    document.getElementById("pivot-rows").value = preset.rows;
+    document.getElementById("pivot-cols").value = preset.columns;
+    document.getElementById("pivot-metric").value = preset.metric;
+    pivotFilters = { ...preset.filters };
+    renderFilterChips();
+    updatePivot();
+    // Reset preset dropdown so it can be re-selected
+    sel.value = "";
+  }
+
+  function renderFilterChips() {
+    const container = document.getElementById("pivot-filter-chips");
+    let html = "";
+    for (const [k, v] of Object.entries(pivotFilters)) {
+      html += `<span class="pivot-filter-chip">${esc(k)}:${esc(v)} <span class="remove" onclick="app.removePivotFilter('${esc(k)}')">&times;</span></span>`;
+    }
+    container.innerHTML = html;
+  }
+
+  function addPivotFilter() {
+    const input = prompt("Enter filter as field:value (e.g. layer:full, perspective:knowledge, model_id:gpt-4.1)");
+    if (!input) return;
+    const idx = input.indexOf(":");
+    if (idx <= 0) { alert("Format: field:value"); return; }
+    const key = input.slice(0, idx).trim();
+    const val = input.slice(idx + 1).trim();
+    if (!key || !val) return;
+    pivotFilters[key] = val;
+    renderFilterChips();
+    updatePivot();
+  }
+
+  function removePivotFilter(key) {
+    delete pivotFilters[key];
+    renderFilterChips();
+    updatePivot();
+  }
+
+  async function updatePivot() {
+    if (pivotLoading) return;
+    pivotLoading = true;
+
+    const rows = document.getElementById("pivot-rows").value;
+    const cols = document.getElementById("pivot-cols").value;
+    const metric = document.getElementById("pivot-metric").value;
+
+    const $table = document.getElementById("pivot-table");
+    $table.innerHTML = '<div class="loading-msg">Loading pivot data...</div>';
+
+    // Build query string
+    const params = new URLSearchParams({ rows, columns: cols, metric });
+
+    // Build filters string
+    const filterParts = Object.entries(pivotFilters).map(([k, v]) => `${k}:${v}`);
+    if (filterParts.length > 0) params.set("filters", filterParts.join(","));
 
     try {
-      const res = await fetch("/api/eval/portfolio");
+      const res = await fetch(`/api/eval/pivot?${params}`);
       const data = await res.json();
-      renderPortfolio(data, $grid);
+      if (data.error) {
+        $table.innerHTML = `<div class="loading-msg">Error: ${esc(data.error)}</div>`;
+      } else {
+        renderPivotTable(data, metric);
+      }
     } catch (err) {
-      $grid.innerHTML = `<div class="loading-msg">Error: ${esc(err.message)}</div>`;
+      $table.innerHTML = `<div class="loading-msg">Error: ${esc(err.message)}</div>`;
+    } finally {
+      pivotLoading = false;
     }
   }
 
-  function renderPortfolio(data, $el) {
-    const { models, ablation, spectres } = data;
+  function renderPivotTable(data, metric) {
+    const { rows, columns, cells, row_labels, column_labels, metadata } = data;
+    const $table = document.getElementById("pivot-table");
+    const isCount = metric === "count";
 
-    let html = '';
+    if (rows.length === 0) {
+      $table.innerHTML = '<div class="loading-msg">No data found for this pivot configuration.</div>';
+      return;
+    }
 
-    // Header with nav
-    html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-      <h2 style="margin:0; color:var(--text);">Model Portfolio</h2>
-      <div>
-        <a onclick="app.loadBrowser()" style="color:var(--blue); cursor:pointer; margin-right:1rem;">Run History</a>
-        <a href="/run" style="color:var(--accent); cursor:pointer;">Launch Run &rarr;</a>
-      </div>
-    </div>`;
+    // Find best value per column (for highlighting)
+    const colBest = {};
+    for (const col of columns) {
+      let best = -Infinity;
+      for (const row of rows) {
+        const cell = cells[row] && cells[row][col];
+        if (cell && cell.value != null && cell.value > best) best = cell.value;
+      }
+      colBest[col] = best;
+    }
 
-    // Model x Spectre table
-    html += '<div class="card"><table class="scorecard-table"><thead><tr>';
-    html += '<th style="text-align:left; min-width:200px;">Model</th>';
-    for (const s of spectres) {
-      html += `<th style="text-align:center; text-transform:capitalize;">${esc(s)}</th>`;
+    // Compute row averages for sorting context
+    const rowAvg = {};
+    for (const row of rows) {
+      const vals = columns.map(c => cells[row] && cells[row][c] && cells[row][c].value).filter(v => v != null);
+      rowAvg[row] = vals.length > 0 ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+    }
+
+    // Sort rows by average descending (for score metrics), ascending for count
+    const sortedRows = [...rows].sort((a, b) => isCount ? rowAvg[b] - rowAvg[a] : rowAvg[b] - rowAvg[a]);
+
+    let html = '<table class="pivot-table"><thead><tr>';
+    html += `<th>${esc(document.getElementById("pivot-rows").selectedOptions[0].text)}</th>`;
+    for (const col of columns) {
+      const label = column_labels[col] || col;
+      html += `<th>${esc(label)}</th>`;
     }
     html += '</tr></thead><tbody>';
 
-    for (const m of models) {
+    for (const row of sortedRows) {
+      const label = row_labels[row] || row;
       html += '<tr>';
-      html += `<td style="font-weight:600; color:var(--text);">
-        <span style="color:var(--text-muted); font-size:0.7rem; margin-right:0.4rem;">${esc(m.provider)}</span>
-        ${esc(m.label)}
-        ${m.price ? `<span style="color:var(--text-muted); font-size:0.7rem; margin-left:0.4rem;">${esc(m.price)}</span>` : ''}
-      </td>`;
+      html += `<td title="${esc(row)}">${esc(label)}</td>`;
 
-      for (const s of spectres) {
-        const entry = m.spectres[s];
-        if (entry) {
-          const v = entry.overall;
-          const bg = scoreBgColor(v);
-          const color = scoreTextColor(v);
-          html += `<td style="text-align:center; background:${bg}; cursor:pointer;"
-            onclick="app.openReport('${esc(entry.run_id)}')" title="n=${entry.count}, run=${entry.run_id}">
-            <span style="color:${color}; font-weight:600; font-size:1.1rem;">${v.toFixed(1)}</span>
-            <span style="color:var(--text-muted); font-size:0.65rem; display:block;">n=${entry.count}</span>
+      for (const col of columns) {
+        const cell = cells[row] && cells[row][col];
+        if (!cell || cell.value == null) {
+          html += '<td class="pivot-cell-null">&mdash;</td>';
+          continue;
+        }
+
+        const v = cell.value;
+        const isBest = !isCount && v === colBest[col] && v > 0;
+
+        if (isCount) {
+          html += `<td${isBest ? ' class="pivot-cell-best"' : ''}>
+            <span style="font-weight:600;">${v}</span>
           </td>`;
         } else {
-          html += '<td style="text-align:center; color:var(--text-muted);">&mdash;</td>';
+          const bg = scoreBgColor(v);
+          const fg = scoreTextColor(v);
+          html += `<td style="background:${bg};"${isBest ? ' class="pivot-cell-best"' : ''}>
+            <span style="color:${fg}; font-weight:600;">${v.toFixed(1)}</span>
+            <span class="pivot-cell-n">n=${cell.n}${cell.std != null ? ', \u03c3=' + cell.std.toFixed(1) : ''}</span>
+          </td>`;
         }
       }
       html += '</tr>';
     }
 
-    html += '</tbody></table></div>';
+    html += '</tbody></table>';
 
-    // Ablation section
-    if (ablation.length > 0) {
-      html += '<div class="card" style="margin-top:1rem;"><h3 style="margin:0 0 0.75rem 0; color:var(--text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em;">Layer Ablation</h3>';
+    // Metadata footer
+    html += `<div style="margin-top:0.5rem; font-size:0.7rem; color:var(--text-muted);">
+      ${metadata.total_docs_queried} results queried
+      ${Object.keys(metadata.filters_applied || {}).length > 0
+        ? ' | Filters: ' + Object.entries(metadata.filters_applied).map(([k, v]) => `${k}=${v}`).join(', ')
+        : ''}
+    </div>`;
 
-      // Group by model
-      const byModel = {};
-      for (const a of ablation) {
-        if (!byModel[a.model_id]) byModel[a.model_id] = [];
-        byModel[a.model_id].push(a);
-      }
+    $table.innerHTML = html;
+  }
 
-      for (const [modelId, entries] of Object.entries(byModel)) {
-        html += `<div style="margin-bottom:1rem;">
-          <div style="color:var(--text); font-weight:600; margin-bottom:0.4rem;">${esc(modelId)}</div>
-          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">`;
+  async function loadPortfolio() {
+    showSection("portfolio");
+    updateBreadcrumb([]);
 
-        for (const e of entries) {
-          const v = e.overall;
-          const bg = scoreBgColor(v);
-          const color = scoreTextColor(v);
-          // Extract layer short name from label
-          const shortLabel = e.label.replace(/^.*?L/, 'L').replace(/:.*/,'');
-          html += `<div style="background:${bg}; padding:0.4rem 0.75rem; border-radius:6px; text-align:center; min-width:60px; cursor:pointer;"
-            onclick="app.openReport('${esc(e.run_id)}')" title="${esc(e.label)} (${e.layer}, n=${e.count})">
-            <div style="color:${color}; font-weight:600; font-size:1.1rem;">${v.toFixed(1)}</div>
-            <div style="color:var(--text-muted); font-size:0.65rem;">${esc(shortLabel)}</div>
-          </div>`;
-        }
-
-        html += '</div></div>';
-      }
-      html += '</div>';
-    }
-
-    $el.innerHTML = html;
+    // Load default preset: model-comparison
+    document.getElementById("pivot-rows").value = "model_id";
+    document.getElementById("pivot-cols").value = "perspective";
+    document.getElementById("pivot-metric").value = "overall_avg";
+    pivotFilters = { layer: "full" };
+    renderFilterChips();
+    updatePivot();
   }
 
   function goBackToDash() {
@@ -3565,6 +3794,10 @@
     setCostPeriod,
     loadPortfolio,
     loadBrowser,
+    updatePivot,
+    loadPreset,
+    addPivotFilter,
+    removePivotFilter,
   };
 
   // ── Init ──
