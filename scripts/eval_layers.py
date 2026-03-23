@@ -105,25 +105,38 @@ class LayerConfig:
                 if doc_path.exists():
                     knowledge = doc_path.read_text()
 
+        # Add tool usage instructions if tools are authorized
+        tool_instructions = ""
+        if self.include_tool_instructions and self.authorized_tools:
+            tool_lines = ["", "AVAILABLE TOOLS — use these when you need data or need to take action:"]
+            for tool_name in sorted(self.authorized_tools):
+                from eval_tools import TOOL_DEFINITIONS
+                tool_def = next((t for t in TOOL_DEFINITIONS if t["name"] == tool_name), None)
+                if tool_def:
+                    tool_lines.append(f"- {tool_name}: {tool_def['description'][:120]}")
+            tool_lines.append("")
+            tool_lines.append("IMPORTANT: When a question asks about specific requirements, advancement data, or scout progress — USE THE TOOLS to look it up. Do NOT guess or fabricate specific details.")
+            tool_lines.append("If you need current BSA policy details, use web_search." if "web_search" in self.authorized_tools else "")
+            tool_instructions = "\n".join(tool_lines)
+
+        # Combine persona + tool instructions
+        full_persona = persona + tool_instructions
+
         # Assemble prompt based on what components are included
         if self.include_knowledge and self.include_troop:
-            # Full: knowledge + troop + persona
             return (
                 knowledge
                 + SYSTEM_PROMPT_DELIMITER
                 + (troop_context or "")
                 + TROOP_CONTEXT_DELIMITER
-                + persona
+                + full_persona
             )
         elif self.include_knowledge and not self.include_troop:
-            # Knowledge only: knowledge + persona
-            return knowledge + SYSTEM_PROMPT_DELIMITER + persona
+            return knowledge + SYSTEM_PROMPT_DELIMITER + full_persona
         elif not self.include_knowledge and self.include_troop:
-            # Troop only: troop + persona
-            return (troop_context or "") + TROOP_CONTEXT_DELIMITER + persona
+            return (troop_context or "") + TROOP_CONTEXT_DELIMITER + full_persona
         else:
-            # Persona only
-            return persona
+            return full_persona
 
 
 # ---------------------------------------------------------------------------
@@ -204,7 +217,7 @@ _ALIASES: dict[str, str] = {
     "knowledge+troop": "PKT",
     "troop+websearch": "PTW",
     "troop-only": "PT",
-    "full": "PKT",
+    "full": "PKTW",
 }
 
 
