@@ -665,7 +665,7 @@ function renderConfigGroups() {
   for (const [name, cfg] of Object.entries(allConfigs)) {
     let group = cfg.provider || 'other';
     // Ablation configs go in their own group
-    const isAblation = name.startsWith('layer-') || name.startsWith('gemini3-L');
+    const isAblation = name.startsWith('layer-');
     if (isAblation) group = '_layers';
     // Adaptive/thinking variants stay under their provider (they're Claude sub-configs)
     if (!groups[group]) groups[group] = [];

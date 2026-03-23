@@ -151,69 +151,47 @@ configs:
     price: "$0.14/$0.28"
 
   # ---------------------------------------------------------------
-  # Knowledge layer ablation (all use Claude Sonnet)
+  # Ablation layers — model-agnostic test conditions
+  # Apply to any model via: --config <model> --layer <layer-value>
+  # Or use these configs directly (default to Claude for backward compat)
   # ---------------------------------------------------------------
   layer-L0:
     extends: claude
     layer: persona-only
     knowledge: none
     tools_enabled: false
-    label: "L0: Persona Only"
+    label: "Persona Only (no knowledge, no tools)"
 
   layer-L1:
     extends: claude
     layer: persona-only
     knowledge: none
     web_search: true
-    label: "L1: Persona + Web Search"
-    price: "$3/$15+search"
+    label: "Persona + Web Search"
+    price: "+search"
 
   layer-L1t:
     extends: claude
     layer: troop+websearch
     knowledge: none
     web_search: true
-    label: "L1t: Troop + Web Search"
-    price: "$3/$15+search"
+    label: "Troop Context + Web Search"
+    price: "+search"
 
   layer-L2:
     extends: claude
     layer: knowledge-only
-    label: "L2: + BSA Knowledge"
+    label: "BSA Knowledge Only"
 
   layer-L3:
     extends: claude
     layer: knowledge+troop
-    label: "L3: + Troop Context"
+    label: "Knowledge + Troop Context"
 
   layer-L4:
     extends: claude
     layer: full
-    label: "L4: Full Stack"
-
-  layer-L5:
-    extends: claude
-    layer: full
-
-  # ---------------------------------------------------------------
-  # Gemini 3 Flash layer ablation
-  # ---------------------------------------------------------------
-  gemini3-L0:
-    extends: gemini3flash
-    layer: persona-only
-    knowledge: none
-    tools_enabled: false
-    label: "Gemini 3 Flash — Persona Only"
-
-  gemini3-L2:
-    extends: gemini3flash
-    layer: knowledge-only
-    label: "Gemini 3 Flash — + Knowledge"
-
-  gemini3-L3:
-    extends: gemini3flash
-    layer: knowledge+troop
-    label: "Gemini 3 Flash — + Troop"
+    label: "Full Stack"
     adaptive_effort: medium
     label: "L5: + Adaptive Thinking"
     price: "$3/$15 adaptive"

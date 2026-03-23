@@ -750,8 +750,7 @@ export function createEvalReportsRouter(): Router {
 
       for (const r of results) {
         const { model_id, perspective, layer, config_id } = r._id;
-        const isAblation = (config_id || "").startsWith("layer-") ||
-                          (config_id || "").startsWith("gemini3-L");
+        const isAblation = (config_id || "").startsWith("layer-");
 
         // Compute average scores across all questions
         const scoreDocs = r.scores as Record<string, number>[];
