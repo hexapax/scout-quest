@@ -471,7 +471,7 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
     # ===== READ TOOLS =====
     {
         "name": "read_quest_state",
-        "description": "Read the scout's quest state: goal, savings, target budget, progress percentage.",
+        "description": "Read THIS SCOUT's quest state: their personal goal, current savings, target budget, progress percentage. Use for personalization.",
         "input_schema": {
             "type": "object",
             "properties": {},
@@ -481,8 +481,10 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
     {
         "name": "read_requirements",
         "description": (
-            "Read all Personal Management and Family Life requirements with current status "
-            "(not_started, in_progress, tracking, ready_for_review, signed_off)."
+            "Read THIS SCOUT's progress on Personal Management and Family Life requirements — "
+            "returns each requirement's current status (not_started, in_progress, tracking, "
+            "ready_for_review, signed_off). Use this to check what the scout has completed, "
+            "NOT to look up requirement text (that's in your knowledge base)."
         ),
         "input_schema": {
             "type": "object",
@@ -540,7 +542,13 @@ TOOL_DEFINITIONS: list[dict[str, Any]] = [
     # ===== SEARCH TOOLS =====
     {
         "name": "web_search",
-        "description": "Search the web for current BSA policy, merit badge requirements, scouting procedures, or other factual information.",
+        "description": (
+            "Search the web — LAST RESORT only. Your BSA knowledge base (in the system prompt) "
+            "contains official requirements, policy, and version history. Use web_search ONLY when: "
+            "(1) the knowledge base doesn't cover the topic, (2) you need very recent changes "
+            "not yet in the knowledge base, or (3) you need to verify something you're unsure about. "
+            "PREFER your knowledge base over web search for BSA facts."
+        ),
         "input_schema": {
             "type": "object",
             "properties": {

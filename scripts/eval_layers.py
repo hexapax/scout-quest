@@ -108,15 +108,30 @@ class LayerConfig:
         # Add tool usage instructions if tools are authorized
         tool_instructions = ""
         if self.include_tool_instructions and self.authorized_tools:
-            tool_lines = ["", "AVAILABLE TOOLS — use these when you need data or need to take action:"]
+            from eval_tools import TOOL_DEFINITIONS
+            tool_lines = [
+                "",
+                "DATA SOURCES — know what's where:",
+                "- YOUR KNOWLEDGE BASE (already in this prompt): BSA official policy, merit badge requirements,",
+                "  requirement version history, advancement procedures, safety rules. This is AUTHORITATIVE.",
+                "  Use it FIRST for any BSA facts, requirements, or policy questions.",
+                "- SCOUT DATA TOOLS (read_*): This specific scout's progress, quest state, chore streak, etc.",
+                "  Use these to PERSONALIZE — check what this scout has done, not what BSA requires.",
+                "",
+                "AVAILABLE TOOLS:",
+            ]
             for tool_name in sorted(self.authorized_tools):
-                from eval_tools import TOOL_DEFINITIONS
                 tool_def = next((t for t in TOOL_DEFINITIONS if t["name"] == tool_name), None)
                 if tool_def:
-                    tool_lines.append(f"- {tool_name}: {tool_def['description'][:120]}")
-            tool_lines.append("")
-            tool_lines.append("IMPORTANT: When a question asks about specific requirements, advancement data, or scout progress — USE THE TOOLS to look it up. Do NOT guess or fabricate specific details.")
-            tool_lines.append("If you need current BSA policy details, use web_search." if "web_search" in self.authorized_tools else "")
+                    tool_lines.append(f"- {tool_name}: {tool_def['description'][:150]}")
+            tool_lines.extend([
+                "",
+                "TOOL USAGE RULES:",
+                "1. BSA facts/requirements/policy → answer from YOUR KNOWLEDGE BASE first. Don't web search for things you already know.",
+                "2. This scout's progress/data → use read_* tools to check their actual state.",
+                "3. web_search → ONLY when your knowledge base doesn't have the answer or you need to verify something uncertain.",
+                "4. NEVER fabricate specific facts. If you don't know and can't look it up, say so.",
+            ])
             tool_instructions = "\n".join(tool_lines)
 
         # Combine persona + tool instructions
