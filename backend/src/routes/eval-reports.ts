@@ -838,6 +838,54 @@ export function createEvalReportsRouter(): Router {
 
   const SCORE_META_KEYS = new Set(["notes", "_assessments"]);
 
+  // Category labels for row display
+  const CATEGORY_LABELS: Record<string, string> = {
+    A: "Advancement Policy", B: "Troop Logistics", C: "Requirement Details",
+    D: "Safety/YPT", E: "Cross-Reference", F: "Values Coaching", G: "Over-Policy Detection",
+    S: "Safety / YPT", M: "Manipulation", chain: "Chain Sessions",
+  };
+
+  // Model display names
+  const MODEL_LABELS: Record<string, string> = {
+    "claude-sonnet-4-6": "Claude Sonnet 4.6",
+    "claude-opus-4-6": "Claude Opus 4.6",
+    "gpt-4.1": "GPT-4.1",
+    "gpt-4.1-mini": "GPT-4.1 Mini",
+    "gpt-4.1-nano": "GPT-4.1 Nano",
+    "gpt-5.4": "GPT-5.4",
+    "gpt-5.4-mini": "GPT-5.4 Mini",
+    "gemini-2.5-flash": "Gemini 2.5 Flash",
+    "gemini-3-flash-preview": "Gemini 3 Flash",
+    "gemini-3.1-flash-lite-preview": "Gemini 3.1 Flash Lite",
+    "deepseek-chat": "DeepSeek V3",
+    "x-ai/grok-3-mini": "Grok 3 Mini",
+  };
+
+  function resolveRowLabel(rowField: string, rowValue: string, mongoLabel?: string): string {
+    switch (rowField) {
+      case "model_id":
+        return MODEL_LABELS[rowValue] || mongoLabel || rowValue;
+      case "config_id":
+        return mongoLabel || rowValue;
+      case "category":
+        return CATEGORY_LABELS[rowValue] || rowValue;
+      case "question_id":
+        return rowValue;
+      case "layer":
+        return rowValue.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      case "perspective":
+        return rowValue.charAt(0).toUpperCase() + rowValue.slice(1);
+      case "provider":
+        return rowValue.charAt(0).toUpperCase() + rowValue.slice(1);
+      default:
+        return mongoLabel || rowValue;
+    }
+  }
+
+  function resolveColLabel(colField: string, colValue: string, mongoLabel?: string): string {
+    return resolveRowLabel(colField, colValue, mongoLabel);
+  }
+
   router.get("/api/eval/pivot", async (req: Request, res: Response) => {
     try {
       const rowField = (req.query.rows as string) || "model_id";
@@ -926,9 +974,8 @@ export function createEvalReportsRouter(): Router {
         for (const r of results) {
           const rowKey = r._id as string;
           rows.push(rowKey);
-          // Use the most common label
           const labels = (r.labels as string[]).filter(Boolean);
-          rowLabels[rowKey] = labels[0] || rowKey;
+          rowLabels[rowKey] = resolveRowLabel(rowField, rowKey, labels[0]);
 
           cells[rowKey] = {};
           const scoreDocs = r.scoreDocs as Record<string, number>[];
@@ -1005,14 +1052,38 @@ export function createEvalReportsRouter(): Router {
       const rowLabels: Record<string, string> = {};
       const columnLabels: Record<string, string> = {};
 
+      // For model_id/config_id fields, pre-fetch labels where label matches the field value
+      // (avoids using wrong labels from ablation configs)
+      const modelLabelLookup: Record<string, string> = {};
+      if (rowField === "model_id" || rowField === "config_id" || colField === "model_id" || colField === "config_id") {
+        const labelField = rowField === "config_id" || colField === "config_id" ? "config_id" : "model_id";
+        const labelPipeline = [
+          { $match: { ...matchStage, label: { $exists: true } } },
+          { $group: { _id: `$${labelField}`, label: { $first: "$label" } } },
+        ];
+        // Only use labels where config_id matches label style (not ablation labels for base models)
+        const labelResults = await col.aggregate(labelPipeline).toArray();
+        for (const lr of labelResults) {
+          const key = lr._id as string;
+          const label = lr.label as string;
+          // Prefer labels that look like model names (not layer labels like "L0: Persona Only")
+          if (label && !label.startsWith("L0") && !label.startsWith("L1") && !label.startsWith("L2") && !label.startsWith("L3") && !label.startsWith("L4") && !label.startsWith("L5")) {
+            modelLabelLookup[key] = label;
+          }
+        }
+      }
+
       // Build lookup: "row|col" -> result
       const lookup = new Map<string, typeof results[0]>();
       for (const r of results) {
         const id = r._id as { row: string; col: string };
         lookup.set(`${id.row}|${id.col}`, r);
-        // Capture labels
-        const labels = (r.labels as string[]).filter(Boolean);
-        if (labels[0] && !rowLabels[id.row]) rowLabels[id.row] = labels[0];
+        if (!rowLabels[id.row]) {
+          rowLabels[id.row] = resolveRowLabel(rowField, id.row, modelLabelLookup[id.row]);
+        }
+        if (!columnLabels[id.col]) {
+          columnLabels[id.col] = resolveColLabel(colField, id.col, modelLabelLookup[id.col]);
+        }
       }
 
       let totalDocs = 0;
@@ -1101,13 +1172,12 @@ export function createEvalReportsRouter(): Router {
           cells[row][column] = { value, n, std };
         }
 
-        // Fallback row label to the row value itself
-        if (!rowLabels[row]) rowLabels[row] = row;
+        if (!rowLabels[row]) rowLabels[row] = resolveRowLabel(rowField, row);
       }
 
-      // Build column labels — just use the column value (could be enriched later)
+      // Build column labels with contextual resolution
       for (const c of columns) {
-        columnLabels[c] = c;
+        columnLabels[c] = resolveColLabel(colField, c);
       }
 
       res.json({
