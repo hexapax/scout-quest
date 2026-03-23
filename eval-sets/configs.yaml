@@ -203,17 +203,17 @@ configs:
     layer: persona-only
     knowledge: none
     tools_enabled: false
-    label: "Gemini3 L0: Persona Only"
+    label: "Gemini 3 Flash — Persona Only"
 
   gemini3-L2:
     extends: gemini3flash
     layer: knowledge-only
-    label: "Gemini3 L2: + BSA Knowledge"
+    label: "Gemini 3 Flash — + Knowledge"
 
   gemini3-L3:
     extends: gemini3flash
     layer: knowledge+troop
-    label: "Gemini3 L3: + Troop Context"
+    label: "Gemini 3 Flash — + Troop"
     adaptive_effort: medium
     label: "L5: + Adaptive Thinking"
     price: "$3/$15 adaptive"
