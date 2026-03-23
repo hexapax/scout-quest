@@ -690,5 +690,144 @@ export function createEvalReportsRouter(): Router {
     }
   });
 
+  // ── Portfolio endpoint — cross-run aggregation ──
+
+  router.get("/api/eval/portfolio", async (_req: Request, res: Response) => {
+    try {
+      const db = getScoutQuestDb();
+      const col = db.collection("eval_results");
+
+      // Aggregate: for each model_id × perspective × layer, get the latest scores
+      const pipeline = [
+        { $match: { scores: { $exists: true }, error: { $exists: false } } },
+        { $sort: { timestamp: -1 as const } },
+        {
+          $group: {
+            _id: {
+              model_id: "$model_id",
+              perspective: "$perspective",
+              layer: "$layer",
+              config_id: "$config_id",
+            },
+            label: { $first: "$label" },
+            provider: { $first: "$provider" },
+            price: { $first: "$price" },
+            scores: { $push: "$scores" },
+            run_id: { $first: "$run_id" },
+            count: { $sum: 1 },
+          },
+        },
+      ];
+
+      const results = await col.aggregate(pipeline).toArray();
+
+      // Organize into portfolio structure
+      const models: Record<string, {
+        model_id: string;
+        label: string;
+        provider: string;
+        price: string;
+        spectres: Record<string, {
+          layer: string;
+          config_id: string;
+          avg_scores: Record<string, number>;
+          overall: number;
+          count: number;
+          run_id: string;
+        }>;
+      }> = {};
+
+      // Track ablation entries separately
+      const ablation: {
+        model_id: string;
+        label: string;
+        layer: string;
+        config_id: string;
+        avg_scores: Record<string, number>;
+        overall: number;
+        count: number;
+      }[] = [];
+
+      for (const r of results) {
+        const { model_id, perspective, layer, config_id } = r._id;
+        const isAblation = (config_id || "").startsWith("layer-") ||
+                          (config_id || "").startsWith("gemini3-L");
+
+        // Compute average scores across all questions
+        const scoreDocs = r.scores as Record<string, number>[];
+        const avgScores: Record<string, number> = {};
+        if (scoreDocs.length > 0) {
+          const dims = Object.keys(scoreDocs[0]).filter(
+            (k) => !["notes", "_assessments"].includes(k)
+          );
+          for (const dim of dims) {
+            const vals = scoreDocs.map((s) => s[dim] || 0);
+            avgScores[dim] = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+          }
+          const dimVals = Object.values(avgScores);
+          avgScores._overall = dimVals.length > 0
+            ? Math.round((dimVals.reduce((a, b) => a + b, 0) / dimVals.length) * 10) / 10
+            : 0;
+        }
+
+        const entry = {
+          layer: layer || "full",
+          config_id: config_id || model_id,
+          avg_scores: avgScores,
+          overall: avgScores._overall || 0,
+          count: r.count,
+          run_id: r.run_id,
+        };
+
+        if (isAblation) {
+          ablation.push({
+            model_id,
+            label: r.label || config_id || model_id,
+            ...entry,
+          });
+        } else {
+          if (!models[model_id]) {
+            models[model_id] = {
+              model_id,
+              label: r.label || model_id,
+              provider: r.provider || "",
+              price: r.price || "",
+              spectres: {},
+            };
+          }
+          // Use perspective as key, keep the highest-scoring config per perspective
+          const key = `${perspective}`;
+          if (!models[model_id].spectres[key] || entry.overall > models[model_id].spectres[key].overall) {
+            models[model_id].spectres[key] = entry;
+          }
+        }
+      }
+
+      // Get list of all spectres
+      const allSpectres = [...new Set(
+        Object.values(models).flatMap((m) => Object.keys(m.spectres))
+      )].sort();
+
+      res.json({
+        models: Object.values(models).sort((a, b) => {
+          // Sort by best overall across spectres
+          const aMax = Math.max(...Object.values(a.spectres).map((s) => s.overall), 0);
+          const bMax = Math.max(...Object.values(b.spectres).map((s) => s.overall), 0);
+          return bMax - aMax;
+        }),
+        ablation: ablation.sort((a, b) => {
+          // Group by model, then by layer order
+          if (a.model_id !== b.model_id) return a.model_id.localeCompare(b.model_id);
+          const layerOrder = ["persona-only", "troop+websearch", "knowledge-only", "knowledge+troop", "full"];
+          return layerOrder.indexOf(a.layer) - layerOrder.indexOf(b.layer);
+        }),
+        spectres: allSpectres,
+      });
+    } catch (err) {
+      console.error("Portfolio error:", err);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   return router;
 }

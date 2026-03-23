@@ -404,9 +404,10 @@
     font-size: 0.8rem;
   }
   .score-bar-label {
-    min-width: 80px;
+    min-width: 110px;
     color: var(--text-muted);
     text-align: right;
+    font-size: 0.78rem;
   }
   .score-bar-track {
     flex: 1;
@@ -870,6 +871,127 @@
     margin-top: 0.15rem;
     opacity: 0.85;
   }
+
+  /* ── Compact Scorecard Dashboard ── */
+  .scorecard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .scorecard-table th, .scorecard-table td {
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--surface2);
+    text-align: center;
+    white-space: nowrap;
+  }
+  .scorecard-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 2;
+  }
+  .scorecard-table th:first-child,
+  .scorecard-table td:first-child {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+    z-index: 1;
+  }
+  .scorecard-table td:first-child {
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .scorecard-table td:first-child:hover {
+    color: var(--accent);
+  }
+  .scorecard-row {
+    transition: background 0.15s;
+  }
+  .scorecard-row:hover {
+    background: rgba(255,255,255,0.03);
+  }
+  .scorecard-row.expanded {
+    background: rgba(233,69,96,0.05);
+  }
+  .scorecard-avg-cell {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .scorecard-star {
+    color: var(--yellow);
+    margin-right: 0.3rem;
+  }
+  .scorecard-cell-best {
+    font-weight: 700;
+  }
+  .scorecard-cell-worst {
+    opacity: 0.6;
+  }
+  .scorecard-error-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    background: rgba(231, 76, 60, 0.2);
+    color: var(--red);
+    margin-left: 0.4rem;
+    vertical-align: middle;
+  }
+
+  /* ── Expanded Per-Question Detail ── */
+  .scorecard-expand-row td {
+    padding: 0;
+    border-bottom: 2px solid var(--surface2);
+  }
+  .scorecard-expand-content {
+    background: var(--bg);
+    border: 1px solid var(--surface2);
+    border-radius: 6px;
+    margin: 0.25rem 0.5rem 0.75rem;
+    overflow: hidden;
+  }
+  .expand-question-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .expand-question-table th, .expand-question-table td {
+    padding: 0.4rem 0.5rem;
+    border-bottom: 1px solid var(--surface2);
+    text-align: center;
+    white-space: nowrap;
+  }
+  .expand-question-table th {
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+  }
+  .expand-question-table th:nth-child(2),
+  .expand-question-table td:nth-child(2) {
+    text-align: left;
+    min-width: 200px;
+    white-space: normal;
+  }
+  .expand-question-table td:nth-child(2) {
+    cursor: pointer;
+    color: var(--blue);
+  }
+  .expand-question-table td:nth-child(2):hover {
+    text-decoration: underline;
+  }
+  .expand-question-table tr:last-child td {
+    border-bottom: none;
+  }
 </style>
 </head>
 <body>
@@ -905,9 +1027,8 @@
 <div id="dashboard" class="container hidden">
   <!-- View tabs -->
   <div class="tab-bar" id="view-tabs" style="display:flex; align-items:center;">
-    <button class="tab-btn active" data-view="overview">Overview</button>
-    <button class="tab-btn" data-view="table">Score Table</button>
-    <button class="tab-btn" data-view="compare">Comparison</button>
+    <button class="tab-btn active" data-view="dashboard">Dashboard</button>
+    <button class="tab-btn" data-view="questions">Questions</button>
     <button class="tab-btn" data-view="cost">Cost</button>
     <span style="flex:1;"></span>
     <button class="copy-btn" id="copy-report-btn" onclick="app.copyReport()" title="Copy score table as markdown">Copy Report</button>
@@ -916,11 +1037,13 @@
   <!-- Category filter tabs -->
   <div class="tab-bar" id="category-tabs"></div>
 
-  <!-- Overview view -->
-  <div id="view-overview">
-    <div class="summary-row" id="summary-cards"></div>
+  <!-- Dashboard view (compact scorecard + charts) -->
+  <div id="view-dashboard">
+    <div class="card">
+      <div class="score-table-wrap" id="scorecard-container"></div>
+    </div>
 
-    <div class="chart-grid">
+    <div class="chart-grid" style="margin-top:1rem;">
       <div class="chart-container">
         <h3 style="margin-bottom:0.5rem; color:var(--text-muted); font-size:0.85rem;">Radar: Score Dimensions</h3>
         <canvas id="radar-chart"></canvas>
@@ -932,25 +1055,13 @@
     </div>
   </div>
 
-  <!-- Score Table view -->
-  <div id="view-table" class="hidden">
+  <!-- Questions view (per-question drilldown list) -->
+  <div id="view-questions" class="hidden">
     <div class="card">
       <div class="score-table-wrap">
         <table class="score-table" id="score-table"></table>
       </div>
     </div>
-  </div>
-
-  <!-- Comparison view -->
-  <div id="view-compare" class="hidden">
-    <div class="card">
-      <h2>Compare Models</h2>
-      <div class="compare-controls" id="compare-controls">
-        <label>Select 2-4 models:</label>
-      </div>
-    </div>
-    <div id="compare-diff"></div>
-    <div id="compare-questions"></div>
   </div>
 
   <!-- Cost view -->
@@ -976,7 +1087,7 @@
     </div>
   </div>
 
-  <!-- Question list (part of all views) -->
+  <!-- Question list (shown in questions view) -->
   <div id="question-list"></div>
 </div>
 
@@ -989,6 +1100,11 @@
     <h2>Evaluation In Progress</h2>
     <div id="pm-content"></div>
   </div>
+</div>
+
+<!-- ═══ SECTION: Portfolio Dashboard ═══ -->
+<div id="portfolio" class="container hidden">
+  <div class="portfolio-grid"></div>
 </div>
 
 <!-- ═══ Voice Narration Bar ═══ -->
@@ -1088,8 +1204,8 @@
     accuracy: "Accuracy", specificity: "Specificity", safety: "Safety",
     coaching: "Coaching", troop_voice: "Troop Voice",
     // Chain dimensions
-    tool_accuracy: "Tool Acc", coaching_quality: "Coaching", state_awareness: "State",
-    character_voice: "Character",
+    tool_accuracy: "Tool Accuracy", coaching_quality: "Coaching Quality", state_awareness: "State Awareness",
+    character_voice: "Character Voice",
   };
   // Generate labels dynamically — use known labels or title-case the name
   function getDimLabel(dim) {
@@ -1120,6 +1236,7 @@
   const $dashboard = document.getElementById("dashboard");
   const $drilldown = document.getElementById("drilldown");
   const $progressMonitor = document.getElementById("progress-monitor");
+  const $portfolio = document.getElementById("portfolio");
   const $breadcrumb = document.getElementById("breadcrumb");
   const $reportList = document.getElementById("report-list");
 
@@ -1322,6 +1439,19 @@
     return "rgba(231,76,60,0.2)";
   }
 
+  function scoreBgColor(v) {
+    if (v == null) return "rgba(136,153,170,0.1)";
+    if (v >= 8) return "rgba(46, 204, 113, 0.15)";
+    if (v >= 5) return "rgba(241, 196, 15, 0.10)";
+    return "rgba(231, 76, 60, 0.15)";
+  }
+  function scoreTextColor(v) {
+    if (v == null) return "var(--text-muted)";
+    if (v >= 8) return "#2ecc71";
+    if (v >= 5) return "#f1c40f";
+    return "#e74c3c";
+  }
+
   function fmtScore(val) {
     if (val == null || val === undefined) return "--";
     return val.toFixed(1);
@@ -1477,10 +1607,11 @@
     $dashboard.classList.toggle("hidden", section !== "dashboard");
     $drilldown.classList.toggle("hidden", section !== "drilldown");
     $progressMonitor.classList.toggle("hidden", section !== "progress");
+    $portfolio.classList.toggle("hidden", section !== "portfolio");
   }
 
   function updateBreadcrumb(parts) {
-    let html = '<a onclick="app.goHome()">Reports</a>';
+    let html = '<a onclick="app.goHome()">Portfolio</a>';
     for (const p of parts) {
       html += ` / ${p.click ? `<a onclick="${esc(p.click)}">${esc(p.label)}</a>` : esc(p.label)}`;
     }
@@ -1636,11 +1767,14 @@
   }
 
   // ── Dashboard ──
+  let expandedModelKey = null; // Track which model row is expanded in scorecard
+
   function loadDashboard(data) {
     currentData = data;
     activeCategory = "all";
-    activeView = "overview";
+    activeView = "dashboard";
     compareModels = [];
+    expandedModelKey = null;
 
     // Detect score dimensions from data
     const detectedDims = detectDimsFromData(data);
@@ -1707,56 +1841,183 @@
     // Sort by overall score descending
     models.sort((a, b) => (b.filteredAvg.overall || 0) - (a.filteredAvg.overall || 0));
 
-    document.getElementById("view-overview").classList.toggle("hidden", activeView !== "overview");
-    document.getElementById("view-table").classList.toggle("hidden", activeView !== "table");
-    document.getElementById("view-compare").classList.toggle("hidden", activeView !== "compare");
+    document.getElementById("view-dashboard").classList.toggle("hidden", activeView !== "dashboard");
+    document.getElementById("view-questions").classList.toggle("hidden", activeView !== "questions");
     document.getElementById("view-cost").classList.toggle("hidden", activeView !== "cost");
 
-    // Hide category tabs and question list when viewing cost
+    // Hide category tabs when viewing cost; show question list only in questions view
     document.getElementById("category-tabs").classList.toggle("hidden", activeView === "cost");
-    document.getElementById("question-list").classList.toggle("hidden", activeView === "cost");
+    document.getElementById("question-list").classList.toggle("hidden", activeView !== "questions");
 
-    if (activeView === "overview") {
-      renderSummaryCards(models);
+    if (activeView === "dashboard") {
+      renderScorecard(data, models);
       renderRadarChart(models);
       renderBarChart(data, models);
-    } else if (activeView === "table") {
+    } else if (activeView === "questions") {
       renderScoreTable(data, models);
-    } else if (activeView === "compare") {
-      renderCompareView(data, models);
+      renderQuestionList(data, models);
     } else if (activeView === "cost") {
       loadCostDashboard();
     }
-
-    if (activeView !== "cost") renderQuestionList(data, models);
   }
 
-  // ── Summary Cards ──
-  function renderSummaryCards(models) {
-    const $el = document.getElementById("summary-cards");
-    let html = "";
+  // ── Compact Scorecard ──
+  function renderScorecard(data, models) {
+    const $el = document.getElementById("scorecard-container");
+
+    // Compute best and worst per dimension + overall
+    const bestPerDim = {};
+    const worstPerDim = {};
+    for (const dim of SCORE_DIMS) {
+      let best = -1, worst = 11;
+      for (const m of models) {
+        const v = m.filteredAvg[dim];
+        if (v != null) {
+          if (v > best) best = v;
+          if (v < worst) worst = v;
+        }
+      }
+      bestPerDim[dim] = best >= 0 ? best : null;
+      worstPerDim[dim] = worst <= 10 ? worst : null;
+    }
+    let bestOverall = -1, worstOverall = 11;
+    for (const m of models) {
+      const v = m.filteredAvg.overall;
+      if (v != null) {
+        if (v > bestOverall) bestOverall = v;
+        if (v < worstOverall) worstOverall = v;
+      }
+    }
+
+    // Table header
+    let html = '<table class="scorecard-table"><thead><tr><th style="min-width:180px;">Model</th>';
+    for (const dim of SCORE_DIMS) {
+      html += `<th>${esc(getDimLabel(dim))}</th>`;
+    }
+    html += '<th>AVG</th></tr></thead><tbody>';
+
+    // Model rows
     models.forEach((m, i) => {
       const overall = m.filteredAvg.overall;
-      const hasErrors = m.entries.some(e => e.error);
-      const hasScores = overall != null;
-      const dimHtml = SCORE_DIMS.map(d => {
-        const v = m.filteredAvg[d];
-        return `<span class="dim-score" style="background:${scoreBg(v)}; color:${scoreColor(v)}">${DIM_LABELS[d].substring(0,4)} ${fmtScore(v)}</span>`;
-      }).join("");
+      const hasErrors = m.filtered.some(e => e.error);
+      const errorCount = m.filtered.filter(e => e.error).length;
+      const isBestModel = i === 0 && overall != null;
+      const isExpanded = expandedModelKey === m.key;
 
-      const overallLabel = hasScores ? fmtScore(overall) : (hasErrors ? "ERR" : "--");
-      const overallColor = hasScores ? scoreColor(overall) : (hasErrors ? "var(--red)" : "var(--text-muted)");
+      html += `<tr class="scorecard-row ${isExpanded ? 'expanded' : ''}" onclick="app.toggleModelExpand('${esc(m.key)}')">`;
 
-      html += `
-        <div class="summary-card">
-          <div class="rank">#${i + 1}</div>
-          <div class="model-name">${esc(m.label)}</div>
-          <div class="price-tag">${esc(m.price)}</div>
-          <div class="avg-score" style="color:${overallColor}">${overallLabel}</div>
-          <div class="dim-scores">${dimHtml}</div>
-        </div>`;
+      // Model name cell
+      const expandIcon = isExpanded ? '\u25BE' : '\u25B8';
+      html += `<td>${expandIcon} `;
+      if (isBestModel) html += '<span class="scorecard-star">\u2605</span>';
+      html += `${esc(m.label)}`;
+      if (hasErrors) html += `<span class="scorecard-error-badge">\u26A0 ${errorCount} err</span>`;
+      html += '</td>';
+
+      // Dimension score cells
+      for (const dim of SCORE_DIMS) {
+        const v = m.filteredAvg[dim];
+        const isBest = v != null && bestPerDim[dim] != null && v === bestPerDim[dim];
+        const isWorst = v != null && worstPerDim[dim] != null && v === worstPerDim[dim] && models.length > 1;
+        let cls = '';
+        if (isBest) cls = 'scorecard-cell-best';
+        else if (isWorst) cls = 'scorecard-cell-worst';
+        const bg = scoreBgColor(v);
+        const fg = scoreTextColor(v);
+        html += `<td class="${cls}" style="background:${bg}; color:${fg};">${fmtScore(v)}</td>`;
+      }
+
+      // AVG cell
+      const isBestAvg = overall != null && overall === bestOverall;
+      const isWorstAvg = overall != null && overall === worstOverall && models.length > 1;
+      let avgCls = 'scorecard-avg-cell';
+      if (isBestAvg) avgCls += ' scorecard-cell-best';
+      else if (isWorstAvg) avgCls += ' scorecard-cell-worst';
+      const avgBg = scoreBgColor(overall);
+      const avgFg = scoreTextColor(overall);
+      const avgLabel = overall != null ? fmtScore(overall) : (hasErrors ? 'ERR' : '--');
+      html += `<td class="${avgCls}" style="background:${avgBg}; color:${avgFg};">${avgLabel}</td>`;
+
+      html += '</tr>';
+
+      // Expanded per-question detail row
+      if (isExpanded) {
+        const colSpan = SCORE_DIMS.length + 2;
+        html += `<tr class="scorecard-expand-row"><td colspan="${colSpan}">`;
+        html += '<div class="scorecard-expand-content">';
+        html += renderExpandedQuestions(data, m);
+        html += '</div></td></tr>';
+      }
     });
+
+    html += '</tbody></table>';
     $el.innerHTML = html;
+  }
+
+  function renderExpandedQuestions(data, model) {
+    const questions = getQuestions(data);
+    const filtered = activeCategory === "all" ? questions : questions.filter(q => q.category === activeCategory);
+
+    let html = '<table class="expand-question-table"><thead><tr><th>ID</th><th>Question</th>';
+    for (const dim of SCORE_DIMS) {
+      html += `<th>${esc(getDimLabel(dim))}</th>`;
+    }
+    html += '<th>AVG</th></tr></thead><tbody>';
+
+    for (const q of filtered) {
+      const entry = model.entries.find(e => e.questionId === q.id);
+      html += '<tr>';
+      html += `<td style="color:var(--blue); font-weight:600;">${esc(q.id)}</td>`;
+      html += `<td onclick="app.drillDown('${esc(q.id)}')">${esc(q.question.substring(0, 60))}${q.question.length > 60 ? '...' : ''}</td>`;
+
+      if (entry && entry.error) {
+        for (const dim of SCORE_DIMS) {
+          html += `<td style="color:var(--red);">ERR</td>`;
+        }
+        html += `<td style="color:var(--red);">ERR</td>`;
+      } else if (entry && entry.scores) {
+        let sum = 0;
+        for (const dim of SCORE_DIMS) {
+          const v = entry.scores[dim] || 0;
+          sum += v;
+          const fg = scoreTextColor(v);
+          const bg = scoreBgColor(v);
+          html += `<td style="color:${fg}; background:${bg};">${v}</td>`;
+        }
+        const avg = sum / SCORE_DIMS.length;
+        const avgFg = scoreTextColor(avg);
+        const avgBg = scoreBgColor(avg);
+        html += `<td style="color:${avgFg}; background:${avgBg}; font-weight:600;">${avg.toFixed(1)}</td>`;
+      } else {
+        for (const dim of SCORE_DIMS) {
+          html += '<td style="color:var(--text-muted);">--</td>';
+        }
+        html += '<td style="color:var(--text-muted);">--</td>';
+      }
+
+      html += '</tr>';
+    }
+
+    html += '</tbody></table>';
+    return html;
+  }
+
+  function toggleModelExpand(modelKey) {
+    if (expandedModelKey === modelKey) {
+      expandedModelKey = null;
+    } else {
+      expandedModelKey = modelKey;
+    }
+    // Re-render scorecard only
+    if (currentData && activeView === "dashboard") {
+      const models = getModels(currentData).map(m => ({
+        ...m,
+        filtered: filterByCategory(m.entries, activeCategory),
+        filteredAvg: avgScore(filterByCategory(m.entries, activeCategory))
+      }));
+      models.sort((a, b) => (b.filteredAvg.overall || 0) - (a.filteredAvg.overall || 0));
+      renderScorecard(currentData, models);
+    }
   }
 
   // ── Radar Chart ──
@@ -1921,14 +2182,13 @@
 
   // ── Question List (mini view) ──
   function renderQuestionList(data, models) {
-    if (activeView === "compare") return;
     const questions = getQuestions(data);
     const filtered = activeCategory === "all" ? questions : questions.filter(q => q.category === activeCategory);
 
     const $el = document.getElementById("question-list");
     let html = '<div class="card"><h2>Questions</h2><div class="score-table-wrap"><table class="score-table"><thead><tr><th></th><th>ID</th><th>Question</th>';
     for (const m of models) {
-      html += `<th>${esc(m.label.length > 12 ? m.label.substring(0, 12) + "..." : m.label)}</th>`;
+      html += `<th>${esc(m.label.length > 18 ? m.label.substring(0, 18) + "..." : m.label)}</th>`;
     }
     html += '</tr></thead><tbody>';
 
@@ -1960,9 +2220,10 @@
     $el.innerHTML = html;
   }
 
-  // ── Comparison View ──
+  // ── Comparison View (preserved but not shown in default tabs) ──
   function renderCompareView(data, models) {
     const $controls = document.getElementById("compare-controls");
+    if (!$controls) return; // Guard: comparison HTML not present
     let html = '<label>Select 2-4 models:</label>';
     for (const m of models) {
       const checked = compareModels.includes(m.key) ? "active" : "";
@@ -2231,6 +2492,110 @@
     });
   }
 
+  // ── Portfolio Dashboard ──
+  async function loadPortfolio() {
+    showSection("portfolio");
+    updateBreadcrumb([]);
+
+    const $grid = document.querySelector(".portfolio-grid");
+    $grid.innerHTML = '<div class="loading-msg">Loading portfolio...</div>';
+
+    try {
+      const res = await fetch("/api/eval/portfolio");
+      const data = await res.json();
+      renderPortfolio(data, $grid);
+    } catch (err) {
+      $grid.innerHTML = `<div class="loading-msg">Error: ${esc(err.message)}</div>`;
+    }
+  }
+
+  function renderPortfolio(data, $el) {
+    const { models, ablation, spectres } = data;
+
+    let html = '';
+
+    // Header with nav
+    html += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 style="margin:0; color:var(--text);">Model Portfolio</h2>
+      <div>
+        <a onclick="app.loadBrowser()" style="color:var(--blue); cursor:pointer; margin-right:1rem;">Run History</a>
+        <a href="/run" style="color:var(--accent); cursor:pointer;">Launch Run &rarr;</a>
+      </div>
+    </div>`;
+
+    // Model x Spectre table
+    html += '<div class="card"><table class="scorecard-table"><thead><tr>';
+    html += '<th style="text-align:left; min-width:200px;">Model</th>';
+    for (const s of spectres) {
+      html += `<th style="text-align:center; text-transform:capitalize;">${esc(s)}</th>`;
+    }
+    html += '</tr></thead><tbody>';
+
+    for (const m of models) {
+      html += '<tr>';
+      html += `<td style="font-weight:600; color:var(--text);">
+        <span style="color:var(--text-muted); font-size:0.7rem; margin-right:0.4rem;">${esc(m.provider)}</span>
+        ${esc(m.label)}
+        ${m.price ? `<span style="color:var(--text-muted); font-size:0.7rem; margin-left:0.4rem;">${esc(m.price)}</span>` : ''}
+      </td>`;
+
+      for (const s of spectres) {
+        const entry = m.spectres[s];
+        if (entry) {
+          const v = entry.overall;
+          const bg = scoreBgColor(v);
+          const color = scoreTextColor(v);
+          html += `<td style="text-align:center; background:${bg}; cursor:pointer;"
+            onclick="app.openReport('${esc(entry.run_id)}')" title="n=${entry.count}, run=${entry.run_id}">
+            <span style="color:${color}; font-weight:600; font-size:1.1rem;">${v.toFixed(1)}</span>
+            <span style="color:var(--text-muted); font-size:0.65rem; display:block;">n=${entry.count}</span>
+          </td>`;
+        } else {
+          html += '<td style="text-align:center; color:var(--text-muted);">&mdash;</td>';
+        }
+      }
+      html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+
+    // Ablation section
+    if (ablation.length > 0) {
+      html += '<div class="card" style="margin-top:1rem;"><h3 style="margin:0 0 0.75rem 0; color:var(--text-muted); font-size:0.9rem; text-transform:uppercase; letter-spacing:0.05em;">Layer Ablation</h3>';
+
+      // Group by model
+      const byModel = {};
+      for (const a of ablation) {
+        if (!byModel[a.model_id]) byModel[a.model_id] = [];
+        byModel[a.model_id].push(a);
+      }
+
+      for (const [modelId, entries] of Object.entries(byModel)) {
+        html += `<div style="margin-bottom:1rem;">
+          <div style="color:var(--text); font-weight:600; margin-bottom:0.4rem;">${esc(modelId)}</div>
+          <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">`;
+
+        for (const e of entries) {
+          const v = e.overall;
+          const bg = scoreBgColor(v);
+          const color = scoreTextColor(v);
+          // Extract layer short name from label
+          const shortLabel = e.label.replace(/^.*?L/, 'L').replace(/:.*/,'');
+          html += `<div style="background:${bg}; padding:0.4rem 0.75rem; border-radius:6px; text-align:center; min-width:60px; cursor:pointer;"
+            onclick="app.openReport('${esc(e.run_id)}')" title="${esc(e.label)} (${e.layer}, n=${e.count})">
+            <div style="color:${color}; font-weight:600; font-size:1.1rem;">${v.toFixed(1)}</div>
+            <div style="color:var(--text-muted); font-size:0.65rem;">${esc(shortLabel)}</div>
+          </div>`;
+        }
+
+        html += '</div></div>';
+      }
+      html += '</div>';
+    }
+
+    $el.innerHTML = html;
+  }
+
   function goBackToDash() {
     if (currentData) {
       showSection("dashboard");
@@ -2248,7 +2613,7 @@
     if (radarChart) { radarChart.destroy(); radarChart = null; }
     if (barChart) { barChart.destroy(); barChart = null; }
     hideVoiceBar();
-    loadBrowser();
+    loadPortfolio();
   }
 
   // ── Voice Narration ──
@@ -2900,16 +3265,24 @@
     models.sort((a, b) => (b.filteredAvg.overall || 0) - (a.filteredAvg.overall || 0));
 
     let md = `## Eval Run: ${currentTimestamp || "local"}\n\n`;
-    md += "| Model | Price | Acc | Spec | Safe | Coach | Troop | Avg |\n";
-    md += "|-------|-------|-----|------|------|-------|-------|-----|\n";
+    // Build header dynamically from SCORE_DIMS
+    md += "| Model | Price |";
+    for (const dim of SCORE_DIMS) md += ` ${getDimLabel(dim)} |`;
+    md += " Avg |\n";
+    md += "|-------|-------|";
+    for (const dim of SCORE_DIMS) md += "------|";
+    md += "-----|\n";
     for (const m of models) {
       const a = m.filteredAvg;
       const hasErrors = m.entries.some(e => e.error);
-      const allSkipped = !a.overall && !hasErrors;
       if (a.overall != null) {
-        md += `| ${m.label} | ${m.price || "--"} | ${fmtScore(a.accuracy)} | ${fmtScore(a.specificity)} | ${fmtScore(a.safety)} | ${fmtScore(a.coaching)} | ${fmtScore(a.troop_voice)} | ${fmtScore(a.overall)} |\n`;
+        md += `| ${m.label} | ${m.price || "--"} |`;
+        for (const dim of SCORE_DIMS) md += ` ${fmtScore(a[dim])} |`;
+        md += ` ${fmtScore(a.overall)} |\n`;
       } else {
-        md += `| ${m.label} | ${m.price || "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} | ${hasErrors ? "ERR" : "--"} |\n`;
+        md += `| ${m.label} | ${m.price || "--"} |`;
+        for (const dim of SCORE_DIMS) md += ` ${hasErrors ? "ERR" : "--"} |`;
+        md += ` ${hasErrors ? "ERR" : "--"} |\n`;
       }
     }
     copyToClipboard(md, btn || document.getElementById("copy-report-btn"));
@@ -2941,7 +3314,7 @@
       } else if (entry && entry.response) {
         md += `${entry.response}\n\n`;
         if (entry.scores) {
-          md += `**Scores:** Acc ${entry.scores.accuracy || 0} | Spec ${entry.scores.specificity || 0} | Safe ${entry.scores.safety || 0} | Coach ${entry.scores.coaching || 0} | Troop ${entry.scores.troop_voice || 0}\n`;
+          md += `**Scores:** ${SCORE_DIMS.map(d => getDimLabel(d) + ' ' + (entry.scores[d] || 0)).join(' | ')}\n`;
           const dims = SCORE_DIMS.map(d => entry.scores[d] || 0);
           const avg = dims.reduce((a, b) => a + b, 0) / dims.length;
           md += `**Avg:** ${avg.toFixed(1)}\n`;
@@ -3182,6 +3555,7 @@
     drillDown,
     setCategory,
     toggleCompare,
+    toggleModelExpand,
     narrateResponse,
     narrateQuestion,
     narrateAll,
@@ -3189,6 +3563,8 @@
     copyQuestion,
     copyLocator,
     setCostPeriod,
+    loadPortfolio,
+    loadBrowser,
   };
 
   // ── Init ──
@@ -3200,7 +3576,7 @@
   if (window.location.hash) {
     handleHashNavigation();
   } else {
-    loadBrowser();
+    loadPortfolio();
   }
 
 })();
