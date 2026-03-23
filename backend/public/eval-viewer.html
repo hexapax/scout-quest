@@ -1209,24 +1209,18 @@
   <div class="pivot-controls">
     <div class="pivot-axis">
       <label>Rows</label>
-      <select id="pivot-rows" onchange="app.updatePivot()">
+      <select id="pivot-rows" onchange="app.onRowChange()">
         <option value="model_id">Model</option>
         <option value="config_id">Config</option>
         <option value="layer">Layer</option>
         <option value="category">Category</option>
         <option value="question_id">Question</option>
-        <option value="perspective">Spectre</option>
-        <option value="provider">Provider</option>
       </select>
     </div>
     <div class="pivot-axis">
       <label>Columns</label>
       <select id="pivot-cols" onchange="app.updatePivot()">
-        <option value="perspective">Spectre</option>
-        <option value="dimension">Scoring Dimension</option>
-        <option value="model_id">Model</option>
-        <option value="category">Category</option>
-        <option value="layer">Layer</option>
+        <!-- populated dynamically based on row selection -->
       </select>
     </div>
     <div class="pivot-axis">
@@ -2642,6 +2636,32 @@
 
   // ── Pivot Viewer ──
 
+  // Valid column options for each row selection (hierarchy-aware)
+  const PIVOT_COLUMNS_FOR_ROW = {
+    "model_id":    [["perspective", "Spectre"], ["dimension", "Scoring Dimension"], ["category", "Category"], ["layer", "Layer"]],
+    "config_id":   [["perspective", "Spectre"], ["dimension", "Scoring Dimension"], ["category", "Category"]],
+    "layer":       [["dimension", "Scoring Dimension"], ["category", "Category"]],
+    "category":    [["model_id", "Model"], ["config_id", "Config"], ["dimension", "Scoring Dimension"]],
+    "question_id": [["model_id", "Model"], ["config_id", "Config"]],
+  };
+
+  function onRowChange() {
+    const rowVal = document.getElementById("pivot-rows").value;
+    const colSel = document.getElementById("pivot-cols");
+    const validCols = PIVOT_COLUMNS_FOR_ROW[rowVal] || [["perspective", "Spectre"]];
+    const prevCol = colSel.value;
+
+    colSel.innerHTML = validCols.map(([val, label]) =>
+      `<option value="${val}">${label}</option>`
+    ).join("");
+
+    // Keep previous selection if still valid, otherwise use first option
+    if (validCols.some(([v]) => v === prevCol)) {
+      colSel.value = prevCol;
+    }
+    updatePivot();
+  }
+
   const PIVOT_PRESETS = {
     "model-comparison": { rows: "model_id", columns: "perspective", metric: "overall_avg", filters: { layer: "full" } },
     "ablation": { rows: "layer", columns: "dimension", metric: "overall_avg", filters: { model_id: "claude-sonnet-4-6" } },
@@ -2659,6 +2679,8 @@
     const preset = PIVOT_PRESETS[key];
 
     document.getElementById("pivot-rows").value = preset.rows;
+    // Rebuild column options for this row, then set column
+    onRowChange();
     document.getElementById("pivot-cols").value = preset.columns;
     document.getElementById("pivot-metric").value = preset.metric;
     pivotFilters = { ...preset.filters };
@@ -2818,6 +2840,7 @@
 
     // Load default preset: model-comparison
     document.getElementById("pivot-rows").value = "model_id";
+    onRowChange();  // rebuild column options for model_id
     document.getElementById("pivot-cols").value = "perspective";
     document.getElementById("pivot-metric").value = "overall_avg";
     pivotFilters = { layer: "full" };
@@ -3795,6 +3818,7 @@
     loadPortfolio,
     loadBrowser,
     updatePivot,
+    onRowChange,
     loadPreset,
     addPivotFilter,
     removePivotFilter,
