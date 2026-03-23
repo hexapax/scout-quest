@@ -434,7 +434,8 @@ Examples:
 
                     # Build ScoredResult
                     dim_names = [d.name for d in eval_set.dimensions]
-                    score_vals = {d: scores.get(d, 0) for d in dim_names}
+                    # Keep None for N/A dimensions (don't default to 0)
+                    score_vals = {d: scores.get(d) for d in dim_names}
                     overall = panel.compute_overall(score_vals)
 
                     scored = ScoredResult(
@@ -446,7 +447,7 @@ Examples:
                     )
 
                     # Print summary
-                    dims_str = " ".join(f"{d[:3].upper()}:{score_vals.get(d, 0)}" for d in dim_names[:4])
+                    dims_str = " ".join(f"{d[:3].upper()}:{score_vals[d]}" for d in dim_names[:4] if score_vals.get(d) is not None)
                     cost_str = f" [${usage.totals['cost']:.2f}]" if usage.budget else ""
                     print(f"avg={overall:.1f} [{dims_str}]{cost_str}")
 
@@ -532,9 +533,10 @@ Examples:
                     print(f"  Errors: {len(errors)}", end="")
                 print()
                 for d in [dim.name for dim in eval_set.dimensions]:
-                    vals = [r["scores"].get(d, 0) for r in scored_results]
-                    avg = sum(vals) / len(vals)
-                    print(f"  {d}: {avg:.1f}")
+                    vals = [r["scores"].get(d) for r in scored_results if r["scores"].get(d) is not None]
+                    if vals:
+                        avg = sum(vals) / len(vals)
+                        print(f"  {d}: {avg:.1f} ({len(vals)}/{len(scored_results)} scored)")
 
             # Save incrementally
             with open(run_dir / "results.json", "w") as f:
@@ -571,12 +573,14 @@ Examples:
             continue
         avgs = {}
         for d in dim_names:
-            vals = [r["scores"].get(d, 0) for r in scored_results]
-            avgs[d] = sum(vals) / len(vals)
-        overall = sum(avgs.values()) / len(dim_names) if dim_names else 0
+            vals = [r["scores"].get(d) for r in scored_results if r["scores"].get(d) is not None]
+            avgs[d] = sum(vals) / len(vals) if vals else None
+        scored_avgs = {k: v for k, v in avgs.items() if v is not None}
+        overall = sum(scored_avgs.values()) / len(scored_avgs) if scored_avgs else 0
         row = f"  {config.label:<35}"
         for d in dim_names:
-            row += f" {avgs[d]:>8.1f}"
+            v = avgs[d]
+            row += f" {v:>8.1f}" if v is not None else f" {'—':>8}"
         row += f" {overall:>6.1f}"
         print(row)
 

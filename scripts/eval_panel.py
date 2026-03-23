@@ -359,15 +359,21 @@ class PanelEvaluator:
 
         return result
 
-    def compute_overall(self, scores: dict[str, float]) -> float:
-        """Compute weighted average score across dimensions."""
-        total_weight = sum(d.weight for d in self.dimensions)
+    def compute_overall(self, scores: dict[str, float | None]) -> float:
+        """Compute weighted average score across applicable dimensions.
+
+        Skips dimensions that are None or missing (N/A for this question).
+        Only averages dimensions that have actual scores.
+        """
+        weighted_sum = 0.0
+        total_weight = 0.0
+        for d in self.dimensions:
+            val = scores.get(d.name)
+            if val is not None and isinstance(val, (int, float)):
+                weighted_sum += val * d.weight
+                total_weight += d.weight
         if total_weight == 0:
             return 0.0
-        weighted_sum = sum(
-            scores.get(d.name, 0) * d.weight
-            for d in self.dimensions
-        )
         return weighted_sum / total_weight
 
     def rescore(self, collection, query: dict, eval_notes_field: str = "eval_notes",
