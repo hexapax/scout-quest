@@ -595,10 +595,10 @@ def _make_gemini_caller(config: RunConfig, usage: UsageTracker):
 # ---------------------------------------------------------------------------
 
 class KnowledgePerspective:
-    """Single-turn knowledge & coaching question evaluation."""
+    """Knowledge, coaching & safety question evaluation."""
 
     name = "knowledge"
-    description = "Single-turn knowledge & coaching questions"
+    description = "Knowledge, coaching & safety questions"
     default_eval_set = "scout-coach-v5.yaml"
 
     def load_eval_set(self, yaml_path: str) -> EvalSetConfig:
