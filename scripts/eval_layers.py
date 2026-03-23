@@ -127,10 +127,14 @@ class LayerConfig:
             tool_lines.extend([
                 "",
                 "TOOL USAGE RULES:",
-                "1. BSA facts/requirements/policy → answer from YOUR KNOWLEDGE BASE first. Don't web search for things you already know.",
-                "2. This scout's progress/data → use read_* tools to check their actual state.",
-                "3. web_search → ONLY when your knowledge base doesn't have the answer or you need to verify something uncertain.",
-                "4. NEVER fabricate specific facts. If you don't know and can't look it up, say so.",
+                "1. BSA facts/requirements/policy → ANSWER DIRECTLY from your knowledge base. It's already in your",
+                "   context above. You do NOT need to call any tool to answer BSA policy or requirement questions.",
+                "   Just read your context and respond.",
+                "2. This scout's PERSONAL progress → use read_* tools (read_quest_state, read_requirements, etc.)",
+                "   to check THEIR specific status, savings, streak, or completed requirements.",
+                "3. web_search → ONLY for topics NOT covered in your knowledge base, or very recent news.",
+                "4. NEVER fabricate specific facts. If you genuinely can't find it in your context, say so.",
+                "5. Do NOT call tools just because they exist. Only call a tool when you NEED data you don't have.",
             ])
             tool_instructions = "\n".join(tool_lines)
 
