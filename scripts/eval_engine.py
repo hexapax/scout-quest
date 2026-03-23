@@ -146,13 +146,25 @@ class EvalEngine:
         """
         start = time.time()
 
+        # Seed with question-specific fixtures if available
+        if hasattr(self.tools, 'test_state') and self.tools.test_state is not None:
+            fixtures = item.metadata.get("fixtures") if item.metadata else None
+            if fixtures:
+                self.tools.test_state.seed(fixtures)
+
         try:
             # Non-Anthropic providers: fall back to legacy single-call without tools
             # TODO: Add multi-provider tool support (OpenAI, Gemini, DeepSeek tool_call APIs)
             if self.config.provider != "anthropic":
-                return self._run_legacy(item, start)
+                result = self._run_legacy(item, start)
+            else:
+                result = self._run_anthropic(item, max_turns, start)
 
-            return self._run_anthropic(item, max_turns, start)
+            # Capture final state snapshot if we have a test state
+            if hasattr(self.tools, 'test_state') and self.tools.test_state is not None:
+                result.raw_data["db_snapshot"] = self.tools.test_state.snapshot()
+
+            return result
 
         except BudgetExceeded:
             raise

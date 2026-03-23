@@ -679,14 +679,21 @@ class KnowledgePerspective:
             usage = UsageTracker()
 
         from eval_engine import EvalEngine
-        from eval_tools import ToolRegistry
+        from eval_tools import ToolRegistry, TestState
         from eval_layers import get_layer
 
         layer = get_layer(config.layer)
-        tools = ToolRegistry()
+
+        # Create per-test MongoDB state for stateful tool execution
+        test_id = f"{item.id}_{int(time.time())}"
+        test_state = TestState(test_id=test_id)
+        tools = ToolRegistry(test_state=test_state)
         engine = EvalEngine(config, layer, tools, usage)
         max_turns = item.metadata.get("max_turns", 1)
-        return engine.run(item, max_turns=max_turns)
+        try:
+            return engine.run(item, max_turns=max_turns)
+        finally:
+            test_state.cleanup()
 
     def format_for_evaluation(self, result: ExecutionResult) -> tuple[str, str]:
         """Format for panel evaluator: (response, question+expected)."""
