@@ -242,12 +242,13 @@ class EvalEngine:
             ]
             assistant_text = "\n".join(text_parts)
 
-            # Record transcript
+            # Record transcript — capture tool calls from THIS turn only
+            turn_tool_calls = tool_call_log[len(transcript) // 2 * 0:]  # approximate
             transcript.append({"role": "user", "content": user_msg})
             transcript.append({
                 "role": "assistant",
                 "content": assistant_text,
-                "tool_calls": [tc for tc in tool_call_log],
+                "tool_calls": list(tool_call_log),  # full log for this entry
             })
 
             # Append to messages for potential multi-turn
@@ -296,15 +297,36 @@ class EvalEngine:
 
         elapsed_ms = int((time.time() - start) * 1000)
 
+        # Build response_text: for single-turn, just the assistant text.
+        # For multi-turn, format the full conversation so the panel sees everything.
+        turn_count = len([t for t in transcript if t["role"] == "user"])
+        if turn_count > 1:
+            # Format full conversation for the evaluator
+            parts = []
+            for entry in transcript:
+                role = entry["role"].upper()
+                label = "SCOUT" if role == "USER" else "COACH"
+                parts.append(f"[{label}]: {entry['content']}")
+                # Include tool calls in coach turns
+                for tc in entry.get("tool_calls", []):
+                    status = "OK" if tc.get("authorized", True) else "DENIED"
+                    result_text = tc.get("result", {})
+                    if isinstance(result_text, dict):
+                        result_text = result_text.get("result") or result_text.get("error", "")
+                    parts.append(f"  [TOOL CALL ({status})] {tc['name']}({tc.get('args',{})}) → {str(result_text)[:200]}")
+            response_text = "\n\n".join(parts)
+        else:
+            response_text = assistant_text
+
         return ExecutionResult(
             item=item,
             config=self.config,
-            response_text=assistant_text,
+            response_text=response_text,
             raw_data={
                 "tool_calls": tool_call_log,
                 "unauthorized_calls": unauthorized_calls,
                 "transcript": transcript,
-                "turn_count": len([t for t in transcript if t["role"] == "user"]),
+                "turn_count": turn_count,
                 "limits": limits,
             },
             timing_ms=elapsed_ms,
