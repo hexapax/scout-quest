@@ -841,8 +841,8 @@ export function createEvalReportsRouter(): Router {
   // Category labels for row display
   const CATEGORY_LABELS: Record<string, string> = {
     A: "Advancement Policy", B: "Troop Logistics", C: "Requirement Details",
-    D: "Safety/YPT", E: "Cross-Reference", F: "Values Coaching", G: "Over-Policy Detection",
-    S: "Safety / YPT", M: "Manipulation", chain: "Chain Sessions",
+    D: "Safety & YPT", E: "Cross-Reference", F: "Values Coaching", G: "Over-Policy Detection",
+    S: "Safety Adversarial", M: "Manipulation", chain: "Chain Sessions",
   };
 
   // Model display names

@@ -1334,7 +1334,7 @@
     A: "Advancement Policy",
     B: "Troop Logistics",
     C: "Requirement Details",
-    D: "Safety/YPT",
+    D: "Safety & YPT",
     E: "Cross-Reference",
     F: "Values Coaching",
     G: "Over-Policy Detection",
@@ -1344,7 +1344,7 @@
     state_check: "State Check",
     coaching: "Coaching",
     // Safety spectre categories
-    S: "Safety / YPT",
+    S: "Safety Adversarial",
     M: "Manipulation",
     // Note: B and E overlap with knowledge — context-dependent
   };
@@ -2664,6 +2664,8 @@
     "question_id": [["model_id", "Model"], ["config_id", "Config"]],
   };
 
+  let _suppressPivotUpdate = false;
+
   function onRowChange() {
     const rowVal = document.getElementById("pivot-rows").value;
     const colSel = document.getElementById("pivot-cols");
@@ -2674,18 +2676,17 @@
       `<option value="${val}">${label}</option>`
     ).join("");
 
-    // Keep previous selection if still valid, otherwise use first option
     if (validCols.some(([v]) => v === prevCol)) {
       colSel.value = prevCol;
     }
-    updatePivot();
+    if (!_suppressPivotUpdate) updatePivot();
   }
 
   const PIVOT_PRESETS = {
     "model-comparison": { rows: "model_id", columns: "perspective", metric: "overall_avg", filters: { layer: "full" } },
-    "ablation": { rows: "layer", columns: "dimension", metric: "overall_avg", filters: { model_id: "claude-sonnet-4-6" } },
-    "category-breakdown": { rows: "category", columns: "model_id", metric: "overall_avg", filters: { perspective: "knowledge" } },
-    "spectre-coverage": { rows: "config_id", columns: "perspective", metric: "count", filters: {} },
+    "ablation": { rows: "layer", columns: "dimension", metric: "overall_avg", filters: { model_id: "claude-sonnet-4-6", perspective: "knowledge" } },
+    "category-breakdown": { rows: "category", columns: "model_id", metric: "overall_avg", filters: { perspective: "knowledge", layer: "full" } },
+    "spectre-coverage": { rows: "model_id", columns: "perspective", metric: "count", filters: {} },
   };
 
   let pivotFilters = {};
@@ -2698,8 +2699,10 @@
     const preset = PIVOT_PRESETS[key];
 
     document.getElementById("pivot-rows").value = preset.rows;
-    // Rebuild column options for this row, then set column
+    // Rebuild column options without triggering updatePivot
+    _suppressPivotUpdate = true;
     onRowChange();
+    _suppressPivotUpdate = false;
     document.getElementById("pivot-cols").value = preset.columns;
     document.getElementById("pivot-metric").value = preset.metric;
     pivotFilters = { ...preset.filters };
@@ -2803,8 +2806,9 @@
 
     let html = '<table class="pivot-table"><thead><tr>';
     html += `<th>${esc(document.getElementById("pivot-rows").selectedOptions[0].text)}</th>`;
+    const colsAreDimensions = document.getElementById("pivot-cols").value === "dimension";
     for (const col of columns) {
-      const label = column_labels[col] || col;
+      const label = colsAreDimensions ? getDimLabel(col) : (column_labels[col] || col);
       html += `<th>${esc(label)}</th>`;
     }
     html += '</tr></thead><tbody>';
