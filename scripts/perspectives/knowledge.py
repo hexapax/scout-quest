@@ -728,9 +728,24 @@ class KnowledgePerspective:
 
         from eval_engine import EvalEngine
         from eval_tools import ToolRegistry, TestState
-        from eval_layers import get_layer
+        from eval_layers import get_layer, LayerConfig
 
         layer = get_layer(config.layer)
+
+        # Determine endpoint from item metadata (scout or guide)
+        endpoint = item.metadata.get("endpoint", "scout") if item.metadata else "scout"
+
+        # For guide endpoint, override authorized tools to guide tool set
+        if endpoint == "guide":
+            from eval_tools import ALL_GUIDE_TOOL_NAMES
+            layer = LayerConfig(
+                name=layer.name,
+                label=layer.label,
+                include_knowledge=layer.include_knowledge,
+                include_troop=layer.include_troop,
+                include_tool_instructions=layer.include_tool_instructions,
+                authorized_tools=ALL_GUIDE_TOOL_NAMES if layer.authorized_tools else set(),
+            )
 
         # Chain steps share state; standalone questions get fresh state
         shared_state = kwargs.get("shared_state")
@@ -744,12 +759,12 @@ class KnowledgePerspective:
                 test_state.apply_mutation(mut)
             # Snapshot before execution (for chain diff)
             db_before = test_state.snapshot()
-            tools = ToolRegistry(test_state=test_state)
+            tools = ToolRegistry(test_state=test_state, endpoint=endpoint)
         else:
             test_id = f"{item.id}_{int(time.time())}"
             test_state = TestState(test_id=test_id)
             custom_fixtures = item.metadata.get("fixtures") or item.metadata.get("chain_fixtures")
-            tools = ToolRegistry(test_state=test_state, fixtures=custom_fixtures)
+            tools = ToolRegistry(test_state=test_state, fixtures=custom_fixtures, endpoint=endpoint)
             db_before = None
 
         engine = EvalEngine(config, layer, tools, usage)

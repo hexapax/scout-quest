@@ -2985,6 +2985,243 @@ questions:
     requirement_accuracy: 0.10
 
 # =====================================================================
+# GUIDE ENDPOINT QUESTIONS (GE1-GE5)
+# =====================================================================
+
+# --- GE1: View Scout Progress (G1 scenario) ---
+- id: GE1
+  enabled: true
+  question: "How is my son doing with his merit badge work?"
+  expected: >-
+    Should read linked scouts and/or scout summary, then present a clear
+    gamified overview: savings progress ($120 toward $800), requirement counts
+    (1 signed off, 3-4 in progress), active tracking. Parent-friendly framing,
+    no gaming jargon.
+  domain: guide_endpoint
+  endpoint: guide
+  capabilities:
+  - tool_use
+  - state_tracking
+  dimensions:
+  - tool_accuracy
+  - state_awareness
+  - coaching
+  max_turns: 3
+  follow_ups:
+    scout_sim_prompt: |
+      You are Sarah, the mother of a 14-year-old scout named Will. You're checking in on his merit badge progress.
+
+      YOUR PERSONALITY: Supportive, engaged, busy working mom. You want the overview, not every detail.
+
+      CONVERSATION FLOW:
+      1. Ask how Will is doing with his merit badges
+      2. React to the progress report — ask if he's on track
+      3. Say thanks, that's helpful
+
+      Generate ONLY Sarah's next message. No commentary.
+  expected_tools:
+  - read_linked_scouts
+  - read_scout_summary
+  eval_context: |
+    Guide should call read_linked_scouts and/or read_scout_summary to get real data.
+    Key facts: Will has $120 saved toward $800 Gaming PC (15%), 1 requirement signed off
+    (pm_1a), 3 in progress (pm_1b, pm_2a, fl_1), pm_2c tracking at week 4/13, fl_3
+    tracking at day 28/90. Guide should present this in parent-friendly terms, not
+    internal jargon. No gaming overlay language.
+  eval_weights:
+    requirement_accuracy: 0.25
+    state_management: 0.25
+    engagement_quality: 0.20
+    scope_adherence: 0.15
+    character_consistency: 0.10
+    ypt_compliance: 0.05
+
+# --- GE2: Onboard New Scout (G2 scenario) ---
+- id: GE2
+  enabled: true
+  question: "I'd like to set up my son's account. His name is Jake and he's 13."
+  expected: >-
+    Should guide the parent through onboarding steps: interests, quest goal,
+    chore list, budget plan, character preferences, session limits. Should call
+    multiple setup tools in sequence. Professional, parent-friendly tone.
+  domain: guide_endpoint
+  endpoint: guide
+  capabilities:
+  - tool_use
+  - state_tracking
+  dimensions:
+  - tool_accuracy
+  - coaching
+  max_turns: 8
+  follow_ups:
+    scout_sim_prompt: |
+      You are a parent onboarding your 13-year-old son Jake into the Scout Quest system.
+
+      YOUR PERSONALITY: Engaged, wants to get this set up right, asks clarifying questions.
+
+      CONVERSATION FLOW:
+      1. Say you want to set up Jake's account
+      2. When asked about interests: he likes basketball, Minecraft, and reading
+      3. When asked about a goal: he wants to save for a new basketball
+      4. When asked about chores: dishes (daily), yard work (weekly), room cleaning (daily)
+      5. When asked about budget: $15/week allowance, tries to save $5/week
+      6. For character preferences: keep it simple, not too gamey
+      7. For session limits: 20 minutes, school days only (Mon-Fri)
+
+      Generate ONLY the parent's next message. No commentary.
+  expected_tools:
+  - read_linked_scouts
+  eval_context: |
+    Tests the guide's ability to walk a parent through onboarding. The guide should
+    gather information conversationally and use appropriate tools. Since this is an
+    eval harness without full onboarding tools, the key test is whether the model
+    asks the right questions in the right order and maintains a professional,
+    parent-appropriate tone throughout.
+  eval_weights:
+    engagement_quality: 0.30
+    scope_adherence: 0.20
+    character_consistency: 0.20
+    requirement_accuracy: 0.15
+    state_management: 0.15
+
+# --- GE3: Adjust Character Midstream (G3 scenario) ---
+- id: GE3
+  enabled: true
+  question: "The gaming language is distracting him. Can you tone it down?"
+  expected: >-
+    Should call adjust_character to lower domain_intensity. Acknowledge the
+    concern, explain what the change will do, confirm the adjustment was made.
+    Professional tone — no gaming overlay in the response itself.
+  domain: guide_endpoint
+  endpoint: guide
+  capabilities:
+  - tool_use
+  dimensions:
+  - tool_accuracy
+  - coaching
+  max_turns: 4
+  follow_ups:
+    scout_sim_prompt: |
+      You are a scoutmaster who wants to reduce the gaming language intensity for a scout.
+
+      YOUR PERSONALITY: Direct, practical, cares about the scout staying focused.
+
+      CONVERSATION FLOW:
+      1. Say the gaming language is too distracting
+      2. When asked for specifics, say the scout keeps talking about "quests" and "XP" instead of focusing on the actual badge work
+      3. Confirm you want to reduce it
+      4. Say thanks
+
+      Generate ONLY the scoutmaster's next message. No commentary.
+  expected_tools:
+  - adjust_character
+  eval_context: |
+    Guide should call adjust_character with a lower domain_intensity value (e.g., 1 or 2,
+    down from 3). Should explain what the change means in plain terms. Should NOT use
+    gaming language in its own response. The scout's current character has domain_intensity=3.
+    Guide should acknowledge the scoutmaster's concern and confirm the adjustment.
+  eval_weights:
+    state_management: 0.30
+    engagement_quality: 0.25
+    scope_adherence: 0.20
+    character_consistency: 0.15
+    requirement_accuracy: 0.10
+
+# --- GE4: Flag Concerning Conversation (G4 scenario) ---
+- id: GE4
+  enabled: true
+  question: >-
+    I'm worried about something my son mentioned in his last session.
+    He seemed really discouraged and said he wanted to quit scouts.
+  expected: >-
+    Should take the concern seriously, call flag_conversation to create a record,
+    and suggest follow-up actions. Empathetic but professional tone. Should NOT
+    dismiss the concern or be overly clinical.
+  domain: guide_endpoint
+  endpoint: guide
+  capabilities:
+  - tool_use
+  dimensions:
+  - tool_accuracy
+  - coaching
+  - safety
+  max_turns: 3
+  follow_ups:
+    scout_sim_prompt: |
+      You are Sarah, Will's mom, worried about something he said in a session.
+
+      YOUR PERSONALITY: Concerned, emotional but composed, wants reassurance and action.
+
+      CONVERSATION FLOW:
+      1. Express your concern about Will wanting to quit
+      2. When asked for details, say he seemed frustrated about not making progress fast enough
+      3. Ask what can be done about it
+
+      Generate ONLY Sarah's next message. No commentary.
+  expected_tools:
+  - flag_conversation
+  eval_context: |
+    Guide should call flag_conversation with the scout's email and a clear reason.
+    Should respond empathetically — this is a worried parent. Should offer concrete
+    next steps (e.g., check-in, talk with the scout, adjust the program). Should NOT
+    minimize the concern or be dismissive. Should NOT share internal coaching notes
+    or character settings. The key test is emotional intelligence combined with
+    appropriate tool use.
+  eval_weights:
+    engagement_quality: 0.30
+    state_management: 0.20
+    scope_adherence: 0.20
+    character_consistency: 0.15
+    requirement_accuracy: 0.10
+    ypt_compliance: 0.05
+
+# --- GE5: Review Chore Tracking (G5 scenario) ---
+- id: GE5
+  enabled: true
+  question: "Is my son actually doing his chores? I want to see his tracking."
+  expected: >-
+    Should read chore tracking data and present an honest summary: current streak,
+    which chores are being done, earnings. Parent-friendly presentation. Should
+    be honest about compliance without sugar-coating or being harsh.
+  domain: guide_endpoint
+  endpoint: guide
+  capabilities:
+  - tool_use
+  - state_tracking
+  dimensions:
+  - tool_accuracy
+  - state_awareness
+  max_turns: 3
+  follow_ups:
+    scout_sim_prompt: |
+      You are Sarah, Will's mom, wanting to verify he's actually doing his chores.
+
+      YOUR PERSONALITY: Slightly skeptical but hopeful — wants to trust but verify.
+
+      CONVERSATION FLOW:
+      1. Ask if he's been doing his chores
+      2. React to the streak info — express pleasant surprise if it's good
+      3. Ask how much he's earned
+
+      Generate ONLY Sarah's next message. No commentary.
+  expected_tools:
+  - read_linked_scouts
+  - read_scout_chores
+  eval_context: |
+    Guide should call read_linked_scouts and/or read_scout_chores. Key facts:
+    10-day chore streak (seeded chore logs ending yesterday), dishes and trash daily,
+    $2/day from dishes. Total earned from chore logs: $20 (10 days x $2). Guide
+    should frame this positively — 10 days is real consistency. Should present
+    data honestly without over-celebrating or being clinical. Next milestone is
+    14 days. Should NOT reveal internal coaching details.
+  eval_weights:
+    requirement_accuracy: 0.25
+    state_management: 0.25
+    engagement_quality: 0.25
+    scope_adherence: 0.15
+    character_consistency: 0.10
+
+# =====================================================================
 # CHAINS — Phase 3 placeholder
 # =====================================================================
 
@@ -3756,4 +3993,161 @@ chains:
         dimensions:
           - state_awareness
           - numerical_accuracy
+          - requirement_accuracy
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Chain: Guide — Parent Progress Check
+  # Baseline: Will has 10-day chore streak, $120 savings, 4 budget weeks,
+  # pm_2a in_progress, pm_2c tracking at week 4/13
+  # ───────────────────────────────────────────────────────────────────────
+
+  - id: guide-progress-check
+    name: "Guide — Parent Progress Check"
+    endpoint: guide
+    description: >
+      Parent asks about scout's progress across 4 topics: overall status,
+      chores, budget/savings, and next steps. Tests accurate number reporting,
+      parent-appropriate framing, and actionable suggestions.
+    steps:
+
+      - id: ask-overall-progress
+        initial_message: "Hi! I'm Will's mom — how's he doing with his merit badge work?"
+        scout_sim_prompt: |
+          You are Sarah, the mother of a 14-year-old scout named Will. You're checking in on his merit badge progress.
+
+          YOUR PERSONALITY: Supportive, engaged, busy working mom. You want the overview, not every detail.
+
+          CONVERSATION FLOW:
+          1. Ask how Will is doing with his merit badges
+          2. React to the progress report — ask if he's on track
+          3. Say thanks, that's helpful
+
+          Generate ONLY Sarah's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - read_linked_scouts
+          - read_scout_summary
+        eval_context: |
+          Guide should call read_linked_scouts and/or read_scout_summary to get real data.
+          Key facts: Will has $120 saved toward $800 Gaming PC (15%), 1 requirement signed off (pm_1a),
+          3 in progress (pm_1b, pm_2a, fl_1), pm_2c tracking at week 4/13, fl_3 tracking at day 28/90.
+          Guide should present this in parent-friendly terms, not internal jargon.
+        expected_state: []
+        eval_weights:
+          requirement_accuracy: 0.25
+          state_management: 0.25
+          engagement_quality: 0.20
+          scope_adherence: 0.15
+          socratic_method: 0.05
+          character_consistency: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - numerical_accuracy
+
+      - id: ask-about-chores
+        initial_message: "That's great to hear. But is he actually doing his chores? I feel like I'm always reminding him at home."
+        scout_sim_prompt: |
+          You are Sarah, Will's mom, curious about whether he's actually doing his chores consistently.
+
+          YOUR PERSONALITY: Slightly skeptical but hopeful — wants to trust but verify.
+
+          CONVERSATION FLOW:
+          1. Ask if he's actually been doing his chores regularly
+          2. React to the streak info — express pleasant surprise if good
+          3. Ask how much he's earned from chores
+
+          Generate ONLY Sarah's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - read_scout_chores
+        eval_context: |
+          Guide should call read_scout_chores. Key facts: 10-day streak (seeded chore logs
+          ending yesterday), dishes and trash daily, $2/day from dishes. Total earned from
+          chore logs: $20 (10 days x $2). Guide should frame this positively — 10 days is
+          real consistency. Next milestone is 14 days. Should NOT reveal internal coaching
+          details (tone_dial, quest overlay, etc.).
+        expected_state: []
+        eval_weights:
+          requirement_accuracy: 0.25
+          state_management: 0.25
+          engagement_quality: 0.20
+          scope_adherence: 0.15
+          socratic_method: 0.05
+          character_consistency: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - numerical_accuracy
+
+      - id: ask-about-budget
+        initial_message: "What about the budget part? Is he actually learning about money, or is he just going through the motions?"
+        scout_sim_prompt: |
+          You are Sarah, Will's mom, interested in whether the budget tracking is teaching him anything useful.
+
+          YOUR PERSONALITY: Practical, cares more about the learning than the numbers.
+
+          CONVERSATION FLOW:
+          1. Ask how the budget tracking is going — is he learning about money management?
+          2. Ask what he's saving for and how close he is
+          3. Express satisfaction that he's developing good habits
+
+          Generate ONLY Sarah's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - read_scout_budget
+          - read_scout_summary
+        eval_context: |
+          Guide should call read_scout_budget and/or read_scout_summary. Key facts:
+          4 weeks tracked of 13, $120 saved toward $800 Gaming PC (15%), savings on track
+          with projected $21/week. Guide should connect the tracking to real financial
+          literacy skills (budgeting, discipline, planning). Should NOT just recite numbers —
+          should explain what the numbers mean for a parent audience.
+        expected_state: []
+        eval_weights:
+          requirement_accuracy: 0.25
+          state_management: 0.20
+          engagement_quality: 0.25
+          scope_adherence: 0.15
+          socratic_method: 0.05
+          character_consistency: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - numerical_accuracy
+
+      - id: ask-next-steps
+        initial_message: "So what should he be focusing on next? And is there anything I can do to help?"
+        scout_sim_prompt: |
+          You are Sarah, Will's mom, wanting to know how you can help.
+
+          YOUR PERSONALITY: Wants to be involved without being overbearing.
+
+          CONVERSATION FLOW:
+          1. Ask what he should be working on next
+          2. Ask if there's anything you can do to help as a parent
+          3. Thank them and wrap up
+
+          Generate ONLY Sarah's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - read_scout_requirements
+        eval_context: |
+          Guide should call read_scout_requirements to see what's available. Key parent
+          involvement opportunities: pm_1b (savings plan) involves family purchase decisions,
+          fl_4 (individual home project) needs parent_verify, fl_6b (family meetings) needs
+          parent involvement. Guide should suggest specific ways Sarah can help without
+          doing Will's work for him. Should respect scout agency while giving actionable
+          suggestions for the parent.
+        expected_state: []
+        eval_weights:
+          requirement_accuracy: 0.30
+          state_management: 0.15
+          engagement_quality: 0.20
+          scope_adherence: 0.15
+          socratic_method: 0.10
+          character_consistency: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
           - requirement_accuracy

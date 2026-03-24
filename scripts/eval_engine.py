@@ -280,6 +280,8 @@ class EvalEngine:
         self.layer = layer
         self.tools = tools
         self.usage = usage
+        # Detect endpoint from ToolRegistry for system prompt selection
+        self.endpoint = getattr(tools, "endpoint", "scout")
 
     def run(self, item: EvalItem, max_turns: int = 1) -> ExecutionResult:
         """Run an eval item through the engine.
@@ -342,7 +344,7 @@ class EvalEngine:
     def _run_anthropic(self, item: EvalItem, max_turns: int, start: float) -> ExecutionResult:
         """Run with Anthropic API, full tool dispatch support."""
         # 1. Build system prompt from layer config
-        system_prompt = self.layer.build_system_prompt(self.config)
+        system_prompt = self.layer.build_system_prompt(self.config, endpoint=self.endpoint)
 
         # 2. Build cached system blocks for Anthropic
         system_blocks = _build_cached_system_blocks(system_prompt)
@@ -536,7 +538,7 @@ class EvalEngine:
         """
         from perspectives.knowledge import _make_caller, build_system_prompt
 
-        system_prompt = self.layer.build_system_prompt(self.config)
+        system_prompt = self.layer.build_system_prompt(self.config, endpoint=self.endpoint)
         caller = _make_caller(self.config, self.usage)
 
         def do_call():
@@ -588,7 +590,7 @@ class EvalEngine:
         """
         import httpx
 
-        system_prompt = self.layer.build_system_prompt(self.config)
+        system_prompt = self.layer.build_system_prompt(self.config, endpoint=self.endpoint)
         model_id = self.config.model_id
         provider = self.config.provider
         use_completion_tokens = model_id.startswith("gpt-5")
@@ -830,7 +832,7 @@ class EvalEngine:
         from google import genai
         from google.genai import types
 
-        system_prompt = self.layer.build_system_prompt(self.config)
+        system_prompt = self.layer.build_system_prompt(self.config, endpoint=self.endpoint)
         model_id = self.config.model_id
         gc = genai.Client(api_key=os.environ.get("GOOGLE_KEY", ""))
 

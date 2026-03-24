@@ -585,6 +585,145 @@ ALL_TOOL_NAMES: set[str] = set().union(*TOOL_CATEGORIES.values())
 
 
 # ---------------------------------------------------------------------------
+# Guide endpoint tool definitions — ported from test/tool-definitions-guide.ts
+# ---------------------------------------------------------------------------
+
+GUIDE_TOOL_DEFINITIONS: list[dict[str, Any]] = [
+    # ===== READ TOOLS =====
+    {
+        "name": "read_linked_scouts",
+        "description": "List all scouts linked to this guide with summary info: name, age, troop, quest status, savings, goal.",
+        "input_schema": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "name": "read_scout_summary",
+        "description": "Gamified progress overview for a linked scout: savings progress (current/target/percent), requirement counts (total/signed_off/in_progress/not_started), milestones.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "scout_email": {
+                    "type": "string",
+                    "description": "Scout's email address",
+                },
+            },
+            "required": ["scout_email"],
+        },
+    },
+    {
+        "name": "read_scout_chores",
+        "description": "Chore streak and income data for a linked scout: current streak, next milestone, total earned, recent entries (last 7 days).",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "scout_email": {
+                    "type": "string",
+                    "description": "Scout's email address",
+                },
+            },
+            "required": ["scout_email"],
+        },
+    },
+    {
+        "name": "read_scout_budget",
+        "description": "Budget tracking snapshot for a linked scout: weeks tracked, latest week number and running savings total.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "scout_email": {
+                    "type": "string",
+                    "description": "Scout's email address",
+                },
+            },
+            "required": ["scout_email"],
+        },
+    },
+    {
+        "name": "read_scout_requirements",
+        "description": "All Personal Management and Family Life requirements with current status, name, and description for a linked scout.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "scout_email": {
+                    "type": "string",
+                    "description": "Scout's email address",
+                },
+            },
+            "required": ["scout_email"],
+        },
+    },
+
+    # ===== MONITORING TOOLS =====
+    {
+        "name": "flag_conversation",
+        "description": "Mark a conversation for follow-up. Creates a reminder for the guide.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "scout_email": {
+                    "type": "string",
+                    "description": "Scout's email",
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "Why this conversation is flagged",
+                },
+                "follow_up_date": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "When to follow up (ISO date)",
+                },
+            },
+            "required": ["scout_email", "reason"],
+        },
+    },
+    {
+        "name": "adjust_character",
+        "description": "Adjust a scout's AI character settings: tone_dial (1-5) and/or domain_intensity (1-5). Used by guides to fine-tune the scout's coaching experience.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "scout_email": {
+                    "type": "string",
+                    "description": "Scout's email",
+                },
+                "tone_dial": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "New tone dial value (1=minimal personality, 5=maximum personality)",
+                },
+                "domain_intensity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "description": "New domain intensity (1=general coaching, 5=deep gaming overlay)",
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "Why the adjustment is being made",
+                },
+            },
+            "required": ["scout_email", "reason"],
+        },
+    },
+]
+
+GUIDE_TOOL_CATEGORIES: dict[str, set[str]] = {
+    "knowledge": {
+        "read_linked_scouts", "read_scout_summary", "read_scout_chores",
+        "read_scout_budget", "read_scout_requirements",
+    },
+    "monitoring": {"flag_conversation", "adjust_character"},
+}
+
+ALL_GUIDE_TOOL_NAMES: set[str] = set().union(*GUIDE_TOOL_CATEGORIES.values())
+
+
+# ---------------------------------------------------------------------------
 # Default fixture data — ported from profiles.ts
 # ---------------------------------------------------------------------------
 
@@ -1451,6 +1590,129 @@ def handle_web_search(db: Database, scout_email: str, args: dict) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Guide endpoint handlers
+# ---------------------------------------------------------------------------
+
+def handle_read_linked_scouts(db: Database, scout_email: str, args: dict) -> str:
+    """Return list of scouts linked to this guide. Uses the seeded scout profile."""
+    scout = db.scouts.find_one({"email": scout_email})
+    if not scout:
+        return json.dumps({"scouts": [], "message": "No scouts linked to this guide."})
+
+    return json.dumps({"scouts": [{
+        "email": scout.get("email"),
+        "name": scout.get("name"),
+        "age": scout.get("age"),
+        "troop": scout.get("troop"),
+        "quest_status": scout.get("quest_state", {}).get("quest_status"),
+        "goal_item": scout.get("quest_state", {}).get("goal_item"),
+        "current_savings": scout.get("quest_state", {}).get("current_savings"),
+        "target_budget": scout.get("quest_state", {}).get("target_budget"),
+    }]})
+
+
+def handle_read_scout_summary(db: Database, scout_email: str, args: dict) -> str:
+    """Gamified progress overview for a linked scout."""
+    # Guide tools pass scout_email as an arg, but our test state uses a single scout
+    email = args.get("scout_email", scout_email)
+    scout = db.scouts.find_one({"email": email})
+    if not scout:
+        return json.dumps({"error": "Scout not found"})
+
+    all_reqs = list(db.requirements.find({"scout_email": email}))
+    qs = scout.get("quest_state", {})
+    target = qs.get("target_budget", 0)
+    current = qs.get("current_savings", 0)
+
+    return json.dumps({
+        "name": scout.get("name"),
+        "quest_status": qs.get("quest_status"),
+        "goal_item": qs.get("goal_item"),
+        "savings_progress": {
+            "current": current,
+            "target": target,
+            "percent": round((current / target) * 100) if target > 0 else 0,
+        },
+        "requirements": {
+            "total": len(all_reqs),
+            "signed_off": len([r for r in all_reqs if r.get("status") == "signed_off"]),
+            "in_progress": len([r for r in all_reqs if r.get("status") in ("in_progress", "tracking")]),
+            "not_started": len([r for r in all_reqs if r.get("status") == "not_started"]),
+        },
+    })
+
+
+def handle_read_scout_chores(db: Database, scout_email: str, args: dict) -> str:
+    """Chore streak and income data for a linked scout. Reuses handle_read_chore_streak logic."""
+    email = args.get("scout_email", scout_email)
+    return handle_read_chore_streak(db, email, {})
+
+
+def handle_read_scout_budget(db: Database, scout_email: str, args: dict) -> str:
+    """Budget tracking snapshot for a linked scout. Reuses handle_read_budget_summary logic."""
+    email = args.get("scout_email", scout_email)
+    return handle_read_budget_summary(db, email, {})
+
+
+def handle_read_scout_requirements(db: Database, scout_email: str, args: dict) -> str:
+    """All requirements with current status for a linked scout. Reuses handle_read_requirements logic."""
+    email = args.get("scout_email", scout_email)
+    return handle_read_requirements(db, email, {})
+
+
+def handle_flag_conversation(db: Database, scout_email: str, args: dict) -> str:
+    """Flag a conversation for follow-up. Mock: returns success JSON."""
+    email = args.get("scout_email", scout_email)
+    reason = args.get("reason", "")
+
+    db.reminders.insert_one({
+        "scout_email": email,
+        "type": "flagged_conversation",
+        "reason": reason,
+        "follow_up_date": args.get("follow_up_date"),
+        "active": True,
+        "created_at": datetime.now(timezone.utc),
+    })
+
+    return json.dumps({
+        "flagged": True,
+        "reminder_set": True,
+        "reason": reason,
+    })
+
+
+def handle_adjust_character(db: Database, scout_email: str, args: dict) -> str:
+    """Adjust scout's AI character settings (tone_dial/domain_intensity). Mock: updates DB, returns confirmation."""
+    email = args.get("scout_email", scout_email)
+    scout = db.scouts.find_one({"email": email})
+    if not scout:
+        return json.dumps({"error": "Scout not found"})
+
+    char = scout.get("character", {})
+    updates: dict[str, Any] = {"character.updated_at": datetime.now(timezone.utc)}
+    changes: list[str] = []
+
+    if args.get("tone_dial") is not None:
+        val = min(max(args["tone_dial"], char.get("tone_min", 1)), char.get("tone_max", 5))
+        updates["character.tone_dial"] = val
+        changes.append(f"tone_dial -> {val}")
+
+    if args.get("domain_intensity") is not None:
+        val = min(max(args["domain_intensity"], char.get("domain_min", 1)), char.get("domain_max", 5))
+        updates["character.domain_intensity"] = val
+        changes.append(f"domain_intensity -> {val}")
+
+    if changes:
+        db.scouts.update_one({"email": email}, {"$set": updates})
+
+    return json.dumps({
+        "updated": True,
+        "changes": changes,
+        "reason": args.get("reason", ""),
+    })
+
+
+# ---------------------------------------------------------------------------
 # Handler dispatch table
 # ---------------------------------------------------------------------------
 
@@ -1475,6 +1737,16 @@ TOOL_HANDLERS: dict[str, Any] = {
     "web_search": handle_web_search,
 }
 
+GUIDE_TOOL_HANDLERS: dict[str, Any] = {
+    "read_linked_scouts": handle_read_linked_scouts,
+    "read_scout_summary": handle_read_scout_summary,
+    "read_scout_chores": handle_read_scout_chores,
+    "read_scout_budget": handle_read_scout_budget,
+    "read_scout_requirements": handle_read_scout_requirements,
+    "flag_conversation": handle_flag_conversation,
+    "adjust_character": handle_adjust_character,
+}
+
 
 # ---------------------------------------------------------------------------
 # ToolRegistry class
@@ -1489,14 +1761,27 @@ class ToolRegistry:
     Supports two modes:
     - With TestState: handlers execute against a real MongoDB database
     - Without TestState: falls back to static mock responses
+
+    Supports two endpoints:
+    - "scout" (default): scout-facing tools (TOOL_DEFINITIONS + TOOL_HANDLERS)
+    - "guide": guide/parent-facing tools (GUIDE_TOOL_DEFINITIONS + GUIDE_TOOL_HANDLERS)
     """
 
     def __init__(
         self,
         test_state: TestState | None = None,
         fixtures: dict[str, Any] | None = None,
+        endpoint: str = "scout",
     ):
-        self.definitions = TOOL_DEFINITIONS
+        self.endpoint = endpoint
+        if endpoint == "guide":
+            self.definitions = GUIDE_TOOL_DEFINITIONS
+            self._handlers = GUIDE_TOOL_HANDLERS
+            self._categories = GUIDE_TOOL_CATEGORIES
+        else:
+            self.definitions = TOOL_DEFINITIONS
+            self._handlers = TOOL_HANDLERS
+            self._categories = TOOL_CATEGORIES
         self.test_state = test_state
         if test_state and not fixtures:
             test_state.seed()
@@ -1519,12 +1804,14 @@ class ToolRegistry:
                 "unauthorized": True,
             }
 
-        handler = TOOL_HANDLERS.get(tool_name)
+        handler = self._handlers.get(tool_name)
         if not handler:
             return {"error": f"Unknown tool: {tool_name}"}
 
         if self.test_state is None:
             # Fallback to static mock if no test state
+            if self.endpoint == "guide":
+                return {"result": _static_mock_guide(tool_name, args)}
             return {"result": _static_mock(tool_name, args)}
 
         try:
@@ -1535,7 +1822,7 @@ class ToolRegistry:
 
     def get_category(self, tool_name: str) -> str | None:
         """Get the category for a tool name, or None if unknown."""
-        for category, names in TOOL_CATEGORIES.items():
+        for category, names in self._categories.items():
             if tool_name in names:
                 return category
         return None
@@ -1781,3 +2068,68 @@ def _static_mock(tool_name: str, args: dict) -> str:
             return f"Web search failed: {e}"
 
     return f'Error: Unknown tool "{tool_name}".'
+
+
+def _static_mock_guide(tool_name: str, args: dict) -> str:
+    """Static mock handler for guide endpoint — used when no TestState is available."""
+    fx = _STATIC_FIXTURES
+
+    if tool_name == "read_linked_scouts":
+        return json.dumps({"scouts": [{
+            "email": "will@test.scoutquest.app",
+            "name": "Test Scout Will",
+            "age": 14,
+            "troop": "T999",
+            "quest_status": "active",
+            "goal_item": "Gaming PC",
+            "current_savings": 120,
+            "target_budget": 800,
+        }]})
+
+    if tool_name == "read_scout_summary":
+        return json.dumps({
+            "name": "Test Scout Will",
+            "quest_status": "active",
+            "goal_item": "Gaming PC",
+            "savings_progress": {
+                "current": 120,
+                "target": 800,
+                "percent": 15,
+            },
+            "requirements": {
+                "total": 26,
+                "signed_off": 1,
+                "in_progress": 4,
+                "not_started": 21,
+            },
+        })
+
+    if tool_name == "read_scout_chores":
+        return json.dumps(fx["chore_streak"])
+
+    if tool_name == "read_scout_budget":
+        return json.dumps(fx["budget_summary"])
+
+    if tool_name == "read_scout_requirements":
+        return json.dumps(fx["requirements"])
+
+    if tool_name == "flag_conversation":
+        return json.dumps({
+            "flagged": True,
+            "reminder_set": True,
+            "reason": args.get("reason", ""),
+        })
+
+    if tool_name == "adjust_character":
+        changes = []
+        if args.get("tone_dial") is not None:
+            changes.append(f"tone_dial -> {args['tone_dial']}")
+        if args.get("domain_intensity") is not None:
+            changes.append(f"domain_intensity -> {args['domain_intensity']}")
+        return json.dumps({
+            "updated": True,
+            "changes": changes,
+            "reason": args.get("reason", ""),
+        })
+
+    return f'Error: Unknown guide tool "{tool_name}".'

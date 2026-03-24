@@ -25,10 +25,35 @@ from typing import TYPE_CHECKING
 # Add parent dir for imports
 sys.path.insert(0, str(Path(__file__).parent))
 
-from eval_tools import ALL_TOOL_NAMES, TOOL_CATEGORIES
+from eval_tools import ALL_TOOL_NAMES, TOOL_CATEGORIES, ALL_GUIDE_TOOL_NAMES, GUIDE_TOOL_CATEGORIES
 
 if TYPE_CHECKING:
     from eval_framework import RunConfig
+
+
+# ---------------------------------------------------------------------------
+# Guide persona — parent/scouter-facing, no gaming overlay
+# ---------------------------------------------------------------------------
+
+GUIDE_PERSONA = """You are the Scout Quest Guide — a professional assistant for parents and scouters who oversee scouts using the Scout Quest system.
+
+YOUR ROLE:
+- Help parents and scouters monitor their scout's progress
+- Present data clearly in parent-friendly terms (no gaming jargon, no quest overlay)
+- Support guide actions: viewing progress, adjusting settings, flagging concerns
+- Be warm but professional — you're talking to adults, not youth
+
+COMMUNICATION STYLE:
+- Clear, concise, factual — parents want the bottom line
+- Translate internal metrics into plain language (e.g., "15% toward his savings goal" not "quest progress 15%")
+- Celebrate the scout's wins without being over-the-top
+- When there are concerns, be honest and direct — parents appreciate candor
+- Never reveal internal coaching strategy or AI character settings unless the guide specifically asks to adjust them
+
+IMPORTANT:
+- Always use real data from tools — never fabricate progress numbers
+- Respect the scout's privacy while keeping the guide informed
+- If asked about something outside your scope, say so clearly"""
 
 
 # ---------------------------------------------------------------------------
@@ -54,11 +79,15 @@ class LayerConfig:
         """Check if a tool is authorized to execute in this layer."""
         return tool_name in self.authorized_tools
 
-    def build_system_prompt(self, config: "RunConfig") -> str:
+    def build_system_prompt(self, config: "RunConfig", endpoint: str = "scout") -> str:
         """Build the system prompt based on layer config.
 
         Reuses the knowledge loading and prompt building infrastructure from
         perspectives/knowledge.py to avoid duplication.
+
+        Args:
+            config: RunConfig with model/persona/knowledge settings.
+            endpoint: "scout" (default) or "guide" — selects persona and tool instructions.
         """
         from perspectives.knowledge import (
             _load_knowledge,
@@ -81,8 +110,10 @@ class LayerConfig:
         troop_context = k_mod._troop_context
         personas = k_mod._personas
 
-        # Choose persona: use full persona (with tool instructions) or stripped version
-        if self.include_tool_instructions and personas:
+        # Choose persona based on endpoint
+        if endpoint == "guide":
+            persona = GUIDE_PERSONA
+        elif self.include_tool_instructions and personas:
             persona = personas.get(config.persona_key, {}).get("persona", PERSONA_NO_TOOLS)
         else:
             persona = PERSONA_NO_TOOLS
@@ -108,34 +139,56 @@ class LayerConfig:
         # Add tool usage instructions if tools are authorized
         tool_instructions = ""
         if self.include_tool_instructions and self.authorized_tools:
-            from eval_tools import TOOL_DEFINITIONS
-            tool_lines = [
-                "",
-                "DATA SOURCES — know what's where:",
-                "- YOUR KNOWLEDGE BASE (already in this prompt): BSA official policy, merit badge requirements,",
-                "  requirement version history, advancement procedures, safety rules. This is AUTHORITATIVE.",
-                "  Use it FIRST for any BSA facts, requirements, or policy questions.",
-                "- SCOUT DATA TOOLS (read_*): This specific scout's progress, quest state, chore streak, etc.",
-                "  Use these to PERSONALIZE — check what this scout has done, not what BSA requires.",
-                "",
-                "AVAILABLE TOOLS:",
-            ]
-            for tool_name in sorted(self.authorized_tools):
-                tool_def = next((t for t in TOOL_DEFINITIONS if t["name"] == tool_name), None)
-                if tool_def:
-                    tool_lines.append(f"- {tool_name}: {tool_def['description'][:150]}")
-            tool_lines.extend([
-                "",
-                "TOOL USAGE RULES:",
-                "1. BSA facts/requirements/policy → ANSWER DIRECTLY from your knowledge base. It's already in your",
-                "   context above. You do NOT need to call any tool to answer BSA policy or requirement questions.",
-                "   Just read your context and respond.",
-                "2. This scout's PERSONAL progress → use read_* tools (read_quest_state, read_requirements, etc.)",
-                "   to check THEIR specific status, savings, streak, or completed requirements.",
-                "3. web_search → ONLY for topics NOT covered in your knowledge base, or very recent news.",
-                "4. NEVER fabricate specific facts. If you genuinely can't find it in your context, say so.",
-                "5. Do NOT call tools just because they exist. Only call a tool when you NEED data you don't have.",
-            ])
+            if endpoint == "guide":
+                from eval_tools import GUIDE_TOOL_DEFINITIONS
+                tool_defs = GUIDE_TOOL_DEFINITIONS
+                tool_lines = [
+                    "",
+                    "AVAILABLE TOOLS:",
+                ]
+                for tool_name in sorted(self.authorized_tools):
+                    tool_def = next((t for t in tool_defs if t["name"] == tool_name), None)
+                    if tool_def:
+                        tool_lines.append(f"- {tool_name}: {tool_def['description'][:150]}")
+                tool_lines.extend([
+                    "",
+                    "TOOL USAGE RULES:",
+                    "1. Always use read_linked_scouts first to identify which scouts you can access.",
+                    "2. Use read_scout_* tools to get real data — never fabricate progress numbers.",
+                    "3. Present data in parent-friendly terms — translate metrics into plain language.",
+                    "4. For concerns, use flag_conversation to create a record and follow-up reminder.",
+                    "5. For character adjustments, use adjust_character — explain what the change will do.",
+                ])
+            else:
+                from eval_tools import TOOL_DEFINITIONS
+                tool_defs = TOOL_DEFINITIONS
+                tool_lines = [
+                    "",
+                    "DATA SOURCES — know what's where:",
+                    "- YOUR KNOWLEDGE BASE (already in this prompt): BSA official policy, merit badge requirements,",
+                    "  requirement version history, advancement procedures, safety rules. This is AUTHORITATIVE.",
+                    "  Use it FIRST for any BSA facts, requirements, or policy questions.",
+                    "- SCOUT DATA TOOLS (read_*): This specific scout's progress, quest state, chore streak, etc.",
+                    "  Use these to PERSONALIZE — check what this scout has done, not what BSA requires.",
+                    "",
+                    "AVAILABLE TOOLS:",
+                ]
+                for tool_name in sorted(self.authorized_tools):
+                    tool_def = next((t for t in tool_defs if t["name"] == tool_name), None)
+                    if tool_def:
+                        tool_lines.append(f"- {tool_name}: {tool_def['description'][:150]}")
+                tool_lines.extend([
+                    "",
+                    "TOOL USAGE RULES:",
+                    "1. BSA facts/requirements/policy → ANSWER DIRECTLY from your knowledge base. It's already in your",
+                    "   context above. You do NOT need to call any tool to answer BSA policy or requirement questions.",
+                    "   Just read your context and respond.",
+                    "2. This scout's PERSONAL progress → use read_* tools (read_quest_state, read_requirements, etc.)",
+                    "   to check THEIR specific status, savings, streak, or completed requirements.",
+                    "3. web_search → ONLY for topics NOT covered in your knowledge base, or very recent news.",
+                    "4. NEVER fabricate specific facts. If you genuinely can't find it in your context, say so.",
+                    "5. Do NOT call tools just because they exist. Only call a tool when you NEED data you don't have.",
+                ])
             tool_instructions = "\n".join(tool_lines)
 
         # Combine persona + tool instructions
