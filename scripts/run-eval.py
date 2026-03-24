@@ -531,6 +531,23 @@ Examples:
                     results.append(result_entry)
                     consecutive_errors = 0
 
+                    # Incremental save — viewer can show progress during long runs
+                    all_results[config_key] = results
+                    try:
+                        with open(run_dir / "results.json", "w") as f:
+                            json.dump(all_results, f, indent=2)
+                        # Update meta with progress
+                        meta["progress"] = {
+                            "config": config_key,
+                            "completed": len(results),
+                            "total": len(items),
+                            "cost": usage.totals["cost"],
+                        }
+                        with open(run_dir / "meta.json", "w") as f:
+                            json.dump(meta, f, indent=2)
+                    except Exception:
+                        pass
+
                 except BudgetExceeded as e:
                     print(f"\n  BUDGET EXCEEDED: {e}")
                     budget_stopped = True

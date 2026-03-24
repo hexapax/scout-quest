@@ -2164,6 +2164,7 @@
     showSection("dashboard");
     updateBreadcrumb([{ label: formatTimestamp(ts) }]);
     currentTimestamp = ts;
+    history.pushState(null, "", `#${ts}`);
 
     try {
       const data = await fetchReport(ts);
@@ -2309,6 +2310,10 @@
       btn.onclick = () => {
         activeView = btn.dataset.view;
         document.querySelectorAll("#view-tabs .tab-btn").forEach(b => b.classList.toggle("active", b === btn));
+        // Update hash to include view tab
+        if (currentTimestamp && currentTimestamp !== "local") {
+          history.replaceState(null, "", `#${currentTimestamp}?view=${activeView}`);
+        }
         renderDashboard();
       };
     });
@@ -2958,7 +2963,7 @@
     showSection("drilldown");
     // Update hash for deep linking (without triggering hashchange)
     if (currentTimestamp && currentTimestamp !== "local") {
-      history.replaceState(null, "", `#${currentTimestamp}/${questionId}`);
+      history.pushState(null, "", `#${currentTimestamp}/${questionId}`);
     }
     const tsLabel = currentTimestamp === "local" ? "Local File" : formatTimestamp(currentTimestamp);
     updateBreadcrumb([
@@ -3421,6 +3426,7 @@
     if (browserAutoRefresh) { clearInterval(browserAutoRefresh); browserAutoRefresh = null; }
     currentData = null;
     currentTimestamp = null;
+    history.pushState(null, "", window.location.pathname);
     if (radarChart) { radarChart.destroy(); radarChart = null; }
     if (barChart) { barChart.destroy(); barChart = null; }
     hideVoiceBar();
@@ -4452,13 +4458,16 @@
   function parseHash() {
     const hash = window.location.hash.replace(/^#/, "");
     if (!hash) return null;
-    // Format: run_timestamp/model_key/question_id  OR  run_timestamp/question_id
-    const parts = hash.split("/");
+    // Format: run_timestamp[?view=tab][/question_id]  OR  run_timestamp/model_key/question_id
+    const [pathPart, queryPart] = hash.split("?");
+    const parts = pathPart.split("/");
+    const params = new URLSearchParams(queryPart || "");
     if (parts.length >= 1) {
       return {
         run: parts[0],
         model: parts.length === 3 ? parts[1] : null,
         question: parts.length === 3 ? parts[2] : (parts.length === 2 ? parts[1] : null),
+        view: params.get("view") || null,
       };
     }
     return null;
@@ -4466,7 +4475,10 @@
 
   async function handleHashNavigation() {
     const target = parseHash();
-    if (!target || !target.run) return;
+    if (!target || !target.run) {
+      loadBrowser();
+      return;
+    }
 
     try {
       const data = await fetchReport(target.run);
@@ -4477,6 +4489,10 @@
         loadDashboard(data);
         drillDown(target.question);
       } else {
+        // Restore view tab from hash if present
+        if (target.view) {
+          activeView = target.view;
+        }
         loadDashboard(data);
         showSection("dashboard");
         updateBreadcrumb([{ label: formatTimestamp(target.run) }]);
