@@ -151,6 +151,24 @@ configs:
     price: "$0.14/$0.28"
 
   # ---------------------------------------------------------------
+  # xAI Grok
+  # ---------------------------------------------------------------
+  grok:
+    model_id: grok-3-fast
+    provider: xai
+    knowledge: compact
+    layer: full
+    persona_key: grok
+    label: "Grok 3 Fast"
+    price: "$5/$15"
+
+  grok-mini:
+    extends: grok
+    model_id: grok-3-mini-fast
+    label: "Grok 3 Mini Fast"
+    price: "$0.30/$0.50"
+
+  # ---------------------------------------------------------------
   # Ablation layers — model-agnostic test conditions
   #
   # Each layer controls what context the model gets:
@@ -163,55 +181,255 @@ configs:
   # Or use these configs directly (default to Claude for backward compat)
   # ---------------------------------------------------------------
 
-  # P only — baseline, model training alone
+  # Ablation layers — subtractive naming: default is everything,
+  # label shows what's REMOVED. "Claude Sonnet 4.6" = full stack.
+  # "Claude Sonnet 4.6 -knowledge -troop -tools" = persona only.
+
   layer-P:
     extends: claude
     layer: persona-only
     knowledge: none
     tools_enabled: false
-    label: "Persona Only"
+    label: "Claude Sonnet 4.6 -knowledge -troop -tools"
 
-  # P + W — can the model search for what it needs?
   layer-PW:
     extends: claude
     layer: persona-only
     knowledge: none
     web_search: true
-    label: "Persona + Web Search"
+    label: "Claude Sonnet 4.6 -knowledge -troop -tools +web"
 
-  # P + T — troop personalization without BSA knowledge
   layer-PT:
     extends: claude
     layer: troop-only
     knowledge: none
-    label: "Persona + Troop"
+    label: "Claude Sonnet 4.6 -knowledge -tools"
 
-  # P + T + W — troop context with web search instead of knowledge doc
   layer-PTW:
     extends: claude
     layer: troop+websearch
     knowledge: none
     web_search: true
-    label: "Persona + Troop + Web Search"
+    label: "Claude Sonnet 4.6 -knowledge -tools +web"
 
-  # P + K — BSA knowledge without troop personalization
   layer-PK:
     extends: claude
     layer: knowledge-only
-    label: "Persona + Knowledge"
+    label: "Claude Sonnet 4.6 -troop -tools"
 
-  # P + K + T — knowledge + personalization (production default)
   layer-PKT:
     extends: claude
     layer: knowledge+troop
-    label: "Persona + Knowledge + Troop"
+    label: "Claude Sonnet 4.6 -web"
 
-  # P + K + T + W — everything
   layer-PKTW:
     extends: claude
     layer: knowledge+troop
     web_search: true
-    label: "Persona + Knowledge + Troop + Web Search"
-    adaptive_effort: medium
-    label: "L5: + Adaptive Thinking"
+    label: "Claude Sonnet 4.6"
     price: "$3/$15 adaptive"
+
+  # ---------------------------------------------------------------
+  # Graph eval configs — for A/B testing FalkorDB impact
+  #
+  # Run graph eval set:
+  #   python3 run-eval.py --eval-set scout-eval-graph-v1.yaml --config graph-PKT --budget 10.00
+  #   python3 run-eval.py --eval-set scout-eval-graph-v1.yaml --config graph-PK --budget 10.00
+  #   python3 run-eval.py --eval-set scout-eval-graph-v1.yaml --config graph-P --budget 10.00
+  #
+  # Compare: PKT (tools+knowledge) vs PK (knowledge only) vs P (baseline)
+  # to measure how much state-aware proactive coaching improves with tools.
+  # ---------------------------------------------------------------
+
+  # Default: full stack
+  graph-PKT:
+    extends: claude
+    layer: knowledge+troop
+    web_search: true
+    label: "Claude Sonnet 4.6"
+
+  # Ablation: Claude without web (for A/B testing web impact)
+
+  graph-PK:
+    extends: claude
+    layer: knowledge-only
+    label: "Claude Sonnet 4.6 -troop -tools"
+
+  graph-P:
+    extends: claude
+    layer: persona-only
+    knowledge: none
+    tools_enabled: false
+    label: "Claude Sonnet 4.6 -knowledge -troop -tools"
+
+  # Cross-model comparison: full stack (knowledge + troop + tools + web)
+  graph-opus:
+    extends: opus
+    layer: knowledge+troop
+    web_search: true
+    label: "Claude Opus 4.6"
+
+  graph-gpt41:
+    extends: gpt41
+    layer: knowledge+troop
+    web_search: true
+    label: "GPT-4.1"
+
+  graph-grok:
+    extends: grok
+    layer: knowledge+troop
+    web_search: true
+    label: "Grok 3 Fast"
+
+  graph-gemini:
+    extends: gemini3flash
+    layer: knowledge+troop
+    web_search: true
+    label: "Gemini 3 Flash"
+
+  graph-deepseek:
+    extends: deepseek
+    layer: knowledge+troop
+    web_search: true
+    label: "DeepSeek V3"
+
+  graph-gemini31:
+    extends: gemini31flash-lite
+    layer: knowledge+troop
+    web_search: true
+    label: "Gemini 3.1 Flash Lite"
+
+  graph-gpt54:
+    extends: gpt54
+    layer: knowledge+troop
+    web_search: true
+    label: "GPT-5.4"
+
+  # ---------------------------------------------------------------
+  # Latest models (March 2026)
+  # ---------------------------------------------------------------
+  deepseek-v32:
+    model_id: deepseek/deepseek-v3.2
+    provider: openrouter
+    knowledge: compact
+    layer: full
+    persona_key: gpt
+    label: "DeepSeek V3.2"
+    price: "$0.26/$0.38"
+
+  grok41-fast:
+    model_id: x-ai/grok-4.1-fast
+    provider: openrouter
+    knowledge: full
+    layer: full
+    persona_key: grok
+    label: "Grok 4.1 Fast"
+    price: "$0.20/$0.50"
+
+  qwen35-max:
+    model_id: qwen/qwen3.5-397b-a17b
+    provider: openrouter
+    knowledge: compact
+    layer: full
+    persona_key: gpt
+    label: "Qwen 3.5 Max"
+    price: "$0.39/$2.34"
+
+  glm5:
+    model_id: z-ai/glm-5-turbo
+    provider: openrouter
+    knowledge: compact
+    layer: full
+    persona_key: gpt
+    label: "GLM-5 Turbo"
+    price: "$1.20/$4.00"
+
+  # Graph eval variants for latest models
+  graph-deepseek-v32:
+    extends: deepseek-v32
+    layer: knowledge+troop
+    web_search: true
+    label: "DeepSeek V3.2"
+
+  graph-grok41:
+    extends: grok41-fast
+    layer: knowledge+troop
+    web_search: true
+    label: "Grok 4.1 Fast"
+
+  graph-qwen35-max:
+    extends: qwen35-max
+    layer: knowledge+troop
+    web_search: true
+    label: "Qwen 3.5 Max"
+
+  graph-glm5:
+    extends: glm5
+    layer: knowledge+troop
+    web_search: true
+    label: "GLM-5 Turbo"
+
+  # ---------------------------------------------------------------
+  # OpenRouter models (open source / alternative)
+  # ---------------------------------------------------------------
+  llama4-scout:
+    model_id: meta-llama/llama-4-scout
+    provider: openrouter
+    knowledge: compact
+    layer: full
+    persona_key: gpt
+    label: "Llama 4 Scout"
+    price: "$0.10/$0.40"
+
+  llama4-maverick:
+    model_id: meta-llama/llama-4-maverick
+    provider: openrouter
+    knowledge: compact
+    layer: full
+    persona_key: gpt
+    label: "Llama 4 Maverick"
+    price: "$0.20/$0.60"
+
+  qwen3-235b:
+    model_id: qwen/qwen3-235b-a22b
+    provider: openrouter
+    knowledge: compact
+    layer: full
+    persona_key: gpt
+    label: "Qwen 3 235B"
+    price: "$0.46/$1.82"
+
+  # Qwen 3 with 1M context (Flash variant)
+  qwen3-flash:
+    model_id: qwen/qwen3.5-flash-02-23
+    provider: openrouter
+    knowledge: compact
+    layer: full
+    persona_key: gpt
+    label: "Qwen 3.5 Flash"
+    price: "$0.065/$0.26"
+
+  graph-qwen3:
+    extends: qwen3-235b
+    layer: knowledge-only
+    label: "Qwen 3 235B -troop -tools"
+
+  graph-qwen35-flash:
+    extends: qwen3-flash
+    layer: knowledge+troop
+    web_search: true
+    label: "Qwen 3.5 Flash"
+
+  # Graph eval variants
+  graph-llama4:
+    extends: llama4-scout
+    layer: knowledge+troop
+    web_search: true
+    label: "Llama 4 Scout"
+
+  graph-llama4-maverick:
+    extends: llama4-maverick
+    layer: knowledge+troop
+    web_search: true
+    label: "Llama 4 Maverick"
+

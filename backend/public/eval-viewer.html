@@ -1124,6 +1124,7 @@
   <div class="tab-bar" id="view-tabs" style="display:flex; align-items:center;">
     <button class="tab-btn active" data-view="dashboard">Dashboard</button>
     <button class="tab-btn" data-view="questions">Questions</button>
+    <button class="tab-btn" data-view="timing">Timing</button>
     <button class="tab-btn" data-view="cost">Cost</button>
     <span style="flex:1;"></span>
     <button class="copy-btn" id="copy-report-btn" onclick="app.copyReport()" title="Copy score table as markdown">Copy Report</button>
@@ -1150,13 +1151,8 @@
     </div>
   </div>
 
-  <!-- Questions view (per-question drilldown list) -->
+  <!-- Questions view (single merged table) -->
   <div id="view-questions" class="hidden">
-    <div class="card">
-      <div class="score-table-wrap">
-        <table class="score-table" id="score-table"></table>
-      </div>
-    </div>
   </div>
 
   <!-- Cost view -->
@@ -1178,6 +1174,16 @@
       <h2>Cost by Run</h2>
       <div class="score-table-wrap">
         <table class="cost-table" id="cost-by-run-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timing view -->
+  <div id="view-timing" class="hidden">
+    <div class="card">
+      <h2>Response Timing</h2>
+      <div class="score-table-wrap">
+        <table class="score-table" id="timing-table"></table>
       </div>
     </div>
   </div>
@@ -1332,6 +1338,7 @@
 
   // ── Constants ──
   const CATEGORIES = {
+    // Legacy letter codes (v5)
     A: "Advancement Policy",
     B: "Troop Logistics",
     C: "Requirement Details",
@@ -1339,6 +1346,18 @@
     E: "Cross-Reference",
     F: "Values Coaching",
     G: "Over-Policy Detection",
+    // v6 domain names
+    advancement: "Advancement",
+    logistics: "Logistics",
+    requirements: "Requirements",
+    safety: "Safety & YPT",
+    values: "Values",
+    cross_reference: "Cross-Reference",
+    // Graph eval domains
+    graph_proactive: "Proactive",
+    graph_cross_ref: "Cross-Reference",
+    graph_state_aware: "State-Aware",
+    graph_multi_turn: "Multi-Turn",
     // Chain spectre categories
     chain: "Chain Sessions",
     tool_use: "Tool Use",
@@ -1614,11 +1633,17 @@
     if (scored.length === 0) return {};
     const result = {};
     for (const dim of SCORE_DIMS) {
-      const sum = scored.reduce((acc, e) => acc + (e.scores[dim] || 0), 0);
-      result[dim] = Math.round(sum / scored.length * 10) / 10;
+      // Only average entries that actually have a numeric score for this dimension
+      const withDim = scored.filter(e => e.scores[dim] != null && typeof e.scores[dim] === "number");
+      result[dim] = withDim.length > 0
+        ? Math.round(withDim.reduce((acc, e) => acc + e.scores[dim], 0) / withDim.length * 10) / 10
+        : null;
     }
-    const vals = SCORE_DIMS.map(d => result[d]);
-    result.overall = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10;
+    // Overall = average of non-null dimensions only
+    const vals = SCORE_DIMS.map(d => result[d]).filter(v => v != null);
+    result.overall = vals.length > 0
+      ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10
+      : null;
     return result;
   }
 
@@ -1963,10 +1988,15 @@
         }
       }
     }
+    // Don't show tabs if there's only one category
+    if (catsInData.size <= 1) {
+      $tabs.innerHTML = "";
+      return;
+    }
     let html = '<button class="tab-btn active" data-cat="all" onclick="app.setCategory(\'all\')">All</button>';
-    for (const cat of catsInData) {
-      const label = CATEGORIES[cat] || cat;
-      html += `<button class="tab-btn" data-cat="${cat}" onclick="app.setCategory('${cat}')">${cat}: ${esc(label)}</button>`;
+    for (const cat of Array.from(catsInData).sort()) {
+      const label = CATEGORIES[cat] || cat.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      html += `<button class="tab-btn" data-cat="${cat}" onclick="app.setCategory('${cat}')">${esc(label)}</button>`;
     }
     $tabs.innerHTML = html;
   }
@@ -2005,10 +2035,11 @@
 
     document.getElementById("view-dashboard").classList.toggle("hidden", activeView !== "dashboard");
     document.getElementById("view-questions").classList.toggle("hidden", activeView !== "questions");
+    document.getElementById("view-timing").classList.toggle("hidden", activeView !== "timing");
     document.getElementById("view-cost").classList.toggle("hidden", activeView !== "cost");
 
-    // Hide category tabs when viewing cost; show question list only in questions view
-    document.getElementById("category-tabs").classList.toggle("hidden", activeView === "cost");
+    // Hide category tabs when viewing cost/timing; show question list only in questions view
+    document.getElementById("category-tabs").classList.toggle("hidden", activeView === "cost" || activeView === "timing");
     document.getElementById("question-list").classList.toggle("hidden", activeView !== "questions");
 
     if (activeView === "dashboard") {
@@ -2016,8 +2047,9 @@
       renderRadarChart(models);
       renderBarChart(data, models);
     } else if (activeView === "questions") {
-      renderScoreTable(data, models);
       renderQuestionList(data, models);
+    } else if (activeView === "timing") {
+      renderTimingTable(data, models);
     } else if (activeView === "cost") {
       loadCostDashboard();
     }
@@ -2138,18 +2170,22 @@
         }
         html += `<td style="color:var(--red);">ERR</td>`;
       } else if (entry && entry.scores) {
-        let sum = 0;
+        let sum = 0, count = 0;
         for (const dim of SCORE_DIMS) {
-          const v = entry.scores[dim] || 0;
-          sum += v;
-          const fg = scoreTextColor(v);
-          const bg = scoreBgColor(v);
-          html += `<td style="color:${fg}; background:${bg};">${v}</td>`;
+          const v = entry.scores[dim];
+          if (v != null && typeof v === "number") {
+            sum += v; count++;
+            const fg = scoreTextColor(v);
+            const bg = scoreBgColor(v);
+            html += `<td style="color:${fg}; background:${bg};">${v}</td>`;
+          } else {
+            html += '<td style="color:var(--text-muted);">--</td>';
+          }
         }
-        const avg = sum / SCORE_DIMS.length;
+        const avg = count > 0 ? sum / count : null;
         const avgFg = scoreTextColor(avg);
         const avgBg = scoreBgColor(avg);
-        html += `<td style="color:${avgFg}; background:${avgBg}; font-weight:600;">${avg.toFixed(1)}</td>`;
+        html += `<td style="color:${avgFg}; background:${avgBg}; font-weight:600;">${avg != null ? avg.toFixed(1) : "--"}</td>`;
       } else {
         for (const dim of SCORE_DIMS) {
           html += '<td style="color:var(--text-muted);">--</td>';
@@ -2232,12 +2268,21 @@
     });
   }
 
-  // ── Bar Chart (by category) ──
+  // ── Bar Chart (by category — uses actual categories from data) ──
   function renderBarChart(data, models) {
     const ctx = document.getElementById("bar-chart").getContext("2d");
     if (barChart) barChart.destroy();
 
-    const cats = Object.keys(CATEGORIES);
+    // Collect categories actually present in the data
+    const catSet = new Set();
+    for (const m of models) {
+      for (const e of m.entries) {
+        if (e.category) catSet.add(e.category);
+      }
+    }
+    const cats = Array.from(catSet).sort();
+    if (cats.length === 0) return;
+
     const datasets = models.map((m, i) => {
       const catAvgs = cats.map(cat => {
         const catEntries = m.entries.filter(e => e.category === cat);
@@ -2256,7 +2301,7 @@
     barChart = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: cats.map(c => c + ": " + CATEGORIES[c]),
+        labels: cats.map(c => CATEGORIES[c] || c.replace(/_/g, " ").replace(/\b\w/g, ch => ch.toUpperCase())),
         datasets
       },
       options: {
@@ -2304,10 +2349,11 @@
       const modelScores = models.map(m => {
         const entry = m.entries.find(e => e.questionId === q.id);
         if (!entry || !entry.scores) return null;
-        const dims = SCORE_DIMS.map(d => entry.scores[d] || 0);
-        const avg = dims.reduce((a, b) => a + b, 0) / dims.length;
+        const scoredDims = SCORE_DIMS.filter(d => entry.scores[d] != null && typeof entry.scores[d] === "number");
+        if (scoredDims.length === 0) return null;
+        const avg = scoredDims.reduce((a, d) => a + entry.scores[d], 0) / scoredDims.length;
         if (avg > bestScore) bestScore = avg;
-        return { entry, avg, dims };
+        return { entry, avg, dims: scoredDims.map(d => entry.scores[d]) };
       });
 
       for (let mi = 0; mi < models.length; mi++) {
@@ -2368,9 +2414,9 @@
         } else if (entry.error) {
           html += '<td><span class="score-cell-colored" style="background:rgba(231,76,60,0.2); color:var(--red);">ERR</span></td>';
         } else if (entry.scores) {
-          const dims = SCORE_DIMS.map(d => entry.scores[d] || 0);
-          const avg = dims.reduce((a, b) => a + b, 0) / dims.length;
-          html += `<td><span class="score-cell-colored" style="background:${scoreBg(avg)}; color:${scoreColor(avg)}">${avg.toFixed(1)}</span></td>`;
+          const scoredDims = SCORE_DIMS.filter(d => entry.scores[d] != null && typeof entry.scores[d] === "number");
+          const avg = scoredDims.length > 0 ? scoredDims.reduce((a, d) => a + entry.scores[d], 0) / scoredDims.length : null;
+          html += `<td><span class="score-cell-colored" style="background:${scoreBg(avg)}; color:${scoreColor(avg)}">${avg != null ? avg.toFixed(1) : "--"}</span></td>`;
         } else {
           html += '<td>--</td>';
         }
@@ -2514,20 +2560,21 @@
       let best = 0;
       for (const m of models) {
         const entry = m.entries.find(e => e.questionId === questionId);
-        if (entry && entry.scores && (entry.scores[dim] || 0) > best) {
+        if (entry && entry.scores && entry.scores[dim] != null && entry.scores[dim] > best) {
           best = entry.scores[dim];
         }
       }
       bestPerDim[dim] = best;
     }
 
-    // Find best overall
+    // Find best overall (only average scored dimensions, skip nulls)
     let bestOverall = 0;
     let bestOverallKey = null;
     for (const m of models) {
       const entry = m.entries.find(e => e.questionId === questionId);
       if (entry && entry.scores) {
-        const avg = SCORE_DIMS.map(d => entry.scores[d] || 0).reduce((a, b) => a + b, 0) / SCORE_DIMS.length;
+        const scored = SCORE_DIMS.filter(d => entry.scores[d] != null && typeof entry.scores[d] === "number");
+        const avg = scored.length > 0 ? scored.reduce((a, d) => a + entry.scores[d], 0) / scored.length : 0;
         if (avg > bestOverall) { bestOverall = avg; bestOverallKey = m.key; }
       }
     }
@@ -2594,16 +2641,20 @@
         if (entry.scores) {
           html += '<div class="score-bars">';
           for (const dim of SCORE_DIMS) {
-            const v = entry.scores[dim] || 0;
+            const v = entry.scores[dim];
+            if (v == null) continue;  // Skip N/A dimensions
             const pct = v * 10;
             const isBestDim = v === bestPerDim[dim] && v > 0;
+            // Check if this dimension was adjusted by rebuttal
+            const wasAdjusted = entry.original_scores && entry.original_scores[dim] != null && entry.original_scores[dim] !== v;
+            const adjMark = wasAdjusted ? ` <span title="Adjusted from ${entry.original_scores[dim]} by rebuttal" style="color:var(--green);">*</span>` : "";
             html += `
               <div class="score-bar-row ${isBestDim ? 'best' : ''}">
                 <span class="score-bar-label">${esc(DIM_LABELS[dim])}</span>
                 <div class="score-bar-track">
                   <div class="score-bar-fill" style="width:${pct}%; background:${scoreColor(v)}"></div>
                 </div>
-                <span class="score-bar-value" style="color:${scoreColor(v)}">${v}</span>
+                <span class="score-bar-value" style="color:${scoreColor(v)}">${v}${adjMark}</span>
               </div>`;
           }
           html += '</div>';
@@ -2625,6 +2676,45 @@
               }
             }
             html += '</div></div>';
+          }
+
+          // Rebuttal section (if present)
+          if (entry.rebuttal && entry.rebuttal.rebuttal_text) {
+            const rb = entry.rebuttal;
+            const typeColors = {legitimate: "var(--green)", excuses: "var(--red)", mixed: "#f1c40f", accepted: "var(--text-muted)"};
+            const typeLabels = {legitimate: "Rebuttal Upheld ✓", excuses: "Rebuttal Rejected ×", mixed: "Partially Upheld ~", accepted: "Scores Accepted"};
+            const typeColor = typeColors[rb.rebuttal_type] || "var(--text-muted)";
+            const typeLabel = typeLabels[rb.rebuttal_type] || rb.rebuttal_type;
+
+            html += `<div class="assessor-panel" style="border-left:3px solid ${typeColor}; margin-top:0.5rem;">`;
+            html += `<div class="assessor-toggle" onclick="this.parentElement.classList.toggle('expanded')">`;
+            html += `<span style="color:${typeColor}; font-weight:600;">Rebuttal: ${typeLabel}</span>`;
+            if (rb.adjustments && Object.keys(rb.adjustments).length > 0) {
+              const adjStr = Object.entries(rb.adjustments).map(([d, v]) => `${d} +${v}`).join(", ");
+              html += ` <span style="color:var(--green); font-size:0.8rem; margin-left:0.5rem;">${adjStr}</span>`;
+            }
+            html += `</div>`;
+            html += `<div class="assessor-details">`;
+            html += `<div style="white-space:pre-wrap; font-size:0.85rem; color:var(--text);">${esc(rb.rebuttal_text)}</div>`;
+            if (rb.verdict && Object.keys(rb.verdict).length > 0) {
+              html += `<div style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-muted);">`;
+              html += `<strong>Judge verdict:</strong><br>`;
+              for (const [dim, ruling] of Object.entries(rb.verdict)) {
+                const isAdj = typeof ruling === "string" && ruling.startsWith("adjust");
+                html += `<span style="color:${isAdj ? "var(--green)" : "var(--text-muted)"};">  ${dim}: ${ruling}</span><br>`;
+              }
+              html += `</div>`;
+            }
+            if (entry.original_scores) {
+              html += `<div style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-muted);">`;
+              html += `<strong>Original scores:</strong> `;
+              const origParts = SCORE_DIMS
+                .filter(d => entry.original_scores[d] != null && entry.scores[d] != null && entry.original_scores[d] !== entry.scores[d])
+                .map(d => `${d}: ${entry.original_scores[d]}→${entry.scores[d]}`);
+              html += origParts.length > 0 ? origParts.join(", ") : "no changes";
+              html += `</div>`;
+            }
+            html += `</div></div>`;
           }
         }
       } else {
@@ -3615,6 +3705,58 @@
     copyToClipboard(url, btn);
   }
 
+  // ── Timing Table ──
+  function renderTimingTable(data, models) {
+    const $table = document.getElementById("timing-table");
+    const questions = getQuestions(data);
+
+    let html = "<thead><tr><th>Question</th>";
+    for (const m of models) {
+      html += `<th>${esc(m.label)}<br><small style="color:var(--text-muted)">time / turns</small></th>`;
+    }
+    html += "</tr></thead><tbody>";
+
+    for (const q of questions) {
+      html += `<tr><td class="clickable" onclick="app.drillDown('${esc(q.id)}')">${esc(q.id)}: ${esc(q.question.substring(0, 50))}...</td>`;
+      for (const m of models) {
+        const entry = m.entries.find(e => e.questionId === q.id);
+        if (!entry) {
+          html += '<td>--</td>';
+        } else {
+          const ms = entry.timing_ms || 0;
+          const turns = entry.turn_count || 1;
+          const secs = (ms / 1000).toFixed(1);
+          const rebuttal = entry.rebuttal;
+          let rebuttalBadge = "";
+          if (rebuttal) {
+            if (rebuttal.rebuttal_type === "legitimate") rebuttalBadge = ' <span title="Score adjusted by rebuttal" style="color:var(--green);">*</span>';
+            else if (rebuttal.rebuttal_type === "excuses") rebuttalBadge = ' <span title="Rebuttal rejected" style="color:var(--red);">×</span>';
+            else if (rebuttal.rebuttal_type === "mixed") rebuttalBadge = ' <span title="Partial adjustment" style="color:#f1c40f;">~</span>';
+            else if (rebuttal.rebuttal_type === "accepted") rebuttalBadge = ' <span title="Accepted scores" style="color:var(--text-muted);">✓</span>';
+          }
+          // Color based on time
+          const timeColor = ms < 5000 ? "var(--green)" : ms < 15000 ? "#f1c40f" : "var(--red)";
+          html += `<td><span style="color:${timeColor}; font-weight:600;">${secs}s</span> <small style="color:var(--text-muted);">${turns}t</small>${rebuttalBadge}</td>`;
+        }
+      }
+      html += "</tr>";
+    }
+
+    // Averages row
+    html += '<tr style="border-top:2px solid var(--surface2); font-weight:700;"><td>AVERAGE</td>';
+    for (const m of models) {
+      const times = m.entries.filter(e => e.timing_ms > 0).map(e => e.timing_ms);
+      const turns = m.entries.filter(e => e.turn_count).map(e => e.turn_count);
+      const avgMs = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
+      const avgTurns = turns.length > 0 ? turns.reduce((a, b) => a + b, 0) / turns.length : 0;
+      const avgSecs = (avgMs / 1000).toFixed(1);
+      const timeColor = avgMs < 5000 ? "var(--green)" : avgMs < 15000 ? "#f1c40f" : "var(--red)";
+      html += `<td><span style="color:${timeColor}; font-weight:600;">${avgSecs}s</span> <small style="color:var(--text-muted);">${avgTurns.toFixed(1)}t</small></td>`;
+    }
+    html += "</tr></tbody>";
+    $table.innerHTML = html;
+  }
+
   // ── Cost Dashboard ──
   // The cost tab has two modes:
   // 1. When viewing a specific eval run: shows cost for THAT run (from usage.json or MongoDB)
@@ -3741,24 +3883,81 @@
         <div class="cost-value">${formatTokens(t.outputTokens || 0)}</div>
       </div>`;
 
-    // By model table
+    // By model table — separate models-under-test from eval/scorer models
     if (data.byModel && data.byModel.length > 0) {
-      let mHtml = "<thead><tr><th>Model</th><th>Calls</th><th>Input Tokens</th><th>Cached</th><th>Output Tokens</th><th>Cost</th></tr></thead><tbody>";
-      for (const m of data.byModel) {
-        const cc = costColorClass(m.cost || 0);
-        mHtml += `<tr>
-          <td>${esc(m.model || "unknown")}</td>
-          <td>${(m.calls || 0).toLocaleString()}</td>
-          <td>${formatTokens(m.inputTokens || 0)}</td>
-          <td>${formatTokens(m.cachedTokens || 0)}</td>
-          <td>${formatTokens(m.outputTokens || 0)}</td>
-          <td class="${cc}" style="font-weight:600;">${formatCost(m.cost)}</td>
-        </tr>`;
+      const totalCost = data.byModel.reduce((s, m) => s + (m.cost || 0), 0) || 1;
+
+      // Classify: eval models (scorer, assessors) vs models under test
+      const evalModelPatterns = ["deepseek-chat", "gpt-4.1-nano", "grok-3-mini", "claude-sonnet-4-6 (scorer)"];
+      const isEvalModel = (name) => {
+        const n = (name || "").toLowerCase();
+        // Assessor/scorer models are typically cheap models or explicitly labeled
+        return n.includes("(scorer)") || n.includes("(assessor)") ||
+               n.includes("gpt-4.1-nano") || n.includes("grok-3-mini") ||
+               (n.includes("deepseek-chat") && data.byModel.length > 2);
+      };
+
+      const testModels = data.byModel.filter(m => !isEvalModel(m.model));
+      const evalModels = data.byModel.filter(m => isEvalModel(m.model));
+      const testCost = testModels.reduce((s, m) => s + (m.cost || 0), 0);
+      const evalCost = evalModels.reduce((s, m) => s + (m.cost || 0), 0);
+
+      let mHtml = "<thead><tr><th>Model</th><th>Calls</th><th>Input Tokens</th><th>Cached</th><th>Output Tokens</th><th>Cost</th><th style='text-align:right'>%</th></tr></thead><tbody>";
+
+      if (testModels.length > 0) {
+        mHtml += `<tr style="background:rgba(46,204,113,0.05);"><td colspan="5" style="font-weight:600; color:var(--green); font-size:0.85rem;">Models Under Test</td><td class="cost-green" style="font-weight:600;">${formatCost(testCost)}</td><td style="text-align:right; color:var(--text-muted);">${(testCost/totalCost*100).toFixed(0)}%</td></tr>`;
+        for (const m of testModels) {
+          const cc = costColorClass(m.cost || 0);
+          const pct = (m.cost || 0) / totalCost * 100;
+          mHtml += `<tr>
+            <td style="padding-left:1.5rem;">${esc(m.model || "unknown")}</td>
+            <td>${(m.calls || 0).toLocaleString()}</td>
+            <td>${formatTokens(m.inputTokens || 0)}</td>
+            <td>${formatTokens(m.cachedTokens || 0)}</td>
+            <td>${formatTokens(m.outputTokens || 0)}</td>
+            <td class="${cc}" style="font-weight:600;">${formatCost(m.cost)}</td>
+            <td style="text-align:right; color:var(--text-muted);">${pct.toFixed(1)}%</td>
+          </tr>`;
+        }
       }
+
+      if (evalModels.length > 0) {
+        mHtml += `<tr style="background:rgba(136,153,170,0.05);"><td colspan="5" style="font-weight:600; color:var(--text-muted); font-size:0.85rem;">Eval Infrastructure</td><td style="font-weight:600; color:var(--text-muted);">${formatCost(evalCost)}</td><td style="text-align:right; color:var(--text-muted);">${(evalCost/totalCost*100).toFixed(0)}%</td></tr>`;
+        for (const m of evalModels) {
+          const pct = (m.cost || 0) / totalCost * 100;
+          mHtml += `<tr>
+            <td style="padding-left:1.5rem; color:var(--text-muted);">${esc(m.model || "unknown")}</td>
+            <td style="color:var(--text-muted);">${(m.calls || 0).toLocaleString()}</td>
+            <td style="color:var(--text-muted);">${formatTokens(m.inputTokens || 0)}</td>
+            <td style="color:var(--text-muted);">${formatTokens(m.cachedTokens || 0)}</td>
+            <td style="color:var(--text-muted);">${formatTokens(m.outputTokens || 0)}</td>
+            <td style="color:var(--text-muted);">${formatCost(m.cost)}</td>
+            <td style="text-align:right; color:var(--text-muted);">${pct.toFixed(1)}%</td>
+          </tr>`;
+        }
+      }
+
+      // If no eval models detected, just show flat list with percentages
+      if (evalModels.length === 0 && testModels.length === 0) {
+        for (const m of data.byModel) {
+          const cc = costColorClass(m.cost || 0);
+          const pct = (m.cost || 0) / totalCost * 100;
+          mHtml += `<tr>
+            <td>${esc(m.model || "unknown")}</td>
+            <td>${(m.calls || 0).toLocaleString()}</td>
+            <td>${formatTokens(m.inputTokens || 0)}</td>
+            <td>${formatTokens(m.cachedTokens || 0)}</td>
+            <td>${formatTokens(m.outputTokens || 0)}</td>
+            <td class="${cc}" style="font-weight:600;">${formatCost(m.cost)}</td>
+            <td style="text-align:right; color:var(--text-muted);">${pct.toFixed(1)}%</td>
+          </tr>`;
+        }
+      }
+
       mHtml += "</tbody>";
       $modelTable.innerHTML = mHtml;
     } else {
-      $modelTable.innerHTML = '<tbody><tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No model data</td></tr></tbody>';
+      $modelTable.innerHTML = '<tbody><tr><td colspan="7" style="text-align:center; color:var(--text-muted);">No model data</td></tr></tbody>';
     }
 
     // By run table (only in global view)

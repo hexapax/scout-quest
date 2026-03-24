@@ -99,6 +99,7 @@ def load_all_keys():
         "GOOGLE_KEY": get_key("GOOGLE_KEY", "GOOGLE_KEY", None),
         "DEEPSEEK_API_KEY": get_key("DEEPSEEK_API_KEY", "DEEPSEEK_API_KEY", "deepseek-api-key"),
         "OPENROUTER_KEY": get_key("OPENROUTER_KEY", "OPENROUTER_KEY", "openrouter-api-key"),
+        "XAI_API_KEY": get_key("XAI_API_KEY", "XAI_API_KEY", "xai-api-key"),
     }
     print("API Keys:")
     for name, val in keys.items():
@@ -438,24 +439,50 @@ Examples:
                     score_vals = {d: scores.get(d) for d in dim_names}
                     overall = panel.compute_overall(score_vals)
 
+                    # Phase 3: Rebuttal — let the model defend itself
+                    rebuttal_data = panel.rebuttal(
+                        content, context, scores,
+                        model_id=config.model_id, provider=config.provider,
+                        usage=usage,
+                    )
+
+                    # Apply adjustments if judge agreed
+                    adjusted_scores = dict(score_vals)
+                    if rebuttal_data.get("adjustments"):
+                        for dim, adj in rebuttal_data["adjustments"].items():
+                            if dim in adjusted_scores and adjusted_scores[dim] is not None:
+                                adjusted_scores[dim] = min(10, adjusted_scores[dim] + adj)
+                        overall = panel.compute_overall(adjusted_scores)
+
                     scored = ScoredResult(
                         execution=execution,
-                        scores=score_vals,
+                        scores=adjusted_scores,
                         scores_notes=scores.get("notes", ""),
                         assessments=scores.get("_assessments", {}),
                         overall_score=overall,
                     )
 
                     # Print summary
-                    dims_str = " ".join(f"{d[:3].upper()}:{score_vals[d]}" for d in dim_names[:4] if score_vals.get(d) is not None)
+                    rebuttal_tag = ""
+                    if rebuttal_data.get("rebuttal_type") == "legitimate":
+                        adj_str = ", ".join(f"{d}+{v}" for d, v in rebuttal_data["adjustments"].items())
+                        rebuttal_tag = f" [REBUTTAL: {adj_str}]"
+                    elif rebuttal_data.get("rebuttal_type") == "excuses":
+                        rebuttal_tag = " [rebuttal: excuses]"
+                    elif rebuttal_data.get("rebuttal_type") == "mixed":
+                        adj_str = ", ".join(f"{d}+{v}" for d, v in rebuttal_data["adjustments"].items())
+                        rebuttal_tag = f" [rebuttal: mixed {adj_str}]"
+                    dims_str = " ".join(f"{d[:3].upper()}:{adjusted_scores[d]}" for d in dim_names[:4] if adjusted_scores.get(d) is not None)
                     cost_str = f" [${usage.totals['cost']:.2f}]" if usage.budget else ""
-                    print(f"avg={overall:.1f} [{dims_str}]{cost_str}")
+                    print(f"avg={overall:.1f} [{dims_str}]{rebuttal_tag}{cost_str}")
 
                     # Store in MongoDB
                     if eval_results_col is not None:
                         doc = perspective.to_mongo_doc(
                             scored, timestamp, args.eval_version, args.system_version)
                         doc["versions"] = versions
+                        doc["rebuttal"] = rebuttal_data
+                        doc["original_scores"] = dict(score_vals) if rebuttal_data.get("adjustments") else None
                         try:
                             eval_results_col.insert_one(doc)
                         except Exception:
@@ -472,13 +499,18 @@ Examples:
                         "question": item.description,
                         "expected": item.expected,
                         "response": execution.response_text,
-                        "scores": {**score_vals, "notes": scores.get("notes", ""),
+                        "scores": {**adjusted_scores, "notes": scores.get("notes", ""),
                                    "_assessments": scores.get("_assessments", {})},
                         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
                         # New fields
                         "config_id": config_key,
                         "perspective": args.perspective,
                         "overall": overall,
+                        "rebuttal": rebuttal_data,
+                        "original_scores": dict(score_vals) if rebuttal_data.get("adjustments") else None,
+                        "timing_ms": execution.timing_ms,
+                        "turn_count": execution.raw_data.get("turn_count", 1),
+                        "turn_timings": execution.raw_data.get("turn_timings"),
                     }
                     results.append(result_entry)
                     consecutive_errors = 0

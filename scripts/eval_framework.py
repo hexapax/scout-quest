@@ -86,7 +86,7 @@ class RunConfig:
 
     # Axis 4: Model parameters
     persona_key: str = "claude"     # "claude", "gpt", "gemini", "grok"
-    max_tokens: int = 4096
+    max_tokens: int = 4096      # default bumped from 2500 — multi-turn coaching needs room
     thinking: dict | None = None            # {"enabled": True, "budget": 4000}
     adaptive_effort: str | None = None      # "low", "medium", "high"
     temperature: float | None = None
@@ -321,7 +321,7 @@ def build_run_config(name: str, raw: dict, overrides: dict | None = None) -> Run
         knowledge_doc=raw.get("knowledge_doc", ""),
         layer=raw.get("layer", "full"),
         persona_key=raw.get("persona_key", "claude"),
-        max_tokens=raw.get("max_tokens", 2500),
+        max_tokens=raw.get("max_tokens", 4096),
         thinking=thinking,
         adaptive_effort=raw.get("adaptive_effort"),
         temperature=raw.get("temperature"),

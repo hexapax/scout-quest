@@ -359,6 +359,181 @@ class PanelEvaluator:
 
         return result
 
+    def rebuttal(self, content: str, context: str, scores: dict,
+                  model_id: str, provider: str, usage: "UsageTracker") -> dict:
+        """Give the scored model a chance to rebut its scores.
+
+        Phase 3 (optional): The model that produced the response sees its
+        scores and evaluator notes, and can argue for adjustments.
+
+        A cheap judge then determines if each argument is a legitimate
+        point (evaluator error) or just an excuse.
+
+        Returns:
+            dict with "rebuttal_text", "verdict" (per-dimension), "adjustments",
+            and "rebuttal_type" ("legitimate" | "excuses" | "mixed" | "accepted")
+        """
+        dim_names = [d.name for d in self.dimensions]
+        scored_dims = {d: scores.get(d) for d in dim_names if scores.get(d) is not None}
+        notes = scores.get("notes", "")
+
+        if not scored_dims:
+            return {"rebuttal_text": None, "verdict": {}, "adjustments": {}, "rebuttal_type": "skipped"}
+
+        scores_block = "\n".join(f"  {d}: {v}/10" for d, v in scored_dims.items())
+
+        # Phase 3a: Ask the original model to rebut
+        rebuttal_prompt = f"""You just gave this response to a scout's question and were scored by an evaluation panel.
+
+QUESTION: {context[:500]}
+
+YOUR RESPONSE:
+{content[:1500]}
+
+SCORES YOU RECEIVED:
+{scores_block}
+
+EVALUATOR NOTES: {notes[:500]}
+
+Review your scores. For any dimension where you believe the score is unfair or based on an error:
+- State which dimension
+- Explain specifically why the score should be higher
+- Reference the exact part of your response that supports your case
+
+If the scores are fair, just say "ACCEPTED" and nothing else.
+
+Be honest. Only argue points where you have genuine evidence from your response.
+Do NOT argue that you "tried" or "intended to" — only argue based on what you actually said."""
+
+        # Call the original model for the rebuttal
+        rebuttal_text = None
+        try:
+            if provider == "anthropic":
+                import httpx
+                key = os.environ.get("ANTHROPIC_API_KEY", "")
+                resp = httpx.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": key, "anthropic-version": "2023-06-01",
+                             "content-type": "application/json"},
+                    json={"model": model_id, "max_tokens": 500,
+                          "messages": [{"role": "user", "content": rebuttal_prompt}]},
+                    timeout=60)
+                d = resp.json()
+                if "content" in d:
+                    rebuttal_text = d["content"][0].get("text", "")
+                    u = d.get("usage", {})
+                    usage.record(model_id,
+                        input_tokens=u.get("input_tokens", 0),
+                        output_tokens=u.get("output_tokens", 0),
+                        label=f"{model_id} (rebuttal)")
+            elif provider in ("openai", "deepseek", "openrouter", "xai"):
+                import httpx
+                urls = {"deepseek": "https://api.deepseek.com/v1",
+                        "openrouter": "https://openrouter.ai/api/v1",
+                        "xai": "https://api.x.ai/v1"}
+                base = urls.get(provider, "https://api.openai.com/v1")
+                keys = {"deepseek": "DEEPSEEK_API_KEY", "openrouter": "OPENROUTER_KEY",
+                        "xai": "XAI_API_KEY"}
+                key = os.environ.get(keys.get(provider, "OPENAI_API_KEY"), "")
+                resp = httpx.post(f"{base}/chat/completions",
+                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                    json={"model": model_id, "max_tokens": 500,
+                          "messages": [{"role": "user", "content": rebuttal_prompt}]},
+                    timeout=60)
+                d = resp.json()
+                if "choices" in d:
+                    rebuttal_text = d["choices"][0]["message"]["content"]
+                    u = d.get("usage", {})
+                    usage.record(model_id,
+                        input_tokens=u.get("prompt_tokens", 0),
+                        output_tokens=u.get("completion_tokens", 0),
+                        label=f"{model_id} (rebuttal)")
+            elif provider == "google":
+                from google import genai
+                from google.genai import types
+                gc = genai.Client(api_key=os.environ.get("GOOGLE_KEY", ""))
+                resp = gc.models.generate_content(
+                    model=model_id, contents=rebuttal_prompt,
+                    config=types.GenerateContentConfig(max_output_tokens=500))
+                rebuttal_text = resp.text
+                u = getattr(resp, "usage_metadata", None)
+                if u:
+                    usage.record(model_id,
+                        input_tokens=getattr(u, "prompt_token_count", 0) or 0,
+                        output_tokens=getattr(u, "candidates_token_count", 0) or 0,
+                        label=f"{model_id} (rebuttal)")
+        except Exception as e:
+            return {"rebuttal_text": f"[Rebuttal failed: {str(e)[:100]}]",
+                    "verdict": {}, "adjustments": {}, "rebuttal_type": "error"}
+
+        if not rebuttal_text:
+            return {"rebuttal_text": None, "verdict": {}, "adjustments": {}, "rebuttal_type": "error"}
+
+        # Check for acceptance
+        if rebuttal_text.strip().upper().startswith("ACCEPTED"):
+            return {"rebuttal_text": rebuttal_text, "verdict": {}, "adjustments": {},
+                    "rebuttal_type": "accepted"}
+
+        # Phase 3b: Cheap judge evaluates the rebuttal
+        judge_prompt = f"""A model was scored on an eval and submitted a rebuttal arguing for higher scores.
+
+ORIGINAL SCORES:
+{scores_block}
+
+EVALUATOR NOTES: {notes[:300]}
+
+MODEL'S REBUTTAL:
+{rebuttal_text[:1000]}
+
+For each dimension the model argues about, decide:
+- "upheld": The original score stands. The model is making excuses or the argument isn't supported by evidence.
+- "adjust +N": The model has a legitimate point. The score should increase by N (1-3 max).
+
+Return ONLY JSON: {{"dimension_name": "upheld" or "adjust +N", ...}}
+Example: {{"accuracy": "adjust +2", "specificity": "upheld"}}
+
+Be skeptical. Most rebuttals are excuses. Only adjust if the model cites specific evidence from its response that the evaluator clearly missed or misread."""
+
+        verdict = {}
+        adjustments = {}
+        try:
+            verdict_text = _call_with_retry(
+                lambda: _call_cheap("openai", "gpt-4.1-nano", judge_prompt, "")
+            )
+            if verdict_text:
+                import re
+                json_match = re.search(r'\{.*\}', verdict_text, re.DOTALL)
+                if json_match:
+                    verdict = __import__("json").loads(json_match.group())
+                    for dim, ruling in verdict.items():
+                        if isinstance(ruling, str) and ruling.startswith("adjust"):
+                            try:
+                                adj = int(ruling.split("+")[1].strip())
+                                adjustments[dim] = min(adj, 3)  # cap at +3
+                            except (IndexError, ValueError):
+                                pass
+                usage.record("gpt-4.1-nano",
+                    input_tokens=len(judge_prompt) // 4,
+                    output_tokens=len(verdict_text) // 4,
+                    label="rebuttal-judge")
+        except Exception:
+            pass
+
+        # Classify the rebuttal
+        if not verdict:
+            rebuttal_type = "unscored"
+        elif adjustments:
+            rebuttal_type = "legitimate" if len(adjustments) > len(verdict) / 2 else "mixed"
+        else:
+            rebuttal_type = "excuses"
+
+        return {
+            "rebuttal_text": rebuttal_text,
+            "verdict": verdict,
+            "adjustments": adjustments,
+            "rebuttal_type": rebuttal_type,
+        }
+
     def compute_overall(self, scores: dict[str, float | None]) -> float:
         """Compute weighted average score across applicable dimensions.
 

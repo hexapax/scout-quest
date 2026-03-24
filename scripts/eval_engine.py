@@ -47,17 +47,18 @@ from perspectives.knowledge import (
 # EvalEngine
 # ---------------------------------------------------------------------------
 
-def _auto_respond(assistant_text: str, turn: int, question: str = "") -> str | None:
-    """Use a cheap LLM to decide if the response needs a follow-up.
+def _auto_respond(assistant_text: str, turn: int, question: str = "",
+                   transcript: list[dict] | None = None,
+                   scout_context: str = "") -> str | None:
+    """Simulate a scout's reply in a multi-turn conversation.
 
-    A coach using Socratic method might ask a question instead of answering
-    directly. The scout should respond naturally so the coach can continue.
+    Uses a cheap LLM to role-play the scout based on the full conversation
+    history, their original question, and their personality/state.
 
-    Returns None if the response is complete (no follow-up needed).
-    Returns a short scout reply if the coach asked a question or gave
-    an incomplete opener.
+    Returns None if the conversation feels complete (coach gave a thorough answer).
+    Returns an in-character scout reply to keep the conversation going.
 
-    Uses GPT-4.1-nano (~$0.001 per call) for the decision + response.
+    Uses GPT-4.1-nano (~$0.001 per call).
     """
     import httpx
 
@@ -71,25 +72,50 @@ def _auto_respond(assistant_text: str, turn: int, question: str = "") -> str | N
             return "Can you tell me more about that?"
         return None
 
-    prompt = f"""You are a 14-year-old Boy Scout in a conversation with your AI coaching assistant.
-The coach just responded to your question. Decide:
+    # Build conversation history for context
+    convo_block = ""
+    if transcript:
+        lines = []
+        for entry in transcript[-6:]:  # Last 3 exchanges max
+            role = "SCOUT" if entry["role"] == "user" else "COACH"
+            lines.append(f"[{role}]: {entry['content'][:400]}")
+        convo_block = "\n".join(lines)
+    else:
+        convo_block = f"[SCOUT]: {question}\n[COACH]: {assistant_text[:800]}"
 
-1. Did the coach give a COMPLETE answer? (explained the topic, gave specific info, addressed your concern)
-2. Or did the coach ask YOU a question / give a brief opener that needs a reply to continue?
+    # After turn 2, lean toward ending the conversation
+    turn_guidance = ""
+    if turn >= 2:
+        turn_guidance = """
+This is turn 3+. Only continue if the coach asked a DIRECT question or left something clearly unfinished.
+If the coach gave a solid answer with specific info, say DONE. Don't drag it out."""
 
-If COMPLETE: respond with exactly "DONE" (nothing else).
-If NEEDS REPLY: respond as the scout would — casual, brief, age-appropriate. 1-2 sentences max.
-Be natural. A teen would say "yeah" or "I dunno" not "Thank you for asking."
+    prompt = f"""You are Will, a 14-year-old Boy Scout. You like gaming and building PCs.
+You're chatty but not formal. You say "yeah", "cool", "wait really?", "huh ok".
+You DON'T say "Thank you for the information" or "That's very helpful."
 
-YOUR ORIGINAL QUESTION: {question}
+{scout_context}
 
-COACH'S RESPONSE:
-{assistant_text[:1000]}"""
+CONVERSATION SO FAR:
+{convo_block}
+
+COACH'S LATEST RESPONSE:
+{assistant_text[:1000]}
+
+INSTRUCTIONS:
+- If the coach gave a COMPLETE, detailed answer → respond "DONE"
+- If the coach asked you a question → answer it naturally as Will would
+- If the coach suggested something → react genuinely (excited, skeptical, curious)
+- If the coach mentioned specific badges/requirements → respond about whether you're interested or not
+- Keep it to 1-2 sentences. Be a real teenager, not a polite robot.
+{turn_guidance}
+
+YOUR REPLY (or "DONE"):"""
 
     try:
         r = httpx.post("https://api.openai.com/v1/chat/completions",
             headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": "gpt-4.1-nano", "max_tokens": 100,
+            json={"model": "gpt-4.1-nano", "max_tokens": 120,
                   "messages": [{"role": "user", "content": prompt}]},
             timeout=30)
         d = r.json()
@@ -98,17 +124,39 @@ COACH'S RESPONSE:
             upper = reply.upper()
             if upper == "DONE" or upper.startswith("DONE"):
                 return None
-            # Clean up — remove quotes, meta-responses
+            # Clean up — remove quotes, meta-responses, labels
             reply = reply.strip('"').strip("'")
-            # Filter out meta-responses like "NEEDS REPLY" that aren't actual scout speech
             if reply.upper().startswith("NEEDS") or reply.upper().startswith("INCOMPLETE"):
-                return "Yeah... can you tell me more?"
+                return None  # Don't fake it
+            if reply.upper().startswith("[SCOUT]"):
+                reply = reply[7:].strip(": ")
             return reply if len(reply) > 2 else None
     except Exception:
         pass
 
     # Fallback on error
     return None
+
+
+def _build_scout_context(item: EvalItem) -> str:
+    """Build a brief scout personality/state summary for the auto-responder."""
+    parts = []
+    fixtures = item.metadata.get("fixtures", {}) if item.metadata else {}
+    reqs = fixtures.get("requirements", [])
+    if reqs:
+        badges = {}
+        for r in reqs:
+            b = r.get("badge", "unknown")
+            badges.setdefault(b, []).append(r.get("status", ""))
+        badge_summary = []
+        for b, statuses in badges.items():
+            done = statuses.count("signed_off")
+            total = len(statuses)
+            badge_summary.append(f"{b.replace('_', ' ').title()} ({done}/{total} done)")
+        parts.append("Active badges: " + ", ".join(badge_summary))
+    if item.metadata.get("domain"):
+        parts.append(f"Topic: {item.metadata['domain'].replace('_', ' ')}")
+    return "\n".join(parts)
 
 
 class EvalEngine:
@@ -153,12 +201,15 @@ class EvalEngine:
                 self.tools.test_state.seed(fixtures)
 
         try:
-            # Non-Anthropic providers: fall back to legacy single-call without tools
-            # TODO: Add multi-provider tool support (OpenAI, Gemini, DeepSeek tool_call APIs)
-            if self.config.provider != "anthropic":
-                result = self._run_legacy(item, start)
-            else:
+            # Route to provider-specific engine
+            if self.config.provider == "anthropic":
                 result = self._run_anthropic(item, max_turns, start)
+            elif self.config.provider in ("openai", "deepseek", "openrouter", "xai"):
+                result = self._run_openai_compat(item, max_turns, start)
+            elif self.config.provider == "google":
+                result = self._run_gemini(item, max_turns, start)
+            else:
+                result = self._run_legacy(item, start)
 
             # Capture final state snapshot if we have a test state
             if hasattr(self.tools, 'test_state') and self.tools.test_state is not None:
@@ -197,12 +248,16 @@ class EvalEngine:
         user_msg = item.description  # The question
 
         assistant_text = ""
+        turn_timings: list[dict] = []
 
         for turn in range(max_turns):
+            turn_start = time.time()
             messages.append({"role": "user", "content": user_msg})
 
             # Call model with ALL tools registered
+            call_start = time.time()
             response = self._call_model(system_blocks, messages)
+            call_ms = int((time.time() - call_start) * 1000)
 
             # Handle tool use loop (model may call tools multiple times)
             max_tool_rounds = 10  # Safety limit
@@ -215,8 +270,10 @@ class EvalEngine:
                 for tb in tool_blocks:
                     tool_name = tb["name"]
                     tool_args = tb.get("input", {})
+                    tool_start = time.time()
                     authorized = self.layer.is_authorized(tool_name)
                     result = self.tools.execute(tool_name, tool_args, authorized)
+                    tool_ms = int((time.time() - tool_start) * 1000)
 
                     # Log ALL calls (authorized or not)
                     call_record = {
@@ -225,6 +282,7 @@ class EvalEngine:
                         "result": result,
                         "authorized": authorized,
                         "round": tool_round,
+                        "timing_ms": tool_ms,
                     }
                     tool_call_log.append(call_record)
                     if not authorized:
@@ -245,7 +303,9 @@ class EvalEngine:
                 # Feed results back to the model
                 messages.append({"role": "assistant", "content": response["content"]})
                 messages.append({"role": "user", "content": tool_results})
+                call_start = time.time()
                 response = self._call_model(system_blocks, messages)
+                call_ms = int((time.time() - call_start) * 1000)
 
             # Extract text response from final response
             text_parts = [
@@ -253,14 +313,16 @@ class EvalEngine:
                 if b.get("type") == "text"
             ]
             assistant_text = "\n".join(text_parts)
+            turn_ms = int((time.time() - turn_start) * 1000)
 
-            # Record transcript — capture tool calls from THIS turn only
-            turn_tool_calls = tool_call_log[len(transcript) // 2 * 0:]  # approximate
+            # Record transcript with per-turn timing
+            turn_timings.append({"turn": turn + 1, "timing_ms": turn_ms, "api_call_ms": call_ms})
             transcript.append({"role": "user", "content": user_msg})
             transcript.append({
                 "role": "assistant",
                 "content": assistant_text,
-                "tool_calls": list(tool_call_log),  # full log for this entry
+                "tool_calls": list(tool_call_log),
+                "timing_ms": turn_ms,
             })
 
             # Append to messages for potential multi-turn
@@ -298,12 +360,13 @@ class EvalEngine:
 
             # Multi-turn: ask a cheap LLM if the response needs a follow-up
             # Catches Socratic openers and lets the model deliver substance
-            follow_up = _auto_respond(assistant_text, turn, question=item.description)
+            follow_up = _auto_respond(assistant_text, turn, question=item.description,
+                                      transcript=transcript, scout_context=_build_scout_context(item))
             if follow_up is None:
                 break  # Model gave a complete answer, no need to continue
 
             user_msg = follow_up
-            messages.append({"role": "user", "content": user_msg})
+            # Note: user_msg is appended to messages at the top of the next loop iteration (line 202)
             transcript.append({"role": "user", "content": user_msg})
             sys.stdout.write(f" [turn {turn+2}]")
 
@@ -339,6 +402,7 @@ class EvalEngine:
                 "unauthorized_calls": unauthorized_calls,
                 "transcript": transcript,
                 "turn_count": turn_count,
+                "turn_timings": turn_timings,
                 "limits": limits,
             },
             timing_ms=elapsed_ms,
@@ -396,6 +460,494 @@ class EvalEngine:
                     {"role": "assistant", "content": response},
                 ],
                 "turn_count": 1,
+                "limits": limits,
+            },
+            timing_ms=elapsed_ms,
+        )
+
+    def _run_openai_compat(self, item: EvalItem, max_turns: int, start: float) -> ExecutionResult:
+        """Multi-turn engine for OpenAI-compatible APIs (OpenAI, DeepSeek, OpenRouter).
+
+        Supports tool_call format used by OpenAI, DeepSeek, and OpenRouter.
+        Handles conversation loop with auto-respond for multi-turn.
+        """
+        import httpx
+
+        system_prompt = self.layer.build_system_prompt(self.config)
+        model_id = self.config.model_id
+        provider = self.config.provider
+        use_completion_tokens = model_id.startswith("gpt-5")
+
+        if provider == "deepseek":
+            base_url, key_env = "https://api.deepseek.com/v1", "DEEPSEEK_API_KEY"
+        elif provider == "openrouter":
+            base_url, key_env = "https://openrouter.ai/api/v1", "OPENROUTER_KEY"
+        elif provider == "xai":
+            base_url, key_env = "https://api.x.ai/v1", "XAI_API_KEY"
+        else:
+            base_url, key_env = "https://api.openai.com/v1", "OPENAI_API_KEY"
+
+        api_key = os.environ.get(key_env, "")
+
+        # Convert tool definitions to OpenAI format
+        openai_tools = []
+        for td in self.tools.all_definitions():
+            openai_tools.append({
+                "type": "function",
+                "function": {
+                    "name": td["name"],
+                    "description": td.get("description", ""),
+                    "parameters": td.get("input_schema", {"type": "object", "properties": {}}),
+                },
+            })
+
+        messages: list[dict] = [{"role": "system", "content": system_prompt}]
+        transcript: list[dict] = []
+        tool_call_log: list[dict] = []
+        unauthorized_calls: list[dict] = []
+        limits: dict = {}
+        turn_timings: list[dict] = []
+
+        user_msg = item.description
+        assistant_text = ""
+
+        for turn in range(max_turns):
+            turn_start = time.time()
+            messages.append({"role": "user", "content": user_msg})
+
+            # Build API request
+            body: dict[str, Any] = {
+                "model": model_id,
+                "messages": messages,
+            }
+            if use_completion_tokens:
+                body["max_completion_tokens"] = self.config.max_tokens
+            else:
+                body["max_tokens"] = self.config.max_tokens
+
+            # Include tools if any are authorized
+            if self.layer.authorized_tools and openai_tools:
+                body["tools"] = openai_tools
+
+            # Call API with tool loop
+            max_tool_rounds = 10
+            tool_round = 0
+            call_ms = 0
+
+            while True:
+                call_start = time.time()
+
+                def do_call():
+                    resp = httpx.post(
+                        f"{base_url}/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {api_key}",
+                            "Content-Type": "application/json",
+                        },
+                        json=body,
+                        timeout=120,
+                    )
+                    return resp.json()
+
+                d = _call_with_retry(do_call)
+                call_ms += int((time.time() - call_start) * 1000)
+
+                if "error" in d and "choices" not in d:
+                    raise Exception(f"{provider} error: {d.get('error', d)}")
+
+                # Track usage
+                u = d.get("usage", {})
+                output_tokens = u.get("completion_tokens", 0)
+                cached = u.get("prompt_tokens_details", {}).get("cached_tokens", 0)
+                self.usage.record(
+                    model_id,
+                    input_tokens=u.get("prompt_tokens", 0),
+                    output_tokens=output_tokens,
+                    cached_tokens=cached,
+                    label=model_id,
+                )
+
+                choice = d["choices"][0]
+                msg = choice["message"]
+                finish_reason = choice.get("finish_reason")
+
+                # Check for tool calls
+                if msg.get("tool_calls") and tool_round < max_tool_rounds:
+                    tool_round += 1
+                    # Append assistant message with tool_calls to conversation
+                    messages.append(msg)
+
+                    for tc in msg["tool_calls"]:
+                        func = tc.get("function", {})
+                        tool_name = func.get("name", "")
+                        try:
+                            tool_args = __import__("json").loads(func.get("arguments", "{}"))
+                        except Exception:
+                            tool_args = {}
+
+                        tool_exec_start = time.time()
+                        authorized = self.layer.is_authorized(tool_name)
+                        result = self.tools.execute(tool_name, tool_args, authorized)
+                        tool_ms = int((time.time() - tool_exec_start) * 1000)
+
+                        call_record = {
+                            "name": tool_name,
+                            "args": tool_args,
+                            "result": result,
+                            "authorized": authorized,
+                            "round": tool_round,
+                            "timing_ms": tool_ms,
+                        }
+                        tool_call_log.append(call_record)
+                        if not authorized:
+                            unauthorized_calls.append(call_record)
+
+                        status = "OK" if authorized else "DENIED"
+                        sys.stdout.write(f"[tool: {tool_name} ({status})] ")
+                        sys.stdout.flush()
+
+                        # Feed tool result back
+                        result_content = result.get("error") or result.get("result", "")
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": tc["id"],
+                            "content": str(result_content)[:4000],
+                        })
+
+                    # Update body with new messages and re-call
+                    body["messages"] = messages
+                    continue
+
+                # No tool calls — extract text
+                assistant_text = msg.get("content", "") or ""
+                limits = _check_limits(
+                    output_tokens=output_tokens,
+                    max_tokens=self.config.max_tokens,
+                    stop_reason=finish_reason,
+                )
+                break
+
+            turn_ms = int((time.time() - turn_start) * 1000)
+
+            # Record transcript with timing
+            turn_timings.append({"turn": turn + 1, "timing_ms": turn_ms, "api_call_ms": call_ms})
+            transcript.append({"role": "user", "content": user_msg})
+            transcript.append({
+                "role": "assistant",
+                "content": assistant_text,
+                "tool_calls": list(tool_call_log),
+                "timing_ms": turn_ms,
+            })
+
+            # Append assistant to messages for multi-turn
+            messages.append({"role": "assistant", "content": assistant_text})
+
+            if limits:
+                limit_parts = []
+                if "truncated" in limits:
+                    limit_parts.append("TRUNCATED (hit max_tokens)")
+                if "token_limit" in limits:
+                    tl = limits["token_limit"]
+                    limit_parts.append(f"tokens: {tl['output_tokens']}/{tl['max_tokens']} ({tl['utilization']:.0%})")
+                if limit_parts:
+                    sys.stdout.write(f" [LIMIT: {', '.join(limit_parts)}]")
+
+            if max_turns == 1:
+                break
+
+            # Multi-turn: auto-respond
+            follow_up = _auto_respond(assistant_text, turn, question=item.description,
+                                      transcript=transcript, scout_context=_build_scout_context(item))
+            if follow_up is None:
+                break
+
+            user_msg = follow_up
+            transcript.append({"role": "user", "content": user_msg})
+            sys.stdout.write(f" [turn {turn+2}]")
+
+        elapsed_ms = int((time.time() - start) * 1000)
+
+        # Format response text
+        turn_count = len([t for t in transcript if t["role"] == "user"])
+        if turn_count > 1:
+            parts = []
+            for entry in transcript:
+                role = entry["role"].upper()
+                label = "SCOUT" if role == "USER" else "COACH"
+                parts.append(f"[{label}]: {entry['content']}")
+                for tc in entry.get("tool_calls", []):
+                    status = "OK" if tc.get("authorized", True) else "DENIED"
+                    result_text = tc.get("result", {})
+                    if isinstance(result_text, dict):
+                        result_text = result_text.get("result") or result_text.get("error", "")
+                    parts.append(f"  [TOOL CALL ({status})] {tc['name']}({tc.get('args',{})}) → {str(result_text)[:200]}")
+            response_text = "\n\n".join(parts)
+        else:
+            response_text = assistant_text
+
+        return ExecutionResult(
+            item=item,
+            config=self.config,
+            response_text=response_text,
+            raw_data={
+                "tool_calls": tool_call_log,
+                "unauthorized_calls": unauthorized_calls,
+                "transcript": transcript,
+                "turn_count": turn_count,
+                "turn_timings": turn_timings,
+                "limits": limits,
+            },
+            timing_ms=elapsed_ms,
+        )
+
+    def _run_gemini(self, item: EvalItem, max_turns: int, start: float) -> ExecutionResult:
+        """Multi-turn engine for Google Gemini using the genai SDK.
+
+        Gemini uses a custom API format with Content/Part objects.
+        Tool calls are returned as FunctionCall parts in the response.
+        """
+        from google import genai
+        from google.genai import types
+
+        system_prompt = self.layer.build_system_prompt(self.config)
+        model_id = self.config.model_id
+        gc = genai.Client(api_key=os.environ.get("GOOGLE_KEY", ""))
+
+        # Convert tool definitions to Gemini FunctionDeclaration format
+        def _to_gemini_schema(json_schema: dict) -> "types.Schema":
+            """Recursively convert JSON Schema to Gemini types.Schema."""
+            stype = json_schema.get("type", "string").upper()
+            kwargs: dict[str, Any] = {"type": stype}
+            if "description" in json_schema:
+                kwargs["description"] = json_schema["description"]
+            if "enum" in json_schema:
+                kwargs["enum"] = json_schema["enum"]
+            if stype == "OBJECT" and "properties" in json_schema:
+                kwargs["properties"] = {
+                    k: _to_gemini_schema(v)
+                    for k, v in json_schema["properties"].items()
+                }
+                if json_schema.get("required"):
+                    kwargs["required"] = json_schema["required"]
+            elif stype == "ARRAY" and "items" in json_schema:
+                kwargs["items"] = _to_gemini_schema(json_schema["items"])
+            return types.Schema(**kwargs)
+
+        gemini_tools = None
+        if self.layer.authorized_tools:
+            func_decls = []
+            for td in self.tools.all_definitions():
+                schema = td.get("input_schema", {})
+                param_schema = _to_gemini_schema(schema) if schema.get("properties") else None
+                func_decls.append(types.FunctionDeclaration(
+                    name=td["name"],
+                    description=td.get("description", ""),
+                    parameters=param_schema,
+                ))
+            if func_decls:
+                gemini_tools = [types.Tool(function_declarations=func_decls)]
+
+        # Build conversation as Gemini Content objects
+        contents: list = []
+        transcript: list[dict] = []
+        tool_call_log: list[dict] = []
+        unauthorized_calls: list[dict] = []
+        limits: dict = {}
+        turn_timings: list[dict] = []
+
+        user_msg = item.description
+        assistant_text = ""
+
+        for turn in range(max_turns):
+            turn_start = time.time()
+            contents.append(types.Content(
+                role="user",
+                parts=[types.Part.from_text(text=user_msg)],
+            ))
+
+            # Call Gemini with tool loop
+            max_tool_rounds = 10
+            tool_round = 0
+            call_ms = 0
+
+            config = types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                max_output_tokens=self.config.max_tokens,
+            )
+            if gemini_tools:
+                config.tools = gemini_tools
+
+            while True:
+                call_start = time.time()
+
+                def do_call():
+                    return gc.models.generate_content(
+                        model=model_id,
+                        contents=contents,
+                        config=config,
+                    )
+
+                resp = _call_with_retry(do_call)
+                call_ms += int((time.time() - call_start) * 1000)
+
+                # Track usage
+                u = getattr(resp, "usage_metadata", None)
+                output_tokens = 0
+                if u:
+                    output_tokens = getattr(u, "candidates_token_count", 0) or 0
+                    self.usage.record(
+                        model_id,
+                        input_tokens=getattr(u, "prompt_token_count", 0) or 0,
+                        output_tokens=output_tokens,
+                        cached_tokens=getattr(u, "cached_content_token_count", 0) or 0,
+                        label=model_id,
+                    )
+
+                # Check for function calls in response
+                candidate = resp.candidates[0] if resp.candidates else None
+                if not candidate or not candidate.content:
+                    raise Exception("Gemini returned empty response")
+
+                parts = candidate.content.parts or []
+                func_calls = [p for p in parts if hasattr(p, "function_call") and p.function_call]
+                text_parts = [p.text for p in parts if hasattr(p, "text") and p.text]
+
+                if func_calls and tool_round < max_tool_rounds:
+                    tool_round += 1
+                    # Append the assistant's response (with function calls) to contents
+                    contents.append(candidate.content)
+
+                    # Process each function call
+                    func_response_parts = []
+                    for fc_part in func_calls:
+                        fc = fc_part.function_call
+                        tool_name = fc.name
+                        tool_args = dict(fc.args) if fc.args else {}
+
+                        tool_exec_start = time.time()
+                        authorized = self.layer.is_authorized(tool_name)
+                        result = self.tools.execute(tool_name, tool_args, authorized)
+                        tool_ms = int((time.time() - tool_exec_start) * 1000)
+
+                        call_record = {
+                            "name": tool_name,
+                            "args": tool_args,
+                            "result": result,
+                            "authorized": authorized,
+                            "round": tool_round,
+                            "timing_ms": tool_ms,
+                        }
+                        tool_call_log.append(call_record)
+                        if not authorized:
+                            unauthorized_calls.append(call_record)
+
+                        status = "OK" if authorized else "DENIED"
+                        sys.stdout.write(f"[tool: {tool_name} ({status})] ")
+                        sys.stdout.flush()
+
+                        # Build function response
+                        result_content = result.get("error") or result.get("result", "")
+                        func_response_parts.append(types.Part.from_function_response(
+                            name=tool_name,
+                            response={"result": str(result_content)[:4000]},
+                        ))
+
+                    # Feed tool results back as a user turn with function responses
+                    contents.append(types.Content(
+                        role="user",
+                        parts=func_response_parts,
+                    ))
+                    continue
+
+                # No function calls — extract text
+                assistant_text = "\n".join(text_parts) if text_parts else ""
+                if not assistant_text:
+                    fr = getattr(candidate, "finish_reason", None)
+                    raise Exception(f"Gemini returned no text (finish_reason={fr})")
+
+                finish_reason = None
+                fr = getattr(candidate, "finish_reason", None)
+                if fr and str(fr) == "MAX_TOKENS":
+                    finish_reason = "max_tokens"
+
+                limits = _check_limits(
+                    output_tokens=output_tokens,
+                    max_tokens=self.config.max_tokens,
+                    stop_reason=finish_reason,
+                )
+                break
+
+            turn_ms = int((time.time() - turn_start) * 1000)
+
+            # Record transcript with timing
+            turn_timings.append({"turn": turn + 1, "timing_ms": turn_ms, "api_call_ms": call_ms})
+            transcript.append({"role": "user", "content": user_msg})
+            transcript.append({
+                "role": "assistant",
+                "content": assistant_text,
+                "tool_calls": list(tool_call_log),
+                "timing_ms": turn_ms,
+            })
+
+            # Append assistant text to contents for multi-turn
+            contents.append(types.Content(
+                role="model",
+                parts=[types.Part.from_text(text=assistant_text)],
+            ))
+
+            if limits:
+                limit_parts = []
+                if "truncated" in limits:
+                    limit_parts.append("TRUNCATED (hit max_tokens)")
+                if "token_limit" in limits:
+                    tl = limits["token_limit"]
+                    limit_parts.append(f"tokens: {tl['output_tokens']}/{tl['max_tokens']} ({tl['utilization']:.0%})")
+                if limit_parts:
+                    sys.stdout.write(f" [LIMIT: {', '.join(limit_parts)}]")
+
+            if max_turns == 1:
+                break
+
+            # Multi-turn: auto-respond
+            follow_up = _auto_respond(assistant_text, turn, question=item.description,
+                                      transcript=transcript, scout_context=_build_scout_context(item))
+            if follow_up is None:
+                break
+
+            user_msg = follow_up
+            transcript.append({"role": "user", "content": user_msg})
+            sys.stdout.write(f" [turn {turn+2}]")
+
+        elapsed_ms = int((time.time() - start) * 1000)
+
+        # Format response text
+        turn_count = len([t for t in transcript if t["role"] == "user"])
+        if turn_count > 1:
+            parts = []
+            for entry in transcript:
+                role = entry["role"].upper()
+                label = "SCOUT" if role == "USER" else "COACH"
+                parts.append(f"[{label}]: {entry['content']}")
+                for tc in entry.get("tool_calls", []):
+                    status = "OK" if tc.get("authorized", True) else "DENIED"
+                    result_text = tc.get("result", {})
+                    if isinstance(result_text, dict):
+                        result_text = result_text.get("result") or result_text.get("error", "")
+                    parts.append(f"  [TOOL CALL ({status})] {tc['name']}({tc.get('args',{})}) → {str(result_text)[:200]}")
+            response_text = "\n\n".join(parts)
+        else:
+            response_text = assistant_text
+
+        return ExecutionResult(
+            item=item,
+            config=self.config,
+            response_text=response_text,
+            raw_data={
+                "tool_calls": tool_call_log,
+                "unauthorized_calls": unauthorized_calls,
+                "transcript": transcript,
+                "turn_count": turn_count,
+                "turn_timings": turn_timings,
                 "limits": limits,
             },
             timing_ms=elapsed_ms,

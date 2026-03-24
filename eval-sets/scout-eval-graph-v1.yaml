@@ -1,0 +1,1153 @@
+name: scout-eval-graph
+version: 1
+description: >-
+  Graph-proactive eval set — tests whether the model uses the FalkorDB knowledge graph
+  to make proactive, contextual suggestions. Scenarios include indirect activity mentions
+  (scout describes plans → model suggests requirements), direct cross-reference queries,
+  and state-aware progressive coaching. Each question includes custom fixtures with
+  active badges so the model can see what the scout is working on.
+created: '2026-03-23'
+perspective: knowledge
+
+scoring:
+  dimensions:
+  - name: accuracy
+    weight: 1.0
+    description: Factually correct BSA information, correct requirement details
+  - name: coaching
+    weight: 1.0
+    description: Proactive, actionable suggestions vs passive or generic advice
+  - name: specificity
+    weight: 1.0
+    description: References SPECIFIC requirements by number/text, not vague "work on camping stuff"
+  - name: proactivity
+    weight: 1.0
+    description: >-
+      Did the model PROACTIVELY identify opportunities the scout didn't ask about?
+      10 = unprompted, specific, actionable suggestions tied to scout's active badges.
+      5 = mentioned some opportunities but vaguely.
+      1 = only answered what was asked, no proactive coaching.
+  - name: tool_accuracy
+    weight: 1.0
+    description: >-
+      Used graph/search tools to find cross-references and activity-requirement connections.
+      10 = used tools to find specific connections, reported accurate results.
+      5 = used some tools but missed obvious connections.
+      1 = fabricated connections or didn't use tools at all.
+  - name: state_awareness
+    weight: 0.8
+    description: >-
+      Checked the scout's active badges and progress before suggesting.
+      Didn't suggest completed requirements. Prioritized in-progress badges.
+  - name: troop_voice
+    weight: 0.5
+    description: Used troop-specific context (schedule, leaders, events) when relevant
+  scorer_prompt: >-
+    Score this response on the APPLICABLE dimensions only.
+    Skip dimensions marked N/A — return null for those.
+
+    CRITICAL: These questions test PROACTIVE graph usage.
+    The model should identify requirement opportunities the scout didn't explicitly ask about.
+
+    PROACTIVITY scoring:
+    - 9-10: Model spotted opportunities tied to the scout's ACTIVE BADGES and made
+      specific, actionable suggestions ("You're working on Camping — Req 4 covers
+      duty rosters, perfect for this campout!")
+    - 6-8: Model made relevant suggestions but somewhat generic ("You could work on
+      some camping requirements")
+    - 3-5: Model only answered what was asked, no proactive connections
+    - 1-2: Model missed obvious opportunities or gave irrelevant suggestions
+
+    SPECIFICITY scoring:
+    - 9-10: Named specific requirement numbers and described what they involve
+    - 6-8: Named badges but not specific requirements
+    - 3-5: Generic ("work on some merit badges")
+    - 1-2: No specific suggestions at all
+
+    TOOL_ACCURACY scoring:
+    - 9-10: Used cross_reference or search tools to find connections, reported correctly
+    - 6-8: Used tools but missed some connections
+    - 3-5: Didn't use tools but gave reasonable answers from knowledge
+    - 1-2: Fabricated specific requirement details without tools
+
+    STATE_AWARENESS scoring:
+    - 9-10: Checked scout's active badges/progress, tailored suggestions to what's incomplete
+    - 6-8: Referenced some scout state but not comprehensively
+    - 3-5: Generic suggestions not tied to scout's actual progress
+    - 1-2: Suggested already-completed requirements or irrelevant badges
+
+    Return ONLY JSON:
+    {"accuracy":8,"coaching":9,"specificity":7,"proactivity":8,"tool_accuracy":7,"state_awareness":6,"troop_voice":7,"notes":"brief"}
+
+evaluator:
+  type: panel
+  scorer_model: claude-sonnet-4-6
+  assessors:
+  - role: claims
+    model: deepseek-chat
+    provider: deepseek
+    prompt: >-
+      List every specific BSA requirement the model mentioned.
+      Format: - REQ: [badge/rank] Req [number]: [what model said about it]
+      Also list any cross-references the model made between badges/ranks.
+      Do NOT judge correctness — just extract.
+  - role: coaching
+    model: gpt-4.1-nano
+    provider: openai
+    prompt: >-
+      Was the model PROACTIVE? Describe:
+      1. Did the model identify opportunities the scout didn't ask about?
+      2. Were suggestions tied to the scout's specific active badges?
+      3. Were specific requirement numbers mentioned?
+      4. Were the suggestions actionable (what to do, when, how)?
+      Describe only. Do NOT score.
+
+domains:
+  graph_proactive: Proactive suggestions based on activity/context → graph connections
+  graph_cross_ref: Direct cross-reference queries using the knowledge graph
+  graph_state_aware: State-aware suggestions tied to scout's active progress
+  graph_multi_turn: Multi-turn progressive discovery through conversation
+
+capabilities:
+  proactive_coaching: Does it spot requirement opportunities from casual conversation?
+  graph_traversal: Does it use graph tools to find cross-badge connections?
+  state_aware_suggest: Does it check scout's progress before suggesting?
+  activity_mapping: Does it map activities (campout, hike) to doable requirements?
+  tool_use: Does it call the right tools correctly?
+
+questions:
+
+# =====================================================================
+# INDIRECT / PROACTIVE — Scout mentions plans, model should suggest reqs
+# =====================================================================
+
+- id: GP1
+  enabled: true
+  question: >-
+    Hey! We have a campout this weekend at Sweetwater Creek. I'm really excited —
+    we're going to set up camp Friday night and do a big hike Saturday. Should be fun!
+  expected: >-
+    Should proactively identify that the scout is working on Camping MB and suggest
+    specific requirements doable at this campout (Req 4 duty roster, Req 7 checklist,
+    Req 9 camping nights). Should also mention Cooking MB overlap (Req 5 camp cooking)
+    and Hiking MB (Req 4 hikes). Should check what reqs are already done.
+  domain: graph_proactive
+  capabilities:
+  - proactive_coaching
+  - activity_mapping
+  - state_aware_suggest
+  - tool_use
+  dimensions:
+  - proactivity
+  - specificity
+  - state_awareness
+  - tool_accuracy
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    Scout has Camping (3 reqs done), Cooking (1 req done), Hiking (0 done) active.
+    The campout + hike combination should trigger suggestions across all three badges.
+    Model should use read_requirements to check what's done, then make specific suggestions.
+  fixtures:
+    requirements:
+    # Camping MB — partially complete
+    - req_id: camping_1
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_2
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_3
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_4
+      badge: camping
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_5
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_6
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_7
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_8
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_9
+      badge: camping
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_10
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    # Cooking MB — just started
+    - req_id: cooking_1
+      badge: cooking
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_2
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_3
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_4
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_5
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_6
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_7
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    # Hiking MB — not started
+    - req_id: hiking_1
+      badge: hiking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: hiking_2
+      badge: hiking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: hiking_3
+      badge: hiking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: hiking_4
+      badge: hiking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: hiking_5
+      badge: hiking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+- id: GP2
+  enabled: true
+  question: >-
+    My family is going to the lake this weekend for spring break.
+    We're renting a boat and I get to swim every day! Can't wait.
+  expected: >-
+    Should connect lake trip to Swimming MB reqs (swimmer test, strokes, rescue methods).
+    Should mention water safety (Safe Swim Defense). If scout has Swimming active,
+    suggest specific incomplete reqs. May also mention Lifesaving MB connection.
+  domain: graph_proactive
+  capabilities:
+  - proactive_coaching
+  - activity_mapping
+  - state_aware_suggest
+  dimensions:
+  - proactivity
+  - specificity
+  - state_awareness
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    Scout has Swimming MB active with only Req 1 done. Lake trip = water activity.
+    Model should suggest Reqs 2-9 that could be practiced, especially 3 (strokes),
+    5 (rescue methods), 6 (floating). Should note a counselor would need to be present
+    for official sign-off.
+  fixtures:
+    requirements:
+    - req_id: swimming_1
+      badge: swimming
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_2
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_3
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_4
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_5
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_6
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_7
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_8
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_9
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+- id: GP3
+  enabled: true
+  question: >-
+    We're doing a service project this Saturday at the Atlanta Community Food Bank.
+    Sorting cans and stuff. It's for our troop service hours.
+  expected: >-
+    Should connect to Citizenship in the Community MB (Req 7 charitable organizations,
+    Req 8 public presentation about community issues). Should also mention service
+    hours counting toward rank advancement. May suggest keeping a log for documentation.
+  domain: graph_proactive
+  capabilities:
+  - proactive_coaching
+  - activity_mapping
+  - state_aware_suggest
+  dimensions:
+  - proactivity
+  - specificity
+  - state_awareness
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    Scout has Citizenship in the Community active with Reqs 1-2 done.
+    Service project at food bank connects to Req 7 (charitable organizations)
+    and potentially Req 4 (community issue). Model should suggest documenting
+    the experience for the badge and tracking service hours.
+  fixtures:
+    requirements:
+    - req_id: cit_community_1
+      badge: citizenship_in_the_community
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cit_community_2
+      badge: citizenship_in_the_community
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cit_community_3
+      badge: citizenship_in_the_community
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cit_community_4
+      badge: citizenship_in_the_community
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cit_community_5
+      badge: citizenship_in_the_community
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cit_community_6
+      badge: citizenship_in_the_community
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cit_community_7
+      badge: citizenship_in_the_community
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cit_community_8
+      badge: citizenship_in_the_community
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+- id: GP4
+  enabled: true
+  question: >-
+    I'm so bored. It's raining and I can't go outside. There's literally nothing to do.
+  expected: >-
+    Should recognize this as an opportunity for home-doable requirements.
+    Check scout's active badges and suggest specific requirements that can be
+    done at home (research, essays, planning, reading). Should be encouraging
+    without being preachy about "productive use of time."
+  domain: graph_proactive
+  capabilities:
+  - proactive_coaching
+  - activity_mapping
+  - state_aware_suggest
+  dimensions:
+  - proactivity
+  - specificity
+  - state_awareness
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    Scout has Environmental Science and First Aid active. Both have home-doable
+    requirements (ES Req 1 define environmental science, Req 6 endangered species
+    research; FA Req 1 first aid kit). Model should check progress and suggest
+    specific incomplete home-doable reqs. Good coaching = make it sound fun, not homework.
+  fixtures:
+    requirements:
+    - req_id: env_sci_1
+      badge: environmental_science
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_2
+      badge: environmental_science
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_3
+      badge: environmental_science
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_4
+      badge: environmental_science
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_5
+      badge: environmental_science
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_6
+      badge: environmental_science
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: first_aid_1
+      badge: first_aid
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: first_aid_2
+      badge: first_aid
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: first_aid_3
+      badge: first_aid
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+- id: GP5
+  enabled: true
+  question: >-
+    My dad said we might visit his office for take-your-kid-to-work day next month.
+    He's an environmental engineer. Pretty boring but whatever.
+  expected: >-
+    Should connect to Environmental Science MB (Req 11 career opportunities) and
+    Engineering MB. A field trip to an engineering office is a great opportunity.
+    Should be enthusiastic about the connection without dismissing the scout's
+    "boring" feeling. Good coaching = reframe the opportunity.
+  domain: graph_proactive
+  capabilities:
+  - proactive_coaching
+  - activity_mapping
+  dimensions:
+  - proactivity
+  - specificity
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    Scout has Environmental Science active. Req 11 is about identifying career
+    opportunities in environmental science — visiting an environmental engineer's
+    office is a perfect fit. Model should also mention Engineering MB as a
+    potential future badge.
+  fixtures:
+    requirements:
+    - req_id: env_sci_1
+      badge: environmental_science
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_2
+      badge: environmental_science
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_3
+      badge: environmental_science
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_11
+      badge: environmental_science
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+- id: GP6
+  enabled: true
+  question: >-
+    Tomorrow is our troop meeting. Kinda don't feel like going but my mom says I have to.
+  expected: >-
+    Should validate the feeling, then gently reframe by identifying specific
+    requirements the scout could work on AT the troop meeting. Check active badges
+    for meeting-doable reqs. Be warm, not preachy. Make the meeting sound worthwhile
+    by giving concrete things to accomplish.
+  domain: graph_proactive
+  capabilities:
+  - proactive_coaching
+  - activity_mapping
+  - state_aware_suggest
+  dimensions:
+  - proactivity
+  - specificity
+  - state_awareness
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    Scout has Camping (in progress) and First Aid (not started). Both have
+    discussion/knowledge reqs doable at meetings. Model should check what's
+    incomplete and give 2-3 specific things the scout could accomplish, making
+    the meeting feel purposeful.
+  fixtures:
+    requirements:
+    - req_id: camping_1
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_2
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_10
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: first_aid_1
+      badge: first_aid
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: first_aid_7
+      badge: first_aid
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+# =====================================================================
+# DIRECT GRAPH QUERIES — Scout asks, model should traverse the graph
+# =====================================================================
+
+- id: GQ1
+  enabled: true
+  question: >-
+    We're going to summer camp in July. What requirements could I work on there
+    across all my active badges?
+  expected: >-
+    Should do a comprehensive activity-based search: find all requirements across
+    the scout's active badges that are doable at summer camp. Should organize by
+    badge and prioritize incomplete reqs. Summer camp is ideal for practical demos,
+    swimming, camping, cooking.
+  domain: graph_cross_ref
+  capabilities:
+  - graph_traversal
+  - activity_mapping
+  - state_aware_suggest
+  - tool_use
+  dimensions:
+  - accuracy
+  - specificity
+  - tool_accuracy
+  - state_awareness
+  max_turns: 3
+  eval_notes: >-
+    Scout has Camping, Swimming, Cooking, and Environmental Science active.
+    Summer camp should map to many requirements across all four. Model should
+    use tools to find the connections, not fabricate requirement details.
+  fixtures:
+    requirements:
+    - req_id: camping_4
+      badge: camping
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_7
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_9
+      badge: camping
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_1
+      badge: swimming
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_2
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_3
+      badge: swimming
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_5
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_6
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_2
+      badge: environmental_science
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: env_sci_9
+      badge: environmental_science
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+- id: GQ2
+  enabled: true
+  question: >-
+    I just finished my Camping merit badge! What other badges connect to the stuff I learned?
+  expected: >-
+    Should use graph cross-references to find badges related to Camping:
+    Backpacking, Cooking, Wilderness Survival, Orienteering, Environmental Science,
+    Hiking. Should explain HOW they connect (shared skills like fire building,
+    Leave No Trace, outdoor cooking).
+  domain: graph_cross_ref
+  capabilities:
+  - graph_traversal
+  - tool_use
+  dimensions:
+  - accuracy
+  - specificity
+  - tool_accuracy
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    Camping cross-references in the graph: Backpacking, Cooking, Environmental Science,
+    First Aid, Hiking, Orienteering, Wilderness Survival. Model should use
+    cross_reference tool and report specific connections.
+
+- id: GQ3
+  enabled: true
+  question: >-
+    Which of my First Class rank requirements could I knock out at the upcoming campout?
+  expected: >-
+    Should cross-reference First Class rank requirements with campout activities.
+    Key matches: Req 1a (campout participation), Req 2a-e (cooking at campout),
+    Req 3a-d (lashings/camp gadgets), Req 4a (orienteering), Req 5a (plant ID),
+    Req 5c (weather indicators).
+  domain: graph_cross_ref
+  capabilities:
+  - graph_traversal
+  - activity_mapping
+  - tool_use
+  dimensions:
+  - accuracy
+  - specificity
+  - tool_accuracy
+  max_turns: 3
+  eval_notes: >-
+    First Class has many campout-doable requirements. The graph has CAN_BE_DONE_AT
+    edges linking requirements to the Campout activity. Model should find and
+    report specific requirement numbers.
+
+- id: GQ4
+  enabled: true
+  question: >-
+    What skills does First Aid MB teach that are also useful for other badges?
+  expected: >-
+    Should traverse TEACHES edges from First Aid requirements to find shared skills,
+    then find other badges that teach or require those same skills. Key connections:
+    CPR (Lifesaving, Emergency Preparedness), wound care (Wilderness Survival),
+    safety procedures (Swimming, Climbing).
+  domain: graph_cross_ref
+  capabilities:
+  - graph_traversal
+  - tool_use
+  dimensions:
+  - accuracy
+  - specificity
+  - tool_accuracy
+  max_turns: 3
+  eval_notes: >-
+    First Aid is highly cross-referenced (96 incoming cross-refs in graph).
+    Skills like CPR, first aid, wound treatment connect to many other badges.
+
+# =====================================================================
+# STATE-AWARE — Model should check progress and tailor suggestions
+# =====================================================================
+
+- id: GS1
+  enabled: true
+  question: >-
+    I feel like I'm not making progress on anything. What should I focus on?
+  expected: >-
+    Should read the scout's requirements to find what's closest to completion.
+    Camping has 5/10 done = prioritize finishing it. Should identify specific
+    next-step requirements and suggest a plan. Should be encouraging about
+    how much is already done, not overwhelming with everything remaining.
+  domain: graph_state_aware
+  capabilities:
+  - state_aware_suggest
+  - proactive_coaching
+  - tool_use
+  dimensions:
+  - state_awareness
+  - coaching
+  - specificity
+  - proactivity
+  - tool_accuracy
+  max_turns: 3
+  eval_notes: >-
+    Scout has Camping (5 signed_off), Cooking (2 signed_off), Hiking (1 signed_off).
+    Camping is closest to completion. Model should prioritize it and give
+    specific next steps for the remaining 5 requirements.
+  fixtures:
+    requirements:
+    - req_id: camping_1
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_2
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_3
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_4
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_5
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_6
+      badge: camping
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_7
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_8
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_9
+      badge: camping
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_10
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_1
+      badge: cooking
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_2
+      badge: cooking
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_3
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_4
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_5
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: hiking_1
+      badge: hiking
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: hiking_2
+      badge: hiking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: hiking_3
+      badge: hiking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+- id: GS2
+  enabled: true
+  question: >-
+    I want to get my Eagle Scout as fast as possible. What's my best path?
+  expected: >-
+    Should check which Eagle-required badges the scout has completed or is working on.
+    Identify the remaining Eagle-required badges. Suggest starting with badges that
+    share requirements or skills with badges already in progress. Use cross-references
+    to find the most efficient path.
+  domain: graph_state_aware
+  capabilities:
+  - state_aware_suggest
+  - graph_traversal
+  - tool_use
+  dimensions:
+  - state_awareness
+  - specificity
+  - tool_accuracy
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    Scout has 3 Eagle-required badges active (First Aid, Camping, Swimming).
+    Needs to identify remaining 11 Eagle-required badges. Should suggest
+    badges that overlap with current work (e.g., Emergency Preparedness
+    overlaps with First Aid skills).
+  fixtures:
+    requirements:
+    - req_id: first_aid_1
+      badge: first_aid
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: first_aid_2
+      badge: first_aid
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_1
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_2
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: swimming_1
+      badge: swimming
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+
+# =====================================================================
+# MULTI-TURN PROGRESSIVE — Conversation reveals more opportunities
+# =====================================================================
+
+- id: GM1
+  enabled: true
+  question: >-
+    So this weekend my patrol is doing our monthly campout. We're going to
+    Cloudland Canyon. Any tips for a good campout?
+  expected: >-
+    Turn 1: General campout tips + proactively check badges and suggest requirements.
+    If scout reveals more details in follow-up turns, model should progressively
+    identify more specific opportunities. Should ask what badges the scout is
+    working on if not already checked via tools.
+  domain: graph_multi_turn
+  capabilities:
+  - proactive_coaching
+  - activity_mapping
+  - state_aware_suggest
+  - tool_use
+  dimensions:
+  - proactivity
+  - specificity
+  - state_awareness
+  - coaching
+  - tool_accuracy
+  max_turns: 3
+  eval_notes: >-
+    Multi-turn test. Scout has Camping (almost done) and Cooking (early).
+    Turn 1: Model should give tips AND check badges.
+    Turn 2: Scout might mention cooking or specific activities → model should
+    connect to specific requirements.
+    Turn 3: Model should have built a concrete "campout plan" of requirements to work on.
+  fixtures:
+    requirements:
+    - req_id: camping_1
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_2
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_3
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_4
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_5
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_6
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_7
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_8
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_9
+      badge: camping
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: camping_10
+      badge: camping
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_1
+      badge: cooking
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_2
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+    - req_id: cooking_5
+      badge: cooking
+      status: not_started
+      quest_driven: false
+      interaction_mode: in_person
+
+- id: GM2
+  enabled: true
+  question: >-
+    I've been thinking about what merit badges to start next. I really like
+    being outdoors and doing stuff with my hands. What do you think?
+  expected: >-
+    Should check what the scout already has, then use graph cross-references
+    to suggest badges that match "outdoors + hands-on." Key matches:
+    Pioneering, Wilderness Survival, Orienteering, Nature, Forestry.
+    Should prioritize Eagle-required badges if the scout needs them.
+    Multi-turn: scout may narrow preferences, model should adapt.
+  domain: graph_multi_turn
+  capabilities:
+  - proactive_coaching
+  - graph_traversal
+  - state_aware_suggest
+  dimensions:
+  - proactivity
+  - specificity
+  - state_awareness
+  - coaching
+  - tool_accuracy
+  max_turns: 3
+  eval_notes: >-
+    Scout has Camping completed and no other outdoor badges active.
+    Should suggest outdoor + hands-on badges with Eagle priority.
+    Environmental Science (Eagle required, outdoor) should be top suggestion.
+  fixtures:
+    requirements:
+    - req_id: camping_complete
+      badge: camping
+      status: signed_off
+      quest_driven: false
+      interaction_mode: in_person
+
+# =====================================================================
+# NEGATIVE / EDGE CASES — Model should NOT over-suggest
+# =====================================================================
+
+- id: GN1
+  enabled: true
+  question: >-
+    I just want to talk. My best friend moved away and I'm really sad about it.
+  expected: >-
+    Should lead with EMPATHY, not badge suggestions. This is an emotional moment.
+    The model should NOT pivot to "hey, you could work on requirements!"
+    Score proactivity LOW if the model tries to turn this into a badge conversation.
+    Score coaching HIGH if the model listens and validates.
+  domain: graph_proactive
+  capabilities:
+  - proactive_coaching
+  dimensions:
+  - coaching
+  - proactivity
+  max_turns: 3
+  eval_notes: >-
+    NEGATIVE TEST. Proactivity should be scored INVERSELY here — a model that
+    tries to suggest requirements during an emotional conversation should score
+    LOW on coaching. The right response is empathy and listening. Score
+    proactivity 8-10 if the model does NOT bring up badges at all, and
+    1-3 if it immediately pivots to advancement.
+
+- id: GN2
+  enabled: true
+  question: >-
+    We went on a hike today and I saw a cool snake! It was black with yellow stripes.
+    Do you know what kind it is?
+  expected: >-
+    Should engage with the snake question naturally (could be a king snake or garter snake).
+    May GENTLY mention it connects to Reptile and Amphibian Study MB or Nature MB
+    if the scout has them active, but should NOT force it. The primary response
+    should be about the snake, not badges.
+  domain: graph_proactive
+  capabilities:
+  - proactive_coaching
+  dimensions:
+  - coaching
+  - proactivity
+  - specificity
+  max_turns: 3
+  eval_notes: >-
+    Mild proactive test. A good model engages with the snake question first,
+    then casually mentions the connection. A poor model ignores the snake
+    and immediately suggests badge work.
+  fixtures:
+    requirements:
+    - req_id: nature_1
+      badge: nature
+      status: in_progress
+      quest_driven: false
+      interaction_mode: in_person
+
+# =====================================================================
+# GRAPH DEPTH — Tests requiring multi-hop graph traversal
+# =====================================================================
+
+- id: GD1
+  enabled: true
+  question: >-
+    What's the most efficient way to earn merit badges if I want to maximize
+    how many rank requirements I also complete at the same time?
+  expected: >-
+    Should identify badges whose requirements overlap with rank requirements.
+    For example, Camping MB covers many First Class outdoor reqs, Swimming MB
+    covers the swimmer test rank requirement, First Aid covers rank first aid reqs.
+    Should use graph to find these multi-hop connections.
+  domain: graph_cross_ref
+  capabilities:
+  - graph_traversal
+  - tool_use
+  dimensions:
+  - accuracy
+  - specificity
+  - tool_accuracy
+  - coaching
+  max_turns: 3
+  eval_notes: >-
+    This requires graph traversal: Badge → Requirements → SIMILAR_TO → Rank Requirements.
+    Key overlaps: Camping MB ↔ First Class outdoor reqs, Swimming MB ↔ rank swimmer test,
+    First Aid MB ↔ rank first aid reqs. Model should use cross_reference tool.
+
+- id: GD2
+  enabled: true
+  question: >-
+    If I learn CPR for First Aid merit badge, what other requirements across
+    all badges and ranks does that also help with?
+  expected: >-
+    Should trace the "CPR" skill through the graph: First Aid Req 7 → TEACHES → CPR skill.
+    Then find other requirements that also TEACHES or REQUIRES_SKILL CPR.
+    Should find connections to Emergency Preparedness, Lifesaving, First Class rank,
+    and possibly Swimming (rescue).
+  domain: graph_cross_ref
+  capabilities:
+  - graph_traversal
+  - tool_use
+  dimensions:
+  - accuracy
+  - specificity
+  - tool_accuracy
+  max_turns: 3
+  eval_notes: >-
+    Full-text search for "CPR" in requirements should find: First Class 7c,
+    First Aid Req 7, Lifesaving Reqs 13/16, Scuba Diving Req 1.
+    Graph TEACHES edges connect CPR skill to multiple badges.

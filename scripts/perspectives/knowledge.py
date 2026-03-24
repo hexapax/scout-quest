@@ -173,7 +173,7 @@ def _make_caller(config: RunConfig, usage: UsageTracker):
         return _make_anthropic_caller(config, usage)
     elif provider == "google":
         return _make_gemini_caller(config, usage)
-    elif provider in ("openai", "deepseek", "openrouter"):
+    elif provider in ("openai", "deepseek", "openrouter", "xai"):
         return _make_openai_compat_caller(config, usage)
     else:
         raise ValueError(f"Unknown provider: {provider}")
@@ -492,6 +492,8 @@ def _make_openai_compat_caller(config: RunConfig, usage: UsageTracker):
         base_url, key_env = "https://api.deepseek.com/v1", "DEEPSEEK_API_KEY"
     elif provider == "openrouter":
         base_url, key_env = "https://openrouter.ai/api/v1", "OPENROUTER_KEY"
+    elif provider == "xai":
+        base_url, key_env = "https://api.x.ai/v1", "XAI_API_KEY"
     else:
         base_url, key_env = "https://api.openai.com/v1", "OPENAI_API_KEY"
 
@@ -641,6 +643,7 @@ class KnowledgePerspective:
                     "capabilities": q.get("capabilities", []),
                     "dimensions": q.get("dimensions", []),
                     "max_turns": q.get("max_turns", 1),
+                    **({"fixtures": q["fixtures"]} if "fixtures" in q else {}),
                 },
             ))
 
@@ -694,9 +697,11 @@ class KnowledgePerspective:
         layer = get_layer(config.layer)
 
         # Create per-test MongoDB state for stateful tool execution
+        # Per-question fixtures override defaults (e.g., active badges for graph tests)
         test_id = f"{item.id}_{int(time.time())}"
         test_state = TestState(test_id=test_id)
-        tools = ToolRegistry(test_state=test_state)
+        custom_fixtures = item.metadata.get("fixtures")
+        tools = ToolRegistry(test_state=test_state, fixtures=custom_fixtures)
         engine = EvalEngine(config, layer, tools, usage)
         max_turns = item.metadata.get("max_turns", 1)
         try:
@@ -783,6 +788,8 @@ class KnowledgePerspective:
 
             # Extras
             "tool_calls": scored.execution.raw_data.get("tool_calls"),
+            "turn_timings": scored.execution.raw_data.get("turn_timings"),
+            "turn_count": scored.execution.raw_data.get("turn_count", 1),
             "limits": scored.execution.raw_data.get("limits") or None,
             "chain_metadata": None,
             "timing_ms": scored.execution.timing_ms,

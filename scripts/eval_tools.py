@@ -809,12 +809,30 @@ class TestState:
         self.scout_email = scout_email
 
     def seed(self, fixtures: dict[str, Any] | None = None) -> None:
-        """Drop and recreate with fixture data."""
+        """Drop and recreate with fixture data.
+
+        If fixtures is provided, it is MERGED with DEFAULT_FIXTURES:
+        - 'scout' dict: shallow-merged (overrides individual keys)
+        - 'requirements' list: extended (adds to defaults)
+        - Other keys: replaced if present, defaults used otherwise
+        """
         self.client.drop_database(self.db_name)
         # Re-acquire reference after drop
         self.db = self.client[self.db_name]
 
-        data = fixtures or DEFAULT_FIXTURES
+        if fixtures is None:
+            data = DEFAULT_FIXTURES
+        else:
+            data = dict(DEFAULT_FIXTURES)
+            for key, val in fixtures.items():
+                if key == "scout" and isinstance(val, dict):
+                    # Shallow-merge scout fields
+                    data["scout"] = {**DEFAULT_FIXTURES.get("scout", {}), **val}
+                elif key == "requirements" and isinstance(val, list):
+                    # Extend default requirements with extra badges
+                    data["requirements"] = list(DEFAULT_FIXTURES.get("requirements", [])) + val
+                else:
+                    data[key] = val
 
         # Insert scout profile
         if data.get("scout"):
