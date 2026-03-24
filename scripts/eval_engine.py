@@ -159,6 +159,105 @@ def _build_scout_context(item: EvalItem) -> str:
     return "\n".join(parts)
 
 
+def _scout_sim_respond(assistant_text: str, turn: int, sim_prompt: str,
+                        transcript: list[dict] | None = None) -> str | None:
+    """Use a scenario-specific scout simulator for deterministic multi-turn.
+
+    Unlike _auto_respond which uses a generic Will persona, this uses the
+    question's scout_sim_prompt to drive targeted, scenario-appropriate behavior.
+    Used for tool workflow questions where the scout needs to provide specific data.
+
+    Returns None if the conversation is complete.
+    """
+    import httpx
+
+    key = os.environ.get("OPENAI_API_KEY", "")
+    if not key:
+        return None
+
+    # Build conversation for the simulator
+    convo_block = ""
+    if transcript:
+        lines = []
+        for entry in transcript[-8:]:
+            role = "SCOUT" if entry["role"] == "user" else "COACH"
+            lines.append(f"[{role}]: {entry['content'][:500]}")
+        convo_block = "\n".join(lines)
+
+    turn_guidance = ""
+    if turn >= 3:
+        turn_guidance = "\nThis is turn 4+. Wrap up unless the coach is clearly still working on something."
+
+    prompt = f"""{sim_prompt}
+
+CONVERSATION SO FAR:
+{convo_block}
+
+COACH'S LATEST RESPONSE:
+{assistant_text[:1200]}
+
+Reply as the scout described above. If the conversation is complete, say "DONE".
+Keep it to 1-3 sentences. Be natural.{turn_guidance}
+
+YOUR REPLY (or "DONE"):"""
+
+    try:
+        r = httpx.post("https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            json={"model": "gpt-4.1-nano", "max_tokens": 150,
+                  "messages": [{"role": "user", "content": prompt}]},
+            timeout=30)
+        d = r.json()
+        if "choices" in d:
+            reply = d["choices"][0]["message"]["content"].strip()
+            if reply.upper().startswith("DONE"):
+                return None
+            reply = reply.strip('"').strip("'")
+            if reply.upper().startswith("[SCOUT]"):
+                reply = reply[7:].strip(": ")
+            return reply if len(reply) > 2 else None
+    except Exception:
+        pass
+    return None
+
+
+def _check_expected_tools(tool_call_log: list[dict],
+                           expected: list[str] | None,
+                           not_expected: list[str] | None = None) -> dict | None:
+    """Compare actual tool calls against expected tools.
+
+    Returns None if no expectations defined. Otherwise returns:
+    {expected, called, missed, unexpected, pass}
+    """
+    if not expected and not not_expected:
+        return None
+
+    actual_tools = set()
+    for tc in tool_call_log:
+        if tc.get("authorized", True):
+            actual_tools.add(tc["name"])
+
+    result = {"actual": sorted(actual_tools)}
+
+    if expected:
+        called = actual_tools & set(expected)
+        missed = set(expected) - actual_tools
+        result["expected"] = expected
+        result["called"] = sorted(called)
+        result["missed"] = sorted(missed)
+
+    if not_expected:
+        violated = actual_tools & set(not_expected)
+        result["not_expected"] = not_expected
+        result["violated"] = sorted(violated)
+
+    result["pass"] = (
+        (not expected or len(set(expected) - actual_tools) == 0) and
+        (not not_expected or len(actual_tools & set(not_expected)) == 0)
+    )
+    return result
+
+
 class EvalEngine:
     """Unified eval engine — handles single-turn through multi-session.
 
@@ -214,6 +313,16 @@ class EvalEngine:
             # Capture final state snapshot if we have a test state
             if hasattr(self.tools, 'test_state') and self.tools.test_state is not None:
                 result.raw_data["db_snapshot"] = self.tools.test_state.snapshot()
+
+            # Check expected tools if defined on the question
+            if item.metadata:
+                expected = item.metadata.get("expected_tools")
+                not_expected = item.metadata.get("expected_not_tools")
+                tool_check = _check_expected_tools(
+                    result.raw_data.get("tool_calls", []),
+                    expected, not_expected)
+                if tool_check is not None:
+                    result.raw_data["expected_tools_check"] = tool_check
 
             return result
 
@@ -360,8 +469,14 @@ class EvalEngine:
 
             # Multi-turn: ask a cheap LLM if the response needs a follow-up
             # Catches Socratic openers and lets the model deliver substance
-            follow_up = _auto_respond(assistant_text, turn, question=item.description,
-                                      transcript=transcript, scout_context=_build_scout_context(item))
+            sim_config = item.metadata.get("follow_ups") if item.metadata else None
+            if sim_config and sim_config.get("scout_sim_prompt"):
+                follow_up = _scout_sim_respond(
+                    assistant_text, turn, sim_prompt=sim_config["scout_sim_prompt"],
+                    transcript=transcript)
+            else:
+                follow_up = _auto_respond(assistant_text, turn, question=item.description,
+                                          transcript=transcript, scout_context=_build_scout_context(item))
             if follow_up is None:
                 break  # Model gave a complete answer, no need to continue
 
@@ -656,8 +771,14 @@ class EvalEngine:
                 break
 
             # Multi-turn: auto-respond
-            follow_up = _auto_respond(assistant_text, turn, question=item.description,
-                                      transcript=transcript, scout_context=_build_scout_context(item))
+            sim_config = item.metadata.get("follow_ups") if item.metadata else None
+            if sim_config and sim_config.get("scout_sim_prompt"):
+                follow_up = _scout_sim_respond(
+                    assistant_text, turn, sim_prompt=sim_config["scout_sim_prompt"],
+                    transcript=transcript)
+            else:
+                follow_up = _auto_respond(assistant_text, turn, question=item.description,
+                                          transcript=transcript, scout_context=_build_scout_context(item))
             if follow_up is None:
                 break
 
@@ -909,8 +1030,14 @@ class EvalEngine:
                 break
 
             # Multi-turn: auto-respond
-            follow_up = _auto_respond(assistant_text, turn, question=item.description,
-                                      transcript=transcript, scout_context=_build_scout_context(item))
+            sim_config = item.metadata.get("follow_ups") if item.metadata else None
+            if sim_config and sim_config.get("scout_sim_prompt"):
+                follow_up = _scout_sim_respond(
+                    assistant_text, turn, sim_prompt=sim_config["scout_sim_prompt"],
+                    transcript=transcript)
+            else:
+                follow_up = _auto_respond(assistant_text, turn, question=item.description,
+                                          transcript=transcript, scout_context=_build_scout_context(item))
             if follow_up is None:
                 break
 

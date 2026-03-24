@@ -642,10 +642,49 @@ class KnowledgePerspective:
                     "domain": q.get("domain"),
                     "capabilities": q.get("capabilities", []),
                     "dimensions": q.get("dimensions", []),
-                    "max_turns": q.get("max_turns", 1),
+                    "max_turns": q.get("max_turns", 3),
+                    "endpoint": q.get("endpoint", "scout"),
                     **({"fixtures": q["fixtures"]} if "fixtures" in q else {}),
+                    **({"follow_ups": q["follow_ups"]} if "follow_ups" in q else {}),
+                    **({"expected_tools": q["expected_tools"]} if "expected_tools" in q else {}),
+                    **({"expected_not_tools": q["expected_not_tools"]} if "expected_not_tools" in q else {}),
+                    **({"eval_context": q["eval_context"]} if "eval_context" in q else {}),
+                    **({"eval_weights": q["eval_weights"]} if "eval_weights" in q else {}),
                 },
             ))
+
+        # Resolve chain steps as items (if --chain filter or chains present)
+        chain_filter = filters.get("chain")
+        for chain_def in eval_set.raw.get("chains", []):
+            if chain_filter and chain_def.get("id") != chain_filter:
+                continue
+            if not chain_filter:
+                continue  # Only include chains when explicitly requested with --chain
+            for step_idx, step in enumerate(chain_def.get("steps", [])):
+                step_id = f"{chain_def['id']}/{step['id']}"
+                items.append(EvalItem(
+                    id=step_id,
+                    perspective=eval_set.perspective,
+                    item_type="chain_step",
+                    category="chain",
+                    description=step.get("initial_message", ""),
+                    expected=step.get("eval_context", ""),
+                    metadata={
+                        "domain": "state_tracking",
+                        "dimensions": step.get("dimensions", ["tool_accuracy", "state_awareness", "coaching"]),
+                        "max_turns": step.get("max_turns", 6),
+                        "endpoint": chain_def.get("endpoint", "scout"),
+                        "chain_id": chain_def["id"],
+                        "chain_step": step["id"],
+                        "chain_step_index": step_idx,
+                        "chain_fixtures": chain_def.get("fixtures"),
+                        "pre_mutations": step.get("pre_mutations"),
+                        "expected_tools": step.get("expected_tools"),
+                        "expected_state": step.get("expected_state"),
+                        **({"follow_ups": {"scout_sim_prompt": step["scout_sim_prompt"]}} if "scout_sim_prompt" in step else {}),
+                        **({"eval_context": step["eval_context"]} if "eval_context" in step else {}),
+                    },
+                ))
 
         # Apply filters
         category = filters.get("category")
@@ -679,13 +718,10 @@ class KnowledgePerspective:
 
     def execute(self, item: EvalItem, config: RunConfig,
                 usage: UsageTracker | None = None, **kwargs) -> ExecutionResult:
-        """Execute a single question against the model.
+        """Execute a single question or chain step against the model.
 
-        Uses the unified EvalEngine which handles tool dispatch for
-        Anthropic models and falls back to legacy callers for others.
-        All tools are registered (model sees them); authorization is
-        controlled by the layer config. Unauthorized tool calls are
-        logged as behavioral signals.
+        Uses the unified EvalEngine which handles tool dispatch for all providers.
+        For chain steps, accepts shared_state kwarg to persist DB across steps.
         """
         if usage is None:
             usage = UsageTracker()
@@ -696,18 +732,42 @@ class KnowledgePerspective:
 
         layer = get_layer(config.layer)
 
-        # Create per-test MongoDB state for stateful tool execution
-        # Per-question fixtures override defaults (e.g., active badges for graph tests)
-        test_id = f"{item.id}_{int(time.time())}"
-        test_state = TestState(test_id=test_id)
-        custom_fixtures = item.metadata.get("fixtures")
-        tools = ToolRegistry(test_state=test_state, fixtures=custom_fixtures)
+        # Chain steps share state; standalone questions get fresh state
+        shared_state = kwargs.get("shared_state")
+        owns_state = shared_state is None
+
+        if shared_state:
+            test_state = shared_state
+            # Apply pre-mutations for chain steps
+            pre_mutations = item.metadata.get("pre_mutations") or []
+            for mut in pre_mutations:
+                test_state.apply_mutation(mut)
+            # Snapshot before execution (for chain diff)
+            db_before = test_state.snapshot()
+            tools = ToolRegistry(test_state=test_state)
+        else:
+            test_id = f"{item.id}_{int(time.time())}"
+            test_state = TestState(test_id=test_id)
+            custom_fixtures = item.metadata.get("fixtures") or item.metadata.get("chain_fixtures")
+            tools = ToolRegistry(test_state=test_state, fixtures=custom_fixtures)
+            db_before = None
+
         engine = EvalEngine(config, layer, tools, usage)
-        max_turns = item.metadata.get("max_turns", 1)
+        max_turns = item.metadata.get("max_turns", 3)
         try:
-            return engine.run(item, max_turns=max_turns)
+            result = engine.run(item, max_turns=max_turns)
+
+            # For chain steps, capture state diff
+            if shared_state and db_before:
+                db_after = test_state.snapshot()
+                result.raw_data["db_before"] = db_before
+                result.raw_data["db_after"] = db_after
+                result.raw_data["db_diff"] = TestState.diff_snapshots(db_before, db_after)
+
+            return result
         finally:
-            test_state.cleanup()
+            if owns_state:
+                test_state.cleanup()
 
     def format_for_evaluation(self, result: ExecutionResult) -> tuple[str, str]:
         """Format for panel evaluator: (response + tool calls, question+expected)."""
@@ -742,6 +802,18 @@ class KnowledgePerspective:
         )
         if item.metadata.get("dimensions"):
             context += f"\n\nAPPLICABLE DIMENSIONS: {', '.join(item.metadata['dimensions'])}"
+        if item.metadata.get("eval_context"):
+            context += f"\n\nEVALUATOR CONTEXT: {item.metadata['eval_context']}"
+
+        # Include expected tools check result if available
+        tool_check = result.raw_data.get("expected_tools_check")
+        if tool_check:
+            status = "PASS" if tool_check["pass"] else "FAIL"
+            context += f"\n\nEXPECTED TOOLS CHECK: {status}"
+            if tool_check.get("missed"):
+                context += f" (missed: {', '.join(tool_check['missed'])})"
+            if tool_check.get("violated"):
+                context += f" (should not have called: {', '.join(tool_check['violated'])})"
 
         return content, context
 

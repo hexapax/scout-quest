@@ -873,6 +873,62 @@ class TestState:
             "savings": scout.get("quest_state", {}).get("current_savings", 0) if scout else 0,
         }
 
+    def apply_mutation(self, mutation: dict) -> None:
+        """Apply a pre-step mutation to the test database.
+
+        Used in chain steps to simulate external events (time passing,
+        counselor sign-off, etc.) between steps.
+
+        Format: {"collection": "requirements", "filter": {...}, "update": {"$set": {...}}}
+        Or for inserts: {"collection": "chore_logs", "insert": {...}}
+        """
+        coll_name = mutation.get("collection", "")
+        coll = self.db[coll_name]
+
+        if "insert" in mutation:
+            doc = {**mutation["insert"], "scout_email": self.scout_email}
+            coll.insert_one(doc)
+        elif "filter" in mutation and "update" in mutation:
+            filt = mutation["filter"]
+            if "scout_email" not in filt:
+                filt["scout_email"] = self.scout_email
+            coll.update_one(filt, mutation["update"])
+
+    @staticmethod
+    def diff_snapshots(before: dict, after: dict) -> dict:
+        """Compute a human-readable diff between two snapshots."""
+        diffs = {}
+
+        # Count changes
+        for key in ["chore_log_count", "budget_entry_count"]:
+            b, a = before.get(key, 0), after.get(key, 0)
+            if a != b:
+                diffs[key] = {"before": b, "after": a, "delta": a - b}
+
+        # Savings
+        b_sav, a_sav = before.get("savings", 0), after.get("savings", 0)
+        if a_sav != b_sav:
+            diffs["savings"] = {"before": b_sav, "after": a_sav, "delta": a_sav - b_sav}
+
+        # Requirement status changes
+        b_reqs = {r["req_id"]: r.get("status") for r in before.get("requirements", [])}
+        a_reqs = {r["req_id"]: r.get("status") for r in after.get("requirements", [])}
+        req_changes = {}
+        for rid in set(b_reqs) | set(a_reqs):
+            bs, astat = b_reqs.get(rid), a_reqs.get(rid)
+            if bs != astat:
+                req_changes[rid] = {"before": bs, "after": astat}
+        if req_changes:
+            diffs["requirements"] = req_changes
+
+        # Session notes count
+        b_notes = len(before.get("session_notes", []))
+        a_notes = len(after.get("session_notes", []))
+        if a_notes != b_notes:
+            diffs["session_notes_count"] = {"before": b_notes, "after": a_notes, "delta": a_notes - b_notes}
+
+        return diffs
+
     def cleanup(self) -> None:
         """Drop the test database."""
         self.client.drop_database(self.db_name)

@@ -393,15 +393,31 @@ Examples:
             results = []
             consecutive_errors = 0
 
+            # Chain state management: chain items share a TestState
+            chain_states: dict = {}  # chain_id -> TestState
+
             for item in items:
                 sys.stdout.write(f"  {item.id}: {item.description[:50]}... ")
                 sys.stdout.flush()
 
                 try:
+                    # For chain steps, create/reuse shared state
+                    chain_id = item.metadata.get("chain_id") if item.metadata else None
+                    shared_state = None
+                    if chain_id:
+                        if chain_id not in chain_states:
+                            from eval_tools import TestState
+                            chain_test_id = f"chain_{chain_id}_{int(time.time())}"
+                            chain_states[chain_id] = TestState(test_id=chain_test_id)
+                            chain_fixtures = item.metadata.get("chain_fixtures")
+                            chain_states[chain_id].seed(chain_fixtures)
+                        shared_state = chain_states[chain_id]
+
                     # Execute
                     execution = perspective.execute(
                         item, config, usage=usage,
                         mongo_uri=args.mongo_uri,
+                        shared_state=shared_state,
                     )
 
                     if execution.error:
@@ -552,6 +568,13 @@ Examples:
                     if consecutive_errors >= 2:
                         print(f"\n  FAIL-FAST: 2 consecutive errors for {config.label}, skipping remaining.")
                         break
+
+            # Cleanup chain states
+            for cs in chain_states.values():
+                try:
+                    cs.cleanup()
+                except Exception:
+                    pass
 
             all_results[config_key] = results
 
