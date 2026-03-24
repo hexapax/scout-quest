@@ -168,36 +168,34 @@ When a command would require quotes-within-quotes or shell expansions that trip 
 A comprehensive AI evaluation framework lives in this repo. **Read `docs/DOCS-INDEX.md` for the full documentation map.**
 
 ### Quick Reference
-- **Unified eval runner:** `scripts/run-eval.py` — multi-perspective, multi-axis evaluation
-- **Legacy eval runner:** `scripts/run-model-eval.py` — original single-perspective runner (still works)
+- **Eval set v7:** `eval-sets/scout-eval-v7.yaml` — 109 questions + 25 chain steps = 134 items
+- **Eval runner:** `scripts/run-eval.py` — unified CLI for all providers and test types
+- **Eval engine:** `scripts/eval_engine.py` — multi-turn + tools for Anthropic, OpenAI, Gemini, DeepSeek, Grok, OpenRouter
 - **Eval viewer:** `eval.hexapax.com` (served from `backend/public/eval-viewer.html` via Cloudflare tunnel on port 9090)
 - **Ranking:** `scripts/run-ranking.py` — listwise ranking with embedding clustering
-- **Results:** MongoDB `scoutquest` database (eval_results with `perspective` field, eval_usage, eval_rankings, eval_embeddings)
-- **Reports:** `docs/reports/` and `mcp-servers/scout-quest/test/reports/model-comparison/`
-- **Chain tests:** `mcp-servers/scout-quest/test/` (TypeScript harness, integrated as `chain` perspective)
-- **Framework:** `scripts/eval_framework.py` (EvalPerspective protocol), `scripts/eval_panel.py` (shared panel evaluator)
-- **Perspectives:** `scripts/perspectives/knowledge.py`, `scripts/perspectives/chain.py`
-- **Configs:** `eval-sets/configs.yaml` (RunConfig definitions with inheritance — replaces MODELS dict)
+- **Results:** MongoDB `scoutquest.eval_results` (eval_usage, eval_rankings, eval_embeddings)
+- **Reports:** `mcp-servers/scout-quest/test/reports/model-comparison/`
+- **Framework:** `scripts/eval_framework.py`, `scripts/eval_panel.py` (panel evaluator + rebuttal)
+- **Perspective:** `scripts/perspectives/knowledge.py` (handles questions + chains)
+- **Configs:** `eval-sets/configs.yaml` (35+ configs with inheritance, all providers)
+- **TS harness:** `mcp-servers/scout-quest/test/` — **DEPRECATED**, see `DEPRECATED.md`. Do not add new tests here.
 
 ### Key Commands
 ```bash
-# Unified runner — knowledge perspective (default)
-python3 scripts/run-eval.py --config claude --sample 2 --budget 5.00 --desc "description"
+# Run eval on v7 (default eval set)
+python3 scripts/run-eval.py --eval-set scout-eval-v7.yaml --config claude --sample 2 --budget 5.00
 
-# Chain perspective
-python3 scripts/run-eval.py --perspective chain --chain chore-streak --config claude --budget 5.00
+# Cross-model comparison (5 models)
+python3 scripts/run-eval.py --eval-set scout-eval-v7.yaml --config graph-PKT,graph-gpt41,graph-gemini,graph-deepseek,graph-grok --sample 5 --budget 25.00
 
-# Ablation sweep across layers
-python3 scripts/run-eval.py --config layer-L0,layer-L1,layer-L2,layer-L3 --sample 2 --budget 10.00
+# Run a specific chain
+python3 scripts/run-eval.py --eval-set scout-eval-v7.yaml --chain chore-streak --config claude --budget 5.00
 
-# Override config axes
-python3 scripts/run-eval.py --config claude --layer persona-only --knowledge none
+# Filter by domain
+python3 scripts/run-eval.py --eval-set scout-eval-v7.yaml --config claude --category tool_workflow --budget 5.00
 
-# List available perspectives and configs
+# List all configs
 python3 scripts/run-eval.py --list
-
-# Legacy runner (still works)
-python3 scripts/run-model-eval.py --model claude --sample 2 --evaluator panel --budget 5.00
 
 # Run ranking for a question
 python3 scripts/run-ranking.py --question G1
