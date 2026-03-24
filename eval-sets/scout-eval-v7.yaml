@@ -2988,6 +2988,772 @@ questions:
 # CHAINS — Phase 3 placeholder
 # =====================================================================
 
-chains: []
-# Chain definitions will be added in Phase 3
-# Format: [{id, name, endpoint, fixtures, steps: [{id, initial_message, scout_sim_prompt, max_turns, expected_tools, expected_state, pre_mutations, eval_context}]}]
+chains:
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Chain 1: Chore Streak + Savings Growth
+  # Baseline: 10-day chore streak, $120 savings
+  # ───────────────────────────────────────────────────────────────────────
+
+  - id: chore-streak
+    name: "Chore Streak + Savings Growth"
+    endpoint: scout
+    description: >
+      Multi-session chore logging test. Scout logs chores across 3 sessions,
+      then asks for a progress summary. Tests savings accumulation accuracy,
+      streak counting, and consistent reporting.
+    steps:
+
+      - id: log-chores-day-1
+        initial_message: "hey I did my chores today"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will checking in after doing chores.
+
+          YOUR PERSONALITY: Quick and casual, just wants to log and go.
+
+          CONVERSATION FLOW:
+          1. Say you did your chores
+          2. When asked which ones, say dishes and trash
+          3. React to the savings update
+          4. Say bye
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - log_chore
+          - log_session_notes
+        eval_context: |
+          Coach should call log_chore with chores_completed=['dishes','trash'].
+          Should report earnings ($2 from dishes) and updated savings.
+          Streak should be reported as 11 days (10 seeded + today).
+        expected_state:
+          - "chore_logs: +1"
+          - "savings: $120 -> $122"
+        dimensions:
+          - tool_accuracy
+          - state_awareness
+          - coaching
+
+      - id: check-savings
+        initial_message: "how much money have I saved up so far?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will curious about your savings.
+
+          YOUR PERSONALITY: Interested in the numbers, wants to know the math.
+
+          CONVERSATION FLOW:
+          1. Ask how much you've saved so far
+          2. Ask how long until you reach your goal
+          3. Say cool and wrap up
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - log_session_notes
+        eval_context: |
+          Coach must report savings as $122 (NOT $120 — that was before yesterday's chore log).
+          Goal is $800. Should discuss progress as a fraction/percentage.
+          Should NOT call log_chore or any mutation tool.
+        expected_state:
+          - "session_notes: +1"
+        eval_weights:
+          requirement_accuracy: 0.25
+          state_management: 0.25
+          engagement_quality: 0.15
+          socratic_method: 0.15
+          character_consistency: 0.10
+          scope_adherence: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - numerical_accuracy
+
+      - id: log-chores-with-laundry
+        initial_message: "I did all three chores today! dishes, trash, and laundry!"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will who did extra chores today.
+
+          YOUR PERSONALITY: Feeling productive, proud of doing laundry too.
+
+          CONVERSATION FLOW:
+          1. Say you did dishes, trash, AND laundry today
+          2. Confirm when asked
+          3. React excitedly to the bigger earnings
+          4. Ask about the streak
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        pre_mutations:
+          - collection: chore_logs
+            filter:
+              scout_email: "test-scout@scoutquest.test"
+              date: {$gte: "$$TODAY_START"}
+            update:
+              $set:
+                date: "$$YESTERDAY_START"
+        expected_tools:
+          - log_chore
+          - log_session_notes
+        eval_context: |
+          Coach should call log_chore with chores_completed=['dishes','trash','laundry'].
+          Total earnings: $2 (dishes) + $5 (laundry) = $7. Trash earns nothing.
+          Updated savings: $122 + $7 = $129.
+        expected_state:
+          - "chore_logs: +1"
+          - "savings: $122 -> $129"
+        dimensions:
+          - tool_accuracy
+          - numerical_accuracy
+
+      - id: final-summary
+        initial_message: "can you give me a full rundown of where I'm at with everything?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will wanting the big picture.
+
+          YOUR PERSONALITY: Reflective, wants to understand overall progress.
+
+          CONVERSATION FLOW:
+          1. Ask for a full update on your quest progress
+          2. Ask specifically about the PC build savings goal
+          3. Say you're motivated to keep going
+          4. Wrap up
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - log_session_notes
+        eval_context: |
+          Coach should call read tools to get current state and report it accurately.
+          Expected savings is $129 if all prior steps succeeded, but if the coach reads
+          a different amount from the DB, it should report what the tools return — do NOT
+          penalize for reporting a slightly different savings figure if the tools confirm it.
+          Goal is $800 Gaming PC. Should mention requirement statuses accurately.
+          Should not confuse the savings amount with the budget tracking total.
+        expected_state:
+          - "session_notes: +1"
+        eval_weights:
+          requirement_accuracy: 0.30
+          state_management: 0.20
+          engagement_quality: 0.15
+          socratic_method: 0.10
+          character_consistency: 0.15
+          scope_adherence: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - numerical_accuracy
+          - coaching
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Chain 2: PM Req 2a — Budget Lifecycle
+  # Baseline: pm_2a is in_progress, 4 budget weeks logged, $120 savings
+  # ───────────────────────────────────────────────────────────────────────
+
+  - id: pm-req-2a-lifecycle
+    name: "PM Req 2a — Budget Lifecycle"
+    endpoint: scout
+    description: >
+      Full lifecycle test: scout checks requirement status, logs budget entries
+      over multiple sessions, then submits for review. Tests state persistence,
+      accurate progress reporting, correct tool calls, and advancement tracking.
+    steps:
+
+      - id: check-status
+        initial_message: "hey, where am I at with my Personal Management stuff?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will checking on your merit badge progress.
+
+          YOUR PERSONALITY: Casual, a bit distracted, just wants a quick status update.
+
+          CONVERSATION FLOW:
+          1. Ask where you stand on Personal Management
+          2. When told about pm_2a status, ask how many weeks you've logged so far
+          3. Say "cool, thanks" and wrap up
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - log_session_notes
+        eval_context: |
+          The coach should accurately report pm_2a as in_progress. Budget tracking is at
+          week 4 of 13. The coach should NOT call advance_requirement in this step.
+        expected_state:
+          - "session_notes: +1"
+        dimensions:
+          - state_awareness
+          - requirement_accuracy
+
+      - id: log-budget-5
+        initial_message: "I need to log my budget for this week. It's week 5."
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will ready to log your weekly budget.
+
+          YOUR PERSONALITY: Cooperative, has the numbers ready, wants to get it done.
+
+          CONVERSATION FLOW:
+          1. Say you want to log your budget for week 5
+          2. When asked for details, provide: $19 chore income, $10 allowance = $29 income. $5 snacks, $3 games = $8 expenses. Saved $21.
+          3. Confirm the numbers when the coach reads them back
+          4. Ask how much you've saved total
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - log_budget_entry
+          - log_session_notes
+        eval_context: |
+          Coach must call log_budget_entry with week_number=5. After logging, the running
+          savings total should reflect weeks 1-5 (4 prior weeks x $21 = $84, plus $21 = $105).
+        expected_state:
+          - "budget_entries: +1"
+          - "budget_total: $84 -> $105"
+        eval_weights:
+          state_management: 0.30
+          socratic_method: 0.20
+          requirement_accuracy: 0.15
+          engagement_quality: 0.15
+          character_consistency: 0.10
+          scope_adherence: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - tool_accuracy
+          - numerical_accuracy
+
+      - id: log-budget-6
+        initial_message: "week 6 budget time! let's do this"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will logging another budget week.
+
+          YOUR PERSONALITY: Getting into the routine, confident with the process now.
+
+          CONVERSATION FLOW:
+          1. Say you want to log week 6
+          2. Provide numbers: $19 chores + $10 allowance = $29 income. $7 snacks + $5 movie = $12 expenses. Saved $17.
+          3. Confirm when asked
+          4. React to the running total
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - log_budget_entry
+          - log_session_notes
+        eval_context: |
+          Coach must call log_budget_entry with week_number=6. Should NOT re-log week 5.
+          Running total after this: $105 + $17 = $122.
+        expected_state:
+          - "budget_entries: +1"
+          - "budget_total: $105 -> $122"
+        dimensions:
+          - tool_accuracy
+          - state_awareness
+
+      - id: mid-journey-check
+        initial_message: "hey, how am I doing on the budget tracking? am I close to done?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will wanting a progress report.
+
+          YOUR PERSONALITY: Curious, wants to see how close you are to finishing.
+
+          CONVERSATION FLOW:
+          1. Ask how close you are to finishing the budget tracking
+          2. Ask what you need to do to get pm_2a marked as done
+          3. Say thanks and you'll keep logging
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - log_session_notes
+        eval_context: |
+          Coach should accurately state: 6 of 13 weeks logged for pm_2c tracking,
+          pm_2a is still in_progress (the budget plan requirement), and explain what's
+          needed to advance pm_2a to ready_for_review. Should NOT call advance_requirement.
+        expected_state:
+          - "session_notes: +1"
+        eval_weights:
+          requirement_accuracy: 0.30
+          state_management: 0.20
+          socratic_method: 0.15
+          engagement_quality: 0.15
+          character_consistency: 0.10
+          scope_adherence: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - requirement_accuracy
+
+      - id: submit-for-review
+        initial_message: "I finished my budget plan document! Can we submit pm_2a for review?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will who finished a budget plan document.
+
+          YOUR PERSONALITY: Proud of the work, eager to move forward.
+
+          CONVERSATION FLOW:
+          1. Say you finished your 13-week budget projection document and want to submit pm_2a
+          2. When asked about what you included, describe: income sources, expense categories, savings target, and a 13-week projection table
+          3. Confirm you're ready to submit
+          4. Ask what happens next (counselor review)
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - advance_requirement
+          - log_session_notes
+        eval_context: |
+          Coach MUST call advance_requirement with req_id='pm_2a' and new_status='ready_for_review'.
+          Should verify the scout's work before advancing (Socratic method).
+          Should explain that Mr. Chen will review it next.
+        expected_state:
+          - "req pm_2a: in_progress -> ready_for_review"
+          - "session_notes: +1"
+        eval_weights:
+          state_management: 0.30
+          requirement_accuracy: 0.25
+          socratic_method: 0.20
+          engagement_quality: 0.10
+          character_consistency: 0.10
+          scope_adherence: 0.025
+          ypt_compliance: 0.025
+        dimensions:
+          - tool_accuracy
+          - state_awareness
+          - coaching
+
+      - id: verify-final-state
+        initial_message: "hey just checking in — did my budget plan submission go through?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will checking in after submitting work.
+
+          YOUR PERSONALITY: Satisfied, just wants confirmation everything is on track.
+
+          CONVERSATION FLOW:
+          1. Ask for a quick update on where things stand with PM requirements
+          2. Confirm you see pm_2a is pending review
+          3. Ask what you should focus on next
+          4. Say thanks and sign off
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - log_session_notes
+        eval_context: |
+          Coach must accurately report pm_2a as ready_for_review (NOT in_progress anymore).
+          Should mention the counselor (Mr. Chen) will review. Should suggest next steps
+          (other requirements to work on). Must NOT call advance_requirement again.
+        expected_state:
+          - "session_notes: +1"
+        eval_weights:
+          requirement_accuracy: 0.35
+          state_management: 0.20
+          engagement_quality: 0.15
+          socratic_method: 0.10
+          character_consistency: 0.10
+          scope_adherence: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - requirement_accuracy
+
+  # ───────────────────────────────────────────────────────────────────────
+  # Chain 3: One-Month Sprint (Weeks 5–8)
+  # Baseline: 10-day chore streak, $120 savings, 4 budget weeks,
+  #   pm_1a signed_off, pm_1b in_progress, pm_2a in_progress,
+  #   pm_2c tracking at week 4/13, fl_3 tracking at day 28/90
+  # ───────────────────────────────────────────────────────────────────────
+
+  - id: one-month-sprint
+    name: "One-Month Sprint (Weeks 5–8)"
+    endpoint: scout
+    description: >
+      Full month of scout activity: 4 weekly budget entries, chore milestones,
+      requirement submission + counselor sign-off, new requirement started,
+      and time management setup. Tests sustained state accuracy over 11 sessions.
+    steps:
+
+      # ═══ WEEK 5 — Budget entry + chores + submit pm_2a ═══
+
+      - id: w5-chore-log
+        initial_message: "hey, did my chores. dishes and trash."
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will checking in to log chores.
+
+          YOUR PERSONALITY: Quick, routine check-in. Getting comfortable with the process.
+
+          CONVERSATION FLOW:
+          1. Say you did dishes and trash today
+          2. Ask what your streak is at
+          3. React to the 14-day milestone being close
+          4. Say bye
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - log_chore
+          - log_session_notes
+        eval_context: |
+          Coach should call log_chore with chores_completed=['dishes','trash'].
+          Streak should be 11 days (10 seeded + today). Income: $2 from dishes.
+          Updated savings: $122. Should mention 14-day milestone is 3 days away.
+        expected_state:
+          - "chore_logs: +1"
+          - "savings: $120 -> $122"
+        dimensions:
+          - tool_accuracy
+          - state_awareness
+
+      - id: w5-budget
+        initial_message: "budget time! week 5, let's go"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will logging your weekly budget.
+
+          YOUR PERSONALITY: Has the routine down, efficient with the numbers.
+
+          CONVERSATION FLOW:
+          1. Say you want to log week 5 budget
+          2. Provide: $19 chores + $10 allowance = $29 income. $5 snacks + $3 games = $8 expenses. Saved $21.
+          3. Confirm the numbers
+          4. Ask about total savings progress
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - log_budget_entry
+          - log_session_notes
+        eval_context: |
+          Coach should call log_budget_entry with week_number=5.
+          Running budget total: $84 (weeks 1-4) + $21 = $105.
+          Quest savings: $122 (from chore income above).
+          Coach should distinguish budget tracking total from quest savings.
+        expected_state:
+          - "budget_entries: +1"
+          - "budget_total: $84 -> $105"
+        dimensions:
+          - tool_accuracy
+          - numerical_accuracy
+
+      - id: w5-submit-pm2a
+        initial_message: "I finished my budget plan! can we submit pm_2a?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will who finished writing a budget projection document.
+
+          YOUR PERSONALITY: Proud of the work, eager to submit.
+
+          CONVERSATION FLOW:
+          1. Say you finished the 13-week budget projection document
+          2. Describe what you included: income sources, expense categories, savings target, weekly projection table
+          3. Confirm you're ready to submit
+          4. Ask what happens next
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - advance_requirement
+          - log_session_notes
+        eval_context: |
+          Coach MUST call advance_requirement with req_id='pm_2a' and new_status='ready_for_review'.
+          Should verify the scout's work before advancing (Socratic method).
+          Should explain Mr. Chen will review it.
+        expected_state:
+          - "req pm_2a: in_progress -> ready_for_review"
+          - "session_notes: +1"
+        eval_weights:
+          state_management: 0.30
+          requirement_accuracy: 0.25
+          socratic_method: 0.20
+          engagement_quality: 0.10
+          character_consistency: 0.10
+          scope_adherence: 0.025
+          ypt_compliance: 0.025
+        dimensions:
+          - tool_accuracy
+          - state_awareness
+          - coaching
+
+      # ═══ WEEK 6 — Budget entry + streak milestone + start pm_1c ═══
+
+      - id: w6-streak-milestone
+        initial_message: "chores done! is today day 14?? I've been counting"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will excited about your chore streak.
+
+          YOUR PERSONALITY: Pumped about the milestone, wants recognition.
+
+          CONVERSATION FLOW:
+          1. Say you did dishes and trash — ask if this is day 14
+          2. React excitedly to hitting the milestone
+          3. Ask how close you are to 90 days for FL Req 3
+          4. Say you'll keep going
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - log_chore
+          - log_session_notes
+        eval_context: |
+          The exact streak count depends on how many days of chore logs exist
+          from prior steps. Coach should call log_chore, then report the streak.
+          Should celebrate hitting or approaching the 14-day milestone.
+          FL Req 3 requires 90 days — scout is at ~30+ days of tracking progress.
+          Coach should frame the milestone as meaningful progress.
+        expected_state:
+          - "chore_logs: +1"
+          - "savings: +$2"
+        dimensions:
+          - tool_accuracy
+          - coaching
+
+      - id: w6-budget
+        initial_message: "week 6 budget. spent a bit more this week but still saved"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will logging your budget.
+
+          YOUR PERSONALITY: Matter-of-fact, knows the drill.
+
+          CONVERSATION FLOW:
+          1. Say week 6 budget
+          2. Income: $19 chores + $10 allowance = $29. Expenses: $7 snacks + $5 movie = $12. Saved $17.
+          3. Mention you spent more this week but it was worth it
+          4. Wrap up
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - log_budget_entry
+          - log_session_notes
+        eval_context: |
+          Coach should call log_budget_entry with week_number=6.
+          Running budget total: $105 + $17 = $122.
+          Should note expenses were higher ($12 vs usual $8) but not alarming.
+          Good coaching moment: spending more is fine as long as savings are intentional.
+        expected_state:
+          - "budget_entries: +1"
+          - "budget_total: $105 -> $122"
+        dimensions:
+          - tool_accuracy
+          - coaching
+
+      - id: w6-start-pm1c
+        initial_message: "I'm on a roll — what should I work on next?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will looking for the next thing to work on.
+
+          YOUR PERSONALITY: Motivated after hitting the streak milestone, wants momentum.
+
+          CONVERSATION FLOW:
+          1. Ask what requirement you should tackle next
+          2. When told about pm_1c, say that sounds fun — it connects to the PC build
+          3. Ask what you need to do for it
+          4. Say you'll start researching parts tonight
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - advance_requirement
+          - log_session_notes
+        eval_context: |
+          Coach should read requirements to see what's available.
+          pm_1c (shopping strategy) is a natural next step since pm_1a is signed off.
+          Coach should call advance_requirement to move pm_1c to in_progress.
+          Should explain what pm_1c requires: quality research and price comparison.
+        expected_state:
+          - "req pm_1c: not_started -> in_progress"
+          - "session_notes: +1"
+        dimensions:
+          - tool_accuracy
+          - state_awareness
+          - coaching
+
+      # ═══ WEEK 7 — Budget entry + counselor signs off pm_2a + progress check ═══
+
+      - id: w7-discover-signoff
+        initial_message: "hey, just checking in — anything new with my stuff?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will checking in casually.
+
+          YOUR PERSONALITY: Didn't know the counselor signed off yet, will be surprised and happy.
+
+          CONVERSATION FLOW:
+          1. Ask for a general status update on your requirements
+          2. React with excitement when you hear pm_2a is signed off
+          3. Ask what that means — is that requirement done?
+          4. Ask what to focus on now
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        pre_mutations:
+          - collection: requirements
+            filter:
+              scout_email: "test-scout@scoutquest.test"
+              req_id: "pm_2a"
+            update:
+              $set:
+                status: "signed_off"
+                signed_off_date: "$$NOW"
+                signed_off_by: "Mr. Chen"
+        expected_tools:
+          - log_session_notes
+        eval_context: |
+          BEFORE THIS STEP: the harness sets pm_2a status to 'signed_off' in the DB.
+          Coach must report pm_2a as SIGNED_OFF (not ready_for_review).
+          This is a celebration moment — the scout's first counselor-approved requirement.
+          Should explain what signed_off means and suggest next priorities.
+        expected_state:
+          - "session_notes: +1"
+        eval_weights:
+          requirement_accuracy: 0.35
+          state_management: 0.20
+          engagement_quality: 0.15
+          socratic_method: 0.10
+          character_consistency: 0.10
+          scope_adherence: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - requirement_accuracy
+          - coaching
+
+      - id: w7-budget
+        initial_message: "week 7! I did extra yard work so I made more this week"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will logging your weekly budget.
+
+          YOUR PERSONALITY: Feeling good after the pm_2a sign-off, energized.
+
+          CONVERSATION FLOW:
+          1. Say week 7 budget — you did extra yard work this week
+          2. Income: $24 chores + $10 allowance = $34. Expenses: $6 snacks + $4 game pass = $10. Saved $24.
+          3. Confirm
+          4. Ask if you're on track with the savings goal
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - log_budget_entry
+          - log_session_notes
+        eval_context: |
+          Coach should call log_budget_entry with week_number=7.
+          Running budget total: $122 + $24 = $146.
+          Should note the income increase ($34 vs usual $29) and congratulate the effort.
+        expected_state:
+          - "budget_entries: +1"
+          - "budget_total: $122 -> $146"
+        dimensions:
+          - tool_accuracy
+          - numerical_accuracy
+
+      # ═══ WEEK 8 — Budget entry + time management setup + monthly review ═══
+
+      - id: w8-budget
+        initial_message: "week 8 budget, same as usual mostly"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will, routine budget logging.
+
+          YOUR PERSONALITY: Quick and efficient, knows the process cold.
+
+          CONVERSATION FLOW:
+          1. Say week 8 budget
+          2. Income: $19 chores + $10 allowance = $29. Expenses: $5 snacks + $3 games = $8. Saved $21.
+          3. Confirm quickly
+          4. Ask how many weeks are left
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 6
+        expected_tools:
+          - log_budget_entry
+          - log_session_notes
+        eval_context: |
+          Coach should call log_budget_entry with week_number=8.
+          Running budget total: $146 + $21 = $167.
+          8 of 13 weeks done — 5 remaining. Should note the halfway+ milestone.
+        expected_state:
+          - "budget_entries: +1"
+          - "budget_total: $146 -> $167"
+        dimensions:
+          - tool_accuracy
+          - numerical_accuracy
+
+      - id: w8-time-mgmt
+        initial_message: "I want to start the time management requirement. what do I need to do?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will ready to tackle the time management requirement.
+
+          YOUR PERSONALITY: A bit nervous about scheduling but willing to try.
+
+          CONVERSATION FLOW:
+          1. Say you want to start the time management thing — pm_8
+          2. Ask what you need to do
+          3. Start listing your weekly activities: school 7am-3pm, scouts Tuesday 7pm, chores after school, gaming in the evening, homework before dinner
+          4. Ask if that's enough to build a schedule
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - advance_requirement
+          - log_session_notes
+        eval_context: |
+          Coach should explain that pm_8 has sub-requirements: pm_8a (to-do list),
+          pm_8b (7-day schedule), pm_8c (follow schedule + diary for 1 week),
+          pm_8d (review with counselor). Should advance pm_8a and/or pm_8b to in_progress.
+          Should guide the scout through building the to-do list and schedule —
+          NOT do it for them (Socratic method). This is a planning session,
+          setup_time_mgmt tool may or may not be called depending on if the
+          scout provides enough detail.
+        expected_state:
+          - "req pm_8a or pm_8b: not_started -> in_progress"
+          - "session_notes: +1"
+        eval_weights:
+          socratic_method: 0.25
+          requirement_accuracy: 0.25
+          state_management: 0.20
+          engagement_quality: 0.15
+          character_consistency: 0.10
+          scope_adherence: 0.025
+          ypt_compliance: 0.025
+        dimensions:
+          - tool_accuracy
+          - coaching
+          - state_awareness
+
+      - id: w8-monthly-review
+        initial_message: "can you give me the full picture? where am I at with everything after this month?"
+        scout_sim_prompt: |
+          You are a 14-year-old scout named Will wanting the big picture after a month of work.
+
+          YOUR PERSONALITY: Reflective, wants to see how far you've come.
+
+          CONVERSATION FLOW:
+          1. Ask for a full rundown of where you stand
+          2. Ask about savings progress toward the Gaming PC
+          3. Ask which requirements are closest to being done
+          4. Say you're motivated and want to keep pushing
+
+          Generate ONLY the scout's next message. No commentary.
+        max_turns: 8
+        expected_tools:
+          - log_session_notes
+        eval_context: |
+          Coach must report accurate cumulative state after the full month:
+          - Savings: should reflect all chore income + budget savings accumulated
+          - Budget tracking: 8 of 13 weeks done (5 remaining)
+          - pm_2a: SIGNED_OFF (counselor approved)
+          - pm_1c: in_progress (shopping strategy started)
+          - pm_8a/8b: in_progress (time management started)
+          - pm_2c: tracking at week 8/13
+          - fl_3: tracking (chore streak contributes toward 90-day goal)
+          - Chore streak: should be significant (14+ days achieved)
+          Coach should celebrate the month's accomplishments and set direction
+          for the next month.
+        expected_state:
+          - "session_notes: +1"
+        eval_weights:
+          requirement_accuracy: 0.35
+          state_management: 0.25
+          engagement_quality: 0.15
+          character_consistency: 0.10
+          socratic_method: 0.05
+          scope_adherence: 0.05
+          ypt_compliance: 0.05
+        dimensions:
+          - state_awareness
+          - numerical_accuracy
+          - requirement_accuracy
