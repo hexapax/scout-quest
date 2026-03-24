@@ -1087,6 +1087,214 @@
   .expand-question-table tr:last-child td {
     border-bottom: none;
   }
+
+  /* ── Phase 5: Running eval badge ── */
+  .running-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--green);
+    font-weight: 600;
+  }
+  .running-badge::before {
+    content: "";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+  .running-section {
+    margin-bottom: 1.25rem;
+  }
+  .running-section h3 {
+    font-size: 0.9rem;
+    color: var(--green);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .running-card {
+    background: var(--surface);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .running-card:hover { border-color: var(--green); }
+
+  /* ── Phase 5: Domain breakdown chips ── */
+  .domain-breakdown {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    margin-top: 0.3rem;
+  }
+  .domain-chip {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 8px;
+    background: rgba(52, 152, 219, 0.15);
+    color: var(--blue);
+  }
+  .status-badge {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .status-badge.complete { background: rgba(46,204,113,0.15); color: var(--green); }
+  .status-badge.budget_stopped { background: rgba(241,196,15,0.15); color: var(--yellow); }
+  .status-badge.running { background: rgba(46,204,113,0.15); color: var(--green); }
+
+  /* ── Phase 5: Tool check badge ── */
+  .tool-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+    font-weight: 700;
+    cursor: help;
+  }
+  .tool-badge.pass { background: rgba(46,204,113,0.2); color: var(--green); }
+  .tool-badge.fail { background: rgba(231,76,60,0.2); color: var(--red); }
+
+  /* ── Phase 5: Endpoint badge ── */
+  .endpoint-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    padding: 0.05rem 0.3rem;
+    border-radius: 3px;
+    background: rgba(155,89,182,0.2);
+    color: var(--purple);
+    font-weight: 700;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+    letter-spacing: 0.03em;
+  }
+
+  /* ── Phase 5: Chain progress indicator ── */
+  .chain-progress {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--surface2);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .chain-step {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    white-space: nowrap;
+  }
+  .chain-step-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border: 2px solid var(--surface2);
+    background: var(--surface2);
+    color: var(--text-muted);
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .chain-step-dot.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: white;
+  }
+  .chain-step-dot.done {
+    border-color: var(--green);
+    background: rgba(46,204,113,0.2);
+    color: var(--green);
+  }
+  .chain-step-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
+  }
+  .chain-step-arrow {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    margin: 0 0.15rem;
+  }
+
+  /* ── Phase 5: State diff table ── */
+  .state-diff {
+    margin: 0.75rem 0;
+    border: 1px solid var(--surface2);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .state-diff h4 {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding: 0.4rem 0.75rem;
+    background: var(--surface2);
+    margin: 0;
+  }
+  .state-diff table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+  .state-diff th {
+    padding: 0.35rem 0.6rem;
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    text-align: left;
+    border-bottom: 1px solid var(--surface2);
+  }
+  .state-diff td {
+    padding: 0.35rem 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.78rem;
+  }
+  .state-diff .diff-changed { background: rgba(46,204,113,0.1); }
+  .state-diff .diff-added { background: rgba(52,152,219,0.1); }
+  .state-diff .diff-removed { background: rgba(231,76,60,0.1); }
+
+  /* ── Phase 5: Timing turn breakdown ── */
+  .turn-timing-bar {
+    display: flex;
+    height: 10px;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 0.2rem;
+    min-width: 60px;
+  }
+  .turn-timing-segment {
+    height: 100%;
+    min-width: 2px;
+    transition: opacity 0.15s;
+  }
+  .turn-timing-segment:hover { opacity: 0.7; }
+  .turn-timing-segment.fast { background: var(--green); }
+  .turn-timing-segment.medium { background: var(--yellow); }
+  .turn-timing-segment.slow { background: var(--red); }
 </style>
 </head>
 <body>
@@ -1796,6 +2004,89 @@
   }
 
   // ── Report Browser ──
+  let browserAutoRefresh = null;
+
+  function buildDomainBreakdown(r) {
+    // Build domain breakdown from report data if available
+    if (!r.domains || typeof r.domains !== 'object') return '';
+    const entries = Object.entries(r.domains).sort((a, b) => b[1] - a[1]);
+    if (entries.length === 0) return '';
+    const chips = entries.map(([d, count]) =>
+      `<span class="domain-chip">${count} ${d}</span>`
+    ).join('');
+    return `<div class="domain-breakdown">${chips}</div>`;
+  }
+
+  function buildStatusBadge(r) {
+    if (r.status === 'running') return '<span class="status-badge running">running</span>';
+    if (r.status === 'budget_stopped') return '<span class="status-badge budget_stopped">budget stopped</span>';
+    if (r.status === 'complete') return '<span class="status-badge complete">complete</span>';
+    return '';
+  }
+
+  function renderReportCard(r, isRunning) {
+    const modelChips = r.models.map(m =>
+      `<span class="model-chip">${esc(m.label)}<span class="score">${m.avgOverall ? m.avgOverall.toFixed(1) : "--"}</span></span>`
+    ).join("");
+
+    const descHtml = r.description
+      ? `<div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.4rem;">${esc(r.description)}</div>`
+      : "";
+    const costHtml = r.totalCost != null
+      ? `<span style="color:var(--text-muted);">$${r.totalCost.toFixed(2)}</span>`
+      : "";
+    const spectreBadge = r.spectre && r.spectre !== "knowledge"
+      ? `<span style="font-size:0.65rem; color:var(--accent); margin-left:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">[${esc(r.spectre)}]</span>`
+      : "";
+    const versionBadges = (r.evalVersion || r.systemVersion)
+      ? `<span style="font-size:0.65rem; color:var(--text-muted); margin-left:0.5rem;">${r.evalVersion ? "eval:" + esc(r.evalVersion) : ""} ${r.systemVersion ? "sys:" + esc(r.systemVersion) : ""}</span>`
+      : "";
+
+    const statusHtml = buildStatusBadge(r);
+    const domainHtml = buildDomainBreakdown(r);
+
+    const cardClass = isRunning ? "running-card" : "report-item";
+    let runningInfo = "";
+    if (isRunning && r.progress) {
+      const pct = r.progress.total > 0 ? Math.round(r.progress.completed / r.progress.total * 100) : 0;
+      const elapsed = r.progress.elapsed_s ? formatElapsed(r.progress.elapsed_s) : "";
+      runningInfo = `
+        <div style="margin-top:0.4rem;">
+          <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted); margin-bottom:0.15rem;">
+            <span>${r.progress.completed}/${r.progress.total} questions</span>
+            <span>${elapsed}</span>
+          </div>
+          <div class="progress-bar-outer">
+            <div class="progress-bar-inner" style="width:${pct}%; background:var(--green);"></div>
+          </div>
+        </div>`;
+    }
+
+    return `
+      <div class="${cardClass}" onclick="app.openReport('${esc(r.timestamp)}')">
+        <div class="meta">
+          <span class="ts">${esc(formatTimestamp(r.timestamp))}${spectreBadge} ${statusHtml}${versionBadges}</span>
+          <span class="stats">
+            <span>${r.modelCount} ${r.modelCount === 1 ? 'config' : 'configs'}</span>
+            <span>${r.questionCount} ${r.spectre === 'chain' ? 'chains' : 'questions'}</span>
+            ${costHtml}
+          </span>
+        </div>
+        ${descHtml}
+        <div class="models-row">${modelChips}</div>
+        ${domainHtml}
+        ${runningInfo}
+      </div>`;
+  }
+
+  function formatElapsed(seconds) {
+    if (!seconds || seconds < 0) return "";
+    const m = Math.floor(seconds / 60);
+    const s = Math.round(seconds % 60);
+    if (m === 0) return `${s}s`;
+    return `${m}m ${s}s`;
+  }
+
   async function loadBrowser() {
     showSection("browser");
     updateBreadcrumb([]);
@@ -1807,48 +2098,59 @@
       return;
     }
 
-    let html = "";
-    for (const r of reports) {
-      const modelChips = r.models.map(m =>
-        `<span class="model-chip">${esc(m.label)}<span class="score">${m.avgOverall ? m.avgOverall.toFixed(1) : "--"}</span></span>`
-      ).join("");
-
-      const descHtml = r.description
-        ? `<div style="color:var(--text-muted); font-size:0.8rem; margin-bottom:0.4rem;">${esc(r.description)}</div>`
-        : "";
-      const costHtml = r.totalCost != null
-        ? `<span style="color:var(--text-muted);">$${r.totalCost.toFixed(2)}</span>`
-        : "";
-      const statusBadge = r.status === "budget_stopped"
-        ? '<span style="color:var(--yellow); font-size:0.7rem; margin-left:0.5rem;">[budget stopped]</span>'
-        : "";
-      const spectreBadge = r.spectre && r.spectre !== "knowledge"
-        ? `<span style="font-size:0.65rem; color:var(--accent); margin-left:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">[${esc(r.spectre)}]</span>`
-        : "";
-      const versionBadges = (r.evalVersion || r.systemVersion)
-        ? `<span style="font-size:0.65rem; color:var(--text-muted); margin-left:0.5rem;">${r.evalVersion ? "eval:" + esc(r.evalVersion) : ""} ${r.systemVersion ? "sys:" + esc(r.systemVersion) : ""}</span>`
-        : "";
-
-      html += `
-        <div class="report-item" onclick="app.openReport('${esc(r.timestamp)}')">
-          <div class="meta">
-            <span class="ts">${esc(formatTimestamp(r.timestamp))}${spectreBadge}${statusBadge}${versionBadges}</span>
-            <span class="stats">
-              <span>${r.modelCount} ${r.modelCount === 1 ? 'config' : 'configs'}</span>
-              <span>${r.questionCount} ${r.spectre === 'chain' ? 'chains' : 'questions'}</span>
-              ${costHtml}
-            </span>
-          </div>
-          ${descHtml}
-          <div class="models-row">${modelChips}</div>
-        </div>`;
-    }
-    $reportList.innerHTML = html;
+    renderBrowserReports(reports);
 
     // Check newest report for in-progress status
     if (reports.length > 0) {
       checkInProgress(reports[0].timestamp);
     }
+
+    // Start auto-refresh for running evals
+    startBrowserAutoRefresh();
+  }
+
+  function renderBrowserReports(reports) {
+    // Separate running evals from completed
+    const running = reports.filter(r => r.status === "running");
+    const completed = reports.filter(r => r.status !== "running").slice(0, 10);
+
+    let html = "";
+
+    // Running evals section
+    if (running.length > 0) {
+      html += '<div class="running-section">';
+      html += '<h3><span class="running-badge">Running</span></h3>';
+      for (const r of running) {
+        html += renderReportCard(r, true);
+      }
+      html += '</div>';
+    }
+
+    // Recent results
+    html += '<h3 style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0.5rem;">Recent Results</h3>';
+    for (const r of completed) {
+      html += renderReportCard(r, false);
+    }
+
+    $reportList.innerHTML = html;
+  }
+
+  function startBrowserAutoRefresh() {
+    if (browserAutoRefresh) clearInterval(browserAutoRefresh);
+    browserAutoRefresh = setInterval(async () => {
+      // Only refresh if browser is visible
+      if ($browser.classList.contains("hidden")) return;
+      try {
+        const reports = await fetchReports();
+        const hasRunning = reports.some(r => r.status === "running");
+        renderBrowserReports(reports);
+        // Stop auto-refresh if nothing is running
+        if (!hasRunning) {
+          clearInterval(browserAutoRefresh);
+          browserAutoRefresh = null;
+        }
+      } catch {}
+    }, 10000);
   }
 
   async function checkInProgress(ts) {
@@ -2389,6 +2691,29 @@
   }
 
   // ── Question List (mini view) ──
+  function isGuideEndpoint(questionId) {
+    // GE* questions are guide endpoint
+    return questionId && questionId.startsWith('GE');
+  }
+
+  function buildToolBadge(entry) {
+    if (!entry || !entry.expected_tools_check) return '';
+    const tc = entry.expected_tools_check;
+    const passed = tc.passed || tc.pass;
+    const called = tc.called || tc.tools_called || [];
+    const missed = tc.missed || tc.tools_missed || [];
+    const expected = tc.expected || [];
+    let tooltip = '';
+    if (called.length > 0) tooltip += 'Called: ' + called.join(', ');
+    if (missed.length > 0) tooltip += (tooltip ? '\\n' : '') + 'Missed: ' + missed.join(', ');
+    if (expected.length > 0 && !called.length && !missed.length) tooltip += 'Expected: ' + expected.join(', ');
+    if (passed) {
+      return `<span class="tool-badge pass" title="${esc(tooltip)}">&#10003;</span>`;
+    } else {
+      return `<span class="tool-badge fail" title="${esc(tooltip)}">&#10007;</span>`;
+    }
+  }
+
   function renderQuestionList(data, models) {
     const questions = getQuestions(data);
     const filtered = activeCategory === "all" ? questions : questions.filter(q => q.category === activeCategory);
@@ -2402,9 +2727,10 @@
 
     for (const q of filtered) {
       const locator = `eval://${currentTimestamp || "local"}/${q.id}`;
+      const endpointBadge = isGuideEndpoint(q.id) ? '<span class="endpoint-badge">GUIDE</span>' : '';
       html += `<tr>
         <td style="padding:0.3rem;"><button class="copy-btn" onclick="event.stopPropagation(); app.copyLocator('${esc(locator)}', this)" title="Copy locator">Link</button></td>
-        <td class="clickable" onclick="app.drillDown('${esc(q.id)}')" style="color:var(--blue)">${esc(q.id)}</td>
+        <td class="clickable" onclick="app.drillDown('${esc(q.id)}')" style="color:var(--blue)">${esc(q.id)}${endpointBadge}</td>
         <td class="clickable" onclick="app.drillDown('${esc(q.id)}')" style="white-space:normal; min-width:200px;">${esc(q.question.substring(0, 80))}${q.question.length > 80 ? "..." : ""}</td>`;
 
       for (const m of models) {
@@ -2416,7 +2742,8 @@
         } else if (entry.scores) {
           const scoredDims = SCORE_DIMS.filter(d => entry.scores[d] != null && typeof entry.scores[d] === "number");
           const avg = scoredDims.length > 0 ? scoredDims.reduce((a, d) => a + entry.scores[d], 0) / scoredDims.length : null;
-          html += `<td><span class="score-cell-colored" style="background:${scoreBg(avg)}; color:${scoreColor(avg)}">${avg != null ? avg.toFixed(1) : "--"}</span></td>`;
+          const toolBadge = buildToolBadge(entry);
+          html += `<td><span class="score-cell-colored" style="background:${scoreBg(avg)}; color:${scoreColor(avg)}">${avg != null ? avg.toFixed(1) : "--"}</span>${toolBadge}</td>`;
         } else {
           html += '<td>--</td>';
         }
@@ -2526,6 +2853,105 @@
     renderDashboard();
   }
 
+  // ── Chain Visualization Helpers ──
+  function buildChainVisualization(questionId, data, models) {
+    // Find all steps in this chain by looking for sibling question IDs
+    // Chain steps typically follow pattern: chainId/step1, chainId/step2, ...
+    // Or: chainId-1, chainId-2, ...
+    const allQuestions = getQuestions(data);
+    let chainPrefix = '';
+    let currentStepNum = 0;
+    let chainSteps = [];
+
+    if (questionId.includes('/')) {
+      const parts = questionId.split('/');
+      chainPrefix = parts.slice(0, -1).join('/');
+      const stepPart = parts[parts.length - 1];
+      // Find all siblings with the same prefix
+      chainSteps = allQuestions
+        .filter(q => q.id.startsWith(chainPrefix + '/'))
+        .sort((a, b) => a.id.localeCompare(b.id));
+      currentStepNum = chainSteps.findIndex(s => s.id === questionId);
+    } else {
+      // Try chain_id from entry data
+      let chainId = null;
+      for (const m of models) {
+        const e = m.entries.find(e => e.questionId === questionId);
+        if (e && e.chain_id) { chainId = e.chain_id; break; }
+      }
+      if (chainId) {
+        chainSteps = allQuestions
+          .filter(q => {
+            for (const m of models) {
+              const e = m.entries.find(e => e.questionId === q.id);
+              if (e && e.chain_id === chainId) return true;
+            }
+            return false;
+          })
+          .sort((a, b) => a.id.localeCompare(b.id));
+        currentStepNum = chainSteps.findIndex(s => s.id === questionId);
+      }
+    }
+
+    if (chainSteps.length <= 1) return '';
+
+    // Build chain progress bar
+    let html = '<div class="chain-progress">';
+    chainSteps.forEach((step, i) => {
+      if (i > 0) html += '<span class="chain-step-arrow">&rarr;</span>';
+      const isActive = i === currentStepNum;
+      const isDone = i < currentStepNum;
+      const dotCls = isActive ? 'active' : (isDone ? 'done' : '');
+      const stepLabel = step.id.includes('/') ? step.id.split('/').pop() : step.id;
+      html += `<div class="chain-step">`;
+      html += `<span class="chain-step-dot ${dotCls}" onclick="app.drillDown('${esc(step.id)}')" title="${esc(step.question.substring(0, 60))}">${i + 1}</span>`;
+      html += `<span class="chain-step-label">${esc(stepLabel)}</span>`;
+      html += '</div>';
+    });
+    html += '</div>';
+
+    // Build state diff if present
+    for (const m of models) {
+      const entry = m.entries.find(e => e.questionId === questionId);
+      if (entry && entry.db_diff) {
+        html += buildStateDiff(entry.db_diff, m.label);
+      }
+    }
+
+    return html;
+  }
+
+  function buildStateDiff(dbDiff, modelLabel) {
+    if (!dbDiff || typeof dbDiff !== 'object') return '';
+    const before = dbDiff.before || {};
+    const after = dbDiff.after || {};
+    const allKeys = [...new Set([...Object.keys(before), ...Object.keys(after)])].sort();
+    if (allKeys.length === 0) return '';
+
+    let html = `<div class="state-diff">`;
+    html += `<h4>DB State Diff${modelLabel ? ' (' + esc(modelLabel) + ')' : ''}</h4>`;
+    html += '<table><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>';
+
+    for (const key of allKeys) {
+      const bVal = before[key] != null ? JSON.stringify(before[key]) : '';
+      const aVal = after[key] != null ? JSON.stringify(after[key]) : '';
+      let rowCls = '';
+      if (bVal !== aVal) {
+        if (!bVal) rowCls = 'diff-added';
+        else if (!aVal) rowCls = 'diff-removed';
+        else rowCls = 'diff-changed';
+      }
+      html += `<tr class="${rowCls}">`;
+      html += `<td style="font-weight:600;">${esc(key)}</td>`;
+      html += `<td>${esc(bVal || '--')}</td>`;
+      html += `<td>${esc(aVal || '--')}</td>`;
+      html += '</tr>';
+    }
+
+    html += '</tbody></table></div>';
+    return html;
+  }
+
   // ── Question Drill-Down ──
   function drillDown(questionId) {
     if (!currentData) return;
@@ -2579,12 +3005,29 @@
       }
     }
 
+    // Check if this is a chain step (question ID contains '/' or has chain_id in any entry)
+    const isChainStep = questionId.includes('/') || models.some(m => {
+      const e = m.entries.find(e => e.questionId === questionId);
+      return e && e.chain_id;
+    });
+
+    // Build chain info for chain steps
+    let chainHtml = '';
+    if (isChainStep) {
+      chainHtml = buildChainVisualization(questionId, data, models);
+    }
+
+    // Endpoint badge for drill-down
+    const ddEndpointBadge = isGuideEndpoint(questionId) ? ' <span class="endpoint-badge">GUIDE</span>' : '';
+
     let html = `
       <div class="question-header card">
-        <div class="qid">${esc(qInfo.id)} - ${esc(CATEGORIES[qInfo.category] || qInfo.category)}</div>
+        <div class="qid">${esc(qInfo.id)} - ${esc(CATEGORIES[qInfo.category] || qInfo.category)}${ddEndpointBadge}</div>
         <div class="qtext">${esc(qInfo.question)}</div>
         ${qInfo.expected ? `<div class="expected"><strong>Expected:</strong> ${esc(qInfo.expected)}</div>` : ""}
       </div>
+
+      ${chainHtml}
 
       <div style="margin-bottom:0.75rem; display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center;">
         <button class="btn small" onclick="app.narrateQuestion('${esc(questionId)}')">Narrate All Responses</button>
@@ -2975,6 +3418,7 @@
 
   function goHome() {
     if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    if (browserAutoRefresh) { clearInterval(browserAutoRefresh); browserAutoRefresh = null; }
     currentData = null;
     currentTimestamp = null;
     if (radarChart) { radarChart.destroy(); radarChart = null; }
@@ -3706,13 +4150,31 @@
   }
 
   // ── Timing Table ──
+  function buildTurnTimingBar(entry) {
+    const timings = entry.turn_timings;
+    if (!timings || !Array.isArray(timings) || timings.length === 0) return '';
+    const total = timings.reduce((a, b) => a + b, 0);
+    if (total <= 0) return '';
+    let bar = '<div class="turn-timing-bar" title="Per-turn breakdown">';
+    for (const t of timings) {
+      const pct = (t / total * 100).toFixed(1);
+      const tSec = t / 1000;
+      let cls = 'fast';
+      if (tSec >= 10) cls = 'slow';
+      else if (tSec >= 3) cls = 'medium';
+      bar += `<div class="turn-timing-segment ${cls}" style="width:${pct}%;" title="${tSec.toFixed(1)}s"></div>`;
+    }
+    bar += '</div>';
+    return bar;
+  }
+
   function renderTimingTable(data, models) {
     const $table = document.getElementById("timing-table");
     const questions = getQuestions(data);
 
     let html = "<thead><tr><th>Question</th>";
     for (const m of models) {
-      html += `<th>${esc(m.label)}<br><small style="color:var(--text-muted)">time / turns</small></th>`;
+      html += `<th>${esc(m.label)}<br><small style="color:var(--text-muted)">time / turns / tools</small></th>`;
     }
     html += "</tr></thead><tbody>";
 
@@ -3726,6 +4188,7 @@
           const ms = entry.timing_ms || 0;
           const turns = entry.turn_count || 1;
           const secs = (ms / 1000).toFixed(1);
+          const toolCount = entry.tool_calls ? entry.tool_calls.length : (entry.tool_call_count || 0);
           const rebuttal = entry.rebuttal;
           let rebuttalBadge = "";
           if (rebuttal) {
@@ -3736,7 +4199,9 @@
           }
           // Color based on time
           const timeColor = ms < 5000 ? "var(--green)" : ms < 15000 ? "#f1c40f" : "var(--red)";
-          html += `<td><span style="color:${timeColor}; font-weight:600;">${secs}s</span> <small style="color:var(--text-muted);">${turns}t</small>${rebuttalBadge}</td>`;
+          const toolBadge = toolCount > 0 ? ` <small style="color:var(--orange);" title="${toolCount} tool calls">${toolCount}tc</small>` : '';
+          const turnBar = buildTurnTimingBar(entry);
+          html += `<td><span style="color:${timeColor}; font-weight:600;">${secs}s</span> <small style="color:var(--text-muted);">${turns}t</small>${toolBadge}${rebuttalBadge}${turnBar}</td>`;
         }
       }
       html += "</tr>";
@@ -3750,8 +4215,10 @@
       const avgMs = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
       const avgTurns = turns.length > 0 ? turns.reduce((a, b) => a + b, 0) / turns.length : 0;
       const avgSecs = (avgMs / 1000).toFixed(1);
+      const totalTools = m.entries.reduce((acc, e) => acc + (e.tool_calls ? e.tool_calls.length : (e.tool_call_count || 0)), 0);
       const timeColor = avgMs < 5000 ? "var(--green)" : avgMs < 15000 ? "#f1c40f" : "var(--red)";
-      html += `<td><span style="color:${timeColor}; font-weight:600;">${avgSecs}s</span> <small style="color:var(--text-muted);">${avgTurns.toFixed(1)}t</small></td>`;
+      const toolBadge = totalTools > 0 ? ` <small style="color:var(--orange);">${totalTools}tc</small>` : '';
+      html += `<td><span style="color:${timeColor}; font-weight:600;">${avgSecs}s</span> <small style="color:var(--text-muted);">${avgTurns.toFixed(1)}t</small>${toolBadge}</td>`;
     }
     html += "</tr></tbody>";
     $table.innerHTML = html;
