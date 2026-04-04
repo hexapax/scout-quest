@@ -55,6 +55,34 @@ export function writeFinishChunk(
   res.write(`data: ${JSON.stringify(chunk)}\n\n`);
 }
 
+/** Write a tool call event (custom extension for the app UI). */
+export function writeToolCallChunk(
+  res: Response,
+  toolName: string,
+  toolInput: unknown,
+  toolId: string
+): void {
+  const event = {
+    type: "tool_call",
+    tool_call: { id: toolId, name: toolName, input: toolInput },
+  };
+  res.write(`data: ${JSON.stringify(event)}\n\n`);
+}
+
+/** Write a tool result event. */
+export function writeToolResultChunk(
+  res: Response,
+  toolId: string,
+  toolName: string,
+  result: unknown
+): void {
+  const event = {
+    type: "tool_result",
+    tool_result: { id: toolId, name: toolName, result },
+  };
+  res.write(`data: ${JSON.stringify(event)}\n\n`);
+}
+
 /** Write the stream terminator. */
 export function writeSSEDone(res: Response): void {
   res.write("data: [DONE]\n\n");

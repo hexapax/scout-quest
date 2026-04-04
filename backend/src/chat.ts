@@ -5,22 +5,34 @@ import { getKnowledgeBlock } from "./knowledge.js";
 import { getPersonaBlock } from "./persona.js";
 import { getScoutContext } from "./scout-context.js";
 import { openaiMessagesToAnthropic, extractSystemText } from "./translate.js";
-import { initSSE, writeRoleChunk, writeContentChunk, writeFinishChunk, writeSSEDone, mapStopReason } from "./stream.js";
+import { initSSE, writeRoleChunk, writeContentChunk, writeFinishChunk, writeSSEDone, writeToolCallChunk, writeToolResultChunk, mapStopReason } from "./stream.js";
 import type { OpenAIChatRequest, AnthropicSystemBlock } from "./types.js";
-import { SCOUT_TOOLS } from "./tools/definitions.js";
+import { SCOUT_TOOLS, getToolsForRole, type UserRole } from "./tools/definitions.js";
 import { executeToolCalls } from "./tool-executor.js";
+import { getUserFromCookie } from "./routes/auth.js";
+import { getVoiceContext } from "./voice-context.js";
+import { captureEpisode } from "./episodes.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const ANTHROPIC_MODEL = "claude-sonnet-4-6";
 const MAX_TOOL_TURNS = 5;
 
-/** Validate BACKEND_API_KEY if set. */
+/** Validate BACKEND_API_KEY if set. Allows: correct key, no header, cookie auth, or ElevenLabs voice requests. */
 function isAuthorized(req: Request): boolean {
   const requiredKey = process.env.BACKEND_API_KEY;
   if (!requiredKey) return true;
   const authHeader = req.headers["authorization"] || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
-  return token === requiredKey;
+  // Correct API key (LibreChat)
+  if (authHeader) {
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+    if (token === requiredKey) return true;
+    if (token === "not_provided") return true; // ElevenLabs sends this when no key configured
+  }
+  // Cookie auth (app)
+  if (getUserFromCookie(req)) return true;
+  // No auth header at all (internal/health checks)
+  if (!authHeader) return true;
+  return false;
 }
 
 interface CacheMetrics {
@@ -34,7 +46,8 @@ interface CacheMetrics {
 async function runWithTools(
   baseReq: object,
   messages: MessageParam[],
-  userEmail: string | undefined
+  userEmail: string | undefined,
+  tools: unknown[] = SCOUT_TOOLS
 ): Promise<{ text: string; usage: CacheMetrics }> {
   const workingMessages = [...messages];
   let lastUsage: CacheMetrics = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 };
@@ -43,7 +56,7 @@ async function runWithTools(
     const resp = await anthropic.messages.create({
       ...(baseReq as Parameters<typeof anthropic.messages.create>[0]),
       messages: workingMessages,
-      tools: SCOUT_TOOLS as Parameters<typeof anthropic.messages.create>[0]["tools"],
+      tools: tools as Parameters<typeof anthropic.messages.create>[0]["tools"],
       stream: false,
     });
 
@@ -95,8 +108,34 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
 
   const body = req.body as OpenAIChatRequest;
   const model = body.model || "scout-coach";
-  const userEmail = req.headers["x-user-email"] as string | undefined;
   const doStream = body.stream !== false;
+  const isVoice = !!body.elevenlabs_extra_body || (req.headers["user-agent"] || "").includes("AsyncOpenAI");
+  // User email: emulation header > voice context > cookie (app) > header (LibreChat)
+  const cookieUser = getUserFromCookie(req);
+  const voiceCtx = isVoice ? getVoiceContext() : null;
+  const emulateEmail = req.headers["x-emulate-user"] as string | undefined
+    || voiceCtx?.emulateEmail;
+  const userEmail = emulateEmail || voiceCtx?.userEmail || cookieUser?.email || (req.headers["x-user-email"] as string | undefined);
+
+  const toolsUsedInRequest: string[] = []; // Track for episode capture
+
+  // Determine user role for tool filtering
+  const ADMIN_EMAILS = ["jeremy@hexapax.com", "jebramwell@gmail.com"];
+  const isAdmin = ADMIN_EMAILS.some(e => cookieUser?.email?.toLowerCase() === e.toLowerCase());
+  let userRole: UserRole = "scout";
+  if (isAdmin && !emulateEmail) userRole = "admin";
+  else if (isAdmin && emulateEmail) userRole = "scout"; // emulating a scout
+  else if (model.includes("guide")) userRole = "guide";
+  const activeTools = getToolsForRole(userRole);
+
+  // Log incoming request for debugging custom LLM integration
+  console.log(`[chat] model=${model} stream=${doStream} email=${userEmail || "none"} voice=${isVoice} role=${userRole} messages=${body.messages?.length ?? 0}`);
+  if (body.messages?.length) {
+    for (const m of body.messages.slice(0, 5)) {
+      const content = typeof m.content === "string" ? m.content.substring(0, 100) : JSON.stringify(m.content)?.substring(0, 100);
+      console.log(`[chat]   [${m.role}] ${content}`);
+    }
+  }
 
   try {
     // Build system blocks (order matters for caching)
@@ -111,15 +150,74 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       if (scoutCtx) systemBlocks.push(scoutCtx);
     }
 
-    // [3] LibreChat promptPrefix (system messages from conversation history)
+    // [3] Voice mode instructions + prior chat context (when called from ElevenLabs ConvAI)
+    if (isVoice) {
+      let voiceSystemText = `VOICE MODE — your response will be spoken aloud via text-to-speech.
+Rules for voice output:
+- Keep responses to 1-3 sentences. Be concise and conversational.
+- Never use markdown, bullet points, numbered lists, or special formatting.
+- Don't say "asterisk" or spell out formatting characters.
+- Use natural speech patterns: "first... then... and finally" instead of lists.
+- Spell out abbreviations on first use (say "Board of Review" not "BOR").
+- If a question needs a long answer, give the key point first and offer to explain more.`;
+
+      // Inject prior chat context so voice continues the conversation
+      const priorChat = voiceCtx?.messages;
+      if (priorChat && priorChat.length > 0) {
+        const lines = priorChat.slice(-20).map(m => {
+          const role = m.role === 'assistant' ? 'Scout Coach' : 'User';
+          return `${role}: ${m.content.substring(0, 300)}`;
+        });
+        voiceSystemText += `\n\nPRIOR CONVERSATION (from text chat — continue naturally, don't repeat what was already said):\n${lines.join('\n')}`;
+        console.log(`[chat] Injected ${priorChat.length} prior messages into voice context`);
+      }
+
+      systemBlocks.push({ type: "text", text: voiceSystemText });
+    }
+
+    // [4] LibreChat promptPrefix (system messages from conversation history)
     const systemFromMessages = extractSystemText(body.messages);
     if (systemFromMessages) {
       systemBlocks.push({ type: "text", text: systemFromMessages });
     }
 
     // Convert OpenAI messages to Anthropic format
-    const messages = openaiMessagesToAnthropic(body.messages) as MessageParam[];
+    let messages = openaiMessagesToAnthropic(body.messages) as MessageParam[];
+
+    // For voice: prepend prior chat history as actual message turns
+    if (isVoice) {
+      const priorChat = voiceCtx?.messages;
+      if (priorChat && priorChat.length > 0) {
+        const priorMessages: MessageParam[] = [];
+        for (const m of priorChat) {
+          const role = m.role === 'assistant' ? 'assistant' : 'user';
+          priorMessages.push({ role, content: m.content } as MessageParam);
+        }
+        // Ensure alternating turns by merging with ElevenLabs messages
+        messages = [...priorMessages, ...messages];
+        // Re-merge consecutive same-role messages
+        const merged: MessageParam[] = [];
+        for (const m of messages) {
+          const last = merged[merged.length - 1];
+          if (last && last.role === m.role) {
+            const lastText = typeof last.content === 'string' ? last.content : '';
+            const curText = typeof m.content === 'string' ? m.content : '';
+            (last as { role: string; content: string }).content = `${lastText}\n\n${curText}`;
+          } else {
+            merged.push(m);
+          }
+        }
+        // Ensure starts with user
+        if (merged.length > 0 && merged[0].role === 'assistant') {
+          merged.unshift({ role: 'user', content: '(continuing from text chat)' } as MessageParam);
+        }
+        messages = merged;
+      }
+    }
+
+    console.log(`[chat] Converted ${body.messages?.length ?? 0} OpenAI msgs → ${messages.length} Anthropic msgs`);
     if (messages.length === 0) {
+      console.error(`[chat] ERROR: No messages after conversion. Raw messages:`, JSON.stringify(body.messages?.slice(0, 3)));
       res.status(400).json({ error: { message: "No messages provided", type: "invalid_request" } });
       return;
     }
@@ -137,14 +235,81 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       initSSE(res);
       writeRoleChunk(res, requestId, model);
 
-      const { text: finalText } = await runWithTools(baseReq, messages, userEmail);
+      // Stream with tool loop: stream text tokens, execute tools if needed, repeat.
+      try {
+        const workingMessages = [...messages] as Parameters<typeof anthropic.messages.create>[0]["messages"];
 
-      writeContentChunk(res, requestId, model, finalText);
+        for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
+          const stream = anthropic.messages.stream({
+            ...(baseReq as Parameters<typeof anthropic.messages.create>[0]),
+            messages: workingMessages,
+            tools: activeTools as Parameters<typeof anthropic.messages.create>[0]["tools"],
+          });
+
+          stream.on("text", (text) => {
+            writeContentChunk(res, requestId, model, text);
+          });
+
+          const finalMessage = await stream.finalMessage();
+
+          // No tool calls — done
+          if (finalMessage.stop_reason !== "tool_use") break;
+
+          // Execute tools and continue
+          const toolUseBlocks = finalMessage.content.filter(
+            (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
+          );
+          console.log(`[chat] stream tool turn=${turn} tools=${toolUseBlocks.map(b => b.name).join(",")}`);
+          toolsUsedInRequest.push(...toolUseBlocks.map(b => b.name));
+
+          // Emit tool call events to the client
+          for (const b of toolUseBlocks) {
+            writeToolCallChunk(res, b.name, b.input, b.id);
+          }
+
+          const toolResults = await executeToolCalls(
+            toolUseBlocks.map((b) => ({
+              type: "tool_use" as const,
+              id: b.id,
+              name: b.name,
+              input: b.input as Record<string, unknown>,
+            })),
+            userEmail
+          );
+
+          // Emit tool result events
+          for (const r of toolResults) {
+            if (r.type === "tool_result") {
+              const block = toolUseBlocks.find(b => b.id === r.tool_use_id);
+              writeToolResultChunk(res, r.tool_use_id, block?.name || "", r.content);
+            }
+          }
+
+          workingMessages.push({ role: "assistant" as const, content: finalMessage.content });
+          workingMessages.push({ role: "user" as const, content: toolResults });
+        }
+      } catch (streamErr) {
+        console.error("Stream error, falling back to runWithTools:", streamErr);
+        const { text: finalText } = await runWithTools(baseReq, messages, userEmail, activeTools);
+        writeContentChunk(res, requestId, model, finalText);
+      }
+
       writeFinishChunk(res, requestId, model, "stop");
       writeSSEDone(res);
       res.end();
+
+      // CLS Phase 1: capture episode (fire-and-forget)
+      const episodeMessages = (body.messages || []).map(m => ({
+        role: m.role,
+        content: typeof m.content === "string" ? m.content : "(attachment)",
+      }));
+      captureEpisode(episodeMessages, {
+        scoutEmail: userEmail || null,
+        mode: isVoice ? "voice" : "chat",
+        toolsUsed: toolsUsedInRequest,
+      });
     } else {
-      const { text: finalText, usage } = await runWithTools(baseReq, messages, userEmail);
+      const { text: finalText, usage } = await runWithTools(baseReq, messages, userEmail, activeTools);
       res.json({
         id: requestId,
         object: "chat.completion",

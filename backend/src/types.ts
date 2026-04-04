@@ -19,6 +19,9 @@ export interface OpenAIChatRequest {
   stream?: boolean;
   max_tokens?: number;
   temperature?: number;
+  // ElevenLabs Conversational AI fields
+  user_id?: string;
+  elevenlabs_extra_body?: Record<string, unknown>;
 }
 
 // Anthropic API types (subset)

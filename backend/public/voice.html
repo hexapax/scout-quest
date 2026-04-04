@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Scout Coach — Voice</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f1419;
+      color: #e7e9ea;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      z-index: 10;
+    }
+
+    .header h1 { font-size: 18px; font-weight: 600; color: #71b190; }
+
+    .mode-toggle {
+      display: flex;
+      gap: 4px;
+      background: #1a2332;
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .mode-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+      color: #8899a6;
+      text-decoration: none;
+    }
+
+    .mode-btn.active { background: #71b190; color: #0f1419; font-weight: 600; }
+    .mode-btn:hover:not(.active) { color: #e7e9ea; }
+
+    /* Layout: blob on top, transcript below */
+    .voice-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 24px 0;
+      flex-shrink: 0;
+    }
+
+    /* Green blob */
+    .blob-container {
+      width: 160px;
+      height: 160px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .blob {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #9dd4b0, #71b190 40%, #4a8c6a 80%);
+      box-shadow: 0 0 60px rgba(113, 177, 144, 0.3);
+      transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+      will-change: transform;
+    }
+
+    .blob.idle { animation: idle-breathe 4s ease-in-out infinite; }
+    .blob.listening { box-shadow: 0 0 80px rgba(113, 177, 144, 0.4), 0 0 120px rgba(113, 177, 144, 0.1); }
+    .blob.speaking {
+      background: radial-gradient(circle at 35% 35%, #b8e6cc, #8fd4af 40%, #5ea882 80%);
+      box-shadow: 0 0 100px rgba(113, 177, 144, 0.5), 0 0 160px rgba(113, 177, 144, 0.15);
+    }
+    .blob.connecting { animation: connecting-pulse 1.2s ease-in-out infinite; opacity: 0.7; }
+
+    @keyframes idle-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+    @keyframes connecting-pulse { 0%, 100% { transform: scale(0.95); opacity: 0.5; } 50% { transform: scale(1.05); opacity: 0.8; } }
+
+    .status-text { margin-top: 12px; font-size: 13px; color: #8899a6; min-height: 18px; }
+    .status-text.active { color: #71b190; }
+    .error-msg { color: #e74c3c; font-size: 13px; margin-top: 8px; }
+
+    /* Transcript panel */
+    .transcript-panel {
+      flex: 1;
+      width: 100%;
+      max-width: 480px;
+      margin: 12px auto 0;
+      overflow-y: auto;
+      padding: 8px 20px 80px;
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    .transcript-panel::-webkit-scrollbar { width: 4px; }
+    .transcript-panel::-webkit-scrollbar-track { background: transparent; }
+    .transcript-panel::-webkit-scrollbar-thumb { background: #2a3a4a; border-radius: 2px; }
+
+    .msg {
+      margin-bottom: 10px;
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.45;
+      animation: msg-in 0.2s ease-out;
+    }
+
+    @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .msg.agent {
+      background: #1a2332;
+      color: #d0d8e0;
+      border-bottom-left-radius: 4px;
+      margin-right: auto;
+    }
+
+    .msg.user {
+      background: #274a38;
+      color: #d8ead0;
+      border-bottom-right-radius: 4px;
+      margin-left: auto;
+      text-align: right;
+    }
+
+    .msg.agent .msg-label,
+    .msg.user .msg-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 3px;
+      opacity: 0.5;
+    }
+
+    .msg.streaming { opacity: 0.7; }
+
+    .empty-state {
+      text-align: center;
+      color: #3a4a5a;
+      font-size: 13px;
+      padding-top: 32px;
+    }
+
+    .build-stamp {
+      position: fixed;
+      bottom: 6px;
+      left: 12px;
+      font-size: 10px;
+      color: #2a3a4a;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Scout Coach</h1>
+    <div class="mode-toggle">
+      <span class="mode-btn active">Voice</span>
+      <a class="mode-btn" href="/">Text Chat</a>
+    </div>
+  </div>
+
+  <div class="voice-area">
+    <div class="blob-container" id="blobBtn">
+      <div class="blob idle" id="blob"></div>
+    </div>
+    <div class="status-text" id="status">Tap to start</div>
+    <div class="error-msg" id="error"></div>
+  </div>
+
+  <div class="transcript-panel" id="transcriptPanel">
+    <div class="empty-state" id="emptyState">Tap the orb to start talking</div>
+  </div>
+
+  <div class="build-stamp" id="build-stamp">
+    <!-- __BUILD_STAMP__ --> | <span id="build-age"></span>
+  </div>
+
+  <script type="module">
+    let Conversation;
+    try {
+      const mod = await import('https://cdn.jsdelivr.net/npm/@elevenlabs/client@latest/+esm');
+      Conversation = mod.Conversation;
+    } catch (e) {
+      document.getElementById('error').textContent = 'Failed to load voice SDK: ' + e.message;
+      throw e;
+    }
+
+    const blob = document.getElementById('blob');
+    const blobBtn = document.getElementById('blobBtn');
+    const statusEl = document.getElementById('status');
+    const errorEl = document.getElementById('error');
+    const panel = document.getElementById('transcriptPanel');
+    const emptyState = document.getElementById('emptyState');
+
+    const backendUrl = window.location.pathname.startsWith('/backend')
+      ? window.location.origin + '/backend'
+      : window.location.origin;
+
+    let conversation = null;
+    let volumeRaf = null;
+    let currentAgentMsg = null; // streaming agent bubble
+
+    function setStatus(text, active = false) {
+      statusEl.textContent = text;
+      statusEl.className = 'status-text' + (active ? ' active' : '');
+    }
+
+    function setBlobState(state) {
+      blob.className = 'blob ' + state;
+    }
+
+    function scrollToBottom() {
+      panel.scrollTop = panel.scrollHeight;
+    }
+
+    function addMessage(role, text) {
+      emptyState.style.display = 'none';
+      const div = document.createElement('div');
+      div.className = `msg ${role}`;
+      const label = document.createElement('div');
+      label.className = 'msg-label';
+      label.textContent = role === 'agent' ? 'Scout Coach' : 'You';
+      div.appendChild(label);
+      const body = document.createElement('div');
+      body.textContent = text;
+      div.appendChild(body);
+      panel.appendChild(div);
+      scrollToBottom();
+      return div;
+    }
+
+    function startAgentStream() {
+      // Finalize any previous streaming message
+      if (currentAgentMsg) currentAgentMsg.classList.remove('streaming');
+      currentAgentMsg = addMessage('agent', '');
+      currentAgentMsg.classList.add('streaming');
+      return currentAgentMsg;
+    }
+
+    function appendAgentText(text) {
+      if (!currentAgentMsg) startAgentStream();
+      const body = currentAgentMsg.lastElementChild;
+      body.textContent += text;
+      scrollToBottom();
+    }
+
+    function finalizeAgentMsg() {
+      if (currentAgentMsg) {
+        currentAgentMsg.classList.remove('streaming');
+        // Remove empty bubbles
+        if (!currentAgentMsg.lastElementChild.textContent.trim()) {
+          currentAgentMsg.remove();
+        }
+        currentAgentMsg = null;
+      }
+    }
+
+    // Poll volume and scale blob
+    function startVolumeLoop() {
+      function tick() {
+        if (!conversation) return;
+        const input = conversation.getInputVolume?.() ?? 0;
+        const output = conversation.getOutputVolume?.() ?? 0;
+        const vol = Math.max(input, output);
+        blob.style.transform = `scale(${1 + vol * 0.35})`;
+        volumeRaf = requestAnimationFrame(tick);
+      }
+      tick();
+    }
+
+    function stopVolumeLoop() {
+      if (volumeRaf) cancelAnimationFrame(volumeRaf);
+      volumeRaf = null;
+      blob.style.transform = '';
+    }
+
+    async function startConversation() {
+      errorEl.textContent = '';
+      setBlobState('connecting');
+      setStatus('Connecting...');
+
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        const resp = await fetch(backendUrl + '/api/voice/signed-url');
+        if (!resp.ok) throw new Error('Failed to get signed URL');
+        const { signedUrl } = await resp.json();
+
+        conversation = await Conversation.startSession({
+          signedUrl,
+          onConnect: () => {
+            setBlobState('listening');
+            setStatus('Listening...', true);
+            startVolumeLoop();
+          },
+          onDisconnect: () => {
+            stopVolumeLoop();
+            finalizeAgentMsg();
+            conversation = null;
+            setBlobState('idle');
+            setStatus('Tap to start');
+          },
+          onError: (err) => {
+            console.error('Conversation error:', err);
+            errorEl.textContent = err.message || 'Connection error';
+          },
+          onModeChange: (mode) => {
+            if (mode.mode === 'speaking') {
+              setBlobState('speaking');
+              setStatus('Speaking...', true);
+              startAgentStream();
+            } else {
+              setBlobState('listening');
+              setStatus('Listening...', true);
+              finalizeAgentMsg();
+            }
+          },
+          onMessage: (message) => {
+            // ElevenLabs sends JSON messages for transcript events
+            try {
+              const data = typeof message === 'string' ? JSON.parse(message) : message;
+              if (data.type === 'user_transcript' && data.user_transcript_event?.user_transcript) {
+                addMessage('user', data.user_transcript_event.user_transcript);
+              } else if (data.type === 'agent_response' && data.agent_response_event?.agent_response) {
+                appendAgentText(data.agent_response_event.agent_response);
+              } else if (data.type === 'agent_response_correction' && data.agent_response_correction_event) {
+                // Correction replaces the current agent message text
+                if (currentAgentMsg) {
+                  currentAgentMsg.lastElementChild.textContent =
+                    data.agent_response_correction_event.corrected_agent_response || '';
+                }
+              }
+            } catch { /* not JSON or unknown format */ }
+          },
+        });
+      } catch (err) {
+        console.error('Start failed:', err);
+        setBlobState('idle');
+        setStatus('Tap to start');
+        errorEl.textContent = err.name === 'NotAllowedError'
+          ? 'Microphone access needed'
+          : err.message;
+      }
+    }
+
+    async function stopConversation() {
+      if (conversation) {
+        await conversation.endSession();
+        conversation = null;
+      }
+      stopVolumeLoop();
+      finalizeAgentMsg();
+      setBlobState('idle');
+      setStatus('Tap to start');
+    }
+
+    function handleTap(e) {
+      e.preventDefault();
+      if (conversation) stopConversation();
+      else startConversation();
+    }
+
+    blobBtn.addEventListener('touchend', handleTap, { passive: false });
+    blobBtn.addEventListener('click', handleTap);
+  </script>
+
+  <script>
+    const buildEpoch = __BUILD_EPOCH__;
+    function updateAge() {
+      const ageSec = Math.floor(Date.now() / 1000) - buildEpoch;
+      const el = document.getElementById('build-age');
+      if (ageSec < 60) el.textContent = ageSec + 's ago';
+      else if (ageSec < 3600) el.textContent = Math.floor(ageSec / 60) + 'm ago';
+      else if (ageSec < 86400) el.textContent = Math.floor(ageSec / 3600) + 'h ago';
+      else el.textContent = Math.floor(ageSec / 86400) + 'd ago';
+    }
+    if (buildEpoch) { updateAge(); setInterval(updateAge, 10000); }
+  </script>
+</body>
+</html>

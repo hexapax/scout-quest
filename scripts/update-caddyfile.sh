@@ -11,11 +11,25 @@ ai-chat.hexapax.com {
 }
 
 scout-quest.hexapax.com {
-    reverse_proxy localhost:3081
+    handle /backend/* {
+        uri strip_prefix /backend
+        reverse_proxy localhost:3090
+    }
+    handle {
+        reverse_proxy localhost:3081
+    }
 }
 
 admin.hexapax.com {
     reverse_proxy localhost:3082
+}
+
+voice-api.hexapax.com {
+    reverse_proxy localhost:3090
+}
+
+voice-chat.hexapax.com {
+    reverse_proxy localhost:3090
 }
 CADDYEOF
 

@@ -1,5 +1,6 @@
 import { getScoutQuestDb } from "./db.js";
 import type { AnthropicSystemBlock } from "./types.js";
+import { emailMatchRegex } from "./email-normalize.js";
 
 interface ScoutDoc {
   email: string;
@@ -43,18 +44,22 @@ export async function getScoutContext(email: string): Promise<AnthropicSystemBlo
   try {
     const db = getScoutQuestDb();
 
-    // Look up scout profile (quest system)
-    const scout = await db.collection<ScoutDoc>("scouts").findOne({ email });
+    // Look up scout profile — Gmail-normalized, case-insensitive
+    const emailRe = emailMatchRegex(email);
+    const scout = await db.collection<ScoutDoc>("scouts").findOne({ email: emailRe });
 
     // Look up in Scoutbook scouts if quest profile doesn't exist
     const scoutbookScout = await db.collection("scoutbook_scouts").findOne({
-      $or: [{ email }, { "parents": { $elemMatch: { email } } }],
+      $or: [{ email: emailRe }, { "parents": { $elemMatch: { email: emailRe } } }],
     });
 
     if (!scout && !scoutbookScout) return null;
 
-    const name = scout?.name || (scoutbookScout as any)?.name || "Scout";
-    const userId = (scoutbookScout as any)?.userId;
+    const sb = scoutbookScout as Record<string, any> | null;
+    const name = scout?.name || (sb ? `${sb.firstName || ""} ${sb.lastName || ""}`.trim() : "") || "Scout";
+    const userId: string | undefined = sb?.userId;
+    const patrol: string | undefined = scout?.patrol || sb?.patrol?.name;
+    const troop: string | undefined = scout?.troop || "2024";
 
     // Get advancement summary from Scoutbook
     const advancement = userId
@@ -89,13 +94,11 @@ export async function getScoutContext(email: string): Promise<AnthropicSystemBlo
 
     // Build context text
     const lines: string[] = [`SCOUT CONTEXT — ${name}`];
-
-    if (scout) {
-      lines.push(`Email: ${email}`);
-      if (scout.troop) lines.push(`Troop: ${scout.troop}`);
-      if (scout.patrol) lines.push(`Patrol: ${scout.patrol}`);
-      if (scout.age) lines.push(`Age: ${scout.age}`);
-    }
+    lines.push(`Email: ${email}`);
+    if (troop) lines.push(`Troop: ${troop}`);
+    if (patrol) lines.push(`Patrol: ${patrol}`);
+    if (scout?.age) lines.push(`Age: ${scout.age}`);
+    if (userId) lines.push(`Scoutbook userId: ${userId}`);
 
     if (earnedRanks) {
       lines.push(`\nEarned ranks: ${earnedRanks}`);

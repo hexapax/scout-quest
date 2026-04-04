@@ -11,6 +11,23 @@ export interface ToolDefinition {
   };
 }
 
+export type UserRole = "admin" | "leader" | "guide" | "scout";
+
+// Tool names available per role
+const SCOUT_TOOL_NAMES = ["get_scout_status", "search_bsa_reference", "cross_reference", "scout_buddies", "get_roster"];
+const GUIDE_TOOL_NAMES = [...SCOUT_TOOL_NAMES, "troop_insights", "session_planner"];
+const LEADER_TOOL_NAMES = [...GUIDE_TOOL_NAMES, "create_pending_action", "log_requirement_work"];
+// Admin gets everything
+
+/** Get the appropriate tool set for a user role. */
+export function getToolsForRole(role: UserRole): ToolDefinition[] {
+  if (role === "admin") return SCOUT_TOOLS;
+  const allowed = role === "scout" ? SCOUT_TOOL_NAMES
+    : role === "guide" ? GUIDE_TOOL_NAMES
+    : LEADER_TOOL_NAMES;
+  return SCOUT_TOOLS.filter(t => allowed.includes(t.name));
+}
+
 /** Tools that require write access to BSA Scoutbook (BSA token required). */
 export const BSA_WRITE_TOOLS: ToolDefinition[] = [
   {
@@ -284,6 +301,126 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
         },
       },
       required: ["scope"],
+    },
+  },
+  {
+    name: "troop_insights",
+    description:
+      "Get troop-wide advancement analysis for leaders and guides. " +
+      "Use when a leader asks about troop progress, planning advancement sessions, " +
+      "finding who can teach a skill, or who needs help with a requirement. " +
+      "Do NOT use for individual scout progress — use get_scout_status for that.",
+    input_schema: {
+      type: "object",
+      properties: {
+        scope: {
+          type: "string",
+          enum: ["advancement_sunday", "who_can_teach", "who_needs", "troop_progress", "pairing_suggestions"],
+          description:
+            "advancement_sunday: plan an advancement session with stations and pairings. " +
+            "who_can_teach: find scouts who completed a skill and can teach it. " +
+            "who_needs: find scouts who still need a rank or requirement. " +
+            "troop_progress: dashboard of every scout's rank status. " +
+            "pairing_suggestions: optimal teach/learn pairs for a skill area.",
+        },
+        skillArea: {
+          type: "string",
+          description: "Skill area: first aid, navigation, cooking, camping, swimming, citizenship, fitness. Used by who_can_teach and pairing_suggestions.",
+        },
+        rankName: {
+          type: "string",
+          description: "Rank name for who_needs scope (e.g., 'First Class', 'Tenderfoot').",
+        },
+        requirementRef: {
+          type: "string",
+          description: "Specific requirement number for who_needs or who_can_teach (e.g., '7b', '6e').",
+        },
+        attendees: {
+          type: "string",
+          description: "Comma-separated scout names for advancement_sunday or pairing_suggestions.",
+        },
+      },
+      required: ["scope"],
+    },
+  },
+  {
+    name: "scout_buddies",
+    description:
+      "Help a scout find other scouts to work with. " +
+      "Use when a scout asks who else is working on the same things, who can help them, " +
+      "what they could teach younger scouts, or what they could work on with a friend. " +
+      "Requires the scout's userId (from their profile context).",
+    input_schema: {
+      type: "object",
+      properties: {
+        scope: {
+          type: "string",
+          enum: ["working_on_same", "can_help_me", "i_can_help", "next_together"],
+          description:
+            "working_on_same: who else is working on the same rank/badge? " +
+            "can_help_me: who completed what I need and could help? " +
+            "i_can_help: what could I help teach to other scouts? " +
+            "next_together: what requirements could I work on with a specific friend?",
+        },
+        scoutUserId: {
+          type: "string",
+          description: "The requesting scout's Scoutbook userId.",
+        },
+        friendName: {
+          type: "string",
+          description: "Friend's name for next_together scope.",
+        },
+        rankName: {
+          type: "string",
+          description: "Optional rank filter (e.g., 'First Class').",
+        },
+      },
+      required: ["scope", "scoutUserId"],
+    },
+  },
+  {
+    name: "session_planner",
+    description:
+      "Plan a structured advancement session (like a Sunday advancement day). " +
+      "Given attendees, available time, and leaders, generates stations with teach/learn pairings, " +
+      "multi-person requirement groups, equipment lists, and per-scout checklists. " +
+      "Use when a leader or parent asks about planning an advancement event or work session.",
+    input_schema: {
+      type: "object",
+      properties: {
+        attendees: {
+          type: "string",
+          description: "Comma-separated scout names who will attend. Omit for all scouts.",
+        },
+        durationMinutes: {
+          type: "number",
+          description: "Available time in minutes (default: 120).",
+        },
+        focusAreas: {
+          type: "string",
+          description: "Comma-separated focus areas: first aid, navigation, cooking, camping, swimming, citizenship, fitness. Omit for all areas.",
+        },
+        leaders: {
+          type: "string",
+          description: "Comma-separated leader/counselor names available to help.",
+        },
+      },
+    },
+  },
+  {
+    name: "get_roster",
+    description:
+      "Get the troop roster — all scouts with their names, emails, current rank, and rank progress. " +
+      "Use when you need to look up a scout by name, find someone's email, or get a list of all scouts. " +
+      "Also useful for verifying scout identity.",
+    input_schema: {
+      type: "object",
+      properties: {
+        nameFilter: {
+          type: "string",
+          description: "Optional name to search for (case-insensitive partial match).",
+        },
+      },
     },
   },
 ];

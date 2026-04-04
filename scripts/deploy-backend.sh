@@ -32,15 +32,42 @@ npx tsc
 
 echo "Build complete"
 
+# --- Inject build stamp into voice.html ---
+ADJECTIVES=(chunky sneaky cosmic turbo blazing fuzzy mighty nano hyper silent noble rusty swift golden spicy)
+NOUNS=(dino falcon eagle otter phoenix badger panda raven scout turtle hawk cobra moose bison crane)
+ADJ=${ADJECTIVES[$((RANDOM % ${#ADJECTIVES[@]}))]}
+NOUN=${NOUNS[$((RANDOM % ${#NOUNS[@]}))]}
+BUILD_NAME="${ADJ}-${NOUN}"
+BUILD_TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
+BUILD_STAMP="${BUILD_NAME} | ${BUILD_TIME}"
+echo "  Build: ${BUILD_STAMP}"
+
+# Build stamp is injected into a temp copy (source stays untouched)
+BUILD_EPOCH=$(date +%s)
+
 # --- Create tarball (dist + node_modules + Dockerfile + knowledge) ---
 echo ""
 echo "=== Creating deploy tarball ==="
 TEMP_DIR=$(mktemp -d)
 trap "rm -rf '$TEMP_DIR'" EXIT
 
-TARBALL="$TEMP_DIR/backend-deploy.tar.gz"
+# Stage all deploy files in a temp dir so we can stamp without modifying source
+STAGE_DIR="$TEMP_DIR/stage"
+mkdir -p "$STAGE_DIR"
+cp -r "$BACKEND_DIR/dist" "$BACKEND_DIR/node_modules" "$BACKEND_DIR/knowledge" "$BACKEND_DIR/public" "$STAGE_DIR/"
+cp "$BACKEND_DIR/package.json" "$BACKEND_DIR/package-lock.json" "$BACKEND_DIR/Dockerfile" "$STAGE_DIR/"
 
-cd "$BACKEND_DIR"
+# Stamp the staged copy
+for f in "$STAGE_DIR/public/voice.html" "$STAGE_DIR/public/app.html"; do
+  if [ -f "$f" ]; then
+    sed -i "s#<!-- __BUILD_STAMP__ -->#${BUILD_STAMP}#g" "$f"
+    sed -i "s#__BUILD_EPOCH__#${BUILD_EPOCH}#g" "$f"
+    echo "  Stamped $(basename $f)"
+  fi
+done
+
+TARBALL="$TEMP_DIR/backend-deploy.tar.gz"
+cd "$STAGE_DIR"
 tar czf "$TARBALL" dist/ node_modules/ knowledge/ public/ package.json package-lock.json Dockerfile
 echo "  Tarball: $(du -h "$TARBALL" | cut -f1)"
 

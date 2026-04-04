@@ -67,7 +67,7 @@ async function getSummary(userId: string): Promise<string> {
   const lines: string[] = ["ADVANCEMENT SUMMARY\n"];
 
   const earnedRanks = ranks.filter((r) => r.dateCompleted);
-  const inProgressRanks = ranks.filter((r) => !r.dateCompleted && r.percentCompleted > 0);
+  const inProgressRanks = ranks.filter((r) => !r.dateCompleted && Number(r.percentCompleted) > 0);
 
   if (earnedRanks.length > 0) {
     lines.push(
@@ -76,7 +76,10 @@ async function getSummary(userId: string): Promise<string> {
   }
   if (inProgressRanks.length > 0) {
     for (const r of inProgressRanks) {
-      lines.push(`In progress: ${r.name} — ${r.percentCompleted}% complete`);
+      const pct = Number(r.percentCompleted);
+      // percentCompleted is stored as 0.0-1.0 fraction — display as percentage
+      const display = pct <= 1 ? Math.round(pct * 100) : Math.round(pct);
+      lines.push(`In progress: ${r.name} — ${display}% complete`);
     }
   }
 
@@ -109,10 +112,12 @@ async function getRankProgress(userId: string): Promise<string> {
 
   const lines = ["RANK PROGRESS\n"];
   for (const r of ranks) {
+    const pct = Number(r.percentCompleted);
+    const pctDisplay = pct <= 1 ? Math.round(pct * 100) : Math.round(pct);
     const date = r.dateCompleted
       ? `earned ${r.dateCompleted.substring(0, 10)}`
       : r.dateStarted
-        ? `started ${r.dateStarted.substring(0, 10)}, ${r.percentCompleted}% done`
+        ? `started ${r.dateStarted.substring(0, 10)}, ${pctDisplay}% done`
         : "not started";
     lines.push(`${r.name}: ${date}`);
   }
@@ -152,7 +157,7 @@ async function getRankRequirements(userId: string, rankName: string): Promise<st
     return `Rank "${rankName}" not found in the knowledge graph.`;
   }
 
-  const advancementId = String(rankRows[0].advancementId);
+  const advancementId = Number(rankRows[0].advancementId);
 
   // All requirements for this rank
   const allReqs = await graphQuery<{
@@ -174,12 +179,12 @@ async function getRankRequirements(userId: string, rankName: string): Promise<st
       "RETURN req.reqId AS reqId",
     { userId, advancementId }
   );
-  const completedIds = new Set(completedRows.map((r) => String(r.reqId)));
+  const completedIds = new Set(completedRows.map((r) => Number(r.reqId)));
 
   // Format: top-level reqs only (parentReqId == null or top-level subreqs)
   const topLevel = allReqs.filter((r) => r.parentReqId == null);
-  const remaining = topLevel.filter((r) => !completedIds.has(String(r.reqId)));
-  const done = topLevel.filter((r) => completedIds.has(String(r.reqId)));
+  const remaining = topLevel.filter((r) => !completedIds.has(Number(r.reqId)));
+  const done = topLevel.filter((r) => completedIds.has(Number(r.reqId)));
 
   const lines = [`${rankName.toUpperCase()} REQUIREMENTS\n`];
 

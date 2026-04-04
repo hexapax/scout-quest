@@ -8,6 +8,11 @@ import { createPendingActionTool } from "./tools/create-pending-action.js";
 import type { ActionType } from "./pending-action.js";
 import { logRequirementWork, type EvidenceType } from "./tools/log-requirement-work.js";
 import { crossReference, type CrossRefScope } from "./tools/cross-reference.js";
+import { troopInsights, type TroopInsightScope } from "./tools/troop-insights.js";
+import { scoutBuddies, type ScoutBuddyScope } from "./tools/scout-buddies.js";
+import { sessionPlanner } from "./tools/session-planner.js";
+import { graphQuery, isFalkorConnected } from "./falkordb.js";
+import { emailMatchRegex } from "./email-normalize.js";
 
 interface ToolUseBlock {
   type: "tool_use";
@@ -22,12 +27,42 @@ interface ToolResult {
   content: string;
 }
 
-/** Resolve a LibreChat user email → scoutbook userId for graph lookups. */
+/** Get troop roster from FalkorDB graph. */
+async function executeRoster(nameFilter?: string): Promise<string> {
+  if (!isFalkorConnected()) return "Graph database not available.";
+  const cypher = nameFilter
+    ? `MATCH (s:Scout) WHERE toLower(s.name) CONTAINS toLower($name)
+       OPTIONAL MATCH (s)-[ha:HAS_ADVANCEMENT]->(a:Advancement)
+       WHERE ha.dateCompleted IS NOT NULL AND a.type = 'rank'
+       RETURN s.name AS name, s.email AS email, s.userId AS userId,
+              collect(DISTINCT a.name) AS earnedRanks
+       ORDER BY s.name`
+    : `MATCH (s:Scout)
+       OPTIONAL MATCH (s)-[ha:HAS_ADVANCEMENT]->(a:Advancement)
+       WHERE ha.dateCompleted IS NOT NULL AND a.type = 'rank'
+       RETURN s.name AS name, s.email AS email, s.userId AS userId,
+              collect(DISTINCT a.name) AS earnedRanks
+       ORDER BY s.name`;
+
+  const params = nameFilter ? { name: nameFilter } : undefined;
+  const rows = await graphQuery<{ name: string; email: string; userId: string; earnedRanks: string[] }>(cypher, params);
+
+  if (rows.length === 0) return nameFilter ? `No scouts found matching "${nameFilter}".` : "No scouts in roster.";
+
+  const lines = rows.map(r => {
+    const ranks = r.earnedRanks?.length ? r.earnedRanks.join(", ") : "no ranks earned yet";
+    return `- ${r.name || "(unnamed)"} | ${r.email || "(no email)"} | Ranks: ${ranks}`;
+  });
+
+  return `Troop roster (${rows.length} scouts):\n${lines.join("\n")}`;
+}
+
+/** Resolve a LibreChat user email → scoutbook userId for graph lookups. Gmail-normalized. */
 async function resolveUserId(email: string): Promise<string | null> {
   try {
     const db = getScoutQuestDb();
     const scout = await db.collection("scoutbook_scouts").findOne(
-      { email },
+      { email: emailMatchRegex(email) },
       { projection: { userId: 1 } }
     );
     return scout ? String(scout.userId) : null;
@@ -115,6 +150,45 @@ async function executeOneTool(
           skillOrTopic: input.skillOrTopic ? String(input.skillOrTopic) : undefined,
           scoutUserId: input.scoutUserId ? String(input.scoutUserId) : undefined,
         });
+      }
+
+      case "troop_insights": {
+        return await troopInsights({
+          scope: String(input.scope || "troop_progress") as TroopInsightScope,
+          skillArea: input.skillArea ? String(input.skillArea) : undefined,
+          rankName: input.rankName ? String(input.rankName) : undefined,
+          requirementRef: input.requirementRef ? String(input.requirementRef) : undefined,
+          attendees: input.attendees ? String(input.attendees) : undefined,
+        });
+      }
+
+      case "scout_buddies": {
+        // Resolve scoutUserId from email if not directly provided
+        let scoutUserId = input.scoutUserId ? String(input.scoutUserId) : "";
+        if (!scoutUserId && userEmail) {
+          scoutUserId = (await resolveUserId(userEmail)) ?? "";
+        }
+        if (!scoutUserId) return "Cannot find scout buddies: no scout identity available.";
+        return await scoutBuddies({
+          scope: String(input.scope || "working_on_same") as ScoutBuddyScope,
+          scoutUserId,
+          friendName: input.friendName ? String(input.friendName) : undefined,
+          rankName: input.rankName ? String(input.rankName) : undefined,
+          badgeName: input.badgeName ? String(input.badgeName) : undefined,
+        });
+      }
+
+      case "session_planner": {
+        return await sessionPlanner({
+          attendees: input.attendees ? String(input.attendees) : undefined,
+          durationMinutes: input.durationMinutes ? Number(input.durationMinutes) : undefined,
+          focusAreas: input.focusAreas ? String(input.focusAreas) : undefined,
+          leaders: input.leaders ? String(input.leaders) : undefined,
+        });
+      }
+
+      case "get_roster": {
+        return await executeRoster(input.nameFilter ? String(input.nameFilter) : undefined);
       }
 
       default:
