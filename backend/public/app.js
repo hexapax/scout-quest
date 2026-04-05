@@ -22,6 +22,8 @@ let volumeRaf = null;
 let currentAgentEl = null;
 let agentStreamText = '';
 let pendingFiles = []; // { name, type, dataUrl }
+let toolPollInterval = null;
+let toolPollCursor = 0;
 
 // --- DOM ---
 const $ = (id) => document.getElementById(id);
@@ -383,6 +385,30 @@ function stopVolLoop() {
   blob.style.transform = '';
 }
 
+function startToolPoll() {
+  toolPollCursor = Date.now();
+  stopToolPoll();
+  toolPollInterval = setInterval(async () => {
+    try {
+      const resp = await fetch(`/api/voice/tool-events?since=${toolPollCursor}`, { credentials: 'same-origin' });
+      if (!resp.ok) return;
+      const { events, cursor } = await resp.json();
+      toolPollCursor = cursor;
+      for (const e of events) {
+        if (e.type === 'call') {
+          addToolBlock(e.name, e.input);
+        } else if (e.type === 'result') {
+          addToolBlock(e.name + ' result', null, e.result);
+        }
+      }
+    } catch { /* ignore poll errors */ }
+  }, 1000);
+}
+
+function stopToolPoll() {
+  if (toolPollInterval) { clearInterval(toolPollInterval); toolPollInterval = null; }
+}
+
 async function loadVoiceSDK() {
   if (Conversation) return;
   const mod = await import('https://cdn.jsdelivr.net/npm/@elevenlabs/client@latest/+esm');
@@ -428,8 +454,8 @@ async function startVoice() {
 
     const sessionOpts = {
       signedUrl,
-      onConnect: () => { dbg('connected'); setBlob('listening'); setVS('Listening...', true); startVolLoop(); },
-      onDisconnect: () => { dbg('disconnected'); stopVolLoop(); finalizeStream(); voiceConversation = null; setBlob('idle'); setVS('Tap to talk', false); },
+      onConnect: () => { dbg('connected'); setBlob('listening'); setVS('Listening...', true); startVolLoop(); startToolPoll(); },
+      onDisconnect: () => { dbg('disconnected'); stopVolLoop(); stopToolPoll(); finalizeStream(); voiceConversation = null; setBlob('idle'); setVS('Tap to talk', false); },
       onError: (err) => { dbg('error: ' + (err?.message || err)); setVS('Error', false); },
       onModeChange: (mode) => {
         dbg('mode: ' + mode.mode);
@@ -465,7 +491,7 @@ async function startVoice() {
 
 async function stopVoice() {
   if (voiceConversation) { await voiceConversation.endSession(); voiceConversation = null; }
-  stopVolLoop(); finalizeStream(); setBlob('idle'); setVS('Tap to talk', false);
+  stopVolLoop(); stopToolPoll(); finalizeStream(); setBlob('idle'); setVS('Tap to talk', false);
 }
 
 function handleBlobTap(e) {

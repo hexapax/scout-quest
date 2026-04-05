@@ -49,15 +49,13 @@ Deploy flow: pulls `.env` from GCS (secrets), combines with git-tracked `librech
 ### Scoutbook Data Refresh
 
 ```bash
-# Full procedure: docs/scoutbook-data-refresh.md
-# BSA automated auth is broken (503). Manual Chrome CDP workaround:
-# 1. Launch Chrome: chrome --remote-debugging-port=9222 https://my.scouting.org
-# 2. Log in manually in Chrome
-# 3. Fetch data:
-nvm exec 24 node scripts/scoutbook/fetch-all-data.mjs
-# 4. Load to MongoDB:
-nvm exec 24 node scripts/mongo/load-fresh-data.mjs --mongo-uri=mongodb://localhost:27017/scoutquest
-# 5. Or load to production MongoDB (see docs/scoutbook-data-refresh.md for full commands)
+# BSA automated auth is broken (503). Token-injection workaround:
+# 1. Log into my.scouting.org in Chrome
+# 2. DevTools (F12) → Application → Cookies → find JWT starting with "eyJ"
+# 3. Run sync with injected token:
+SCOUTBOOK_TOKEN=eyJ... bash scripts/run-token-sync-vm.sh
+# 4. Reload FalkorDB graph with fresh data:
+./scripts/ssh-vm.sh 'sudo -u scoutcoach docker exec scout-quest-backend node dist/graph-loader.js'
 ```
 
 ### Devbox (remote development)

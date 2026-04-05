@@ -156,24 +156,32 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
     description:
       "Get this scout's current advancement progress from the knowledge graph. " +
       "Call when the scout asks about their progress, what requirements they still need, " +
-      "their current rank, or merit badge status. Do NOT call for general BSA policy questions " +
+      "their current rank, merit badge status, or Eagle progress. Do NOT call for general BSA policy questions " +
       "— your embodied knowledge covers those.",
     input_schema: {
       type: "object",
       properties: {
         scope: {
           type: "string",
-          enum: ["rank_progress", "rank_requirements", "merit_badges", "summary"],
+          enum: ["summary", "rank_progress", "rank_requirements", "merit_badges", "badge_requirements", "awards", "eagle_progress"],
           description:
+            "summary: comprehensive overview (ranks, badges, awards, OA eligibility). " +
             "rank_progress: all ranks and completion %. " +
-            "rank_requirements: remaining requirements for a specific rank. " +
-            "merit_badges: earned and in-progress merit badges. " +
-            "summary: high-level overview of all advancement.",
+            "rank_requirements: remaining requirements for a specific rank (needs rank_name). " +
+            "merit_badges: all earned and in-progress merit badges with Eagle-required flags. " +
+            "badge_requirements: remaining requirements for a specific merit badge (needs badge_name). " +
+            "awards: awards like OA, religious, etc. " +
+            "eagle_progress: Eagle-specific checklist (Life rank, required badges, total count).",
         },
         rank_name: {
           type: "string",
           description:
             'Required when scope=rank_requirements. Full rank name, e.g., "First Class", "Life", "Eagle".',
+        },
+        badge_name: {
+          type: "string",
+          description:
+            'Required when scope=badge_requirements. Merit badge name, e.g., "Canoeing", "Camping", "First Aid".',
         },
       },
       required: ["scope"],

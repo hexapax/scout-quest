@@ -10,7 +10,7 @@ import type { OpenAIChatRequest, AnthropicSystemBlock } from "./types.js";
 import { SCOUT_TOOLS, getToolsForRole, type UserRole } from "./tools/definitions.js";
 import { executeToolCalls } from "./tool-executor.js";
 import { getUserFromCookie } from "./routes/auth.js";
-import { getVoiceContext } from "./voice-context.js";
+import { getVoiceContext, pushToolEvent } from "./voice-context.js";
 import { captureEpisode } from "./episodes.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -262,9 +262,10 @@ Rules for voice output:
           console.log(`[chat] stream tool turn=${turn} tools=${toolUseBlocks.map(b => b.name).join(",")}`);
           toolsUsedInRequest.push(...toolUseBlocks.map(b => b.name));
 
-          // Emit tool call events to the client
+          // Emit tool call events to the client (SSE for chat, buffer for voice)
           for (const b of toolUseBlocks) {
             writeToolCallChunk(res, b.name, b.input, b.id);
+            if (isVoice) pushToolEvent(b.name, "call", b.input);
           }
 
           const toolResults = await executeToolCalls(
@@ -282,6 +283,7 @@ Rules for voice output:
             if (r.type === "tool_result") {
               const block = toolUseBlocks.find(b => b.id === r.tool_use_id);
               writeToolResultChunk(res, r.tool_use_id, block?.name || "", r.content);
+              if (isVoice) pushToolEvent(block?.name || "", "result", undefined, r.content);
             }
           }
 

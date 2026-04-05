@@ -33,3 +33,16 @@ resource "google_project_iam_member" "devbox_sa_scout_storage" {
   role    = "roles/storage.admin"
   member  = "serviceAccount:${data.google_compute_default_service_account.devbox.email}"
 }
+
+# SSH access from devbox VM to scout-coach-vm (for deploy scripts, sync, graph reload)
+resource "google_project_iam_member" "devbox_sa_scout_os_login" {
+  project = var.scout_project_id
+  role    = "roles/compute.osAdminLogin"
+  member  = "serviceAccount:${data.google_compute_default_service_account.devbox.email}"
+}
+
+resource "google_project_iam_member" "devbox_sa_scout_sa_user" {
+  project = var.scout_project_id
+  role    = "roles/iam.serviceAccountUser"
+  member  = "serviceAccount:${data.google_compute_default_service_account.devbox.email}"
+}

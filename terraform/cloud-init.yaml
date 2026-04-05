@@ -59,6 +59,19 @@ runcmd:
     EOF
   - systemctl restart caddy
 
+  # --- OS-level firewall (ufw) ---
+  # GCP firewall is the outer layer. ufw is the inner layer — protects against
+  # accidental firewall rule changes and blocks cross-VM VPC access to app ports.
+  # Only 22 (SSH), 80 (HTTP), 443 (HTTPS) are allowed. All application ports
+  # (3080/3081/3082/4180/8081) remain localhost-only even if Docker bindings
+  # are misconfigured.
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+
   # --- Signal ready for deploy script ---
   - touch /opt/scoutcoach/.cloud-init-complete
 

@@ -97,3 +97,13 @@ resource "google_dns_record_set" "admin" {
   managed_zone = data.google_dns_managed_zone.hexapax.name
   rrdatas      = [google_compute_address.static.address]
 }
+
+# --- jeremy.hexapax.com (personal memory viewer) ---
+resource "google_dns_record_set" "jeremy" {
+  project      = var.dns_project_id
+  name         = "jeremy.hexapax.com."
+  type         = "A"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.hexapax.name
+  rrdatas      = [google_compute_address.static.address]
+}

@@ -111,7 +111,7 @@ app.get("/api/voice/signed-url", async (req, res) => {
 });
 
 // Voice context — client POSTs chat history before starting a voice session
-import { setVoiceContext } from "./voice-context.js";
+import { setVoiceContext, getToolEvents, clearToolEvents } from "./voice-context.js";
 
 app.post("/api/voice/context", (req, res) => {
   const msgs = req.body?.messages;
@@ -120,10 +120,17 @@ app.post("/api/voice/context", (req, res) => {
       emulateEmail: req.body?.emulateEmail,
       userEmail: req.body?.userEmail,
     });
+    clearToolEvents(); // Fresh session
     res.json({ ok: true, count: msgs.length });
   } else {
     res.status(400).json({ error: "messages array required" });
   }
+});
+
+// Poll for tool events during voice sessions
+app.get("/api/voice/tool-events", (req, res) => {
+  const since = Number(req.query.since) || 0;
+  res.json(getToolEvents(since));
 });
 
 // Health check

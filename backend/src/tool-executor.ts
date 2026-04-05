@@ -88,7 +88,8 @@ async function executeOneTool(
         return await getScoutStatus(
           userId,
           String(input.scope || "summary"),
-          input.rank_name ? String(input.rank_name) : undefined
+          input.rank_name ? String(input.rank_name) : undefined,
+          input.badge_name ? String(input.badge_name) : undefined
         );
       }
 
