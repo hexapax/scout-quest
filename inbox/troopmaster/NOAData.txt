@@ -1,0 +1,145 @@
+Last	First	BSAID	Award	Reqt	Date
+Allen	Hart	135886306	Adventure	1	08/19/23	2	02/02/24	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Allen	Hart	135886306	Aquatics	1	08/19/23	2a	01/24/23	2b	08/05/24	3		4a	06/25/23	4b		5		
+Allen	Hart	135886306	Camping	1	08/19/23	2	09/24/24	3a	02/19/23	3b	08/26/23	4		
+Allen	Hart	135886306	Conservation	1	08/19/23	2		3a	02/06/24	3b		3c	05/21/23	4		
+Allen	Hart	135886306	Hiking	1	08/19/23	2		3		4		
+Allen	Hart	135886306	Riding	1	08/19/23	2a		2b		2c		2d		3		
+Allen	Hart	135886306	Achievement	1	08/19/23	2		3		4		5		6		7		8a		8b		
+Baddley	Henry	137276167	Adventure	1	10/21/23	2		3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Baddley	Henry	137276167	Aquatics	1	10/21/23	2a	10/09/23	2b		3		4a	06/09/23	4b		5		
+Baddley	Henry	137276167	Camping	1	10/21/23	2		3a	06/27/21	3b	09/03/24	4		
+Baddley	Henry	137276167	Conservation	1	10/21/23	2		3a	06/27/21	3b		3c		4		
+Baddley	Henry	137276167	Hiking	1	10/21/23	2		3		4		
+Baddley	Henry	137276167	Riding	1	10/21/23	2a		2b		2c		2d		3		
+Baddley	Henry	137276167	Achievement	1	10/21/23	2		3		4		5		6		7		8a		8b		
+Beauchamp	Davis	132490876	Adventure	1	01/05/23	2	09/01/21	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Beauchamp	Davis	132490876	Aquatics	1	01/05/23	2a	01/24/23	2b		3		4a	08/10/23	4b		5		
+Beauchamp	Davis	132490876	Camping	1	01/05/23	2		3a	04/11/21	3b	03/21/25	4		
+Beauchamp	Davis	132490876	Conservation	1	01/05/23	2		3a	07/18/21	3b		3c	05/25/21	4		
+Beauchamp	Davis	132490876	Hiking	1	01/05/23	2		3		4		
+Beauchamp	Davis	132490876	Riding	1	01/05/23	2a		2b		2c		2d		3		
+Beauchamp	Davis	132490876	Achievement	1	01/05/23	2		3		4		5		6		7		8a		8b		
+Blackwood	Zachary	135692271	Adventure	1	09/17/24	2		3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Blackwood	Zachary	135692271	Aquatics	1	09/17/24	2a	06/11/21	2b		3		4a		4b		5		
+Blackwood	Zachary	135692271	Camping	1	09/17/24	2		3a	06/11/21	3b		4		
+Blackwood	Zachary	135692271	Conservation	1	09/17/24	2		3a		3b		3c		4		
+Blackwood	Zachary	135692271	Hiking	1	09/17/24	2		3		4		
+Blackwood	Zachary	135692271	Riding	1	09/17/24	2a		2b		2c		2d		3		
+Blackwood	Zachary	135692271	Achievement	1	09/17/24	2		3		4		5		6		7		8a		8b		
+Bramwell	Benjamin	14892085	Adventure	1		2	02/10/24	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Bramwell	Benjamin	14892085	Aquatics	1		2a	10/09/23	2b	08/03/24	3		4a		4b		5		
+Bramwell	Benjamin	14892085	Camping	1		2		3a	02/19/23	3b		4		
+Bramwell	Benjamin	14892085	Conservation	1		2		3a	02/03/24	3b		3c		4		
+Brunt	Charlie	133873283	Adventure	1	09/21/24	2	08/12/25	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Brunt	Charlie	133873283	Aquatics	1	09/21/24	2a	01/24/23	2b		3		4a	06/09/23	4b		5		
+Brunt	Charlie	133873283	Camping	1	09/21/24	2		3a	06/27/21	3b	03/14/25	4		
+Brunt	Charlie	133873283	Conservation	1	09/21/24	2		3a	06/06/25	3b		3c		4		
+Brunt	Charlie	133873283	Hiking	1	09/21/24	2		3		4		
+Brunt	Charlie	133873283	Riding	1	09/21/24	2a		2b		2c		2d		3		
+Brunt	Charlie	133873283	Achievement	1	09/21/24	2		3		4		5		6		7		8a		8b		
+Burnett	Markus	137114848	Adventure	1	04/09/24	2	02/03/24	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Burnett	Markus	137114848	Aquatics	1	04/09/24	2a	10/09/23	2b		3		4a		4b		5		
+Burnett	Markus	137114848	Camping	1	04/09/24	2		3a	06/09/23	3b	02/10/24	4		
+Burnett	Markus	137114848	Conservation	1	04/09/24	2		3a		3b		3c		4		
+Burnett	Markus	137114848	Hiking	1	04/09/24	2		3		4		
+Burnett	Markus	137114848	Riding	1	04/09/24	2a		2b		2c		2d		3		
+Burnett	Markus	137114848	Achievement	1	04/09/24	2		3		4		5		6		7		8a		8b		
+Burnett	Mikah	135886410	Adventure	1	03/26/25	2	10/05/24	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Burnett	Mikah	135886410	Aquatics	1	03/26/25	2a	10/09/23	2b		3		4a		4b		5		
+Burnett	Mikah	135886410	Camping	1	03/26/25	2		3a	06/09/23	3b	08/24/24	4		
+Burnett	Mikah	135886410	Conservation	1	03/26/25	2		3a	06/07/24	3b		3c		4		
+Burnett	Mikah	135886410	Hiking	1	03/26/25	2		3		4		
+Burnett	Mikah	135886410	Riding	1	03/26/25	2a		2b		2c		2d		3		
+Burnett	Mikah	135886410	Achievement	1	03/26/25	2		3		4		5		6		7		8a		8b		
+Eisenman	Noah	132963126	Adventure	1	07/06/21	2	06/10/22	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Eisenman	Noah	132963126	Aquatics	1	07/06/21	2a		2b		3		4a	06/27/21	4b		5		
+Eisenman	Noah	132963126	Camping	1	07/06/21	2	07/25/21	3a	04/11/21	3b	06/27/21	4		
+Eisenman	Noah	132963126	Conservation	1	07/06/21	2		3a	06/27/21	3b		3c	01/18/21	4		
+Eisenman	Noah	132963126	Hiking	1	07/06/21	2	03/21/21	3		4		
+Eisenman	Noah	132963126	Riding	1	07/06/21	2a		2b		2c		2d		3		
+Eisenman	Noah	132963126	Achievement	1	07/06/21	2		3		4		5		6		7		8a		8b		
+Elkins	Eddie	14846323	Aquatics	1		2a	10/09/23	2b		3		4a		4b		5		
+Elkins	Eddie	14846323	Camping	1		2	05/01/24	3a	04/23/25	3b		4		
+Goldstrom	Connor	132490749	Adventure	1	03/28/23	2		3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Goldstrom	Connor	132490749	Aquatics	1	03/28/23	2a	01/24/23	2b		3		4a	06/10/22	4b		5		
+Goldstrom	Connor	132490749	Camping	1	03/28/23	2		3a	04/11/21	3b	10/22/24	4		
+Goldstrom	Connor	132490749	Conservation	1	03/28/23	2		3a		3b		3c		4		
+Goldstrom	Connor	132490749	Hiking	1	03/28/23	2		3	09/20/22	4		
+Goldstrom	Connor	132490749	Riding	1	03/28/23	2a		2b		2c		2d		3		
+Goldstrom	Connor	132490749	Achievement	1	03/28/23	2		3		4		5		6		7		8a		8b		
+Goldstrom	Thomas	137114839	Aquatics	1		2a	01/24/23	2b		3		4a		4b		5		
+Goldstrom	Thomas	137114839	Camping	1		2		3a	02/19/23	3b		4		
+Goldstrom	Thomas	137114839	Conservation	1		2		3a	06/06/25	3b		3c		4		
+Grabowski	Will	131200385	Adventure	1	02/14/21	2	10/19/21	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Grabowski	Will	131200385	Aquatics	1	02/14/21	2a	07/31/21	2b		3		4a	10/06/20	4b		5		
+Grabowski	Will	131200385	Camping	1	02/14/21	2	04/12/21	3a	01/12/20	3b	11/14/20	4		
+Grabowski	Will	131200385	Conservation	1	02/14/21	2		3a	06/27/21	3b	05/29/21	3c		4		
+Grabowski	Will	131200385	Hiking	1	02/14/21	2	10/21/20	3		4		
+Grabowski	Will	131200385	Riding	1	02/14/21	2a		2b		2c		2d		3		
+Grabowski	Will	131200385	Achievement	1	02/14/21	2		3		4		5		6		7		8a		8b		
+Haggman	Jake	131200243	Adventure	1	02/16/21	2	08/03/20	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Haggman	Jake	131200243	Aquatics	1	02/16/21	2a		2b		3		4a	07/25/21	4b		5		
+Haggman	Jake	131200243	Camping	1	02/16/21	2	04/17/21	3a	03/17/20	3b	01/31/22	4		
+Haggman	Jake	131200243	Conservation	1	02/16/21	2		3a	06/27/21	3b	07/22/21	3c	12/11/20	4		
+Haggman	Jake	131200243	Hiking	1	02/16/21	2	01/10/21	3		4		
+Haggman	Jake	131200243	Riding	1	02/16/21	2a		2b		2c		2d		3		
+Haggman	Jake	131200243	Achievement	1	02/16/21	2		3		4		5		6		7		8a		8b		
+Hajiani	Iliyan	132963109	Adventure	1	08/21/21	2	06/27/21	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Hajiani	Iliyan	132963109	Aquatics	1	08/21/21	2a		2b		3		4a	06/27/21	4b		5		
+Hajiani	Iliyan	132963109	Camping	1	08/21/21	2	07/22/23	3a	04/11/21	3b	08/12/23	4		
+Hajiani	Iliyan	132963109	Conservation	1	08/21/21	2		3a	06/27/21	3b		3c		4		
+Hajiani	Iliyan	132963109	Hiking	1	08/21/21	2	06/20/22	3		4		
+Hajiani	Iliyan	132963109	Riding	1	08/21/21	2a		2b		2c		2d		3		
+Hajiani	Iliyan	132963109	Achievement	1	08/21/21	2		3		4		5		6		7		8a		8b		
+Heilman	Erich	140310990	Adventure	1	06/05/25	2		3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Heilman	Erich	140310990	Aquatics	1	06/05/25	2a	10/09/23	2b		3		4a	06/21/24	4b		5		
+Heilman	Erich	140310990	Camping	1	06/05/25	2		3a	06/07/24	3b		4		
+Heilman	Erich	140310990	Conservation	1	06/05/25	2		3a	02/03/24	3b		3c		4		
+Heilman	Erich	140310990	Hiking	1	06/05/25	2		3		4		
+Heilman	Erich	140310990	Riding	1	06/05/25	2a		2b		2c		2d		3		
+Heilman	Erich	140310990	Achievement	1	06/05/25	2		3		4		5		6		7		8a		8b		
+Konradt	Thomas	131200351	Adventure	1	02/23/21	2	02/18/20	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Konradt	Thomas	131200351	Aquatics	1	02/23/21	2a		2b		3		4a	10/22/19	4b		5		
+Konradt	Thomas	131200351	Camping	1	02/23/21	2	04/26/21	3a	10/22/19	3b	06/27/21	4		
+Konradt	Thomas	131200351	Conservation	1	02/23/21	2		3a	01/31/21	3b		3c	10/22/19	4		
+Konradt	Thomas	131200351	Hiking	1	02/23/21	2	04/26/21	3		4		
+Konradt	Thomas	131200351	Riding	1	02/23/21	2a		2b		2c		2d		3		
+Konradt	Thomas	131200351	Achievement	1	02/23/21	2		3		4		5		6		7		8a		8b		
+Lockard	Ollie	135886425	Adventure	1	04/22/24	2	07/15/24	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Lockard	Ollie	135886425	Aquatics	1	04/22/24	2a	01/24/23	2b		3		4a	06/07/24	4b		5		
+Lockard	Ollie	135886425	Camping	1	04/22/24	2	09/21/25	3a	02/21/23	3b	02/10/24	4		
+Lockard	Ollie	135886425	Conservation	1	04/22/24	2		3a	06/07/24	3b		3c		4		
+Lockard	Ollie	135886425	Hiking	1	04/22/24	2		3		4		
+Lockard	Ollie	135886425	Riding	1	04/22/24	2a		2b		2c		2d		3		
+Lockard	Ollie	135886425	Achievement	1	04/22/24	2		3		4		5		6		7		8a		8b		
+McDaid	Jack	135072517	Adventure	1	04/22/25	2		3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+McDaid	Jack	135072517	Aquatics	1	04/22/25	2a	10/03/22	2b		3		4a	10/03/22	4b		5		
+McDaid	Jack	135072517	Camping	1	04/22/25	2		3a	04/11/21	3b		4		
+McDaid	Jack	135072517	Conservation	1	04/22/25	2		3a		3b		3c	02/26/23	4		
+McDaid	Jack	135072517	Hiking	1	04/22/25	2		3		4		
+McDaid	Jack	135072517	Riding	1	04/22/25	2a		2b		2c		2d		3		
+McDaid	Jack	135072517	Achievement	1	04/22/25	2		3		4		5		6		7		8a		8b		
+McDaid	Will	132490934	Adventure	1	12/23/22	2	02/03/24	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+McDaid	Will	132490934	Aquatics	1	12/23/22	2a	08/16/22	2b		3		4a	12/30/24	4b		5		
+McDaid	Will	132490934	Camping	1	12/23/22	2		3a	04/11/21	3b	07/29/24	4		
+McDaid	Will	132490934	Conservation	1	12/23/22	2		3a	01/24/23	3b		3c		4		
+McDaid	Will	132490934	Hiking	1	12/23/22	2		3		4		
+McDaid	Will	132490934	Riding	1	12/23/22	2a		2b		2c		2d		3		
+McDaid	Will	132490934	Achievement	1	12/23/22	2		3		4		5		6		7		8a		8b		
+McMurtry	Jake 	135885035	Adventure	1	11/04/24	2		3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+McMurtry	Jake 	135885035	Aquatics	1	11/04/24	2a	01/24/23	2b		3		4a	06/30/23	4b		5		
+McMurtry	Jake 	135885035	Camping	1	11/04/24	2	01/20/25	3a	02/19/23	3b		4		
+McMurtry	Jake 	135885035	Conservation	1	11/04/24	2		3a		3b		3c		4		
+McMurtry	Jake 	135885035	Hiking	1	11/04/24	2		3		4		
+McMurtry	Jake 	135885035	Riding	1	11/04/24	2a		2b		2c		2d		3		
+McMurtry	Jake 	135885035	Achievement	1	11/04/24	2		3		4		5		6		7		8a		8b		
+Sebel	Owen	14872296	Adventure	1	11/07/23	2	08/09/25	3a		3b		3c		3d		3e		3f		3g		3h		3i		3j		
+Sebel	Owen	14872296	Aquatics	1	11/07/23	2a	01/24/23	2b		3		4a	06/03/23	4b		5		
+Sebel	Owen	14872296	Camping	1	11/07/23	2	01/03/25	3a	02/19/23	3b	01/02/25	4		
+Sebel	Owen	14872296	Conservation	1	11/07/23	2		3a		3b		3c	05/21/23	4		
+Sebel	Owen	14872296	Hiking	1	11/07/23	2		3		4		
+Sebel	Owen	14872296	Riding	1	11/07/23	2a		2b		2c		2d		3		
+Sebel	Owen	14872296	Achievement	1	11/07/23	2		3		4		5		6		7		8a		8b		
+Williams	Cullen	14881671	Aquatics	1		2a	01/24/23	2b		3		4a		4b		5		
+Williams	Cullen	14881671	Camping	1		2		3a	02/19/23	3b		4		

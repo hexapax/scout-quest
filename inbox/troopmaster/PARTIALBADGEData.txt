@@ -1,0 +1,81 @@
+Last	First	BSAID	Badge	Reqts Complete
+Allen	Hart	135886306	Wilderness Survival	1a,1b,2,3,4a,4b,4c,4d,4e,5,7a,7b,7c,9,10,11,12
+Allen	Hart	135886306	Family Life*	1,2,6a,7
+Baddley	Henry	137276167	Camping*	8c,8d,9b1
+Baddley	Henry	137276167	Emergency Preparedness*	1,2a1,2a2,2a3,2a4,2a5,2b1,2b2,2b3,2b4,2b5,2b7,2b8,2b9,2b10,2b11,2b12,2b13,2b14,2b15,2b16,3a,3b,3c,3d,4,5,6a,6b1,6b2,7a,7b,8a1,8a2,8a3,8a4,9a,9b,9c
+Baddley	Henry	137276167	Communication*	3
+Beauchamp	Davis	132490876	Camping*	1a,1b,1c,2,3a,3b,3c,4a,4b,5a,5b,5c,5d,5e,6a,6b,6c,6d,6e,7a,7b,8a1,8a2,8a3,8b,8c,8d,9b2,10,9c,9b3
+Bramwell	Benjamin	14892085	Hiking*	
+Bramwell	Benjamin	14892085	Communication*	1d,2b,3,4,5,6,7a,9
+Bramwell	Benjamin	14892085	Cooking*	1a,1b,1c,1d,1e,2a1,2a2,2a3,2a4,2a5,2b,2c,2d,2e,3a,3b,3c,5a,5b,5c,5d,5e,5f,5g,5h,6a,6b,6c,6d,6e,6f,7
+Bramwell	Benjamin	14892085	Family Life*	6a,7
+Bramwell	Benjamin	14892085	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+Bramwell	Benjamin	14892085	Camping*	1a,1b,1c,2,4a,4b,5a,5b,5c,5d,6a,6b,6c,6d,6e,7a,7b,8a1,8a2,8a3,8b,8c,9b4,9b6,9c
+Bramwell	Benjamin	14892085	Citizenship In Nation*	1,2,3a,3b,3c,3d,4a,4b,4c,5,6a,6b,6c,6d,6e,8
+Brunt	Charlie	133873283	Astronomy	1a,1b,1c,2,3a,3b,3c,3d,4a,4b,4c,4d,5a,5b,5c,5d,6a,6b,6c,6d,7c,8a1,8a2,8a3,8a4,8b,8c,8d,8e
+Brunt	Charlie	133873283	Fly Fishing	1a,1b,1c,2,3a,3b,3c,3d,3e,4,5,6,7a,7b,8,9
+Brunt	Charlie	133873283	Citizenship In Community*	1,2a1,2a2,2a3,2a4,2b,5,6
+Brunt	Charlie	133873283	Fishing	1a,1b,1c,1d,2,3,4,5,6a,6b,7,8,9
+Brunt	Charlie	133873283	Camping*	1a,1b,1c,2,3a,3b,3c,4a,5a,5b,5c,5d,6a,6b,6c,6d,6e,7a,8a1,8a2,8a3,8b,8c,9b1,9b4,9b6,10
+Brunt	Charlie	133873283	Communication*	1d,2b,3,4,6,7a,8,9
+Burnett	Markus	137114848	Communication*	1a,1b1,1b2,1b3,1b4,1c,1d,2a,2b,3,4,6,7a,9
+Burnett	Markus	137114848	Camping*	8c,8d,9b1,9b2
+Burnett	Markus	137114848	Family Life*	1,2,6a,7
+Burnett	Mikah	135886410	Communication*	1d,2b,3,4,6,7a,9
+Burnett	Mikah	135886410	Camping*	8c,8d,9b1,9b2,9b4,9b6
+Burnett	Mikah	135886410	Rifle Shooting	1a,1b,1c,1d,1e,1f1,1f2,1g,1h,1i,2A.a,2A.b,2A.c,2A.d,2A.e,2A.f,2A.g,2A.h,2A.i,2A.j,2A.k
+Burnett	Mikah	135886410	Family Life*	1,2,6a,7
+Elkins	Eddie	14846323	Cooking*	1a,1b,1c,1d,1e,2a1,2a2,2a3,2a4,2a5,2b,2c,2d,2e,3a,3b,3c,5a,5b,5c,5d,5e,6a,6b,6c,6d,6e,6f,7
+Elkins	Eddie	14846323	Wilderness Survival	1a,1b,2,3,4a,4b,4c,4d,4e,8
+Elkins	Eddie	14846323	Communication*	1a,1b1,1b2,1b3,1b4,1c,1d,2a,2b,3,4,6,7a,8,9
+Elkins	Eddie	14846323	Citizenship In Nation*	1,2,3a,3b,3c,3d,4a,4b,4c,5,6a,6b,6c,6d,6e,6f,8
+Elkins	Eddie	14846323	Environmental Science*	1,2,3a2,3b1,3c2,3d3,3e1,3f3,3h1,5
+Elkins	Eddie	14846323	Camping*	9b2,9b4,9c
+Elkins	Eddie	14846323	Personal Fitness*	1a1,1a2,1a3,1a4,1a5,2a,2b,2c,2d,3a,3b,3c,3d,3e,3f,3g,3h,3i,4a,4e,5a,5b,5c,5d
+Elkins	Eddie	14846323	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+Elkins	Eddie	14846323	Emergency Preparedness*	2a1,2a2,2a3,2a4,2a5,2b1,2b2,2b3,2b4,2b5,2b8,2b9,2b14,2b18,2b19,3b,4a,4b,5a,5b,5c,5d,6a,6b,6c,7,8a,8b,8c,9a1,9a2,9a3,9d
+Elkins	Eddie	14846323	Family Life*	1,2,6a,7,4
+Goldstrom	Connor	132490749	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+Goldstrom	Connor	132490749	Camping*	1a,1b,1c,2,3a,3b,3c,4a,5a,5b,5c,5d,6a,6b,6c,6d,6e,7a,9b2,9b4,9c
+Goldstrom	Connor	132490749	Environmental Science*	1,2,3a2,3b1,3c2,3d3,3e1,3f3,3h1,4a,6
+Goldstrom	Connor	132490749	Emergency Preparedness*	1,2a1,2a2,2a3,2a4,2a5,2b1,2b2,2b3,2b4,2b5,2b7,2b8,2b9,2b10,2b11,2b12,2b13,2b14,2b15,2b16,3a,3b,3c,3d,4,5,6a,6b1,6b2,7a,7b,8a1,8a2,8a3,8a4,9a,9b,9c
+Goldstrom	Connor	132490749	Welding	1a,1b,2a,2b,2c,3,4,5a,7a,7b
+Goldstrom	Connor	132490749	Family Life*	1,2,6a,7
+Goldstrom	Thomas	137114839	Cooking*	1a,1b,1c,1d,1e,2a1,2a2,2a3,2a4,2a5,2b,2c,2d,2e,3a,3b,3c,3d,5a,5b,5c,5d,6a,6b,6c,6d,6e,6f,7a,7b
+Goldstrom	Thomas	137114839	Emergency Preparedness*	2a1,2a2,2a3,2a4,2a5,2b1,2b2,2b3,2b4,2b5,2b8,2b9,2b14,2b18,2b19,3b,4a,4b,5a,5b,5c,5d,6a,6b,6c,7,8a,8b,8c,9a1,9a2,9a3
+Goldstrom	Thomas	137114839	Personal Fitness*	1a1,1a2,1a3,1a4,1a5,2a,2b,2c,2d,3a,3b,3c,3d,3e,3f,3g,3h,3i,4a,4b,4c,4d,4e,5a,5b,5c,5d,6a,6b,9
+Goldstrom	Thomas	137114839	Family Life*	1,2
+Goldstrom	Thomas	137114839	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+Goldstrom	Thomas	137114839	Camping*	2,4a,7a,8c,9b2
+Heilman	Erich	140310990	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+Heilman	Erich	140310990	Citizenship In Community*	8
+Heilman	Erich	140310990	Camping*	9b4,9b6,9c
+Heilman	Erich	140310990	Cooking*	1a,1b,1c,1d,1e,2a1,2a2,2a3,2a4,2a5,2b,2c,2d,2e,3a,3b,3c,4a,4b,5a,5b,5c,5d,5e,5f,5g,5h,6a,6b,6c,6d,6e,6f,7
+Heilman	Erich	140310990	Emergency Preparedness*	2a1,2a2,2a3,2a4,2a5,2b1,2b2,2b3,2b4,2b5,2b8,2b9,2b14,2b18,2b19,3b,4b,5a,5b,5c,6a,6b,6c,7,8a,8b,8c,9a1,9a2,9a3,9a4,9d
+Lockard	Ollie	135886425	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+McDaid	Jack	135072517	Family Life*	1,2,4,6a,7
+McDaid	Jack	135072517	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+McDaid	Jack	135072517	Personal Fitness*	1a1,1a2,1a3,1a4,1a5,2a,2b,2c,2d,3a,3b,3c,3d,3e,3f,3g,3h,3i,4a,4b,4c,4d,4e,5a,5b,5c,5d,6a,6b,9
+McDaid	Jack	135072517	Cooking*	1a,1b,1c,1d,1e,2a1,2a2,2a3,2a4,2a5,2b,2d,2e,3a,3b,3c,5b,5c,5d,5e,6a,6b,6c,6d,6e,6f,7
+McDaid	Jack	135072517	Camping*	1a,1b,1c,2,3a,3b,3c,4a,5a,5b,5c,5d,5e,6a,6b,6c,6d,6e,7a,8c,9b4,9c,10
+McDaid	Jack	135072517	Communication*	1a,1b1,1b2,1b3,1b4,1c,1d,2a,2b,4,6,7a,9
+McDaid	Jack	135072517	Leatherwork	1a,1b,2a,2b,2c,2d,3a,3b,3c,3d,3e,3f,3g,3h,5a,5b,5d,5c
+McDaid	Jack	135072517	Emergency Preparedness*	2a1,2a2,2a3,2a4,2a5,2b1,2b2,2b3,2b4,2b5,2b7,2b9,2b10,2b11,2b14,3a,3b,3c,3d,5,6a,6b1,6b2,7a,7b,8a1,8a2,8a3,8a4,9a,9b,9c
+McDaid	Jack	135072517	Citizenship In Nation*	1,2,3a,3b,3c,3d,4a,4b,4c,5,6a,6b,6c,6d,6e,6f,8
+McDaid	Will	132490934	Family Life*	1,2,6a,7
+McDaid	Will	132490934	Communication*	1a,1b1,1b2,1b3,1b4,1c,1d,2a,2b,3,4,6,7a,8,9
+McDaid	Will	132490934	Camping*	1a,1b,1c,2,3a,3b,3c,4a,4b,5a,5b,5c,5d,5e,6a,6b,6c,6d,6e,7a,7b,8a1,8a2,8a3,8b,8c,9a,9b2,9b4,9c,10
+McMurtry	Jake 	135885035	Water Sports	1a,1b,1c,2a,2b,3,4,5a,6
+McMurtry	Jake 	135885035	Personal Fitness*	1a1,1a2,1a3,1a4,1a5,1b,2a,2b,2c,2d,3a,3b,3c,3d,3e,3f,3g,3h,3i,4a,4b,4c,4d,4e,5a,5b,5c,5d,6a,6b,9
+McMurtry	Jake 	135885035	Emergency Preparedness*	1,2a1,2a2,2a3,2a4,2a5,2b1,2b2,2b3,2b4,2b5,2b6,2b7,2b8,2b9,2b10,2b11,2b12,2b13,2b14,2b15,2b16,2b17,2b18,3a,3b,3c,3d,4,5,6a,6b1,6b2,6c,7a,7b,8a1,8a2,8a3,8a4,8b,9a,9b,9c
+McMurtry	Jake 	135885035	Cooking*	1a,1b,1c,1d,1e,2a1,2a2,2a3,2a4,2a5,2b,2d,2e,3a,3b,3c,7
+McMurtry	Jake 	135885035	Communication*	1a,1b1,1b2,1b3,1b4,1c,1d,3,4,6,7a,8,9
+McMurtry	Jake 	135885035	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+McMurtry	Jake 	135885035	Weather	1,2,3,4,5,6,7,8,11
+McMurtry	Jake 	135885035	Family Life*	1,2,6a,7
+Sebel	Owen	14872296	Citizenship In Community*	8
+Sebel	Owen	14872296	Personal Management*	3a,3b,3c,3d,3f,3e,3g,3h,4a,4b,4c,4d,4e,5a,5b,5c,5d,5e,5f,6a,6b,6c,6d,7a,7b,7c,7d,7e
+Sebel	Owen	14872296	Family Life*	1,2,6a,7
+Williams	Cullen	14881671	Camping*	9b4
+Williams	Cullen	14881671	Archery	1a,1b,1c,1d,2a,2b,2c,2d1,2e,3a,3b,4a,4b,4c,4d,5A.a,5A.b,5A.c,5A.d,5A.e,5A.f1,5A.f2,5A.f3
+Williams	Cullen	14881671	Rifle Shooting	1a,1b,1c,1d,1e,1f1,1f2,1g,1h,1i,2A.a,2A.b,2A.c,2A.d,2A.e,2A.f,2A.g,2A.h,2A.i,2A.j,2A.k
