@@ -154,10 +154,10 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
   {
     name: "get_scout_status",
     description:
-      "Get this scout's current advancement progress from the knowledge graph. " +
-      "Call when the scout asks about their progress, what requirements they still need, " +
-      "their current rank, merit badge status, or Eagle progress. Do NOT call for general BSA policy questions " +
-      "— your embodied knowledge covers those.",
+      "Get a scout's current advancement progress from the knowledge graph. " +
+      "For scouts: returns YOUR progress (no scout_name needed). " +
+      "For leaders: specify scout_name to look up any scout's progress. " +
+      "Do NOT call for general BSA policy questions — your embodied knowledge covers those.",
     input_schema: {
       type: "object",
       properties: {
@@ -182,6 +182,12 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
           type: "string",
           description:
             'Required when scope=badge_requirements. Merit badge name, e.g., "Canoeing", "Camping", "First Aid".',
+        },
+        scout_name: {
+          type: "string",
+          description:
+            'For leaders: scout name to look up (e.g., "William", "Connor Goldstrom"). ' +
+            'Not needed when the scout is asking about their own progress.',
         },
       },
       required: ["scope"],

@@ -17,21 +17,32 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const ANTHROPIC_MODEL = "claude-sonnet-4-6";
 const MAX_TOOL_TURNS = 5;
 
-/** Validate BACKEND_API_KEY if set. Allows: correct key, no header, cookie auth, or ElevenLabs voice requests. */
+/** Validate request authorization. Accepts:
+ *  1. Correct BACKEND_API_KEY in Authorization header (LibreChat)
+ *  2. Valid sq_session cookie (app.html)
+ *  3. Active voice context for ElevenLabs requests (context set by authenticated user)
+ */
 function isAuthorized(req: Request): boolean {
   const requiredKey = process.env.BACKEND_API_KEY;
-  if (!requiredKey) return true;
+  if (!requiredKey) return true; // No key configured = dev mode
+
+  // API key (LibreChat sends this)
   const authHeader = req.headers["authorization"] || "";
-  // Correct API key (LibreChat)
   if (authHeader) {
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
     if (token === requiredKey) return true;
-    if (token === "not_provided") return true; // ElevenLabs sends this when no key configured
   }
-  // Cookie auth (app)
+
+  // Cookie auth (app.html)
   if (getUserFromCookie(req)) return true;
-  // No auth header at all (internal/health checks)
-  if (!authHeader) return true;
+
+  // Voice session: ElevenLabs can't send API key or cookie, but a valid
+  // voice context proves an authenticated user recently started this session.
+  // Voice context expires after 5 min and is set via cookie-authenticated POST.
+  const isVoiceRequest = !!req.body?.elevenlabs_extra_body
+    || (req.headers["user-agent"] || "").includes("AsyncOpenAI");
+  if (isVoiceRequest && getVoiceContext()) return true;
+
   return false;
 }
 
@@ -107,9 +118,14 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
   }
 
   const body = req.body as OpenAIChatRequest;
-  const model = body.model || "scout-coach";
   const doStream = body.stream !== false;
   const isVoice = !!body.elevenlabs_extra_body || (req.headers["user-agent"] || "").includes("AsyncOpenAI");
+
+  // Domain-aware defaults: admin domain → scoutmaster model, otherwise body.model
+  const host = (req.headers["x-forwarded-host"] || req.hostname || "").toString();
+  const isAdminDomain = host.includes("ai-chat") || host.includes("admin");
+  const model = body.model || (isAdminDomain ? "scoutmaster" : "scout-coach");
+
   // User email: emulation header > voice context > cookie (app) > header (LibreChat)
   const cookieUser = getUserFromCookie(req);
   const voiceCtx = isVoice ? getVoiceContext() : null;
@@ -119,9 +135,10 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
 
   const toolsUsedInRequest: string[] = []; // Track for episode capture
 
-  // Determine user role for tool filtering
+  // Determine user role for tool filtering.
+  // Admin domain → admin role. Otherwise role from email + model.
   const ADMIN_EMAILS = ["jeremy@hexapax.com", "jebramwell@gmail.com"];
-  const isAdmin = ADMIN_EMAILS.some(e => cookieUser?.email?.toLowerCase() === e.toLowerCase());
+  const isAdmin = isAdminDomain || ADMIN_EMAILS.some(e => cookieUser?.email?.toLowerCase() === e.toLowerCase());
   let userRole: UserRole = "scout";
   if (isAdmin && !emulateEmail) userRole = "admin";
   else if (isAdmin && emulateEmail) userRole = "scout"; // emulating a scout
@@ -144,10 +161,21 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       getPersonaBlock(model), // [1] Agent persona
     ];
 
-    // [2] Per-scout context (dynamic — not cached)
+    // [2] Per-user context (dynamic — not cached)
     if (userEmail) {
       const scoutCtx = await getScoutContext(userEmail);
-      if (scoutCtx) systemBlocks.push(scoutCtx);
+      if (scoutCtx) {
+        systemBlocks.push(scoutCtx);
+      } else if (userRole === "admin") {
+        // Leader context — no scout profile, inject identity + instructions
+        systemBlocks.push({
+          type: "text",
+          text: `LEADER CONTEXT\nEmail: ${userEmail}\nRole: Scoutmaster (admin)\nTroop: 2024\n\n` +
+            `You have access to ALL tools. Use troop_insights and session_planner freely.\n` +
+            `For individual scout lookups, use get_scout_status with a scout name via get_roster first.\n` +
+            `You do NOT have a personal Scoutbook userId — you are a leader, not a scout.`,
+        });
+      }
     }
 
     // [3] Voice mode instructions + prior chat context (when called from ElevenLabs ConvAI)

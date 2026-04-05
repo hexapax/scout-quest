@@ -1,6 +1,11 @@
-// Scout Coach — unified chat + voice app
+// Scout Quest — unified chat + voice app
 
 let Conversation; // ElevenLabs SDK, loaded on demand
+
+// --- Domain-aware config ---
+const isAdmin = location.hostname.includes('ai-chat') || location.hostname.includes('admin');
+const appModel = isAdmin ? 'scoutmaster' : 'scout-coach';
+const appLabel = isAdmin ? 'Scoutmaster' : 'Scout Coach';
 
 // --- Settings (persisted in localStorage) ---
 const settings = {
@@ -90,7 +95,7 @@ function addMsg(role, content, opts = {}) {
 
   const label = document.createElement('div');
   label.className = 'label';
-  label.textContent = role === 'agent' ? 'Scout Coach' : 'You';
+  label.textContent = role === 'agent' ? appLabel : 'You';
   div.appendChild(label);
 
   const body = document.createElement('div');
@@ -222,7 +227,7 @@ async function sendMessage(text) {
       method: 'POST',
       credentials: 'same-origin',
       headers,
-      body: JSON.stringify({ model: 'scout-coach', messages: apiMessages, stream: true }),
+      body: JSON.stringify({ model: appModel, messages: apiMessages, stream: true }),
     });
 
     if (!resp.ok) {

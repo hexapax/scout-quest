@@ -62,8 +62,19 @@ app.post("/internal/reload-knowledge", (req, res) => {
   }
 });
 
-// ElevenLabs Conversational AI — conversation token (WebRTC) and signed URL (WebSocket)
-const ELEVENLABS_AGENT_ID = process.env.ELEVENLABS_AGENT_ID || "agent_8001kn8cac71ekpt18tcaxrn8whg";
+// ElevenLabs Conversational AI — domain-aware agent selection.
+// Different domains get different voices/agents.
+const AGENT_IDS: Record<string, string> = {
+  scout: process.env.ELEVENLABS_AGENT_ID || "agent_8001kn8cac71ekpt18tcaxrn8whg",
+  admin: process.env.ELEVENLABS_ADMIN_AGENT_ID || process.env.ELEVENLABS_AGENT_ID || "agent_8001kn8cac71ekpt18tcaxrn8whg",
+};
+
+/** Pick ElevenLabs agent based on request hostname. */
+function pickAgentId(req: express.Request): string {
+  const host = (req.headers["x-forwarded-host"] || req.hostname || "").toString();
+  if (host.includes("ai-chat") || host.includes("admin")) return AGENT_IDS.admin;
+  return AGENT_IDS.scout;
+}
 
 // Returns both token (for WebRTC) and signedUrl (for WebSocket)
 app.get("/api/voice/signed-url", async (req, res) => {
@@ -72,10 +83,10 @@ app.get("/api/voice/signed-url", async (req, res) => {
     res.status(500).json({ error: "ELEVENLABS_API_KEY not configured" });
     return;
   }
+  const agentId = pickAgentId(req);
   try {
-    // Get conversation token (supports WebRTC)
     const tokenResp = await fetch(
-      `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${ELEVENLABS_AGENT_ID}`,
+      `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`,
       { headers: { "xi-api-key": apiKey } }
     );
     if (!tokenResp.ok) {
@@ -85,11 +96,10 @@ app.get("/api/voice/signed-url", async (req, res) => {
     }
     const urlData = (await tokenResp.json()) as { signed_url: string };
 
-    // Get a conversation token for WebRTC (GET with agent_id query param)
     let conversationToken: string | null = null;
     try {
       const ctResp = await fetch(
-        `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${ELEVENLABS_AGENT_ID}`,
+        `https://api.elevenlabs.io/v1/convai/conversation/token?agent_id=${agentId}`,
         { headers: { "xi-api-key": apiKey } }
       );
       if (ctResp.ok) {
@@ -103,22 +113,31 @@ app.get("/api/voice/signed-url", async (req, res) => {
     res.json({
       signedUrl: urlData.signed_url,
       conversationToken,
-      agentId: ELEVENLABS_AGENT_ID,
+      agentId,
     });
   } catch (err) {
     res.status(500).json({ error: err instanceof Error ? err.message : String(err) });
   }
 });
 
-// Voice context — client POSTs chat history before starting a voice session
+// Voice context — client POSTs chat history before starting a voice session.
+// Requires cookie auth because this is the trust anchor for voice sessions:
+// ElevenLabs requests are authorized by the existence of a valid voice context.
 import { setVoiceContext, getToolEvents, clearToolEvents } from "./voice-context.js";
+import { getUserFromCookie } from "./routes/auth.js";
 
 app.post("/api/voice/context", (req, res) => {
+  const user = getUserFromCookie(req);
+  if (!user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+
   const msgs = req.body?.messages;
   if (Array.isArray(msgs)) {
     setVoiceContext(msgs, {
       emulateEmail: req.body?.emulateEmail,
-      userEmail: req.body?.userEmail,
+      userEmail: req.body?.userEmail || user.email,
     });
     clearToolEvents(); // Fresh session
     res.json({ ok: true, count: msgs.length });
@@ -127,8 +146,12 @@ app.post("/api/voice/context", (req, res) => {
   }
 });
 
-// Poll for tool events during voice sessions
+// Poll for tool events during voice sessions (requires cookie auth)
 app.get("/api/voice/tool-events", (req, res) => {
+  if (!getUserFromCookie(req)) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
   const since = Number(req.query.since) || 0;
   res.json(getToolEvents(since));
 });
@@ -145,6 +168,7 @@ app.get("/v1/models", (_req, res) => {
     data: [
       { id: "scout-coach", object: "model", owned_by: "scout-quest" },
       { id: "scout-guide", object: "model", owned_by: "scout-quest" },
+      { id: "scoutmaster", object: "model", owned_by: "scout-quest" },
     ],
   });
 });

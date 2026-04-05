@@ -6,30 +6,32 @@ set -euo pipefail
 
 REMOTE_SCRIPT='
 sudo tee /etc/caddy/Caddyfile > /dev/null << CADDYEOF
-ai-chat.hexapax.com {
-    reverse_proxy localhost:3080
-}
-
+# Scout Quest app — scouts, parents, leaders
 scout-quest.hexapax.com {
-    handle /backend/* {
-        uri strip_prefix /backend
-        reverse_proxy localhost:3090
-    }
-    handle {
-        reverse_proxy localhost:3081
-    }
+    reverse_proxy localhost:3090
 }
 
-admin.hexapax.com {
-    reverse_proxy localhost:3082
+# API endpoint — ElevenLabs and other integrations
+api.hexapax.com {
+    reverse_proxy localhost:3090
 }
 
+# Admin app — scoutmaster tools, different persona/voice
+ai-chat.hexapax.com {
+    reverse_proxy localhost:3090
+}
+
+# Legacy aliases
 voice-api.hexapax.com {
     reverse_proxy localhost:3090
 }
-
 voice-chat.hexapax.com {
     reverse_proxy localhost:3090
+}
+
+# AdminJS panel
+admin.hexapax.com {
+    reverse_proxy localhost:3082
 }
 CADDYEOF
 
@@ -37,4 +39,4 @@ sudo systemctl reload caddy
 echo "Caddyfile updated and Caddy reloaded"
 '
 
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --command="$REMOTE_SCRIPT"
+gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=scout-assistant-487523 --command="$REMOTE_SCRIPT"

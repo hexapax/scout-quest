@@ -50,8 +50,15 @@ async function executeRoster(nameFilter?: string): Promise<string> {
   if (rows.length === 0) return nameFilter ? `No scouts found matching "${nameFilter}".` : "No scouts in roster.";
 
   const lines = rows.map(r => {
-    const ranks = r.earnedRanks?.length ? r.earnedRanks.join(", ") : "no ranks earned yet";
-    return `- ${r.name || "(unnamed)"} | ${r.email || "(no email)"} | Ranks: ${ranks}`;
+    // FalkorDB collect() returns various formats — flatten and coerce
+    let rankArr: string[] = [];
+    if (Array.isArray(r.earnedRanks)) {
+      rankArr = r.earnedRanks.flat().filter((x): x is string => typeof x === "string");
+    } else if (typeof r.earnedRanks === "string") {
+      rankArr = [r.earnedRanks];
+    }
+    const ranks = rankArr.length ? rankArr.join(", ") : "no ranks earned yet";
+    return `- ${r.name || "(unnamed)"} | ${r.email || "(no email)"} | userId: ${r.userId || "?"} | Ranks: ${ranks}`;
   });
 
   return `Troop roster (${rows.length} scouts):\n${lines.join("\n")}`;
@@ -71,6 +78,31 @@ async function resolveUserId(email: string): Promise<string | null> {
   }
 }
 
+/** Resolve a scout name → scoutbook userId. Case-insensitive partial match. */
+async function resolveUserIdByName(name: string): Promise<string | null> {
+  try {
+    const db = getScoutQuestDb();
+    const re = new RegExp(name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    const scout = await db.collection("scoutbook_scouts").findOne(
+      { $or: [{ firstName: re }, { lastName: re }, { displayName: re }] },
+      { projection: { userId: 1 } }
+    );
+    if (scout) return String(scout.userId);
+
+    // Try combined name match
+    const scouts = await db.collection("scoutbook_scouts")
+      .find({}, { projection: { userId: 1, firstName: 1, lastName: 1 } })
+      .toArray();
+    const match = scouts.find(s => {
+      const full = `${s.firstName || ""} ${s.lastName || ""}`.trim();
+      return re.test(full);
+    });
+    return match ? String(match.userId) : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Execute a single tool call and return the result string. */
 async function executeOneTool(
   toolName: string,
@@ -80,11 +112,23 @@ async function executeOneTool(
   try {
     switch (toolName) {
       case "get_scout_status": {
-        if (!userEmail) return "Cannot look up advancement: no user email provided.";
-        const userId = await resolveUserId(userEmail);
-        if (!userId) {
-          return `No Scoutbook record found for ${userEmail}. Scout must be on the troop roster.`;
+        let userId: string | null = null;
+
+        // Leader can query by scout name
+        if (input.scout_name) {
+          userId = await resolveUserIdByName(String(input.scout_name));
+          if (!userId) {
+            return `No scout found matching "${input.scout_name}". Use get_roster to find the correct name.`;
+          }
+        } else {
+          // Scout querying their own data
+          if (!userEmail) return "Cannot look up advancement: no user email provided.";
+          userId = await resolveUserId(userEmail);
+          if (!userId) {
+            return `No Scoutbook record found for ${userEmail}. If you're a leader, use scout_name parameter to look up a specific scout.`;
+          }
         }
+
         return await getScoutStatus(
           userId,
           String(input.scope || "summary"),
