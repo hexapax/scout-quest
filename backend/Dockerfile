@@ -11,6 +11,8 @@ COPY public/ ./public/
 # Install production dependencies only
 RUN npm ci --omit=dev
 
+USER node
+
 EXPOSE 3090
 
 CMD ["node", "dist/index.js"]
