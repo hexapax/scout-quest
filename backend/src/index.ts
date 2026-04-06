@@ -8,6 +8,7 @@ import { createActionsRouter } from "./routes/actions.js";
 import { createProgressRouter } from "./routes/progress.js";
 import { createEvalReportsRouter } from "./routes/eval-reports.js";
 import { createAuthRouter } from "./routes/auth.js";
+import { createConversationsRouter } from "./routes/conversations.js";
 
 const app = express();
 
@@ -36,6 +37,9 @@ app.use("/", createEvalReportsRouter());
 
 // Auth routes (Google OAuth)
 app.use("/", createAuthRouter());
+
+// Conversation persistence
+app.use("/", createConversationsRouter());
 
 // Serve static micro-app files
 import { join, dirname } from "path";

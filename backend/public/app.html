@@ -18,8 +18,22 @@
 
   <!-- App (hidden until auth) -->
   <div id="app" class="app hidden">
+    <!-- Conversation sidebar -->
+    <div class="conv-overlay hidden" id="convOverlay"></div>
+    <div class="conv-sidebar hidden" id="convSidebar">
+      <div class="conv-sidebar-header">
+        <span>Conversations</span>
+        <button class="icon-btn" id="convCloseBtn">&times;</button>
+      </div>
+      <button class="conv-new-btn" id="convNewBtn">+ New Chat</button>
+      <div class="conv-list" id="convList"></div>
+    </div>
+
     <div class="header">
       <div class="header-left">
+        <button class="icon-btn" id="convListBtn" title="Conversations">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </button>
         <span class="header-title">Scout Coach</span>
         <span class="header-user" id="userName"></span>
       </div>

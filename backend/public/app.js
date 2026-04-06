@@ -29,6 +29,8 @@ let agentStreamText = '';
 let pendingFiles = []; // { name, type, dataUrl }
 let toolPollInterval = null;
 let toolPollCursor = 0;
+let currentConversationId = null;
+let conversationList = [];
 
 // --- DOM ---
 const $ = (id) => document.getElementById(id);
@@ -51,6 +53,12 @@ const attachments = $('attachments');
 const settingsOverlay = $('settingsOverlay');
 const settingShowTools = $('settingShowTools');
 const settingEmulateEmail = $('settingEmulateEmail');
+const convOverlay = $('convOverlay');
+const convSidebar = $('convSidebar');
+const convList = $('convList');
+const convListBtn = $('convListBtn');
+const convCloseBtn = $('convCloseBtn');
+const convNewBtn = $('convNewBtn');
 
 // --- Markdown ---
 if (window.marked) marked.setOptions({ breaks: true, gfm: true });
@@ -75,6 +83,8 @@ async function init() {
     authGate.classList.add('hidden');
     app.classList.remove('hidden');
     userName.textContent = currentUser.name?.split(' ')[0] || '';
+    // Pre-load conversation list (non-blocking)
+    loadConversationList();
   }
   settingShowTools.checked = settings.showTools;
   settingEmulateEmail.value = settings.emulateEmail;
@@ -209,8 +219,12 @@ async function sendMessage(text) {
   }
   clearAttachments();
 
-  history.push({ role: 'user', content: typeof content === 'string' ? content : text });
+  const userText = typeof content === 'string' ? content : text;
+  history.push({ role: 'user', content: userText });
   startStream();
+
+  // Track tool events for persistence
+  const turnToolCalls = [];
 
   const apiMessages = history.map(m => ({
     role: m.role === 'agent' ? 'assistant' : m.role,
@@ -258,10 +272,16 @@ async function sendMessage(text) {
           if (chunk.type === 'tool_call') {
             finalizeStream();
             addToolBlock(chunk.tool_call.name, chunk.tool_call.input);
+            if (settings.showTools) {
+              turnToolCalls.push({ type: 'call', name: chunk.tool_call.name, input: chunk.tool_call.input });
+            }
             continue;
           }
           if (chunk.type === 'tool_result') {
             addToolBlock(chunk.tool_result.name + ' result', null, chunk.tool_result.result);
+            if (settings.showTools) {
+              turnToolCalls.push({ type: 'result', name: chunk.tool_result.name, result: chunk.tool_result.result });
+            }
             startStream();
             continue;
           }
@@ -275,9 +295,21 @@ async function sendMessage(text) {
     appendStream(`Connection error: ${err.message}`);
   }
 
+  // Capture assistant text before finalizing (finalizeStream resets agentStreamText)
+  const assistantText = agentStreamText;
   finalizeStream();
   isStreaming = false;
   sendBtn.disabled = !textInput.value.trim();
+
+  // Persist messages (non-blocking)
+  if (assistantText.trim()) {
+    const toSave = [{ role: 'user', content: userText }];
+    if (turnToolCalls.length) {
+      toSave.push({ role: 'tool_call', content: '', toolCalls: turnToolCalls });
+    }
+    toSave.push({ role: 'assistant', content: assistantText });
+    persistMessages(toSave);
+  }
 }
 
 // --- Text input ---
@@ -523,6 +555,7 @@ settingEmulateEmail.addEventListener('change', () => {
 });
 
 $('clearChatBtn').addEventListener('click', () => {
+  currentConversationId = null;
   history.length = 0;
   messages.innerHTML = '';
   settingsOverlay.classList.add('hidden');
@@ -582,6 +615,189 @@ function dbg(msg) {
   debugEl.scrollTop = debugEl.scrollHeight;
   // Keep last 20 lines
   while (debugEl.children.length > 20) debugEl.removeChild(debugEl.firstChild);
+}
+
+// --- Conversation sidebar ---
+function openConvSidebar() {
+  convOverlay.classList.remove('hidden');
+  convSidebar.classList.remove('hidden');
+  loadConversationList();
+}
+
+function closeConvSidebar() {
+  convOverlay.classList.add('hidden');
+  convSidebar.classList.add('hidden');
+}
+
+convListBtn.addEventListener('click', openConvSidebar);
+convCloseBtn.addEventListener('click', closeConvSidebar);
+convOverlay.addEventListener('click', closeConvSidebar);
+
+convNewBtn.addEventListener('click', () => {
+  currentConversationId = null;
+  history.length = 0;
+  messages.innerHTML = '';
+  // Restore welcome message
+  const w = document.createElement('div');
+  w.className = 'welcome-msg';
+  w.id = 'welcomeMsg';
+  w.innerHTML = '<strong>Hey!</strong> Ask me about rank requirements, merit badges, or your advancement progress.';
+  messages.appendChild(w);
+  closeConvSidebar();
+});
+
+function relativeTime(dateStr) {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = now - then;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return days + 'd ago';
+  return new Date(dateStr).toLocaleDateString();
+}
+
+async function loadConversationList() {
+  try {
+    const resp = await fetch('/api/conversations', { credentials: 'same-origin' });
+    if (!resp.ok) return;
+    conversationList = await resp.json();
+    renderConversationList();
+  } catch (e) {
+    console.warn('[conv] Failed to load list:', e);
+  }
+}
+
+function renderConversationList() {
+  convList.innerHTML = '';
+  if (!conversationList.length) {
+    const empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;color:var(--text-faint);font-size:12px;padding:24px 8px;';
+    empty.textContent = 'No saved conversations yet';
+    convList.appendChild(empty);
+    return;
+  }
+
+  for (const conv of conversationList) {
+    const item = document.createElement('div');
+    item.className = 'conv-item' + (conv._id === currentConversationId ? ' active' : '');
+
+    const body = document.createElement('div');
+    body.className = 'conv-item-body';
+
+    const title = document.createElement('div');
+    title.className = 'conv-item-title';
+    title.textContent = conv.title || 'Untitled';
+    body.appendChild(title);
+
+    const meta = document.createElement('div');
+    meta.className = 'conv-item-meta';
+    meta.textContent = relativeTime(conv.updatedAt) + (conv.messageCount ? ' \u00b7 ' + conv.messageCount + ' msgs' : '');
+    body.appendChild(meta);
+
+    item.appendChild(body);
+
+    const del = document.createElement('button');
+    del.className = 'conv-item-del';
+    del.textContent = '\u00d7';
+    del.title = 'Delete';
+    del.onclick = async (e) => {
+      e.stopPropagation();
+      if (!confirm('Delete this conversation?')) return;
+      try {
+        await fetch('/api/conversations/' + conv._id, {
+          method: 'DELETE',
+          credentials: 'same-origin',
+        });
+        if (currentConversationId === conv._id) {
+          currentConversationId = null;
+          history.length = 0;
+          messages.innerHTML = '';
+        }
+        loadConversationList();
+      } catch (err) {
+        console.warn('[conv] Delete failed:', err);
+      }
+    };
+    item.appendChild(del);
+
+    item.addEventListener('click', () => loadConversation(conv._id));
+    convList.appendChild(item);
+  }
+}
+
+async function loadConversation(id) {
+  try {
+    const resp = await fetch('/api/conversations/' + id, { credentials: 'same-origin' });
+    if (!resp.ok) return;
+    const conv = await resp.json();
+
+    // Clear current state
+    currentConversationId = conv._id;
+    history.length = 0;
+    messages.innerHTML = '';
+
+    // Render messages
+    for (const msg of conv.messages) {
+      if (msg.role === 'user') {
+        addMsg('user', msg.content);
+        history.push({ role: 'user', content: msg.content });
+      } else if (msg.role === 'assistant') {
+        addMsg('agent', msg.content);
+        history.push({ role: 'assistant', content: msg.content });
+      } else if (msg.role === 'tool_call' && msg.toolCalls) {
+        for (const tc of msg.toolCalls) {
+          addToolBlock(tc.name, tc.input);
+        }
+      } else if (msg.role === 'tool_result' && msg.toolCalls) {
+        for (const tc of msg.toolCalls) {
+          addToolBlock((tc.name || 'tool') + ' result', null, tc.result);
+        }
+      }
+    }
+
+    closeConvSidebar();
+    scrollEnd();
+  } catch (e) {
+    console.warn('[conv] Failed to load conversation:', e);
+  }
+}
+
+/** Save new messages to the current conversation (or create one). */
+async function persistMessages(newMessages) {
+  if (!currentUser) return;
+
+  try {
+    if (!currentConversationId) {
+      // Create a new conversation with these messages
+      const resp = await fetch('/api/conversations', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: appModel,
+          messages: newMessages,
+        }),
+      });
+      if (resp.ok) {
+        const conv = await resp.json();
+        currentConversationId = conv._id;
+      }
+    } else {
+      // Append to existing conversation
+      await fetch('/api/conversations/' + currentConversationId + '/messages', {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: newMessages }),
+      });
+    }
+  } catch (e) {
+    console.warn('[conv] Failed to persist messages:', e);
+  }
 }
 
 // --- Boot ---
