@@ -596,7 +596,7 @@ class EvalEngine:
         use_completion_tokens = model_id.startswith("gpt-5")
 
         if provider == "backend":
-            base_url = os.environ.get("BACKEND_URL", "https://api.hexapax.com")
+            base_url = os.environ.get("BACKEND_URL", "https://api.hexapax.com/v1")
             key_env = "BACKEND_API_KEY"
         elif provider == "deepseek":
             base_url, key_env = "https://api.deepseek.com/v1", "DEEPSEEK_API_KEY"
@@ -644,6 +644,7 @@ class EvalEngine:
             body: dict[str, Any] = {
                 "model": model_id,
                 "messages": messages,
+                "stream": False,  # Explicit — backend defaults to streaming SSE
             }
             if use_completion_tokens:
                 body["max_completion_tokens"] = self.config.max_tokens
