@@ -433,3 +433,130 @@ configs:
     web_search: true
     label: "Llama 4 Maverick"
 
+  # ---------------------------------------------------------------
+  # Backend configs — test through the deployed v2 backend
+  #
+  # The backend handles knowledge injection, persona, tools, and
+  # caching server-side. The eval engine just sends messages with
+  # the model name. This tests the actual user experience.
+  #
+  # Compare backend-claude vs graph-PKT to measure backend overhead.
+  # Compare backend-grok vs graph-grok to compare provider quality
+  # through the same backend stack.
+  #
+  # Usage:
+  #   BACKEND_API_KEY=xxx python3 run-eval.py --config backend-claude --sample 3 --budget 5.00
+  #   BACKEND_API_KEY=xxx python3 run-eval.py --config backend-grok,backend-gpt --sample 3 --budget 10.00
+  # ---------------------------------------------------------------
+
+  backend-claude:
+    model_id: scout-coach
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: claude
+    label: "Backend: Claude Sonnet (full stack)"
+    price: "$3/$15 (cached)"
+
+  backend-claude-opus:
+    model_id: "scout-coach:claude-opus-4-6"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: claude
+    label: "Backend: Claude Opus (full stack)"
+    price: "$5/$25 (cached)"
+
+  backend-grok:
+    model_id: "scout-coach:grok-3-fast"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: grok
+    label: "Backend: Grok 3 Fast (full stack)"
+    price: "$0.20/$0.50 (75% cache)"
+
+  backend-grok41:
+    model_id: "scout-coach:grok-4.1-fast"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: grok
+    label: "Backend: Grok 4.1 Fast (full stack)"
+    price: "$0.20/$0.50 (75% cache)"
+
+  backend-gpt41:
+    model_id: "scout-coach:gpt-4.1"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: gpt
+    label: "Backend: GPT-4.1 (full stack)"
+    price: "$2/$8 (50% cache)"
+
+  backend-gpt54:
+    model_id: "scout-coach:gpt-5.4"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: gpt
+    label: "Backend: GPT-5.4 (full stack)"
+    price: "$2.50/$15 (50% cache)"
+
+  backend-gemini:
+    model_id: "scout-coach:gemini-3-flash-preview"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: gemini
+    label: "Backend: Gemini 3 Flash (full stack)"
+    price: "$0.50/$3 (90% implicit)"
+
+  backend-deepseek:
+    model_id: "scout-coach:deepseek/deepseek-chat"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: gpt
+    label: "Backend: DeepSeek V3 (full stack via OpenRouter)"
+    price: "$0.14/$0.28"
+
+  backend-kimi:
+    model_id: "scout-coach:moonshotai/kimi-k2.5"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: gpt
+    label: "Backend: Kimi K2.5 (full stack via OpenRouter)"
+    price: "$0.60/?"
+
+  # Scoutmaster persona variants
+  backend-scoutmaster:
+    model_id: scoutmaster
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: claude
+    label: "Backend: Scoutmaster (Claude, full stack)"
+    price: "$3/$15 (cached)"
+
+  backend-scoutmaster-grok:
+    model_id: "scoutmaster:grok-3-fast"
+    provider: backend
+    knowledge: none
+    layer: full
+    tools_enabled: false
+    persona_key: grok
+    label: "Backend: Scoutmaster Grok (full stack)"
+    price: "$0.20/$0.50"
+

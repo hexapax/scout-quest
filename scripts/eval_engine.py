@@ -305,7 +305,7 @@ class EvalEngine:
             # Route to provider-specific engine
             if self.config.provider == "anthropic":
                 result = self._run_anthropic(item, max_turns, start)
-            elif self.config.provider in ("openai", "deepseek", "openrouter", "xai"):
+            elif self.config.provider in ("openai", "deepseek", "openrouter", "xai", "backend"):
                 result = self._run_openai_compat(item, max_turns, start)
             elif self.config.provider == "google":
                 result = self._run_gemini(item, max_turns, start)
@@ -595,7 +595,10 @@ class EvalEngine:
         provider = self.config.provider
         use_completion_tokens = model_id.startswith("gpt-5")
 
-        if provider == "deepseek":
+        if provider == "backend":
+            base_url = os.environ.get("BACKEND_URL", "https://api.hexapax.com")
+            key_env = "BACKEND_API_KEY"
+        elif provider == "deepseek":
             base_url, key_env = "https://api.deepseek.com/v1", "DEEPSEEK_API_KEY"
         elif provider == "openrouter":
             base_url, key_env = "https://openrouter.ai/api/v1", "OPENROUTER_KEY"
@@ -606,19 +609,24 @@ class EvalEngine:
 
         api_key = os.environ.get(key_env, "")
 
-        # Convert tool definitions to OpenAI format
-        openai_tools = []
-        for td in self.tools.all_definitions():
-            openai_tools.append({
-                "type": "function",
-                "function": {
-                    "name": td["name"],
-                    "description": td.get("description", ""),
-                    "parameters": td.get("input_schema", {"type": "object", "properties": {}}),
-                },
-            })
+        # For backend provider: the backend handles knowledge, persona, and tools
+        # server-side. Don't inject eval engine's own system prompt or tools.
+        is_backend = provider == "backend"
 
-        messages: list[dict] = [{"role": "system", "content": system_prompt}]
+        # Convert tool definitions to OpenAI format (skip for backend — has own tools)
+        openai_tools = []
+        if not is_backend:
+            for td in self.tools.all_definitions():
+                openai_tools.append({
+                    "type": "function",
+                    "function": {
+                        "name": td["name"],
+                        "description": td.get("description", ""),
+                        "parameters": td.get("input_schema", {"type": "object", "properties": {}}),
+                    },
+                })
+
+        messages: list[dict] = [] if is_backend else [{"role": "system", "content": system_prompt}]
         transcript: list[dict] = []
         tool_call_log: list[dict] = []
         unauthorized_calls: list[dict] = []
