@@ -4,14 +4,21 @@ let Conversation; // ElevenLabs SDK, loaded on demand
 
 // --- Domain-aware config ---
 const isAdmin = location.hostname.includes('ai-chat') || location.hostname.includes('admin');
-const appModel = isAdmin ? 'scoutmaster' : 'scout-coach';
+const defaultPersona = isAdmin ? 'scoutmaster' : 'scout-coach';
 const appLabel = isAdmin ? 'Scoutmaster' : 'Scout Coach';
 
 // --- Settings (persisted in localStorage) ---
 const settings = {
   showTools: localStorage.getItem('sq_showTools') !== 'false',
   emulateEmail: localStorage.getItem('sq_emulateEmail') || '',
+  model: localStorage.getItem('sq_model') || '',
 };
+
+/** Get the effective model to send to the API. */
+function getModel() {
+  if (settings.model) return `${defaultPersona}:${settings.model}`;
+  return defaultPersona;
+}
 
 function saveSetting(key, val) {
   settings[key] = val;
@@ -88,6 +95,8 @@ async function init() {
   }
   settingShowTools.checked = settings.showTools;
   settingEmulateEmail.value = settings.emulateEmail;
+  const settingModel = $('settingModel');
+  if (settingModel) settingModel.value = settings.model;
 }
 
 // --- Conversation history (for chat API) ---
@@ -241,7 +250,7 @@ async function sendMessage(text) {
       method: 'POST',
       credentials: 'same-origin',
       headers,
-      body: JSON.stringify({ model: appModel, messages: apiMessages, stream: true }),
+      body: JSON.stringify({ model: getModel(), messages: apiMessages, stream: true }),
     });
 
     if (!resp.ok) {
@@ -552,6 +561,10 @@ settingShowTools.addEventListener('change', () => {
 
 settingEmulateEmail.addEventListener('change', () => {
   saveSetting('emulateEmail', settingEmulateEmail.value.trim());
+});
+
+$('settingModel')?.addEventListener('change', () => {
+  saveSetting('model', $('settingModel').value);
 });
 
 $('clearChatBtn').addEventListener('click', () => {
