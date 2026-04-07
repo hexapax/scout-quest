@@ -25,12 +25,17 @@ export interface OpenAIChatRequest {
 }
 
 // Anthropic API types (subset)
+// Note: AnthropicSystemBlock doubles as the canonical SystemBlock type.
+// Non-Anthropic providers ignore cache_control.
 
 export interface AnthropicSystemBlock {
   type: "text";
   text: string;
   cache_control?: { type: "ephemeral" };
 }
+
+/** Canonical system block type — alias for AnthropicSystemBlock. */
+export type SystemBlock = AnthropicSystemBlock;
 
 export interface AnthropicTextBlock {
   type: "text";

@@ -1,20 +1,19 @@
 import type { Request, Response } from "express";
-import Anthropic from "@anthropic-ai/sdk";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages.js";
 import { getKnowledgeBlock } from "./knowledge.js";
 import { getPersonaBlock } from "./persona.js";
 import { getScoutContext } from "./scout-context.js";
 import { openaiMessagesToAnthropic, extractSystemText } from "./translate.js";
-import { initSSE, writeRoleChunk, writeContentChunk, writeFinishChunk, writeSSEDone, writeToolCallChunk, writeToolResultChunk, mapStopReason } from "./stream.js";
+import { initSSE, writeRoleChunk, writeContentChunk, writeFinishChunk, writeSSEDone, writeToolCallChunk, writeToolResultChunk } from "./stream.js";
 import type { OpenAIChatRequest, AnthropicSystemBlock } from "./types.js";
-import { SCOUT_TOOLS, getToolsForRole, type UserRole } from "./tools/definitions.js";
+import { getToolsForRole, type UserRole } from "./tools/definitions.js";
 import { executeToolCalls } from "./tool-executor.js";
 import { getUserFromCookie } from "./routes/auth.js";
 import { getVoiceContext, pushToolEvent } from "./voice-context.js";
 import { captureEpisode } from "./episodes.js";
+import { resolveProvider } from "./providers/registry.js";
+import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const ANTHROPIC_MODEL = "claude-sonnet-4-6";
 const MAX_TOOL_TURNS = 5;
 
 /** Validate request authorization. Accepts:
@@ -44,71 +43,6 @@ function isAuthorized(req: Request): boolean {
   if (isVoiceRequest && getVoiceContext()) return true;
 
   return false;
-}
-
-interface CacheMetrics {
-  input_tokens: number;
-  output_tokens: number;
-  cache_creation_input_tokens: number;
-  cache_read_input_tokens: number;
-}
-
-/** Run the Anthropic tool execution loop and return the final response text + cache metrics. */
-async function runWithTools(
-  baseReq: object,
-  messages: MessageParam[],
-  userEmail: string | undefined,
-  tools: unknown[] = SCOUT_TOOLS
-): Promise<{ text: string; usage: CacheMetrics }> {
-  const workingMessages = [...messages];
-  let lastUsage: CacheMetrics = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 };
-
-  for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
-    const resp = await anthropic.messages.create({
-      ...(baseReq as Parameters<typeof anthropic.messages.create>[0]),
-      messages: workingMessages,
-      tools: tools as Parameters<typeof anthropic.messages.create>[0]["tools"],
-      stream: false,
-    });
-
-    // Capture cache metrics from usage
-    const u = resp.usage as unknown as Record<string, number>;
-    lastUsage = {
-      input_tokens: u.input_tokens ?? 0,
-      output_tokens: u.output_tokens ?? 0,
-      cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
-      cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
-    };
-    console.log(`[cache] turn=${turn} input=${lastUsage.input_tokens} output=${lastUsage.output_tokens} cache_create=${lastUsage.cache_creation_input_tokens} cache_read=${lastUsage.cache_read_input_tokens}`);
-
-    // No tool calls — return final text
-    if (resp.stop_reason !== "tool_use") {
-      const text = resp.content
-        .filter((b) => b.type === "text")
-        .map((b) => (b.type === "text" ? b.text : ""))
-        .join("");
-      return { text, usage: lastUsage };
-    }
-
-    // Execute tool calls
-    const toolUseBlocks = resp.content.filter(
-      (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
-    );
-    const toolResults = await executeToolCalls(
-      toolUseBlocks.map((b) => ({
-        type: "tool_use" as const,
-        id: b.id,
-        name: b.name,
-        input: b.input as Record<string, unknown>,
-      })),
-      userEmail
-    );
-
-    workingMessages.push({ role: "assistant", content: resp.content });
-    workingMessages.push({ role: "user", content: toolResults });
-  }
-
-  return { text: "I was unable to complete that request.", usage: lastUsage };
 }
 
 export async function chatHandler(req: Request, res: Response): Promise<void> {
@@ -209,7 +143,7 @@ Rules for voice output:
       systemBlocks.push({ type: "text", text: systemFromMessages });
     }
 
-    // Convert OpenAI messages to Anthropic format
+    // Convert OpenAI messages to Anthropic format (canonical for all providers)
     let messages = openaiMessagesToAnthropic(body.messages) as MessageParam[];
 
     // For voice: prepend prior chat history as actual message turns
@@ -250,11 +184,20 @@ Rules for voice output:
       return;
     }
 
-    const baseReq = {
-      model: ANTHROPIC_MODEL,
-      max_tokens: body.max_tokens || 16384,
-      system: systemBlocks,
-      ...(body.temperature !== undefined ? { temperature: body.temperature } : {}),
+    // Resolve provider from model name
+    const { provider, modelId, providerName } = resolveProvider(model);
+    console.log(`[chat] Provider: ${providerName}, modelId: ${modelId}`);
+
+    // Build the provider-agnostic request
+    const providerReq: ProviderRequest = {
+      systemPrompt: systemBlocks.map(b => b.text).join("\n\n=== SECTION BREAK ===\n\n"),
+      systemBlocks: systemBlocks as ProviderRequest["systemBlocks"],
+      messages: messages as unknown as CanonicalMessage[],
+      tools: activeTools as ProviderRequest["tools"],
+      maxTokens: body.max_tokens || 16384,
+      temperature: body.temperature,
+      model: modelId,
+      conversationId: undefined, // TODO: from conversation persistence
     };
 
     const requestId = `chatcmpl-${Date.now()}`;
@@ -265,43 +208,31 @@ Rules for voice output:
 
       // Stream with tool loop: stream text tokens, execute tools if needed, repeat.
       try {
-        const workingMessages = [...messages] as Parameters<typeof anthropic.messages.create>[0]["messages"];
+        let workingReq = { ...providerReq };
 
         for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
-          const stream = anthropic.messages.stream({
-            ...(baseReq as Parameters<typeof anthropic.messages.create>[0]),
-            messages: workingMessages,
-            tools: activeTools as Parameters<typeof anthropic.messages.create>[0]["tools"],
+          const response: ProviderResponse = await provider.stream(workingReq, (delta) => {
+            writeContentChunk(res, requestId, model, delta);
           });
-
-          stream.on("text", (text) => {
-            writeContentChunk(res, requestId, model, text);
-          });
-
-          const finalMessage = await stream.finalMessage();
 
           // No tool calls — done
-          if (finalMessage.stop_reason !== "tool_use") break;
-
-          // Execute tools and continue
-          const toolUseBlocks = finalMessage.content.filter(
-            (b): b is Anthropic.ToolUseBlock => b.type === "tool_use"
-          );
-          console.log(`[chat] stream tool turn=${turn} tools=${toolUseBlocks.map(b => b.name).join(",")}`);
-          toolsUsedInRequest.push(...toolUseBlocks.map(b => b.name));
+          if (response.stopReason !== "tool_use") break;
 
           // Emit tool call events to the client (SSE for chat, buffer for voice)
-          for (const b of toolUseBlocks) {
-            writeToolCallChunk(res, b.name, b.input, b.id);
-            if (isVoice) pushToolEvent(b.name, "call", b.input);
+          console.log(`[chat] stream tool turn=${turn} tools=${response.toolCalls.map(tc => tc.name).join(",")}`);
+          for (const tc of response.toolCalls) {
+            writeToolCallChunk(res, tc.name, tc.arguments, tc.id);
+            if (isVoice) pushToolEvent(tc.name, "call", tc.arguments);
+            toolsUsedInRequest.push(tc.name);
           }
 
+          // Execute tools
           const toolResults = await executeToolCalls(
-            toolUseBlocks.map((b) => ({
+            response.toolCalls.map(tc => ({
               type: "tool_use" as const,
-              id: b.id,
-              name: b.name,
-              input: b.input as Record<string, unknown>,
+              id: tc.id,
+              name: tc.name,
+              input: tc.arguments,
             })),
             userEmail
           );
@@ -309,19 +240,30 @@ Rules for voice output:
           // Emit tool result events
           for (const r of toolResults) {
             if (r.type === "tool_result") {
-              const block = toolUseBlocks.find(b => b.id === r.tool_use_id);
-              writeToolResultChunk(res, r.tool_use_id, block?.name || "", r.content);
-              if (isVoice) pushToolEvent(block?.name || "", "result", undefined, r.content);
+              const tc = response.toolCalls.find(t => t.id === r.tool_use_id);
+              writeToolResultChunk(res, r.tool_use_id, tc?.name || "", r.content);
+              if (isVoice) pushToolEvent(tc?.name || "", "result", undefined, r.content);
             }
           }
 
-          workingMessages.push({ role: "assistant" as const, content: finalMessage.content });
-          workingMessages.push({ role: "user" as const, content: toolResults });
+          // Build messages for next turn using provider-specific formatting
+          const updatedMessages = provider.buildToolResultMessages(
+            workingReq.messages,
+            response,
+            toolResults.map(r => ({ toolCallId: r.tool_use_id, result: r.content })),
+          );
+          workingReq = { ...workingReq, messages: updatedMessages };
         }
       } catch (streamErr) {
-        console.error("Stream error, falling back to runWithTools:", streamErr);
-        const { text: finalText } = await runWithTools(baseReq, messages, userEmail, activeTools);
-        writeContentChunk(res, requestId, model, finalText);
+        console.error("Stream error:", streamErr);
+        // Fallback: try a non-streaming complete() call
+        try {
+          const fallbackResp = await provider.complete(providerReq);
+          writeContentChunk(res, requestId, model, fallbackResp.text);
+        } catch (fallbackErr) {
+          console.error("Fallback complete() also failed:", fallbackErr);
+          writeContentChunk(res, requestId, model, "I encountered an error processing your request.");
+        }
       }
 
       writeFinishChunk(res, requestId, model, "stop");
@@ -339,7 +281,41 @@ Rules for voice output:
         toolsUsed: toolsUsedInRequest,
       });
     } else {
-      const { text: finalText, usage } = await runWithTools(baseReq, messages, userEmail, activeTools);
+      // Non-streaming: complete() with tool loop
+      let workingReq = { ...providerReq };
+      let finalText = "I was unable to complete that request.";
+      let lastUsage: { inputTokens: number; outputTokens: number; cacheCreationTokens?: number; cacheReadTokens?: number } = { inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 };
+
+      for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
+        const response = await provider.complete(workingReq);
+        lastUsage = response.usage;
+
+        // No tool calls — return final text
+        if (response.stopReason !== "tool_use") {
+          finalText = response.text;
+          break;
+        }
+
+        // Execute tools
+        const toolResults = await executeToolCalls(
+          response.toolCalls.map(tc => ({
+            type: "tool_use" as const,
+            id: tc.id,
+            name: tc.name,
+            input: tc.arguments,
+          })),
+          userEmail
+        );
+
+        // Build messages for next turn
+        const updatedMessages = provider.buildToolResultMessages(
+          workingReq.messages,
+          response,
+          toolResults.map(r => ({ toolCallId: r.tool_use_id, result: r.content })),
+        );
+        workingReq = { ...workingReq, messages: updatedMessages };
+      }
+
       res.json({
         id: requestId,
         object: "chat.completion",
@@ -354,11 +330,11 @@ Rules for voice output:
           },
         ],
         usage: {
-          prompt_tokens: usage.input_tokens,
-          completion_tokens: usage.output_tokens,
-          total_tokens: usage.input_tokens + usage.output_tokens,
-          cache_creation_input_tokens: usage.cache_creation_input_tokens,
-          cache_read_input_tokens: usage.cache_read_input_tokens,
+          prompt_tokens: lastUsage.inputTokens,
+          completion_tokens: lastUsage.outputTokens,
+          total_tokens: lastUsage.inputTokens + lastUsage.outputTokens,
+          cache_creation_input_tokens: lastUsage.cacheCreationTokens ?? 0,
+          cache_read_input_tokens: lastUsage.cacheReadTokens ?? 0,
         },
       });
     }
