@@ -1,5 +1,12 @@
 #!/bin/bash
-# Update the Caddyfile on the VM to include all three proxy rules
+# Update the full Caddyfile on scout-coach-vm.
+#
+# WARNING: this script REPLACES the entire /etc/caddy/Caddyfile on the VM.
+# It is the single source of truth for Caddy config on that host, so every
+# vhost that should be served must be listed below — including ones for
+# projects outside scout-quest (jeremy-memory, mcp-proxy, hexapax.com).
+# If you add a new vhost, add it here too.
+#
 # Usage: ./scripts/update-caddyfile.sh
 
 set -euo pipefail
@@ -32,6 +39,38 @@ voice-chat.hexapax.com {
 # AdminJS panel
 admin.hexapax.com {
     reverse_proxy localhost:3082
+}
+
+# jeremy-memory — webviewer + MCP server + Grafana
+jeremy.hexapax.com {
+    # MCP server — direct, token-authenticated (no oauth2-proxy)
+    handle /mcp* {
+        reverse_proxy localhost:8100
+    }
+
+    # Grafana dashboards
+    handle /grafana* {
+        reverse_proxy localhost:3000
+    }
+
+    # Everything else through oauth2-proxy (Google login)
+    handle {
+        reverse_proxy localhost:4180
+    }
+}
+
+# hexapax.com — link board / portal (auth via oauth2-proxy)
+hexapax.com {
+    # Rewrite root to the link board route
+    rewrite / /view/links
+    # Proxy through oauth2-proxy for Google login
+    reverse_proxy localhost:4180
+}
+
+# mcp-proxy — HTTP bridge for stdio MCP servers
+# (perplexity, brave, newsapi, gdelt, courtlistener)
+mcp-proxy.hexapax.com {
+    reverse_proxy localhost:8200
 }
 CADDYEOF
 
