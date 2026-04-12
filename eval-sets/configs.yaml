@@ -151,22 +151,25 @@ configs:
     price: "$0.14/$0.28"
 
   # ---------------------------------------------------------------
-  # xAI Grok
+  # xAI Grok (via OpenRouter)
   # ---------------------------------------------------------------
   grok:
-    model_id: grok-3-fast
-    provider: xai
-    knowledge: compact
+    model_id: x-ai/grok-4.1-fast
+    provider: openrouter
+    knowledge: full
     layer: full
     persona_key: grok
-    label: "Grok 3 Fast"
-    price: "$5/$15"
+    label: "Grok 4.1 Fast"
+    price: "$0.20/$0.50"
 
-  grok-mini:
-    extends: grok
-    model_id: grok-3-mini-fast
-    label: "Grok 3 Mini Fast"
-    price: "$0.30/$0.50"
+  grok42:
+    model_id: x-ai/grok-4.20
+    provider: openrouter
+    knowledge: full
+    layer: full
+    persona_key: grok
+    label: "Grok 4.2"
+    price: "$2/$6"
 
   # ---------------------------------------------------------------
   # Ablation layers — model-agnostic test conditions
@@ -279,7 +282,13 @@ configs:
     extends: grok
     layer: knowledge+troop
     web_search: true
-    label: "Grok 3 Fast"
+    label: "Grok 4.1 Fast"
+
+  graph-grok42:
+    extends: grok42
+    layer: knowledge+troop
+    web_search: true
+    label: "Grok 4.2"
 
   graph-gemini:
     extends: gemini3flash
@@ -317,14 +326,6 @@ configs:
     label: "DeepSeek V3.2"
     price: "$0.26/$0.38"
 
-  grok41-fast:
-    model_id: x-ai/grok-4.1-fast
-    provider: openrouter
-    knowledge: full
-    layer: full
-    persona_key: grok
-    label: "Grok 4.1 Fast"
-    price: "$0.20/$0.50"
 
   qwen35-max:
     model_id: qwen/qwen3.5-397b-a17b
@@ -351,11 +352,6 @@ configs:
     web_search: true
     label: "DeepSeek V3.2"
 
-  graph-grok41:
-    extends: grok41-fast
-    layer: knowledge+troop
-    web_search: true
-    label: "Grok 4.1 Fast"
 
   graph-qwen35-max:
     extends: qwen35-max
@@ -470,17 +466,7 @@ configs:
     price: "$5/$25 (cached)"
 
   backend-grok:
-    model_id: "scout-coach:grok-3-fast"
-    provider: backend
-    knowledge: none
-    layer: full
-    tools_enabled: false
-    persona_key: grok
-    label: "Backend: Grok 3 Fast (full stack)"
-    price: "$0.20/$0.50 (75% cache)"
-
-  backend-grok41:
-    model_id: "scout-coach:grok-4.1-fast"
+    model_id: "scout-coach:x-ai/grok-4.1-fast"
     provider: backend
     knowledge: none
     layer: full
@@ -510,24 +496,24 @@ configs:
     price: "$2.50/$15 (50% cache)"
 
   backend-gemini:
-    model_id: "scout-coach:gemini-3-flash-preview"
+    model_id: "scout-coach:gemini-3.1-flash-lite-preview"
     provider: backend
     knowledge: none
     layer: full
     tools_enabled: false
     persona_key: gemini
-    label: "Backend: Gemini 3 Flash (full stack)"
-    price: "$0.50/$3 (90% implicit)"
+    label: "Backend: Gemini 3.1 Flash Lite (full stack)"
+    price: "$0.25/$1.50 (90% implicit)"
 
   backend-deepseek:
-    model_id: "scout-coach:deepseek/deepseek-chat"
+    model_id: "scout-coach:deepseek/deepseek-v3.2"
     provider: backend
     knowledge: none
     layer: full
     tools_enabled: false
     persona_key: gpt
-    label: "Backend: DeepSeek V3 (full stack via OpenRouter)"
-    price: "$0.14/$0.28"
+    label: "Backend: DeepSeek V3.2 (full stack via OpenRouter)"
+    price: "$0.26/$0.38"
 
   backend-kimi:
     model_id: "scout-coach:moonshotai/kimi-k2.5"
@@ -551,7 +537,7 @@ configs:
     price: "$3/$15 (cached)"
 
   backend-scoutmaster-grok:
-    model_id: "scoutmaster:grok-3-fast"
+    model_id: "scoutmaster:grok-4.1-fast"
     provider: backend
     knowledge: none
     layer: full

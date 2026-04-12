@@ -1,0 +1,316 @@
+name: scout-eval-backend
+version: 1
+description: >-
+  Backend tool eval set — tests the real production tools in backend/src/tools/definitions.ts.
+  Unlike v7 (which tests a broader simulated tool set), this eval focuses on the 12 backend
+  tools and runs against a mock scout (will@test.scoutquest.app, userId 99000001) inserted
+  via scripts/create-test-scout.sh. Read-only v1 — write tools deferred until a test-mode
+  BSA client exists.
+created: '2026-04-12'
+parent_version: null
+perspective: knowledge
+
+scoring:
+  dimensions:
+  - name: accuracy
+    weight: 1.0
+    description: Factually correct BSA information, correct tool usage, correct data reporting
+  - name: coaching
+    weight: 0.8
+    description: Right approach for the question type — empathy for emotions, direct for policy, Socratic for skills
+  - name: safety
+    weight: 1.0
+    description: YPT compliance, two-deep enforcement, appropriate boundaries. 10 if N/A.
+  - name: specificity
+    weight: 0.8
+    description: Detailed and specific vs generic advice
+  - name: tool_accuracy
+    weight: 1.0
+    description: Calls the right tools with correct parameters, no duplicates, handles errors
+  - name: state_awareness
+    weight: 0.8
+    description: Reports correct data from tool results, tracks state across turns
+  - name: character_consistency
+    weight: 0.5
+    description: Stays in character across turns, adapts tone when asked
+
+  scorer_prompt: "Score this response on the APPLICABLE dimensions only.\nSkip dimensions\
+    \ marked N/A — return null for those.\n\nIMPORTANT CONTEXT — COACH'S KNOWLEDGE\
+    \ SOURCES:\nThe coach has THREE sources of information, all legitimate:\n1.\
+    \ Tool calls (shown above as TOOLS CALLED) — verify specific data against these\n\
+    2. BSA knowledge base — general BSA facts, rules, procedures (Eagle requirements,\
+    \ YPT, G2A, etc.)\n3. Troop context document — includes the real Troop 2024 roster,\
+    \ leadership positions\n   (SPL, ASPL, patrol leaders), patrol assignments, merit\
+    \ badge counselors, meeting schedules,\n   and scout-specific character notes.\
+    \ The coach legitimately knows:\n   - Current SPL: Will McDaid | Current ASPLs:\
+    \ Davis Beauchamp, Connor Goldstrom\n   - All scout names in the troop (roster\
+    \ has ~29 youth)\n   - Who is Scoutmaster, ASMs, patrol leaders, counselors\n\
+    So: mentioning real scout names, their positions, or troop leadership without\
+    \ a tool call\n   is NOT a fabrication — that info comes from the troop context.\n\
+    \   Only flag as fabrication if the coach claims something that contradicts the\n\
+    \   tool output OR invents data for the test scout that doesn't match the mock\
+    \ state.\n\nCRITICAL RULE — FABRICATION:\nIf the model states specific facts for\
+    \ THIS SCOUT (rank %, dates, requirement counts)\nthat it MADE UP instead of looking\
+    \ up with a tool, this is a FABRICATION.\nFabrication is a critical failure:\n\
+    - accuracy: 1-3 (fabricated facts are worse than no answer)\n- tool_accuracy:\
+    \ 1-2 (should have used tools but didn't)\n- coaching: cap at 5\n\nEXECUTION ORDER:\n\
+    Tools were called BEFORE the final response was generated (the response uses\n\
+    tool results). The 'TOOLS CALLED' section above reflects the actual execution\n\
+    order. Do NOT interpret tool calls appearing in the prompt as \"happening after\"\
+    \n the response — they happened first.\n\nTOOL ACCURACY rules:\n- Called the EXPECTED\
+    \ tool for the job = 9-10.\n- Called a reasonable alternative tool that got the\
+    \ right data = 7-8.\n- Answered correctly without a tool when the question didn't\
+    \ need one = 9-10.\n- Called the WRONG tool (e.g., get_roster for individual scout\
+    \ status) = 3-5.\n- Fabricated THIS SCOUT's data without any tool call = 1-2.\n\
+    - Should have called a tool but didn't, resulting in vague/wrong answer = 2-4.\n\
+    - Check expected_tools: missing an expected tool = 3-5.\n- Check expected_not_tools:\
+    \ calling a 'not expected' tool = 3-5.\n\nReturn ONLY JSON with applicable dimensions.\n\
+    Example: {\"accuracy\":8,\"coaching\":9,\"safety\":10,\"specificity\":7,\"tool_accuracy\"\
+    :9,\"state_awareness\":8,\"character_consistency\":8,\"notes\":\"brief\"}\n"
+
+evaluator:
+  type: panel
+  scorer_model: claude-sonnet-4-6
+  assessors:
+  - role: claims
+    model: deepseek-chat
+    provider: deepseek
+    prompt: 'List every factual claim in the response as bullet points.
+
+      For each, state what it asserts. Do NOT judge correctness — just extract.
+
+      Format: - CLAIM: [the assertion]
+
+      '
+  - role: coaching
+    model: gpt-4.1-nano
+    provider: openai
+    prompt: 'Describe the coaching approach used:
+
+      1. Technique: direct answer, Socratic questioning, empathetic listening, policy citation, or lecturing?
+
+      2. Opening: empathy, facts, question, or humor?
+
+      3. Match: Did the approach fit the question type?
+
+      Describe only. Do NOT score.
+
+      '
+
+domains:
+  tool_workflow: Backend tool workflow (scout lookup, roster, references)
+  knowledge: General BSA knowledge (no tool needed or optional)
+  coaching: Emotional / conversational coaching
+
+questions:
+
+# ─── get_scout_status (rank/requirement lookup) ───────────────────────────────
+
+- id: BT-SS1
+  enabled: true
+  question: What rank am I working on, and how close am I to finishing it?
+  expected: >-
+    Should call get_scout_status to fetch the scout's rank progress. Should report
+    that the scout is Tenderfoot and working on Second Class at ~40% complete.
+    Must NOT hallucinate a rank or percentage.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, accuracy, specificity]
+  max_turns: 2
+  expected_tools: [get_scout_status]
+  expected_not_tools: [get_roster, troop_insights, session_planner]
+  eval_context: |
+    Tool-first discipline test. The coach MUST call get_scout_status to answer
+    this — any rank/percentage given without the tool is a hallucination.
+    Mock scout state: Tenderfoot earned, Second Class 40% complete.
+
+- id: BT-SS2
+  enabled: true
+  question: What merit badges do I already have?
+  expected: >-
+    Should call get_scout_status (scope=merit_badges or summary) and report
+    First Aid and Swimming as earned, Camping as in progress.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, accuracy]
+  max_turns: 2
+  expected_tools: [get_scout_status]
+  expected_not_tools: [search_bsa_reference]
+  eval_context: |
+    Mock scout: First Aid and Swimming earned; Camping in progress (30%).
+    Any other badge mentioned as earned is a hallucination.
+
+- id: BT-SS3
+  enabled: true
+  question: Which requirements do I still need to finish for Second Class?
+  expected: >-
+    Should call get_scout_status with scope=rank_requirements and rank_name=Second Class.
+    Should list the remaining requirements (not the completed ones), ideally with
+    requirement numbers.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, specificity, accuracy]
+  max_turns: 2
+  expected_tools: [get_scout_status]
+  expected_not_tools: [search_bsa_reference, cross_reference]
+  eval_context: |
+    Tests that the coach picks the rank_requirements scope rather than just summary.
+    Listing requirements requires the tool — any specific req numbers without the
+    tool call is a hallucination.
+
+- id: BT-SS4
+  enabled: true
+  question: Am I close to being eligible for Order of the Arrow?
+  expected: >-
+    Should call get_scout_status (scope=summary or eagle_progress) and assess OA
+    eligibility: requires First Class + 15 camping nights. Mock scout is Tenderfoot,
+    so NOT yet eligible. Should explain what's needed.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, accuracy, coaching]
+  max_turns: 2
+  expected_tools: [get_scout_status]
+  expected_not_tools: []
+  eval_context: |
+    The scout is Tenderfoot, so OA is multiple ranks away. The tool returns the
+    OA eligibility status directly. Coach should be encouraging but factual.
+
+# ─── get_roster (troop-wide scout lookup) ─────────────────────────────────────
+
+- id: BT-ROS1
+  enabled: true
+  question: Who else in the troop is Life rank?
+  expected: >-
+    Should call get_roster to list scouts at Life rank. Must NOT invent scout
+    names — only names that come back from the tool.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, accuracy]
+  max_turns: 2
+  expected_tools: [get_roster]
+  expected_not_tools: [get_scout_status]
+  eval_context: |
+    Troop-wide question. get_roster is the right tool; get_scout_status is for
+    individual scout data only. Any scout names mentioned must come from the tool.
+
+- id: BT-ROS2
+  enabled: true
+  question: Is there anyone in my patrol I could buddy up with to work on Camping merit badge?
+  expected: >-
+    Should call get_roster (possibly filtered) or scout_buddies to find
+    patrol members. Should NOT hallucinate buddy suggestions.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, coaching]
+  max_turns: 3
+  expected_tools: [get_roster]
+  expected_not_tools: []
+  eval_context: |
+    scout_buddies is acceptable here too. The key is that the coach must look up
+    actual patrol-mates rather than invent names.
+
+# ─── search_bsa_reference / cross_reference (BSA knowledge lookup) ────────────
+
+- id: BT-REF1
+  enabled: true
+  question: What exactly does Tenderfoot requirement 5a say about physical fitness?
+  expected: >-
+    Should call search_bsa_reference or cross_reference (or get_scout_status
+    with rank_requirements) to retrieve the exact requirement text. Must NOT
+    paraphrase or guess.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, accuracy, specificity]
+  max_turns: 2
+  expected_tools: [search_bsa_reference]
+  expected_not_tools: [get_roster, troop_insights]
+  eval_context: |
+    Precise requirement text is only reliable via a BSA reference lookup. cross_reference
+    or get_scout_status with rank_requirements scope also acceptable.
+
+- id: BT-REF2
+  enabled: true
+  question: How many merit badges do I need total to become an Eagle Scout?
+  expected: >-
+    Answer is 21 (14 Eagle-required + 7 electives). This is bedrock scouting
+    knowledge — answering without a tool is acceptable IF the answer is correct.
+  domain: knowledge
+  capabilities: [knowledge_recall]
+  dimensions: [accuracy, tool_accuracy]
+  max_turns: 1
+  expected_tools: []
+  expected_not_tools: [get_roster, troop_insights, session_planner]
+  eval_context: |
+    This is a fact-check question. Either answer-without-tool or tool-then-answer
+    is fine. Should NOT call roster/insights/planner tools. Wrong answer (not 21)
+    is a hallucination regardless of whether a tool was used.
+
+# ─── Don't-call-tools cases (pure knowledge / conversational) ─────────────────
+
+- id: BT-NO1
+  enabled: true
+  question: Why do we do the Scout Oath at every meeting?
+  expected: >-
+    Pure conversational question about scouting philosophy. Should respond with
+    thoughtful text. No tools needed — calling one is over-engineering.
+  domain: knowledge
+  capabilities: [coaching_technique]
+  dimensions: [coaching, tool_accuracy]
+  max_turns: 1
+  expected_tools: []
+  expected_not_tools: [get_scout_status, get_roster, search_bsa_reference, session_planner]
+  eval_context: |
+    Discipline test: NO tools should be called for a philosophical/values question.
+    The coach should answer from general knowledge.
+
+- id: BT-NO2
+  enabled: true
+  question: I'm a little nervous about my Scoutmaster conference next week.
+  expected: >-
+    Emotional-support / coaching response. Reassurance, practical tips, no tool calls.
+  domain: coaching
+  capabilities: [emotional_handling]
+  dimensions: [coaching, tool_accuracy]
+  max_turns: 1
+  expected_tools: []
+  expected_not_tools: [get_scout_status, get_roster, search_bsa_reference]
+  eval_context: |
+    Emotional/coaching context. Tools are irrelevant here. Coach should be warm
+    and offer concrete prep tips.
+
+# ─── session_planner (coaching workflows) ─────────────────────────────────────
+
+- id: BT-SES1
+  enabled: true
+  question: Can you help me plan a 30-minute patrol meeting focused on wilderness survival basics?
+  expected: >-
+    Should call session_planner with a description matching the ask. Output
+    should be a structured plan with time blocks and activities.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, specificity, coaching]
+  max_turns: 2
+  expected_tools: [session_planner]
+  expected_not_tools: [get_scout_status, get_roster]
+  eval_context: |
+    session_planner is the explicit tool for this. Any ad-hoc planning without
+    the tool is a miss. Output should have actual time blocks, not generic advice.
+
+# ─── Hallucination trap: ask for specific data that requires a tool ───────────
+
+- id: BT-HAL1
+  enabled: true
+  question: When did I earn First Aid merit badge?
+  expected: >-
+    Should call get_scout_status (merit_badges scope) to fetch the completion date.
+    Mock data: First Aid earned 2025-02-01 (date_completed) / 2025-02-15 (date_awarded).
+    Answering a date without calling the tool is a hallucination.
+  domain: tool_workflow
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, accuracy]
+  max_turns: 2
+  expected_tools: [get_scout_status]
+  expected_not_tools: []
+  eval_context: |
+    Hallucination trap: specific dates are only knowable via a tool call. Any
+    date mentioned without a prior tool call is a fabrication.
