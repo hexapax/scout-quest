@@ -155,6 +155,23 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
     name: "get_scout_status",
     description:
       "Get a scout's current advancement progress from the knowledge graph. " +
+      "This is your PRIMARY tool for any question about the scout's rank, requirements, " +
+      "merit badges, awards, or Eagle progress. Call it whenever the scout asks about " +
+      "their own status or a leader asks about a specific scout.\n\n" +
+      "WHEN TO CALL:\n" +
+      "- 'What rank am I on?' / 'How far from Second Class?' → scope=rank_progress or summary\n" +
+      "- 'What do I still need for First Class?' → scope=rank_requirements, rank_name='First Class'\n" +
+      "- 'What merit badges do I have?' / 'When did I earn First Aid?' → scope=merit_badges\n" +
+      "- 'What do I still need for Camping merit badge?' → scope=badge_requirements, badge_name='Camping'\n" +
+      "- 'Am I eligible for Order of the Arrow?' → scope=summary (returns OA status)\n" +
+      "- 'How close am I to Eagle?' → scope=eagle_progress\n" +
+      "- Anything about the scout's personal status → call this, don't guess\n\n" +
+      "SCOPE PICKING (this matters — picking the wrong scope gives you the wrong data):\n" +
+      "- DATES a badge was earned → scope=merit_badges (returns dateCompleted per badge).\n" +
+      "  DO NOT use badge_requirements for dates — that returns requirement TEXT.\n" +
+      "- PERCENTAGE or overall picture → scope=summary or rank_progress.\n" +
+      "- REMAINING rank requirements → scope=rank_requirements (needs rank_name).\n" +
+      "- REMAINING badge requirements → scope=badge_requirements (needs badge_name).\n\n" +
       "For scouts: returns YOUR progress (no scout_name needed). " +
       "For leaders: specify scout_name to look up any scout's progress. " +
       "Do NOT call for general BSA policy questions — your embodied knowledge covers those.",
@@ -165,11 +182,11 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
           type: "string",
           enum: ["summary", "rank_progress", "rank_requirements", "merit_badges", "badge_requirements", "awards", "eagle_progress"],
           description:
-            "summary: comprehensive overview (ranks, badges, awards, OA eligibility). " +
-            "rank_progress: all ranks and completion %. " +
-            "rank_requirements: remaining requirements for a specific rank (needs rank_name). " +
-            "merit_badges: all earned and in-progress merit badges with Eagle-required flags. " +
-            "badge_requirements: remaining requirements for a specific merit badge (needs badge_name). " +
+            "summary: comprehensive overview (ranks, badges, awards, OA eligibility). Use for general 'how am I doing' questions. " +
+            "rank_progress: all ranks and completion % — use to compare rank status. " +
+            "rank_requirements: remaining requirements for a specific rank (needs rank_name). Use for 'what do I still need?' " +
+            "merit_badges: all merit badges with dates earned, in-progress status, Eagle-required flags. USE THIS FOR COMPLETION DATES. " +
+            "badge_requirements: remaining requirements TEXT for a specific merit badge (needs badge_name). Use for 'what do I still need for X badge?' NOT for dates. " +
             "awards: awards like OA, religious, etc. " +
             "eagle_progress: Eagle-specific checklist (Life rank, required badges, total count).",
         },
@@ -196,17 +213,25 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
   {
     name: "search_bsa_reference",
     description:
-      "Search BSA reference material for specific requirement text or policy detail. " +
-      "Use ONLY when your embodied knowledge doesn't cover the needed specifics, " +
-      "such as exact requirement wording for an edge case or obscure merit badge detail. " +
-      "Do NOT use for common policy questions or rank requirements you already know.",
+      "Search BSA reference material for exact requirement wording or policy text. " +
+      "Use when the scout asks for the precise text of a requirement (not just 'what do I still need' " +
+      "— that's get_scout_status). Use when accuracy of wording matters.\n\n" +
+      "WHEN TO CALL:\n" +
+      "- 'What exactly does Tenderfoot 5a say?' → search_bsa_reference(query='Tenderfoot requirement 5a')\n" +
+      "- 'What's the exact rule on counselor reviews?' → search_bsa_reference(query='merit badge counselor review policy')\n" +
+      "- 'How many nights count toward Order of the Arrow eligibility?' → search_bsa_reference(query='OA camping nights requirement')\n" +
+      "- Whenever you're about to paraphrase a specific requirement or policy — prefer looking it up\n\n" +
+      "DO NOT use for:\n" +
+      "- General advice like 'what should I wear?' — answer from embedded knowledge\n" +
+      "- 'What do I still need for [rank]?' — use get_scout_status(scope=rank_requirements)\n" +
+      "- 'Who can teach me first aid?' — use troop_insights or scout_buddies",
     input_schema: {
       type: "object",
       properties: {
         query: {
           type: "string",
           description:
-            'What to search for. Be specific, e.g., "First Aid 1a exact wording" or "Eagle project approval timeline".',
+            'What to search for. Be specific, e.g., "First Aid 1a exact wording" or "Eagle project approval timeline" or "two-deep leadership policy".',
         },
         category: {
           type: "string",
@@ -424,15 +449,25 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
   {
     name: "get_roster",
     description:
-      "Get the troop roster — all scouts with their names, emails, current rank, and rank progress. " +
-      "Use when you need to look up a scout by name, find someone's email, or get a list of all scouts. " +
-      "Also useful for verifying scout identity.",
+      "Get the troop roster with every scout's name, email, userId, current rank, and rank progress. " +
+      "This is the authoritative source for WHO is in the troop and at WHAT rank. " +
+      "NEVER invent scout names, ranks, patrols, or positions — always get them from this tool.\n\n" +
+      "WHEN TO CALL:\n" +
+      "- 'Who else is Life rank?' / 'Who's working on Eagle?' → get_roster, filter by rank in the result\n" +
+      "- 'Is there a Will in the troop?' → get_roster with nameFilter='Will'\n" +
+      "- 'What's [name]'s email?' → get_roster with nameFilter=[name]\n" +
+      "- 'Who is my SPL?' / 'Who's in my patrol?' → get_roster (positions and patrols are in the result)\n" +
+      "- Any question listing multiple scouts by name → call this first, report only what returns\n\n" +
+      "DO NOT:\n" +
+      "- Invent scout names that 'sound right' for the troop — every name you mention must come from this tool\n" +
+      "- Use this for an individual scout's advancement details — use get_scout_status for that\n" +
+      "- Skip it because you 'already know' the roster — the roster changes and your memory may be stale",
     input_schema: {
       type: "object",
       properties: {
         nameFilter: {
           type: "string",
-          description: "Optional name to search for (case-insensitive partial match).",
+          description: "Optional name substring (case-insensitive partial match on first/last name).",
         },
       },
     },

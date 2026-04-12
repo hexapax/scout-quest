@@ -76,14 +76,30 @@ export class OpenAICompatProvider implements LLMProvider {
       msgs.push({ role: "system", content: req.systemPrompt });
     }
 
-    // Convert canonical messages to OpenAI format
+    // Convert canonical messages to OpenAI format.
+    // Messages from buildToolResultMessages() are already in OpenAI shape
+    // (assistant with tool_calls, or role:"tool" with tool_call_id) — pass through.
     for (const m of req.messages) {
-      const content = typeof m.content === "string"
-        ? m.content
-        : m.content
+      const raw = m as unknown as Record<string, unknown>;
+
+      // Pass through OpenAI-shaped messages from buildToolResultMessages()
+      if (raw.tool_calls || raw.tool_call_id || raw.role === "tool") {
+        msgs.push(raw as unknown as OAIMessage);
+        continue;
+      }
+
+      // Normal text conversion (string, ContentBlock[], or null)
+      let content: string;
+      if (typeof m.content === "string") {
+        content = m.content;
+      } else if (Array.isArray(m.content)) {
+        content = m.content
             .filter((b) => b.type === "text")
             .map((b) => b.text ?? "")
             .join("");
+      } else {
+        content = "";
+      }
       msgs.push({ role: m.role, content });
     }
 

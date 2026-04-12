@@ -68,6 +68,8 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
   const userEmail = emulateEmail || voiceCtx?.userEmail || cookieUser?.email || (req.headers["x-user-email"] as string | undefined);
 
   const toolsUsedInRequest: string[] = []; // Track for episode capture
+  // Rich tool record for eval observability: name + args + result
+  const toolCallRecords: Array<{ name: string; args: unknown; result: string }> = [];
 
   // Determine user role for tool filtering.
   // Admin domain → admin role. Otherwise role from email + model.
@@ -89,11 +91,21 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
   }
 
   try {
+    // Models with context windows too small for full knowledge (~177K tokens).
+    // These get compact knowledge (~115K tokens) instead.
+    // Match against the raw model string (e.g., "scout-coach:deepseek/deepseek-v3.2").
+    const COMPACT_KNOWLEDGE_PATTERNS = [
+      "deepseek",   // DeepSeek V3/V3.2: 163K context
+      "grok-3",     // Grok 3: 131K context
+    ];
+    const needsCompact = COMPACT_KNOWLEDGE_PATTERNS.some(p => model.includes(p));
+
     // Build system blocks (order matters for caching)
     const systemBlocks: AnthropicSystemBlock[] = [
-      getKnowledgeBlock(),    // [0] BSA knowledge — cached (ephemeral)
-      getPersonaBlock(model), // [1] Agent persona
+      getKnowledgeBlock(needsCompact), // [0] BSA knowledge — cached (ephemeral)
+      getPersonaBlock(model),           // [1] Agent persona
     ];
+    if (needsCompact) console.log(`[chat] Using compact knowledge for model ${model}`);
 
     // [2] Per-user context (dynamic — not cached)
     if (userEmail) {
@@ -237,12 +249,13 @@ Rules for voice output:
             userEmail
           );
 
-          // Emit tool result events
+          // Emit tool result events + record rich tool info for eval
           for (const r of toolResults) {
             if (r.type === "tool_result") {
               const tc = response.toolCalls.find(t => t.id === r.tool_use_id);
               writeToolResultChunk(res, r.tool_use_id, tc?.name || "", r.content);
               if (isVoice) pushToolEvent(tc?.name || "", "result", undefined, r.content);
+              if (tc) toolCallRecords.push({ name: tc.name, args: tc.arguments, result: r.content });
             }
           }
 
@@ -296,6 +309,11 @@ Rules for voice output:
           break;
         }
 
+        // Track tool calls for response metadata
+        for (const tc of response.toolCalls) {
+          toolsUsedInRequest.push(tc.name);
+        }
+
         // Execute tools
         const toolResults = await executeToolCalls(
           response.toolCalls.map(tc => ({
@@ -306,6 +324,14 @@ Rules for voice output:
           })),
           userEmail
         );
+
+        // Record rich tool info for eval observability
+        for (const r of toolResults) {
+          if (r.type === "tool_result") {
+            const tc = response.toolCalls.find(t => t.id === r.tool_use_id);
+            if (tc) toolCallRecords.push({ name: tc.name, args: tc.arguments, result: r.content });
+          }
+        }
 
         // Build messages for next turn
         const updatedMessages = provider.buildToolResultMessages(
@@ -329,6 +355,10 @@ Rules for voice output:
             finish_reason: "stop",
           },
         ],
+        // Expose internal tool usage for eval observability.
+        // Name list kept for backward compat; records include args+result for scoring.
+        backend_tool_calls: toolsUsedInRequest.length > 0 ? toolsUsedInRequest : undefined,
+        backend_tool_records: toolCallRecords.length > 0 ? toolCallRecords : undefined,
         usage: {
           prompt_tokens: lastUsage.inputTokens,
           completion_tokens: lastUsage.outputTokens,
