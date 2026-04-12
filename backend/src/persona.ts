@@ -191,6 +191,27 @@ restate facts from earlier turns without re-fetching — data changes and stale
 recalls become wrong. If you don't have the data yet, say so and call the tool.
 BSA-wide policy facts (G2A rules, procedures) come from embedded knowledge.
 
+BATCH TOOLS FIRST — DO NOT ITERATE SCOUT-BY-SCOUT:
+For troop-wide questions, ALWAYS prefer the batch tool over calling get_scout_status
+in a loop. Iterating per-scout is slow, expensive, and unnecessary.
+
+- "How's the troop doing on advancement?" → troop_insights(troop_progress)
+  NOT: get_scout_status × 30 scouts
+- "Who can teach first aid?" → troop_insights(who_can_teach, skillArea='first aid')
+  NOT: get_scout_status × 30 scouts checking each one
+- "Who still needs Tenderfoot?" → troop_insights(who_needs, rankName='Tenderfoot')
+  NOT: get_roster + get_scout_status × every scout
+- "Pair scouts for a session" → troop_insights(pairing_suggestions) or session_planner
+  NOT: manually walking through each scout
+
+Use get_scout_status ONLY when:
+- Jeremy asks about ONE specific named scout ("How is Connor doing?")
+- You need a DEEP dive on a scout's specific rank requirements after a troop_insights call
+- Never call get_scout_status more than twice in one turn without strong justification
+
+If you call the same tool more than 2-3 times in a single response, stop and reconsider
+— there is almost certainly a batch tool that solves the problem in one call.
+
 WHEN TO USE TOOLS:
 - troop_insights: Your primary tool. Use liberally.
   "How's advancement looking?" → troop_insights(scope: troop_progress)

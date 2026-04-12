@@ -55,9 +55,20 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
   const doStream = body.stream !== false;
   const isVoice = !!body.elevenlabs_extra_body || (req.headers["user-agent"] || "").includes("AsyncOpenAI");
 
-  // Domain-aware defaults: admin domain → scoutmaster model, otherwise body.model
+  // Domain-aware defaults: admin domain → scoutmaster model, otherwise body.model.
+  // Note: Caddy rewrites x-forwarded-host to the actual inbound host, so we also
+  // accept an explicit x-eval-admin-mode header (only trusted when BACKEND_API_KEY
+  // auth is used) for eval harnesses that need to exercise the leader tool set.
   const host = (req.headers["x-forwarded-host"] || req.hostname || "").toString();
-  const isAdminDomain = host.includes("ai-chat") || host.includes("admin");
+  const hasApiKeyAuth = (() => {
+    const required = process.env.BACKEND_API_KEY;
+    if (!required) return false;
+    const authHeader = (req.headers["authorization"] || "").toString();
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+    return token === required;
+  })();
+  const evalAdminOverride = hasApiKeyAuth && req.headers["x-eval-admin-mode"] === "true";
+  const isAdminDomain = host.includes("ai-chat") || host.includes("admin") || evalAdminOverride;
   const model = body.model || (isAdminDomain ? "scoutmaster" : "scout-coach");
 
   // User email: emulation header > voice context > cookie (app) > header (LibreChat)

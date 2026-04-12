@@ -346,9 +346,24 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
     name: "troop_insights",
     description:
       "Get troop-wide advancement analysis for leaders and guides. " +
-      "Use when a leader asks about troop progress, planning advancement sessions, " +
-      "finding who can teach a skill, or who needs help with a requirement. " +
-      "Do NOT use for individual scout progress — use get_scout_status for that.",
+      "This is your PRIMARY tool for any troop-wide question. " +
+      "ALWAYS prefer this over calling get_scout_status in a loop across every scout — " +
+      "that pattern is slow, expensive, and incorrect. One troop_insights call returns " +
+      "the aggregated answer directly.\n\n" +
+      "WHEN TO CALL (batch-first):\n" +
+      "- 'How is the troop doing on advancement?' → scope=troop_progress\n" +
+      "- 'Who's behind where I should nudge?' → scope=troop_progress\n" +
+      "- 'Who can teach first aid / navigation / cooking?' → scope=who_can_teach, skillArea='first aid'\n" +
+      "- 'Who still needs Tenderfoot / Second Class / First Class?' → scope=who_needs, rankName='Tenderfoot'\n" +
+      "- 'Who needs requirement 7b?' → scope=who_needs, requirementRef='7b'\n" +
+      "- 'Plan a Sunday advancement session' → scope=advancement_sunday\n" +
+      "- 'Pair scouts for teaching navigation' → scope=pairing_suggestions, skillArea='navigation'\n\n" +
+      "ANTI-PATTERN — DO NOT DO THIS:\n" +
+      "  WRONG: call get_roster, then call get_scout_status for each scout returned\n" +
+      "  RIGHT: call troop_insights with the relevant scope once\n\n" +
+      "ANTI-PATTERN — DO NOT USE FOR:\n" +
+      "- Individual scout deep dives — use get_scout_status for ONE named scout\n" +
+      "- Parent/scout personal questions — not their context",
     input_schema: {
       type: "object",
       properties: {
