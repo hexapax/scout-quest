@@ -714,10 +714,24 @@ class EvalEngine:
                         "Authorization": f"Bearer {api_key}",
                         "Content-Type": "application/json",
                     }
-                    # Backend needs a scout email to build user context so tools can fire.
-                    # Use the same default test scout as eval_tools.py.
                     if is_backend:
-                        headers["x-user-email"] = "will@test.scoutquest.app"
+                        # Detect leader/admin mode from the model_id (scoutmaster:*
+                        # or plain "scoutmaster" → leader persona, admin tool set)
+                        is_scoutmaster = (
+                            model_id == "scoutmaster"
+                            or model_id.startswith("scoutmaster:")
+                            or "scoutmaster" in self.config.label.lower()
+                        )
+                        if is_scoutmaster:
+                            # Trigger admin/leader mode. Caddy rewrites x-forwarded-host
+                            # so we use a dedicated eval-only header that the backend
+                            # honors when BACKEND_API_KEY auth is present.
+                            headers["x-eval-admin-mode"] = "true"
+                        else:
+                            # Scout-facing eval: use mock test scout Kai (userId 99000001),
+                            # deliberately named to avoid overlap with any real Troop 2024
+                            # scout or parent.
+                            headers["x-user-email"] = "kai@test.scoutquest.app"
                     resp = httpx.post(
                         f"{base_url}/chat/completions",
                         headers=headers,

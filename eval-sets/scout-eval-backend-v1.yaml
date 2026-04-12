@@ -3,7 +3,8 @@ version: 1
 description: >-
   Backend tool eval set — tests the real production tools in backend/src/tools/definitions.ts.
   Unlike v7 (which tests a broader simulated tool set), this eval focuses on the 12 backend
-  tools and runs against a mock scout (will@test.scoutquest.app, userId 99000001) inserted
+  tools and runs against mock test scouts (kai/mateo/aiden/finn/ethan@test.scoutquest.app,
+  userIds 99000001-99000005). Primary test subject is Kai TestScout (99000001) inserted
   via scripts/create-test-scout.sh. Read-only v1 — write tools deferred until a test-mode
   BSA client exists.
 created: '2026-04-12'

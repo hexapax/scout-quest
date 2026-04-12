@@ -1,0 +1,375 @@
+name: scout-eval-scoutmaster
+version: 1
+description: >-
+  Leader-facing eval set — tests the scoutmaster/guide persona's ability to
+  help leaders plan advancement programming, synthesize multi-tool data, and
+  design sessions that maximize scouts' advancement given real constraints.
+  Runs against 5 mock test scouts (kai/mateo/aiden/finn/ethan@test.scoutquest.app)
+  inserted via scripts/create-test-scout.sh covering ranks Scout through Star.
+  Tests the HIGHEST-value backend workflow: leaders asking "plan a session for
+  these scouts at this event" and getting actionable, troop-aware output.
+created: '2026-04-12'
+parent_version: null
+perspective: knowledge
+
+scoring:
+  dimensions:
+  - name: accuracy
+    weight: 1.0
+    description: Factually correct data from tools — no fabricated scouts, ranks, or requirements
+  - name: coaching
+    weight: 0.6
+    description: Appropriate tone for a leader (direct, concrete, no scout-oriented scaffolding)
+  - name: specificity
+    weight: 1.0
+    description: Named scouts, specific requirements, concrete time blocks, real pairings
+  - name: tool_accuracy
+    weight: 1.0
+    description: Calls the right tools, in sensible order, with correct args
+  - name: state_awareness
+    weight: 1.0
+    description: Tracks constraints (time, attendees, location) across turns and uses earlier tool results
+  - name: synthesis_quality
+    weight: 1.0
+    description: >-
+      Did the plan actually maximize advancement given the constraints?
+      10 = identified specific requirements each scout could finish given who's there and what's available
+      7 = generic but reasonable plan with some scout-specific detail
+      4 = plan ignores who's attending or their current status
+      1 = ignores constraints entirely
+
+  scorer_prompt: "Score this response on the APPLICABLE dimensions only.\nSkip dimensions\
+    \ marked N/A — return null for those.\n\nIMPORTANT CONTEXT — COACH'S KNOWLEDGE\
+    \ SOURCES:\nThe scoutmaster assistant has THREE sources of information:\n1. Tool\
+    \ calls (shown above as TOOLS CALLED) — verify specific data against these\n2.\
+    \ BSA knowledge base — general BSA facts, rules, procedures\n3. Troop context\
+    \ document — includes the real Troop 2024 roster, leadership positions (SPL,\
+    \ ASPL,\n   patrol leaders), patrol assignments, merit badge counselors, meeting\
+    \ schedules.\n   IMPORTANT: The eval scenarios ALSO include 5 MOCK TEST SCOUTS\
+    \ (Kai, Mateo, Aiden, Finn, Ethan\n   TestScout) in the same database. Their\
+    \ data comes from the tool calls when referenced.\n\nFABRICATION RULE:\nIf the\
+    \ model states specific facts about a scout (rank %, requirement numbers, dates)\n\
+    that it MADE UP instead of getting from a tool, this is a FABRICATION and scores\
+    \ 1-3\non accuracy. Mentioning real scout names from troop context is NOT fabrication.\n\
+    \nEXECUTION ORDER:\nTools were called BEFORE the final response (response uses\
+    \ tool results). Do NOT\ninterpret tool calls appearing in the prompt as \"happening\
+    \ after\" the response — they\nhappened first.\n\nTOOL ACCURACY rules (scoutmaster\
+    \ context):\n- Called troop_insights / session_planner / get_scout_status when\
+    \ the question needed\n  troop-wide data or planning = 9-10\n- Called get_roster\
+    \ to find a specific scout when needed = 9-10\n- Called multiple tools in sensible\
+    \ chain for a planning request = 9-10\n- Answered with generic advice when a\
+    \ planning tool was available = 3-5\n- Fabricated specific scouts or requirements\
+    \ = 1-2\n- Over-called tools (e.g., 5 get_scout_status calls for same scout in\
+    \ one turn) = 5-7\n\nSYNTHESIS QUALITY rules:\n- Did the plan actually maximize\
+    \ advancement given who's there and their ranks?\n- 10: Identified specific requirements\
+    \ each scout could finish, paired scouts who can teach with scouts who need,\
+    \ respected time budget\n- 7: Reasonable structure, some scout-specific detail,\
+    \ may miss some opportunities\n- 4: Plan is generic, ignores scout levels or\
+    \ available time\n- 1: Ignores the constraints the leader gave\n\nSTATE AWARENESS\
+    \ (for multi-turn chains):\n- Remembers constraints from earlier turns (time,\
+    \ attendees, location) = 9-10\n- Re-asks for info already given = 3-5\n- Contradicts\
+    \ earlier context = 1-3\n\nReturn ONLY JSON with applicable dimensions.\nExample:\
+    \ {\"accuracy\":8,\"coaching\":7,\"specificity\":9,\"tool_accuracy\":9,\"state_awareness\"\
+    :8,\"synthesis_quality\":8,\"notes\":\"brief\"}\n"
+
+evaluator:
+  type: panel
+  scorer_model: claude-sonnet-4-6
+  assessors:
+  - role: claims
+    model: deepseek-chat
+    provider: deepseek
+    prompt: 'List every factual claim in the response as bullet points.
+
+      For each, state what it asserts. Do NOT judge correctness — just extract.
+
+      Format: - CLAIM: [the assertion]
+
+      '
+  - role: coaching
+    model: gpt-4.1-nano
+    provider: openai
+    prompt: 'Describe the approach used (this is a leader-facing context, not scout coaching):
+
+      1. Tone: direct/executive, explanatory, or scout-oriented?
+
+      2. Structure: data-first, narrative, or bullet points?
+
+      3. Actionability: concrete next steps vs. abstract suggestions?
+
+      4. Leader-appropriate: assumes leader knowledge or over-explains scout basics?
+
+      Describe only. Do NOT score.
+
+      '
+
+domains:
+  leader_planning: Leader-facing advancement planning and session design
+  leader_lookup: Leader-facing scout/troop data lookups
+  leader_onboarding: First-time leader asking what the assistant can do
+
+questions:
+
+# ─── Single-shot: troop-wide data lookups ─────────────────────────────────────
+
+- id: SM-INS1
+  enabled: true
+  question: What's the advancement status across the troop? Who's behind where I should nudge?
+  expected: >-
+    Should call troop_insights with scope=troop_progress. Report a meaningful breakdown
+    by rank with specific scout names. Flag scouts who are stalled or behind. Do NOT
+    fabricate names — use troop context and tool output only.
+  domain: leader_lookup
+  capabilities: [tool_use, synthesis]
+  dimensions: [tool_accuracy, accuracy, specificity, synthesis_quality]
+  max_turns: 2
+  expected_tools: [troop_insights]
+  expected_not_tools: [get_scout_status]
+  endpoint: admin
+  eval_context: |
+    Leader asks for troop-wide picture. troop_insights(troop_progress) is the right
+    tool. get_scout_status would be wrong (individual). Response should name specific
+    scouts with their status, not give generic advice.
+
+- id: SM-INS2
+  enabled: true
+  question: We need someone to help teach basic first aid at the next meeting. Who's completed it?
+  expected: >-
+    Should call troop_insights(scope=who_can_teach, skillArea='first aid'). Report
+    a list of scouts who have completed First Aid merit badge or related requirements.
+    Mock scouts Aiden, Finn, Ethan have First Aid earned.
+  domain: leader_lookup
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, accuracy, specificity]
+  max_turns: 2
+  expected_tools: [troop_insights]
+  expected_not_tools: [session_planner]
+  endpoint: admin
+  eval_context: |
+    who_can_teach is the right scope. The model should return specific scout names
+    from the tool result, not fabricate.
+
+- id: SM-INS3
+  enabled: true
+  question: Who still needs Tenderfoot requirements? I want to target them at the next meeting.
+  expected: >-
+    Should call troop_insights(scope=who_needs, rankName='Tenderfoot'). Mock scouts
+    Mateo (working on Tenderfoot at 20%) and potentially others in the real troop
+    should come back. Report specific names.
+  domain: leader_lookup
+  capabilities: [tool_use]
+  dimensions: [tool_accuracy, accuracy, specificity]
+  max_turns: 2
+  expected_tools: [troop_insights]
+  expected_not_tools: [session_planner, get_scout_status]
+  endpoint: admin
+  eval_context: |
+    who_needs scope is right. The mock test scout Mateo TestScout is at Tenderfoot
+    20% so he should appear in the result. Real troop scouts may also appear.
+
+# ─── Single-shot: session planning ────────────────────────────────────────────
+
+- id: SM-PLAN1
+  enabled: true
+  question: >-
+    Plan a 90-minute advancement session for this Sunday at the church.
+    Attendees: Kai TestScout, Mateo TestScout, Aiden TestScout, Finn TestScout.
+    I'm the SM, Colleen is the ASM helping.
+  expected: >-
+    Should call session_planner with attendees, duration=90, leaders. Ideally ALSO
+    calls troop_insights or get_scout_status to understand each scout's state and
+    pair teachers with learners. Plan should include specific time blocks, stations,
+    and teach/learn pairings (Finn teaching Mateo or Kai their fire/cooking skills;
+    Aiden teaching Mateo basic knots, etc).
+  domain: leader_planning
+  capabilities: [tool_use, synthesis, planning]
+  dimensions: [tool_accuracy, specificity, synthesis_quality, coaching]
+  max_turns: 3
+  expected_tools: [session_planner]
+  expected_not_tools: []
+  endpoint: admin
+  eval_context: |
+    Core leader-planning use case. The model should synthesize a plan that actually
+    uses who's there — Finn (First Class, has Cooking+Camping) can teach Mateo (new
+    Scout) or Kai (Tenderfoot). Ethan isn't attending. Should respect the 90-min
+    time budget and pick requirements doable indoors at a church.
+
+- id: SM-PLAN2
+  enabled: true
+  question: >-
+    We have a campout this weekend at Bert Adams. I'll get the specific roster of
+    attendees later — for now just give me a menu of outdoor/camping-related
+    requirements across Tenderfoot through First Class that I can pick from for
+    Saturday's program block. Specific requirement numbers please.
+  expected: >-
+    Should answer from BSA knowledge base with specific outdoor requirement numbers
+    for Tenderfoot, Second Class, and First Class (camping, cooking, firebuilding,
+    knots, map/compass, outdoor observation). search_bsa_reference or cross_reference
+    are acceptable tool calls but not required for well-known requirements.
+    troop_insights is NOT needed — the leader explicitly deferred the roster lookup.
+  domain: leader_planning
+  capabilities: [bsa_knowledge, synthesis]
+  dimensions: [specificity, accuracy, synthesis_quality, tool_accuracy]
+  max_turns: 1
+  expected_tools: []
+  expected_not_tools: [troop_insights, get_roster, get_scout_status]
+  endpoint: admin
+  eval_context: |
+    Leader asked for a REQUIREMENTS MENU — not a scout lookup. Question explicitly
+    says "I'll get the specific roster later." A good answer lists specific requirement
+    numbers tied to outdoor setting (Scout 1d, TF 1c 2a-c 4a-b, 2C 1a-b 3a-d,
+    1C 1a 2a-b 3a-d 4a-b etc.). Tool calls are optional; the test is whether the
+    model can produce a specific, actionable menu from knowledge alone.
+
+- id: SM-PLAN3
+  enabled: true
+  question: >-
+    Finn and Aiden both have open First Class requirements. Can they pair up to
+    knock any of them out together?
+  expected: >-
+    Should call scout_buddies(scope=next_together) or get_scout_status for each,
+    then identify overlapping requirements. Finn is working on Star, Aiden is
+    working on First Class — they have different immediate goals, so pairing for
+    FIRST CLASS requirements specifically means Finn helps Aiden (Finn already
+    earned First Class). Should return to this reality.
+  domain: leader_planning
+  capabilities: [tool_use, reasoning]
+  dimensions: [tool_accuracy, accuracy, specificity]
+  max_turns: 2
+  expected_tools: [scout_buddies]
+  expected_not_tools: []
+  endpoint: admin
+  eval_context: |
+    Mock scout Finn is First Class, Aiden is Second Class working on First Class.
+    Pairing logic: Finn already has FC and can help Aiden, not the reverse. A good
+    answer catches this. A weak answer suggests they "work together" on the same
+    reqs (wrong — Finn already has them).
+
+# ─── Single-shot: BSA reference for leaders ──────────────────────────────────
+
+- id: SM-REF1
+  enabled: true
+  question: >-
+    A parent emailed me saying their scout should get First Class credit for
+    requirements completed at camp. The counselor sign-off wasn't recorded at camp.
+    What does the G2A say about missing sign-offs?
+  expected: >-
+    Should call search_bsa_reference for the specific G2A policy, OR answer from
+    embedded BSA knowledge: once completed with a registered counselor, a scout
+    is considered to have completed the requirement — unit may not require re-doing.
+    The fix is retroactive sign-off/documentation, not re-work.
+  domain: leader_lookup
+  capabilities: [bsa_knowledge, tool_use]
+  dimensions: [accuracy, tool_accuracy, specificity]
+  max_turns: 2
+  expected_tools: []
+  expected_not_tools: [troop_insights, session_planner]
+  endpoint: admin
+  eval_context: |
+    G2A knowledge question. Either direct answer from embedded knowledge OR
+    search_bsa_reference is acceptable. Should cite G2A section when possible.
+
+# ─── Onboarding: first-time leader interaction ───────────────────────────────
+
+- id: SM-ONB1
+  enabled: true
+  question: >-
+    This is my first time using the Scout Quest assistant. What can you help me
+    with as a scoutmaster?
+  expected: >-
+    Concise, executive-tone overview of capabilities: troop-wide advancement
+    analytics, session planning, scout buddy pairings, BSA policy lookup, etc.
+    Should mention tools by concept (not by name). Should NOT lecture about
+    scouting basics — audience is experienced leader.
+  domain: leader_onboarding
+  capabilities: [coaching]
+  dimensions: [coaching, specificity, tool_accuracy]
+  max_turns: 1
+  expected_tools: []
+  expected_not_tools: [troop_insights, session_planner, get_scout_status]
+  endpoint: admin
+  eval_context: |
+    First-time interaction. No tools needed — just a clear capability overview.
+    Tone should be direct and leader-appropriate, not scout-oriented.
+
+chains:
+
+# ─── Multi-turn planning chain ────────────────────────────────────────────────
+- id: sm-advancement-session
+  name: "Scoutmaster — Sunday Advancement Session Planning"
+  endpoint: admin
+  description: >
+    Full multi-turn leader planning workflow. Leader describes the event, asks for
+    analysis, requests a specific focus, then asks for pairings and a schedule.
+    Tests multi-tool chaining, state retention across turns, and synthesis quality.
+  steps:
+
+  - id: turn-1-setup
+    initial_message: >-
+      Planning Sunday advancement day. 2 hours, indoors at the church gym.
+      Attending: Kai TestScout, Mateo TestScout, Aiden TestScout, Finn TestScout.
+      I'm the SM (Jeremy) and Colleen is the ASM helping. What should we focus on
+      to get the most advancement out of these scouts?
+    scout_sim_prompt: "DONE"
+    max_turns: 3
+    expected_tools: [troop_insights]
+    eval_context: |
+      First turn establishes all the constraints. The model should call
+      troop_insights or get_scout_status (for each attending scout) to understand
+      their current states before suggesting focus. Output should name each scout
+      and what they're working on.
+    dimensions: [tool_accuracy, accuracy, specificity, synthesis_quality]
+
+  - id: turn-2-focus-will
+    initial_message: >-
+      Let's focus on getting Kai moved forward. What specific Second Class
+      requirements could he finish with the scouts who are here?
+    scout_sim_prompt: "DONE"
+    max_turns: 3
+    expected_tools: [get_scout_status]
+    eval_context: |
+      Follow-up that requires state from turn 1 (who's attending). Should call
+      get_scout_status(rank_requirements, 'Second Class') for Kai, then match
+      remaining requirements against what's feasible indoors with the other
+      attendees. Model should identify 2-4 specific requirement numbers Kai can
+      work on AND identify who can teach/sign off each.
+    dimensions: [tool_accuracy, state_awareness, specificity, synthesis_quality]
+
+  - id: turn-3-pair-teachers
+    initial_message: >-
+      Good. Which of the other scouts attending could teach or sign off on those
+      requirements for Kai?
+    scout_sim_prompt: "DONE"
+    max_turns: 3
+    expected_tools: [scout_buddies, get_scout_status]
+    eval_context: |
+      Should identify pairings based on who has already completed those
+      requirements. Aiden (2C earned), Finn (1C earned) both completed Second
+      Class — so both could help Kai. Mateo (still on Scout) cannot help.
+      State-aware: remembers the attending list and Kai's focus from earlier turns.
+    dimensions: [tool_accuracy, state_awareness, accuracy, synthesis_quality]
+
+  - id: turn-4-draft-schedule
+    initial_message: >-
+      OK draft a schedule for the 2 hours — stations, who's at each, what's being taught.
+    scout_sim_prompt: "DONE"
+    max_turns: 3
+    expected_tools: [session_planner]
+    eval_context: |
+      This is where session_planner should fire with all the accumulated context.
+      Output should be a time-blocked schedule (20-min blocks, or station rotations)
+      with specific scout names at specific stations doing specific requirements.
+      Equipment/materials list is a bonus.
+    dimensions: [tool_accuracy, specificity, synthesis_quality, state_awareness]
+
+  - id: turn-5-prep
+    initial_message: >-
+      Anything I need to prep or bring in advance?
+    scout_sim_prompt: "DONE"
+    max_turns: 2
+    expected_tools: []
+    eval_context: |
+      Should reference the equipment/materials from turn 4 and add anything that
+      needs advance prep (counselors to invite, materials to buy, handouts to print).
+      Tests whether the model maintains session state across the full chain.
+    dimensions: [state_awareness, specificity, coaching]
