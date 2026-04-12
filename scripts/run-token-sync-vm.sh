@@ -45,13 +45,13 @@ process.exit(0);
 echo "=== Scoutbook Token Sync ==="
 
 # Write inline script to VM temp file
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" \
+gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" --tunnel-through-iap \
   --command="cat > /tmp/token-sync.mjs << 'SCRIPT_EOF'
 ${INLINE_SCRIPT}
 SCRIPT_EOF" 2>/dev/null
 
 # Copy script into the API container and run
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" \
+gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" --tunnel-through-iap \
   --command="
     sudo -u scoutcoach docker cp /tmp/token-sync.mjs scout-quest-api:/tmp/token-sync.mjs
     sudo -u scoutcoach docker exec \

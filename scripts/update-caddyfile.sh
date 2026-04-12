@@ -16,9 +16,9 @@ api.hexapax.com {
     reverse_proxy localhost:3090
 }
 
-# Admin app — scoutmaster tools, different persona/voice
+# ai-chat — full-access LibreChat instance for the admin
 ai-chat.hexapax.com {
-    reverse_proxy localhost:3090
+    reverse_proxy localhost:3080
 }
 
 # Legacy aliases
