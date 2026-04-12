@@ -785,14 +785,23 @@ class KnowledgePerspective:
                 test_state.cleanup()
 
     def format_for_evaluation(self, result: ExecutionResult) -> tuple[str, str]:
-        """Format for panel evaluator: (response + tool calls, question+expected)."""
-        item = result.item
-        content = result.response_text
+        """Format for panel evaluator: (tool calls then response, question+expected).
 
-        # Append tool call summary so the panel can evaluate tool usage
+        Execution order reflects reality: tools are called FIRST (the model needs
+        their results to answer), THEN the final response is generated from those
+        results. Presenting tools before the response prevents the scorer from
+        falsely inferring "response first, tool second" — which looked like a
+        fabrication pattern but was just a display artifact.
+        """
+        item = result.item
+        parts: list[str] = []
+
+        # Tool calls happened FIRST in execution order — show them first
         tool_calls = result.raw_data.get("tool_calls", [])
         if tool_calls:
-            tool_lines = ["\n\n--- TOOL CALLS MADE DURING THIS RESPONSE ---"]
+            tool_lines = [
+                "--- TOOLS CALLED (in execution order, BEFORE the final response below) ---"
+            ]
             for tc in tool_calls:
                 if isinstance(tc, dict):
                     name = tc.get("name", "?")
@@ -801,34 +810,51 @@ class KnowledgePerspective:
                     result_text = tc.get("result", {})
                     if isinstance(result_text, dict):
                         result_text = result_text.get("result") or result_text.get("error", "")
-                    tool_lines.append(f"- {name}({args}) [{auth}] → {str(result_text)[:200]}")
-            content += "\n".join(tool_lines)
+                    tool_lines.append(f"- {name}({args}) [{auth}] → {str(result_text)[:6000]}")
+            parts.append("\n".join(tool_lines))
 
         unauthorized = result.raw_data.get("unauthorized_calls", [])
         if unauthorized:
-            content += "\n\n--- UNAUTHORIZED TOOL CALLS (model tried but layer denied) ---"
+            unauth_lines = ["--- UNAUTHORIZED TOOL CALLS (model tried but layer denied) ---"]
             for tc in unauthorized:
                 if isinstance(tc, dict):
-                    content += f"\n- {tc.get('name', '?')}({tc.get('args', {})}) → DENIED"
+                    unauth_lines.append(f"- {tc.get('name', '?')}({tc.get('args', {})}) → DENIED")
+            parts.append("\n".join(unauth_lines))
+
+        # Final response comes AFTER tool calls — this is what the scout saw
+        if parts:
+            parts.append("--- FINAL RESPONSE TO THE SCOUT ---")
+        parts.append(result.response_text)
+        content = "\n\n".join(parts)
 
         context = (
             f"QUESTION: {item.description}\n\n"
             f"EXPECTED: {item.expected}"
         )
-        if item.metadata.get("dimensions"):
-            context += f"\n\nAPPLICABLE DIMENSIONS: {', '.join(item.metadata['dimensions'])}"
+
+        # Filter tool_accuracy out of dimensions when the backend lacks the required tools
+        tool_check = result.raw_data.get("expected_tools_check")
+        dimensions = list(item.metadata.get("dimensions") or [])
+        if tool_check and tool_check.get("skipped") and "tool_accuracy" in dimensions:
+            dimensions = [d for d in dimensions if d != "tool_accuracy"]
+
+        if dimensions:
+            context += f"\n\nAPPLICABLE DIMENSIONS: {', '.join(dimensions)}"
         if item.metadata.get("eval_context"):
             context += f"\n\nEVALUATOR CONTEXT: {item.metadata['eval_context']}"
 
         # Include expected tools check result if available
-        tool_check = result.raw_data.get("expected_tools_check")
         if tool_check:
-            status = "PASS" if tool_check["pass"] else "FAIL"
-            context += f"\n\nEXPECTED TOOLS CHECK: {status}"
-            if tool_check.get("missed"):
-                context += f" (missed: {', '.join(tool_check['missed'])})"
-            if tool_check.get("violated"):
-                context += f" (should not have called: {', '.join(tool_check['violated'])})"
+            if tool_check.get("skipped"):
+                context += f"\n\nEXPECTED TOOLS CHECK: SKIPPED — {tool_check.get('reason','')}"
+                context += "\nDo NOT score tool_accuracy for this question (backend lacks required tools)."
+            else:
+                status = "PASS" if tool_check["pass"] else "FAIL"
+                context += f"\n\nEXPECTED TOOLS CHECK: {status}"
+                if tool_check.get("missed"):
+                    context += f" (missed: {', '.join(tool_check['missed'])})"
+                if tool_check.get("violated"):
+                    context += f" (should not have called: {', '.join(tool_check['violated'])})"
 
         return content, context
 

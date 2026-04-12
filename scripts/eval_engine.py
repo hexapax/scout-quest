@@ -221,9 +221,39 @@ YOUR REPLY (or "DONE"):"""
     return None
 
 
+# Backend tools → eval framework tool names.
+# The production backend uses its own tool schema; map to eval rubric names
+# so tool_accuracy scoring works for backend configs.
+BACKEND_TOOL_ALIAS = {
+    "advance_requirement": "advance_requirement",      # exact
+    "get_scout_status": "read_scout_summary",          # covers scout_requirements too
+    "get_roster": "read_linked_scouts",
+    "create_pending_action": "log_session_notes",
+    # Backend-only tools with no eval equivalent — keep as-is
+    "cross_reference": "cross_reference",
+    "search_bsa_reference": "search_bsa_reference",
+    "scout_buddies": "scout_buddies",
+    "session_planner": "session_planner",
+    "troop_insights": "troop_insights",
+    "rsvp_event": "rsvp_event",
+    "log_activity": "log_activity",
+    "log_requirement_work": "advance_requirement",     # close mapping
+}
+
+# Eval tools with NO backend equivalent — questions requiring these can't
+# be fairly scored against backend configs, so tool_accuracy should be skipped.
+BACKEND_UNSUPPORTED_EVAL_TOOLS = {
+    "log_chore", "log_budget_entry", "read_scout_budget", "read_scout_chores",
+    "update_quest_goal", "update_quest_plan", "compose_email", "flag_conversation",
+    "log_diary_entry", "setup_time_mgmt", "adjust_character", "adjust_tone",
+    "read_scout_requirements",  # partial via get_scout_status but not direct
+}
+
+
 def _check_expected_tools(tool_call_log: list[dict],
                            expected: list[str] | None,
-                           not_expected: list[str] | None = None) -> dict | None:
+                           not_expected: list[str] | None = None,
+                           is_backend: bool = False) -> dict | None:
     """Compare actual tool calls against expected tools.
 
     Returns None if no expectations defined. Otherwise returns:
@@ -232,10 +262,25 @@ def _check_expected_tools(tool_call_log: list[dict],
     if not expected and not not_expected:
         return None
 
+    # For backend configs, skip questions whose expected tools don't exist
+    # in the backend — those aren't a fair test of the backend pipeline.
+    if is_backend and expected:
+        if set(expected).issubset(BACKEND_UNSUPPORTED_EVAL_TOOLS):
+            return {
+                "skipped": True,
+                "reason": f"backend lacks required tools: {sorted(set(expected) & BACKEND_UNSUPPORTED_EVAL_TOOLS)}",
+                "actual": sorted({tc["name"] for tc in tool_call_log if tc.get("authorized", True)}),
+                "expected": expected,
+            }
+
     actual_tools = set()
     for tc in tool_call_log:
         if tc.get("authorized", True):
-            actual_tools.add(tc["name"])
+            name = tc["name"]
+            # Normalize backend tool names to eval rubric names
+            if tc.get("source") == "backend":
+                name = BACKEND_TOOL_ALIAS.get(name, name)
+            actual_tools.add(name)
 
     result = {"actual": sorted(actual_tools)}
 
@@ -322,7 +367,8 @@ class EvalEngine:
                 not_expected = item.metadata.get("expected_not_tools")
                 tool_check = _check_expected_tools(
                     result.raw_data.get("tool_calls", []),
-                    expected, not_expected)
+                    expected, not_expected,
+                    is_backend=(self.config.provider == "backend"))
                 if tool_check is not None:
                     result.raw_data["expected_tools_check"] = tool_check
 
@@ -664,12 +710,17 @@ class EvalEngine:
                 call_start = time.time()
 
                 def do_call():
+                    headers = {
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    }
+                    # Backend needs a scout email to build user context so tools can fire.
+                    # Use the same default test scout as eval_tools.py.
+                    if is_backend:
+                        headers["x-user-email"] = "will@test.scoutquest.app"
                     resp = httpx.post(
                         f"{base_url}/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {api_key}",
-                            "Content-Type": "application/json",
-                        },
+                        headers=headers,
                         json=body,
                         timeout=120,
                     )
@@ -746,6 +797,43 @@ class EvalEngine:
 
                 # No tool calls — extract text
                 assistant_text = msg.get("content", "") or ""
+
+                # Backend tool visibility: the backend executes tools internally
+                # and exposes them via `backend_tool_records` (rich) or `backend_tool_calls` (names).
+                # Surface them to the eval scorer so tool_accuracy reflects actual usage
+                # AND the scorer can verify response data against tool results.
+                if is_backend:
+                    backend_records = d.get("backend_tool_records")
+                    if backend_records:
+                        for rec in backend_records:
+                            tool_call_log.append({
+                                "name": rec.get("name", "?"),
+                                "args": rec.get("args", {}) or {},
+                                "result": {"result": str(rec.get("result", ""))[:6000]},
+                                "authorized": True,
+                                "round": 0,
+                                "timing_ms": 0,
+                                "source": "backend",
+                            })
+                            sys.stdout.write(f"[tool: {rec.get('name','?')} (backend)] ")
+                        sys.stdout.flush()
+                    else:
+                        # Fallback: name-only records (older backend)
+                        backend_tools = d.get("backend_tool_calls") or []
+                        for tool_name in backend_tools:
+                            tool_call_log.append({
+                                "name": tool_name,
+                                "args": {},
+                                "result": {"result": "(executed server-side)"},
+                                "authorized": True,
+                                "round": 0,
+                                "timing_ms": 0,
+                                "source": "backend",
+                            })
+                            sys.stdout.write(f"[tool: {tool_name} (backend)] ")
+                        if backend_tools:
+                            sys.stdout.flush()
+
                 limits = _check_limits(
                     output_tokens=output_tokens,
                     max_tokens=self.config.max_tokens,
@@ -1139,15 +1227,15 @@ class EvalEngine:
             if "error" in d:
                 raise Exception(f"API error: {d['error']}")
 
-            # Track usage
+            # Track usage — Anthropic sometimes returns null (not missing) for cache fields
             u = d.get("usage", {})
-            cache_read = u.get("cache_read_input_tokens", 0)
-            cache_create = u.get("cache_creation_input_tokens", 0)
-            total_input = u.get("input_tokens", 0) + cache_read + cache_create
+            cache_read = u.get("cache_read_input_tokens") or 0
+            cache_create = u.get("cache_creation_input_tokens") or 0
+            total_input = (u.get("input_tokens") or 0) + cache_read + cache_create
             self.usage.record(
                 self.config.model_id,
                 input_tokens=total_input,
-                output_tokens=u.get("output_tokens", 0),
+                output_tokens=u.get("output_tokens") or 0,
                 cached_tokens=cache_read,
                 label=self.config.model_id,
                 extra={"cache_creation": cache_create},
