@@ -287,7 +287,27 @@
       blob.style.transform = '';
     }
 
+    // Unlock audio playback on iOS/Android — must happen synchronously
+    // during user gesture before any async work.
+    let sharedAudioCtx = null;
+    function unlockAudio() {
+      if (sharedAudioCtx) return;
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      sharedAudioCtx = new AC();
+      // Play a silent buffer to fully activate the audio session
+      const buf = sharedAudioCtx.createBuffer(1, 1, 22050);
+      const src = sharedAudioCtx.createBufferSource();
+      src.buffer = buf;
+      src.connect(sharedAudioCtx.destination);
+      src.start(0);
+      if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume();
+    }
+
     async function startConversation() {
+      // Unlock audio synchronously in the gesture handler (before any await)
+      unlockAudio();
+
       errorEl.textContent = '';
       setBlobState('connecting');
       setStatus('Connecting...');
@@ -301,10 +321,13 @@
 
         conversation = await Conversation.startSession({
           signedUrl,
+          preferHeadphonesForIosDevices: true,
+          connectionDelay: { android: 3000, ios: 100, default: 0 },
           onConnect: () => {
             setBlobState('listening');
             setStatus('Listening...', true);
             startVolumeLoop();
+            conversation?.setVolume?.({ volume: 1.0 });
           },
           onDisconnect: () => {
             stopVolumeLoop();
