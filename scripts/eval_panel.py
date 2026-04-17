@@ -28,25 +28,87 @@ if TYPE_CHECKING:
 
 # ---------------------------------------------------------------------------
 # Pricing per million tokens (input, output, cached_input)
-# Shared across panel evaluator and perspectives
+#
+# Loaded from config/pricing.yaml — the canonical source of truth that the
+# production backend cost logger (Stream C) also reads.
+#
+# Historical tuple form (input, output, cache_read) is preserved so existing
+# consumers can keep indexing PRICING directly.
 # ---------------------------------------------------------------------------
 
-PRICING = {
-    "claude-sonnet-4-6":              (3.00, 15.00, 0.30),
-    "claude-opus-4-6":                (5.00, 25.00, 0.50),
-    "gpt-4.1":                        (2.00,  8.00, 0.50),
-    "gpt-4.1-mini":                   (0.40,  1.60, 0.10),
-    "gpt-4.1-nano":                   (0.10,  0.40, 0.025),
-    "gpt-5.4":                        (2.50, 15.00, 0.625),
-    "gpt-5.4-mini":                   (0.75,  4.50, 0.1875),
-    "gpt-5.4-nano":                   (0.20,  1.25, 0.05),
-    "gemini-2.5-flash":               (0.15,  0.60, 0.0375),
-    "gemini-2.5-flash-lite":          (0.10,  0.40, 0.025),
-    "gemini-3-flash-preview":         (0.50,  3.00, 0.125),
-    "gemini-3.1-flash-lite-preview":  (0.25,  1.50, 0.0625),
-    "deepseek-chat":                  (0.14,  0.28, 0.07),
-    "x-ai/grok-3-mini":              (0.30,  0.50, 0.075),
-}
+from pathlib import Path
+
+_PRICING_YAML = Path(__file__).resolve().parent.parent / "config" / "pricing.yaml"
+
+
+def _load_pricing_yaml(path: Path) -> dict[str, tuple[float, float, float]]:
+    """Load pricing.yaml into the legacy tuple form.
+
+    Returns a mapping of model_id → (input, output, cache_read) in $/M tokens.
+    If the YAML is missing or malformed, returns an empty dict and logs a
+    warning — callers will see $0 cost but the eval will keep running.
+    """
+    try:
+        import yaml  # type: ignore
+    except ImportError:
+        sys.stderr.write(
+            "[eval_panel] pyyaml not installed; cannot load pricing.yaml "
+            "— all costs will be $0.00\n"
+        )
+        return {}
+
+    if not path.exists():
+        sys.stderr.write(f"[eval_panel] pricing.yaml not found at {path}\n")
+        return {}
+
+    try:
+        data = yaml.safe_load(path.read_text())
+    except Exception as e:
+        sys.stderr.write(f"[eval_panel] failed to parse pricing.yaml: {e}\n")
+        return {}
+
+    out: dict[str, tuple[float, float, float]] = {}
+    models = (data or {}).get("models", {}) or {}
+    for model_id, spec in models.items():
+        if not isinstance(spec, dict):
+            continue
+        out[model_id] = (
+            float(spec.get("input_per_million", 0.0)),
+            float(spec.get("output_per_million", 0.0)),
+            float(spec.get("cache_read_per_million", 0.0)),
+        )
+    return out
+
+
+def _compute_pricing_source() -> dict[str, str]:
+    """Capture provenance for pricing.yaml — commit hash + file hash.
+
+    Included in results so every cost total is traceable to a specific
+    version of config/pricing.yaml.
+    """
+    import hashlib
+    import subprocess
+
+    repo_root = _PRICING_YAML.parent.parent
+    info: dict[str, str] = {"path": str(_PRICING_YAML.relative_to(repo_root))}
+    if _PRICING_YAML.exists():
+        content = _PRICING_YAML.read_bytes()
+        info["sha256"] = hashlib.sha256(content).hexdigest()[:12]
+        try:
+            result = subprocess.run(
+                ["git", "log", "-1", "--format=%h", "--", str(_PRICING_YAML)],
+                cwd=repo_root,
+                capture_output=True, text=True, timeout=5,
+            )
+            if result.returncode == 0:
+                info["git_commit"] = result.stdout.strip() or "untracked"
+        except Exception:
+            pass
+    return info
+
+
+PRICING: dict[str, tuple[float, float, float]] = _load_pricing_yaml(_PRICING_YAML)
+PRICING_SOURCE: dict[str, str] = _compute_pricing_source()
 
 
 # ---------------------------------------------------------------------------
@@ -153,7 +215,12 @@ class UsageTracker:
         print(f"  {'TOTAL':<30} {self.totals['calls']:>6} {self.totals['input_tokens']:>10,} {self.totals['cached_tokens']:>10,} {self.totals['output_tokens']:>8,} ${self.totals['cost']:>7.2f}")
 
     def to_dict(self):
-        return {"totals": self.totals, "calls": self.calls, "budget": self.budget}
+        return {
+            "totals": self.totals,
+            "calls": self.calls,
+            "budget": self.budget,
+            "pricing_source": PRICING_SOURCE,
+        }
 
 
 # ---------------------------------------------------------------------------
