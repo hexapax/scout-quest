@@ -33,6 +33,8 @@ voice-api.hexapax.com {
     reverse_proxy localhost:3090
 }
 voice-chat.hexapax.com {
+    # Rewrite root to the voice/chat micro-app (backend has no / handler)
+    rewrite / /app.html
     reverse_proxy localhost:3090
 }
 
