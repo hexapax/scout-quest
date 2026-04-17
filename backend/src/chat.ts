@@ -13,6 +13,8 @@ import { getVoiceContext, pushToolEvent } from "./voice-context.js";
 import { captureEpisode } from "./episodes.js";
 import { resolveProvider } from "./providers/registry.js";
 import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
+import { lookupUserRole } from "./auth/role-lookup.js";
+import type { Role } from "./types.js";
 
 const MAX_TOOL_TURNS = 5;
 
@@ -82,18 +84,69 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
   // Rich tool record for eval observability: name + args + result
   const toolCallRecords: Array<{ name: string; args: unknown; result: string }> = [];
 
-  // Determine user role for tool filtering.
-  // Admin domain → admin role. Otherwise role from email + model.
-  const ADMIN_EMAILS = ["jeremy@hexapax.com", "jebramwell@gmail.com"];
-  const isAdmin = isAdminDomain || ADMIN_EMAILS.some(e => cookieUser?.email?.toLowerCase() === e.toLowerCase());
-  let userRole: UserRole = "scout";
-  if (isAdmin && !emulateEmail) userRole = "admin";
-  else if (isAdmin && emulateEmail) userRole = "scout"; // emulating a scout
-  else if (model.includes("guide")) userRole = "guide";
+  // Resolve the *authenticated* user's role (always from the cookie — never
+  // from an emulation header). Emulation is an admin-only privilege; see below.
+  const authRoleInfo = cookieUser
+    ? await lookupUserRole(cookieUser.email)
+    : null;
+
+  // Role for tool filtering and system-block selection.
+  //
+  // Precedence:
+  //   1. Emulation: admin users can emulate a scout via `x-emulate-user`.
+  //      In that case we drop to scout-level tools regardless of their own role.
+  //   2. Admin domain override: a logged-in admin on ai-chat.* / admin.* keeps
+  //      admin tools. A *non-admin* hitting those hosts does NOT get elevated
+  //      (hostname is not a trust boundary on its own).
+  //   3. Authenticated user's resolved role from the `users` collection.
+  //   4. Legacy `scout-guide` model string still promotes anonymous requests
+  //      to the guide tool set (LibreChat API-key auth has no user doc).
+  //   5. Fallback: "scout" for API-key auth (LibreChat), "unknown" for
+  //      cookie-authenticated users without a user doc — those get no tools
+  //      and a warning log.
+  const isEmulating = !!emulateEmail && (authRoleInfo?.isAdmin ?? false);
+  const userCanUseAdminDomain = authRoleInfo?.isAdmin ?? false;
+  const effectiveAdminDomain = isAdminDomain && (userCanUseAdminDomain || evalAdminOverride);
+
+  let userRole: UserRole;
+  if (effectiveAdminDomain && !isEmulating) {
+    userRole = "admin";
+  } else if (isEmulating) {
+    userRole = "scout";
+  } else if (authRoleInfo) {
+    // Unknown role → empty tool list. Log it loudly for alpha debugging.
+    if (authRoleInfo.role === "unknown") {
+      console.warn(
+        JSON.stringify({
+          event: "role_lookup_unknown",
+          email: cookieUser?.email,
+          host,
+          path: req.path,
+          msg: "Cookie-authenticated user has no users-collection doc and is not on the admin allowlist. Tools disabled.",
+        })
+      );
+    }
+    userRole = authRoleInfo.role as UserRole;
+  } else if (model.includes("guide")) {
+    // Legacy: LibreChat API-key auth with the scout-guide model string.
+    userRole = "guide";
+  } else {
+    // API-key auth (LibreChat) without a guide model → default to scout.
+    userRole = "scout";
+  }
   const activeTools = getToolsForRole(userRole);
 
+  // Keep a Role-typed view for downstream consumers (e.g., persona, logging).
+  const resolvedRole: Role | null = authRoleInfo?.role ?? null;
+  void resolvedRole; // reserved for stream B/C — do not remove without coordinating
+
   // Log incoming request for debugging custom LLM integration
-  console.log(`[chat] model=${model} stream=${doStream} email=${userEmail || "none"} voice=${isVoice} role=${userRole} messages=${body.messages?.length ?? 0}`);
+  console.log(
+    `[chat] model=${model} stream=${doStream} email=${userEmail || "none"} voice=${isVoice} ` +
+    `role=${userRole} roleSource=${authRoleInfo?.source || "anonymous"} ` +
+    `isAdmin=${authRoleInfo?.isAdmin ?? false} emulating=${isEmulating} ` +
+    `messages=${body.messages?.length ?? 0}`
+  );
   if (body.messages?.length) {
     for (const m of body.messages.slice(0, 5)) {
       const content = typeof m.content === "string" ? m.content.substring(0, 100) : JSON.stringify(m.content)?.substring(0, 100);
@@ -123,12 +176,14 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       const scoutCtx = await getScoutContext(userEmail);
       if (scoutCtx) {
         systemBlocks.push(scoutCtx);
-      } else if (userRole === "admin") {
+      } else if (userRole === "admin" || userRole === "superuser" || userRole === "leader") {
         // Leader context — no scout profile, inject identity + instructions
+        const roleLabel = userRole === "leader" ? "Troop leader" : "Scoutmaster (admin)";
+        const troopLabel = authRoleInfo?.troop || "2024";
         systemBlocks.push({
           type: "text",
-          text: `LEADER CONTEXT\nEmail: ${userEmail}\nRole: Scoutmaster (admin)\nTroop: 2024\n\n` +
-            `You have access to ALL tools. Use troop_insights and session_planner freely.\n` +
+          text: `LEADER CONTEXT\nEmail: ${userEmail}\nRole: ${roleLabel}\nTroop: ${troopLabel}\n\n` +
+            `You have access to leader tools. Use troop_insights and session_planner freely.\n` +
             `For individual scout lookups, use get_scout_status with a scout name via get_roster first.\n` +
             `You do NOT have a personal Scoutbook userId — you are a leader, not a scout.`,
         });
