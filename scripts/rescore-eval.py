@@ -138,7 +138,11 @@ def main():
         elif perspective == "chain":
             eval_set_path = str(EVAL_SET_DIR / "chain-eval-v1.yaml")
         else:
-            eval_set_path = str(EVAL_SET_DIR / "scout-coach-v5.yaml")
+            # Default to v7 canonical. For legacy docs written against v5
+            # fall back to archived/ if root doesn't have it.
+            v7 = EVAL_SET_DIR / "scout-eval-v7.yaml"
+            archived_v5 = EVAL_SET_DIR / "archived" / "scout-coach-v5.yaml"
+            eval_set_path = str(v7 if v7.exists() else archived_v5)
 
         eval_set = load_eval_set_yaml(eval_set_path)
         panel = PanelEvaluator(eval_set, usage, troop_context)

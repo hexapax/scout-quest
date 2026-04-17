@@ -610,13 +610,32 @@ class KnowledgePerspective:
 
     name = "knowledge"
     description = "Knowledge, coaching & safety questions"
-    default_eval_set = "scout-coach-v5.yaml"
+    # v7 is the canonical set since 2026-03-24 (alpha launch plan Stream D).
+    # scout-coach-v5.yaml is archived in eval-sets/archived/.
+    default_eval_set = "scout-eval-v7.yaml"
 
     def load_eval_set(self, yaml_path: str) -> EvalSetConfig:
-        """Load knowledge eval set from YAML."""
+        """Load knowledge eval set from YAML.
+
+        If the path resolves to a missing file in eval-sets/ root but exists
+        under eval-sets/archived/, emit a deprecation warning and use the
+        archived copy (rather than hard-failing). This keeps historical
+        re-runs working while nudging users toward the canonical v7 set.
+        """
         path = Path(yaml_path)
         if not path.is_absolute():
             path = EVAL_SET_DIR / path
+        if not path.exists():
+            archived_path = EVAL_SET_DIR / "archived" / path.name
+            if archived_path.exists():
+                import sys as _sys
+                _sys.stderr.write(
+                    f"\n[DEPRECATION] Eval set '{path.name}' lives in "
+                    f"eval-sets/archived/. Falling back to archived copy.\n"
+                    f"  Canonical set: eval-sets/scout-eval-v7.yaml\n"
+                    f"  Pass 'archived/{path.name}' to silence this warning.\n\n"
+                )
+                path = archived_path
         return load_eval_set_yaml(str(path))
 
     def resolve_items(self, eval_set: EvalSetConfig, filters: dict) -> list[EvalItem]:
