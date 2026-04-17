@@ -11,20 +11,56 @@ export interface ToolDefinition {
   };
 }
 
-export type UserRole = "admin" | "leader" | "guide" | "scout";
+/**
+ * Tool-filter role set. This is a superset of the canonical `Role` union
+ * (`backend/src/types.ts`) — it maps every real role onto a tool-gate bucket.
+ *
+ * The "guide" bucket is legacy (from the `scout-guide` model). It's preserved
+ * so existing persona/model routing still works, but new callers should use
+ * the canonical `Role` from `types.ts` and let the role→tool mapping happen
+ * via `getToolsForRole`.
+ */
+export type UserRole =
+  | "admin"
+  | "superuser"
+  | "leader"
+  | "guide"
+  | "parent"
+  | "scout"
+  | "adult_readonly"
+  | "test_scout"
+  | "unknown";
 
 // Tool names available per role
 const SCOUT_TOOL_NAMES = ["get_scout_status", "search_bsa_reference", "cross_reference", "scout_buddies", "get_roster"];
+// Read-only subset — no write tools, no expensive troop-wide queries.
+// Used for `adult_readonly` and `parent` (see role→tool mapping below).
+const READONLY_TOOL_NAMES = ["get_scout_status", "search_bsa_reference", "cross_reference", "get_roster"];
 const GUIDE_TOOL_NAMES = [...SCOUT_TOOL_NAMES, "troop_insights", "session_planner"];
 const LEADER_TOOL_NAMES = [...GUIDE_TOOL_NAMES, "create_pending_action", "log_requirement_work"];
-// Admin gets everything
+// Admin/superuser gets everything (all SCOUT_TOOLS + BSA_WRITE_TOOLS that are inlined in the list)
 
-/** Get the appropriate tool set for a user role. */
+/**
+ * Get the appropriate tool set for a user role.
+ *
+ * Mapping (matches the alpha-launch plan, Stream A):
+ *   superuser / admin → all tools
+ *   leader           → guide tools + write tools (create_pending_action, log_requirement_work)
+ *   guide            → scout tools + troop_insights + session_planner (legacy model bucket)
+ *   scout / test_scout → basic scout tools
+ *   parent           → read-only subset (inspect their scout, no writes)
+ *   adult_readonly   → read-only subset
+ *   unknown          → empty list (hard fail — logged by the caller)
+ */
 export function getToolsForRole(role: UserRole): ToolDefinition[] {
-  if (role === "admin") return SCOUT_TOOLS;
-  const allowed = role === "scout" ? SCOUT_TOOL_NAMES
+  if (role === "admin" || role === "superuser") return SCOUT_TOOLS;
+  if (role === "unknown") return [];
+  const allowed =
+      role === "scout" || role === "test_scout" ? SCOUT_TOOL_NAMES
+    : role === "parent" || role === "adult_readonly" ? READONLY_TOOL_NAMES
     : role === "guide" ? GUIDE_TOOL_NAMES
-    : LEADER_TOOL_NAMES;
+    : role === "leader" ? LEADER_TOOL_NAMES
+    : SCOUT_TOOL_NAMES; // defensive: unreachable given the union above
   return SCOUT_TOOLS.filter(t => allowed.includes(t.name));
 }
 

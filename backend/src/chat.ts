@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages.js";
 import { getKnowledgeBlock } from "./knowledge.js";
-import { getPersonaBlock } from "./persona.js";
+import { getPersonaBlock, resolvePersonaByRole } from "./persona.js";
 import { getScoutContext } from "./scout-context.js";
 import { openaiMessagesToAnthropic, extractSystemText } from "./translate.js";
 import { initSSE, writeRoleChunk, writeContentChunk, writeFinishChunk, writeSSEDone, writeToolCallChunk, writeToolResultChunk } from "./stream.js";
@@ -13,6 +13,8 @@ import { getVoiceContext, pushToolEvent } from "./voice-context.js";
 import { captureEpisode } from "./episodes.js";
 import { resolveProvider } from "./providers/registry.js";
 import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
+import { lookupUserRole } from "./auth/role-lookup.js";
+import type { Role } from "./types.js";
 
 const MAX_TOOL_TURNS = 5;
 
@@ -82,18 +84,69 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
   // Rich tool record for eval observability: name + args + result
   const toolCallRecords: Array<{ name: string; args: unknown; result: string }> = [];
 
-  // Determine user role for tool filtering.
-  // Admin domain → admin role. Otherwise role from email + model.
-  const ADMIN_EMAILS = ["jeremy@hexapax.com", "jebramwell@gmail.com"];
-  const isAdmin = isAdminDomain || ADMIN_EMAILS.some(e => cookieUser?.email?.toLowerCase() === e.toLowerCase());
-  let userRole: UserRole = "scout";
-  if (isAdmin && !emulateEmail) userRole = "admin";
-  else if (isAdmin && emulateEmail) userRole = "scout"; // emulating a scout
-  else if (model.includes("guide")) userRole = "guide";
+  // Resolve the *authenticated* user's role (always from the cookie — never
+  // from an emulation header). Emulation is an admin-only privilege; see below.
+  const authRoleInfo = cookieUser
+    ? await lookupUserRole(cookieUser.email)
+    : null;
+
+  // Role for tool filtering and system-block selection.
+  //
+  // Precedence:
+  //   1. Emulation: admin users can emulate a scout via `x-emulate-user`.
+  //      In that case we drop to scout-level tools regardless of their own role.
+  //   2. Admin domain override: a logged-in admin on ai-chat.* / admin.* keeps
+  //      admin tools. A *non-admin* hitting those hosts does NOT get elevated
+  //      (hostname is not a trust boundary on its own).
+  //   3. Authenticated user's resolved role from the `users` collection.
+  //   4. Legacy `scout-guide` model string still promotes anonymous requests
+  //      to the guide tool set (LibreChat API-key auth has no user doc).
+  //   5. Fallback: "scout" for API-key auth (LibreChat), "unknown" for
+  //      cookie-authenticated users without a user doc — those get no tools
+  //      and a warning log.
+  const isEmulating = !!emulateEmail && (authRoleInfo?.isAdmin ?? false);
+  const userCanUseAdminDomain = authRoleInfo?.isAdmin ?? false;
+  const effectiveAdminDomain = isAdminDomain && (userCanUseAdminDomain || evalAdminOverride);
+
+  let userRole: UserRole;
+  if (effectiveAdminDomain && !isEmulating) {
+    userRole = "admin";
+  } else if (isEmulating) {
+    userRole = "scout";
+  } else if (authRoleInfo) {
+    // Unknown role → empty tool list. Log it loudly for alpha debugging.
+    if (authRoleInfo.role === "unknown") {
+      console.warn(
+        JSON.stringify({
+          event: "role_lookup_unknown",
+          email: cookieUser?.email,
+          host,
+          path: req.path,
+          msg: "Cookie-authenticated user has no users-collection doc and is not on the admin allowlist. Tools disabled.",
+        })
+      );
+    }
+    userRole = authRoleInfo.role as UserRole;
+  } else if (model.includes("guide")) {
+    // Legacy: LibreChat API-key auth with the scout-guide model string.
+    userRole = "guide";
+  } else {
+    // API-key auth (LibreChat) without a guide model → default to scout.
+    userRole = "scout";
+  }
   const activeTools = getToolsForRole(userRole);
 
+  // Keep a Role-typed view for downstream consumers (e.g., persona, logging).
+  const resolvedRole: Role | null = authRoleInfo?.role ?? null;
+  void resolvedRole; // reserved for stream B/C — do not remove without coordinating
+
   // Log incoming request for debugging custom LLM integration
-  console.log(`[chat] model=${model} stream=${doStream} email=${userEmail || "none"} voice=${isVoice} role=${userRole} messages=${body.messages?.length ?? 0}`);
+  console.log(
+    `[chat] model=${model} stream=${doStream} email=${userEmail || "none"} voice=${isVoice} ` +
+    `role=${userRole} roleSource=${authRoleInfo?.source || "anonymous"} ` +
+    `isAdmin=${authRoleInfo?.isAdmin ?? false} emulating=${isEmulating} ` +
+    `messages=${body.messages?.length ?? 0}`
+  );
   if (body.messages?.length) {
     for (const m of body.messages.slice(0, 5)) {
       const content = typeof m.content === "string" ? m.content.substring(0, 100) : JSON.stringify(m.content)?.substring(0, 100);
@@ -111,27 +164,101 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
     ];
     const needsCompact = COMPACT_KNOWLEDGE_PATTERNS.some(p => model.includes(p));
 
+    // Resolve persona by role, not model name. Two personas total:
+    //   scout-coach  — Woody tone for scouts
+    //   adult-guide  — direct tone for parents, leaders, scoutmaster
+    // Use-case differentiation comes from the PARENT USER / LEADER CONTEXT
+    // blocks appended below, not from a third persona.
+    const personaKey = resolvePersonaByRole(userRole);
+
     // Build system blocks (order matters for caching)
     const systemBlocks: AnthropicSystemBlock[] = [
       getKnowledgeBlock(needsCompact), // [0] BSA knowledge — cached (ephemeral)
-      getPersonaBlock(model),           // [1] Agent persona
+      getPersonaBlock(personaKey),      // [1] Agent persona (scout-coach or adult-guide)
     ];
     if (needsCompact) console.log(`[chat] Using compact knowledge for model ${model}`);
 
     // [2] Per-user context (dynamic — not cached)
     if (userEmail) {
+      // Role-composition for context injection.
+      //
+      // Roles aren't mutually exclusive: a very common pattern in scouting is a
+      // parent who registers as an adult leader so they can come on campouts.
+      // That user has roles=["parent","leader"]; the legacy primary-role switch
+      // would have taken only the leader branch and lost their scouts' context.
+      // We now check the full roles[] list and accumulate context blocks.
+      const userRoles = authRoleInfo?.roles || [];
+      const isScoutUser = userRoles.includes("scout") || userRoles.includes("test_scout");
+      const isParentUser = userRoles.includes("parent");
+      const isLeaderUser =
+        userRoles.includes("leader") ||
+        userRoles.includes("admin") ||
+        userRoles.includes("superuser");
+      const scoutEmails = authRoleInfo?.scoutEmails || [];
+      const troopLabel = authRoleInfo?.troop || "2024";
+
       const scoutCtx = await getScoutContext(userEmail);
-      if (scoutCtx) {
+
+      // 1. Scout user — inject their own profile.
+      if (scoutCtx && isScoutUser) {
         systemBlocks.push(scoutCtx);
-      } else if (userRole === "admin") {
-        // Leader context — no scout profile, inject identity + instructions
+      }
+
+      // 2. Parent user — surface their scouts' state regardless of whether they're
+      // also a leader. Assistant stays in its coach/scoutmaster persona and speaks
+      // TO the parent ABOUT their scout.
+      if (isParentUser && scoutEmails.length > 0) {
+        const kidContexts = (
+          await Promise.all(scoutEmails.map((se) => getScoutContext(se)))
+        ).filter((c): c is AnthropicSystemBlock => c !== null);
+
         systemBlocks.push({
           type: "text",
-          text: `LEADER CONTEXT\nEmail: ${userEmail}\nRole: Scoutmaster (admin)\nTroop: 2024\n\n` +
-            `You have access to ALL tools. Use troop_insights and session_planner freely.\n` +
-            `For individual scout lookups, use get_scout_status with a scout name via get_roster first.\n` +
-            `You do NOT have a personal Scoutbook userId — you are a leader, not a scout.`,
+          text: `PARENT USER — the person chatting with you is the parent of one or more scouts in this troop.\n` +
+            `Speak TO the parent about their scout ("your scout", "they") — do not speak AS the parent.\n\n` +
+            `Parent email: ${userEmail}\n` +
+            `Troop: ${troopLabel}\n` +
+            `Their scout(s): ${scoutEmails.join(", ")}\n` +
+            (isLeaderUser
+              ? `This parent is ALSO a registered adult leader for the troop — see LEADER CONTEXT below.\n`
+              : ``) +
+            `\n` +
+            `Guidance:\n` +
+            `- When the parent asks about their scout's progress, look it up with get_scout_status using the scout's email (from the list above) or name.\n` +
+            `- Help the parent help their scout with rank advancement, merit badges, upcoming events, chores, and scouting habits.\n` +
+            (isLeaderUser
+              ? `- As a registered leader, this parent may have write access to Scoutbook via leader tools. Use them if the parent is logging something for their own scout or another scout they're approved to advance.\n`
+              : `- This parent has read-only tools. If an advancement needs to be logged in Scoutbook, recommend the scout or a troop leader log it.\n`) +
+            `- The scoutbook userId shown in the scout context block(s) below belongs to the SCOUT. The parent may separately have their own Scoutbook userId from an adult leader registration — that's distinct and not captured here.`,
         });
+        for (const kid of kidContexts) {
+          systemBlocks.push(kid);
+        }
+      }
+
+      // 3. Leader/admin user — inject leader identity and tool guidance.
+      if (isLeaderUser) {
+        const roleLabel =
+          userRoles.includes("admin") || userRoles.includes("superuser")
+            ? "Scoutmaster (admin)"
+            : "Troop leader";
+        systemBlocks.push({
+          type: "text",
+          text: `LEADER CONTEXT\nEmail: ${userEmail}\nRole: ${roleLabel}\nTroop: ${troopLabel}\n` +
+            (isParentUser && scoutEmails.length > 0
+              ? `This leader is also a parent — see PARENT USER block above for their scout(s).\n`
+              : ``) +
+            `\n` +
+            `You have access to leader tools. Use troop_insights and session_planner freely.\n` +
+            `For individual scout lookups, use get_scout_status with a scout name via get_roster first.\n` +
+            `This user may have their own Scoutbook adult-leader userId; it is separate from any scout userId shown in context blocks.`,
+        });
+      }
+
+      // 4. Fallback: scoutCtx exists but user isn't a scout and isn't a parent-with-scouts.
+      // Example: adult_readonly user whose email happens to match a scoutbook parents[] entry.
+      if (scoutCtx && !isScoutUser && !(isParentUser && scoutEmails.length > 0)) {
+        systemBlocks.push(scoutCtx);
       }
     }
 
