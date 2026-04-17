@@ -250,3 +250,34 @@ Cost guard is critical — without it, a runaway provider loop could burn budget
 
 Aggressive: 5 working days with 3-agent parallelism in Phase 2.
 Realistic: 8–10 working days accounting for integration friction on `chat.ts`.
+
+---
+
+## Stream D implementation notes (2026-04-16)
+
+- **Archives:** moved `scout-coach-v4`, `scout-coach-v5`, `scout-eval-v6`,
+  and `scout-eval-graph-v1` to `eval-sets/archived/` with a README.
+  `run-eval.py`, `run-model-eval.py`, `rescore-eval.py`,
+  `knowledge.py`, and `eval-runner.html` now default to v7; archived
+  paths still load with a deprecation warning.
+- **Multi-turn tools:** `scripts/eval_engine.py` shares a
+  `_dispatch_tool_call` helper and `MAX_TOOL_ROUNDS = 10` cap across
+  the Anthropic, OpenAI-compat (openai/xai/deepseek/openrouter/backend),
+  and Gemini paths. TW1 smoke tests verified tool calling end-to-end on
+  Claude Sonnet, Opus, GPT-4.1, GPT-5.4, Gemini 2.5 Flash, DeepSeek V3,
+  and Grok 4.1 Fast (~$4.29 total).
+- **Backend Gemini:** new `backend/src/providers/gemini.ts` via
+  `@google/genai` ^1.50; `registry.ts` routes `gemini-*`. API key order:
+  `GEMINI_API_KEY → GOOGLE_API_KEY → GOOGLE_KEY` — existing deploys
+  keep working.
+- **Pricing:** `PRICING` moved to `config/pricing.yaml`; Stream C
+  consumes the same file. `UsageTracker.to_dict()` exposes
+  `pricing_source` (path + sha256 + git commit) for provenance.
+- **Capability matrix:** `docs/model-capability-matrix.md`.
+- **LibreChat MCP constraint:** scout-quest routes all chat through our
+  backend; the "custom-endpoint = no MCP" rule is scoped to
+  LibreChat-native presets only — clarification added to `CLAUDE.md`
+  and `future-research.md`.
+- **Shimming:** not needed — every target model has native tool calls.
+  If a tool-less model ever needs it, hook a schema-shim into
+  `_run_legacy`.
