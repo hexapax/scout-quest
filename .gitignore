@@ -20,8 +20,10 @@ MEM0_API_KEY
 !devbox/config/.mcp.json
 !.devcontainer/devcontainer.json
 !.mcp.json
-!mcp-servers/scout-quest/test/reports/**/*.json
 !backend/experiments/**/*.json
+
+# Deprecated TS harness — canonical eval results now live in MongoDB (scoutquest.eval_results)
+mcp-servers/scout-quest/test/reports/
 
 # Archives
 *.tar
