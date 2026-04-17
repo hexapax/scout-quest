@@ -49,6 +49,39 @@ LibreChat has **native xAI support** (not just custom endpoint). It can be confi
 - **MCP support status with native xAI endpoint: UNVERIFIED** — xAI is listed in docs as a pre-configured endpoint, but it's unclear if it's in the same category as OpenAI/Anthropic/Google for MCP purposes. The MCP docs specifically list only "OpenAI, Anthropic, Google, Bedrock" as supported.
 - **Recommendation:** Test before relying on it for tool use. If xAI native endpoint doesn't support MCP, Grok models can only be used for non-tool presets (Quick Chat, Deep Think equivalents).
 
+#### Update 2026-04-16 (Stream D): route around LibreChat, don't test it
+
+We no longer need to answer the LibreChat-xAI-MCP question for the
+scout-quest alpha. Here's why:
+
+- `config/scout-quest/librechat.yaml` has exactly one custom endpoint
+  (`ScoutCoachV2`) that proxies all chat to our own backend (`backend/src/chat.ts`).
+  LibreChat never handles tool calls itself on this instance.
+- Our backend has its own provider adapters (`backend/src/providers/*.ts`)
+  that route per-model to Anthropic, OpenAI, xAI (via `openai-compat.ts`),
+  OpenRouter, and now Gemini. Tool calling is handled in our code path,
+  not LibreChat's.
+- TW1 smoke tests (2026-04-16) confirm Grok 4.1 Fast via OpenRouter calls
+  `log_chore` through the eval engine's openai-compat path. See
+  `docs/model-capability-matrix.md`.
+
+**The LibreChat "custom endpoint = no MCP" constraint is still accurate
+for LibreChat-native preset configs**, and it's still the reason we built
+our own backend proxy. But for the home-grown scout-quest flow, the
+restriction is moot — we control the full chat loop and can dispatch
+tools to any provider we wire up.
+
+Action items:
+- `CLAUDE.md` "Key constraint" bullet updated to clarify this applies to
+  direct LibreChat endpoint config, not to our backend-routed flow.
+- A live end-to-end xAI-native LibreChat test is deferred; if we ever
+  decide to add an xAI preset that bypasses our backend, test tool
+  support before going live.
+- **Revisit if:** scope changes so we want LibreChat to call tools
+  directly again (e.g., an Agent-endpoint scout coach that skips our
+  backend). In that case, test Grok + MCP in a devbox LibreChat config
+  before production.
+
 ### Current Model Presets (implemented 2026-02-21)
 
 **Scout-Quest Instance** (scout-quest.hexapax.com — `enforce: true`, locked UI):

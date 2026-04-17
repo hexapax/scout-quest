@@ -151,7 +151,7 @@ When a command would require quotes-within-quotes or shell expansions that trip 
 - **Before pursuing new integrations, model strategies, or endpoint changes:** read `docs/future-research.md` — it contains evaluated options, known constraints, and dead ends
 - **Update findings immediately** — when a session discovers a constraint or evaluates an option, update `docs/future-research.md` before the session ends
 - **Dead ends must include:** why it failed, source links, and a "Revisit if:" condition
-- **Key constraint:** MCP tools only work on native LibreChat endpoints (`openAI`, `anthropic`, `google`, `bedrock`). Custom endpoints (OpenRouter, DeepSeek) cannot use MCP tools. See `docs/future-research.md` for details.
+- **Key constraint (LibreChat-native only):** MCP tools only work on native LibreChat endpoints (`openAI`, `anthropic`, `google`, `bedrock`). Custom endpoints (OpenRouter, DeepSeek) cannot use MCP tools. This constraint does **not** apply to our scout-quest backend — it has its own provider adapters (anthropic, openai-compat, gemini) and dispatches tools server-side for every wired model. See `docs/future-research.md#update-2026-04-16-stream-d-route-around-librechat-dont-test-it` and `docs/model-capability-matrix.md`.
 - **Multi-session safety:** check `git status` before editing shared config files — another session may have uncommitted changes. Use git worktrees for parallel implementation work.
 
 ## Git Hygiene & Eval Reproducibility
