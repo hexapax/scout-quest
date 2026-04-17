@@ -3,6 +3,7 @@
 import type { LLMProvider } from "./types.js";
 import { AnthropicProvider } from "./anthropic.js";
 import { OpenAICompatProvider } from "./openai-compat.js";
+import { GeminiProvider } from "./gemini.js";
 
 // ---------------------------------------------------------------------------
 // Provider instances (lazy singletons)
@@ -12,6 +13,7 @@ let anthropicProvider: AnthropicProvider | null = null;
 let openaiProvider: OpenAICompatProvider | null = null;
 let xaiProvider: OpenAICompatProvider | null = null;
 let openrouterProvider: OpenAICompatProvider | null = null;
+let geminiProvider: GeminiProvider | null = null;
 
 function getAnthropicProvider(): AnthropicProvider {
   if (!anthropicProvider) {
@@ -66,6 +68,21 @@ function getOpenRouterProvider(): OpenAICompatProvider {
   return openrouterProvider;
 }
 
+function getGeminiProvider(): GeminiProvider {
+  if (!geminiProvider) {
+    const hasKey = process.env.GEMINI_API_KEY
+      || process.env.GOOGLE_API_KEY
+      || process.env.GOOGLE_KEY;
+    if (!hasKey) {
+      throw new Error(
+        "No Gemini API key set — expected GEMINI_API_KEY, GOOGLE_API_KEY, or GOOGLE_KEY",
+      );
+    }
+    geminiProvider = new GeminiProvider();
+  }
+  return geminiProvider;
+}
+
 // ---------------------------------------------------------------------------
 // Default Anthropic model
 // ---------------------------------------------------------------------------
@@ -103,6 +120,7 @@ export interface ResolvedProvider {
  * - `claude-opus-*` → Anthropic (model name passthrough)
  * - `grok-*` → xAI
  * - `gpt-*` → OpenAI
+ * - `gemini-*` → Google Gemini
  * - Contains `/` → OpenRouter (model name passthrough)
  * - Anything else → Anthropic with default model
  */
@@ -148,6 +166,15 @@ export function resolveProvider(modelName: string): ResolvedProvider {
       provider: getOpenAIProvider(),
       modelId: modelName,
       providerName: "openai",
+    };
+  }
+
+  // Gemini models → Google Gemini
+  if (modelName.startsWith("gemini-")) {
+    return {
+      provider: getGeminiProvider(),
+      modelId: modelName,
+      providerName: "google",
     };
   }
 
