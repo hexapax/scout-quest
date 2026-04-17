@@ -250,3 +250,28 @@ Cost guard is critical — without it, a runaway provider loop could burn budget
 
 Aggressive: 5 working days with 3-agent parallelism in Phase 2.
 Realistic: 8–10 working days accounting for integration friction on `chat.ts`.
+
+---
+
+## Stream A implementation notes (landed 2026-04-16)
+
+- **Shared schema**: backend reads the AdminJS `users` collection via a raw
+  `MongoClient` handle (`backend/src/models/user.ts`), not Mongoose — matches
+  the pattern in `conversations.ts` and avoids a new dep. Canonical schema
+  remains `admin/src/models/scout-quest/user.ts`.
+- **Role union**: added `leader` (not yet in the AdminJS enum — Stream F
+  onboarding will extend it) and `unknown` (hard-fail for unseeded users).
+  Priority order: `superuser > admin > leader > parent > scout > adult_readonly > test_scout > unknown`.
+- **Cache**: 60s TTL in-memory map in `auth/role-lookup.ts`. Seed script docs
+  note to restart the backend (or wait 60s) after seeding.
+- **Multi-role users** resolve to a single primary role by priority but
+  `roles[]` keeps the full set so downstream consumers (e.g., a parent who
+  is also a leader) can make context-appropriate decisions.
+- **JWT payload unchanged** — roles are re-resolved on every `/auth/me`
+  request so seeding a user doc doesn't require re-login.
+- **Admin-domain override** preserved but now gated: a non-admin hitting
+  `ai-chat.hexapax.com` cannot elevate tool access.
+- **Allowlist fallback** (Jeremy's two emails) stays until Stream F seeds
+  the full cohort. A seeded DB doc always wins over the allowlist.
+- **Contract published** for streams B/C/E via `AppUser`, `Role`,
+  `UserRoleInfo` in `backend/src/types.ts`. Do not mutate that shape.
