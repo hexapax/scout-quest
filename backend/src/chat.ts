@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import type { MessageParam } from "@anthropic-ai/sdk/resources/messages.js";
 import { getKnowledgeBlock } from "./knowledge.js";
-import { getPersonaBlock } from "./persona.js";
+import { getPersonaBlock, resolvePersonaByRole } from "./persona.js";
 import { getScoutContext } from "./scout-context.js";
 import { openaiMessagesToAnthropic, extractSystemText } from "./translate.js";
 import { initSSE, writeRoleChunk, writeContentChunk, writeFinishChunk, writeSSEDone, writeToolCallChunk, writeToolResultChunk } from "./stream.js";
@@ -164,10 +164,17 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
     ];
     const needsCompact = COMPACT_KNOWLEDGE_PATTERNS.some(p => model.includes(p));
 
+    // Resolve persona by role, not model name. Two personas total:
+    //   scout-coach  — Woody tone for scouts
+    //   adult-guide  — direct tone for parents, leaders, scoutmaster
+    // Use-case differentiation comes from the PARENT USER / LEADER CONTEXT
+    // blocks appended below, not from a third persona.
+    const personaKey = resolvePersonaByRole(userRole);
+
     // Build system blocks (order matters for caching)
     const systemBlocks: AnthropicSystemBlock[] = [
       getKnowledgeBlock(needsCompact), // [0] BSA knowledge — cached (ephemeral)
-      getPersonaBlock(model),           // [1] Agent persona
+      getPersonaBlock(personaKey),      // [1] Agent persona (scout-coach or adult-guide)
     ];
     if (needsCompact) console.log(`[chat] Using compact knowledge for model ${model}`);
 
