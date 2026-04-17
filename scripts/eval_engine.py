@@ -9,8 +9,18 @@ conversation-loop engine that handles tool dispatch. The engine:
 4. Feeds tool results back and continues until the model stops
 5. Returns the full transcript with tool call log
 
-Currently supports Anthropic models for tool dispatch. Non-Anthropic
-models fall back to single-call without tools.
+Supported providers (all with multi-turn tool dispatch):
+  - anthropic             → _run_anthropic (tool_use blocks)
+  - openai/deepseek/      → _run_openai_compat (OpenAI tool_calls[])
+    openrouter/xai/backend
+  - google (Gemini)       → _run_gemini (functionCall / functionResponse parts)
+
+All provider paths share the same ToolRegistry.execute() dispatch helper,
+so tool results are identical across providers. Each path caps tool-call
+iterations at MAX_TOOL_ROUNDS (10) to prevent runaway loops burning budget.
+
+Legacy single-call fallback (no tools) is only used for unrecognized
+providers — see _run_legacy.
 """
 
 from __future__ import annotations
@@ -303,6 +313,53 @@ def _check_expected_tools(tool_call_log: list[dict],
     return result
 
 
+# Safety cap on tool-call iterations per question. Hit from a stuck model,
+# this prevents $-escalation from infinite tool loops. Shared across the
+# Anthropic, OpenAI-compat, and Gemini provider paths.
+MAX_TOOL_ROUNDS = 10
+
+
+def _dispatch_tool_call(
+    layer: LayerConfig,
+    tools: ToolRegistry,
+    tool_name: str,
+    tool_args: dict,
+    tool_round: int,
+    tool_call_log: list[dict],
+    unauthorized_calls: list[dict],
+) -> dict:
+    """Provider-agnostic tool execution.
+
+    Checks authorization via the layer, runs the tool through the registry,
+    appends the call record to tool_call_log (and unauthorized_calls when
+    denied), and returns the raw tool-registry result (dict with either
+    "result" or "error"). Caller formats the result for its provider's
+    message envelope.
+    """
+    tool_exec_start = time.time()
+    authorized = layer.is_authorized(tool_name)
+    result = tools.execute(tool_name, tool_args, authorized)
+    tool_ms = int((time.time() - tool_exec_start) * 1000)
+
+    call_record = {
+        "name": tool_name,
+        "args": tool_args,
+        "result": result,
+        "authorized": authorized,
+        "round": tool_round,
+        "timing_ms": tool_ms,
+    }
+    tool_call_log.append(call_record)
+    if not authorized:
+        unauthorized_calls.append(call_record)
+
+    status = "OK" if authorized else "DENIED"
+    sys.stdout.write(f"[tool: {tool_name} ({status})] ")
+    sys.stdout.flush()
+
+    return result
+
+
 class EvalEngine:
     """Unified eval engine — handles single-turn through multi-session.
 
@@ -417,9 +474,8 @@ class EvalEngine:
             call_ms = int((time.time() - call_start) * 1000)
 
             # Handle tool use loop (model may call tools multiple times)
-            max_tool_rounds = 10  # Safety limit
             tool_round = 0
-            while response.get("stop_reason") == "tool_use" and tool_round < max_tool_rounds:
+            while response.get("stop_reason") == "tool_use" and tool_round < MAX_TOOL_ROUNDS:
                 tool_round += 1
                 tool_blocks = [b for b in response.get("content", []) if b.get("type") == "tool_use"]
                 tool_results = []
@@ -427,28 +483,12 @@ class EvalEngine:
                 for tb in tool_blocks:
                     tool_name = tb["name"]
                     tool_args = tb.get("input", {})
-                    tool_start = time.time()
-                    authorized = self.layer.is_authorized(tool_name)
-                    result = self.tools.execute(tool_name, tool_args, authorized)
-                    tool_ms = int((time.time() - tool_start) * 1000)
 
-                    # Log ALL calls (authorized or not)
-                    call_record = {
-                        "name": tool_name,
-                        "args": tool_args,
-                        "result": result,
-                        "authorized": authorized,
-                        "round": tool_round,
-                        "timing_ms": tool_ms,
-                    }
-                    tool_call_log.append(call_record)
-                    if not authorized:
-                        unauthorized_calls.append(call_record)
-
-                    # Print tool call for progress tracking
-                    status = "OK" if authorized else "DENIED"
-                    sys.stdout.write(f"[tool: {tool_name} ({status})] ")
-                    sys.stdout.flush()
+                    result = _dispatch_tool_call(
+                        self.layer, self.tools,
+                        tool_name, tool_args, tool_round,
+                        tool_call_log, unauthorized_calls,
+                    )
 
                     tool_results.append({
                         "type": "tool_result",
@@ -463,6 +503,11 @@ class EvalEngine:
                 call_start = time.time()
                 response = self._call_model(system_blocks, messages)
                 call_ms = int((time.time() - call_start) * 1000)
+
+            # Tool loop safety cap — log if we ever hit it so the bug doesn't hide
+            if tool_round >= MAX_TOOL_ROUNDS and response.get("stop_reason") == "tool_use":
+                sys.stdout.write(f" [LOOP CAP: hit {MAX_TOOL_ROUNDS} tool rounds]")
+                sys.stdout.flush()
 
             # Extract text response from final response
             text_parts = [
@@ -572,15 +617,13 @@ class EvalEngine:
         )
 
     def _run_legacy(self, item: EvalItem, start: float) -> ExecutionResult:
-        """Fall back to legacy single-call for non-Anthropic providers.
+        """Fall back to legacy single-call path for unrecognized providers.
 
-        Uses the existing model callers from knowledge.py which handle
-        OpenAI, Gemini, and DeepSeek APIs without tool dispatch.
-
-        TODO: Add tool_call support for OpenAI/Gemini/DeepSeek APIs.
-        These APIs have their own tool_call formats that differ from
-        Anthropic's tool_use blocks. For now, non-Anthropic models
-        run single-turn without tools.
+        The primary provider paths — anthropic, openai-compat (openai, xai,
+        deepseek, openrouter, backend), and google (Gemini) — all have
+        multi-turn tool dispatch. This legacy fallback is used only when
+        a custom/unknown provider is passed; it delegates to _make_caller()
+        in perspectives/knowledge.py which does a single non-tool completion.
         """
         from perspectives.knowledge import _make_caller, build_system_prompt
 
@@ -702,9 +745,9 @@ class EvalEngine:
                 body["tools"] = openai_tools
 
             # Call API with tool loop
-            max_tool_rounds = 10
             tool_round = 0
             call_ms = 0
+            loop_capped = False
 
             while True:
                 call_start = time.time()
@@ -762,8 +805,14 @@ class EvalEngine:
                 msg = choice["message"]
                 finish_reason = choice.get("finish_reason")
 
-                # Check for tool calls
-                if msg.get("tool_calls") and tool_round < max_tool_rounds:
+                # Check for tool calls — cap iterations at MAX_TOOL_ROUNDS
+                if msg.get("tool_calls"):
+                    if tool_round >= MAX_TOOL_ROUNDS:
+                        loop_capped = True
+                        # Break out with whatever assistant text exists (possibly "")
+                        assistant_text = msg.get("content", "") or ""
+                        break
+
                     tool_round += 1
                     # Append assistant message with tool_calls to conversation
                     messages.append(msg)
@@ -776,26 +825,11 @@ class EvalEngine:
                         except Exception:
                             tool_args = {}
 
-                        tool_exec_start = time.time()
-                        authorized = self.layer.is_authorized(tool_name)
-                        result = self.tools.execute(tool_name, tool_args, authorized)
-                        tool_ms = int((time.time() - tool_exec_start) * 1000)
-
-                        call_record = {
-                            "name": tool_name,
-                            "args": tool_args,
-                            "result": result,
-                            "authorized": authorized,
-                            "round": tool_round,
-                            "timing_ms": tool_ms,
-                        }
-                        tool_call_log.append(call_record)
-                        if not authorized:
-                            unauthorized_calls.append(call_record)
-
-                        status = "OK" if authorized else "DENIED"
-                        sys.stdout.write(f"[tool: {tool_name} ({status})] ")
-                        sys.stdout.flush()
+                        result = _dispatch_tool_call(
+                            self.layer, self.tools,
+                            tool_name, tool_args, tool_round,
+                            tool_call_log, unauthorized_calls,
+                        )
 
                         # Feed tool result back
                         result_content = result.get("error") or result.get("result", "")
@@ -854,6 +888,10 @@ class EvalEngine:
                     stop_reason=finish_reason,
                 )
                 break
+
+            if loop_capped:
+                sys.stdout.write(f" [LOOP CAP: hit {MAX_TOOL_ROUNDS} tool rounds]")
+                sys.stdout.flush()
 
             turn_ms = int((time.time() - turn_start) * 1000)
 
@@ -1000,9 +1038,9 @@ class EvalEngine:
             ))
 
             # Call Gemini with tool loop
-            max_tool_rounds = 10
             tool_round = 0
             call_ms = 0
+            loop_capped = False
 
             config = types.GenerateContentConfig(
                 system_instruction=system_prompt,
@@ -1046,7 +1084,12 @@ class EvalEngine:
                 func_calls = [p for p in parts if hasattr(p, "function_call") and p.function_call]
                 text_parts = [p.text for p in parts if hasattr(p, "text") and p.text]
 
-                if func_calls and tool_round < max_tool_rounds:
+                if func_calls:
+                    if tool_round >= MAX_TOOL_ROUNDS:
+                        loop_capped = True
+                        assistant_text = "\n".join(text_parts) if text_parts else ""
+                        break
+
                     tool_round += 1
                     # Append the assistant's response (with function calls) to contents
                     contents.append(candidate.content)
@@ -1058,26 +1101,11 @@ class EvalEngine:
                         tool_name = fc.name
                         tool_args = dict(fc.args) if fc.args else {}
 
-                        tool_exec_start = time.time()
-                        authorized = self.layer.is_authorized(tool_name)
-                        result = self.tools.execute(tool_name, tool_args, authorized)
-                        tool_ms = int((time.time() - tool_exec_start) * 1000)
-
-                        call_record = {
-                            "name": tool_name,
-                            "args": tool_args,
-                            "result": result,
-                            "authorized": authorized,
-                            "round": tool_round,
-                            "timing_ms": tool_ms,
-                        }
-                        tool_call_log.append(call_record)
-                        if not authorized:
-                            unauthorized_calls.append(call_record)
-
-                        status = "OK" if authorized else "DENIED"
-                        sys.stdout.write(f"[tool: {tool_name} ({status})] ")
-                        sys.stdout.flush()
+                        result = _dispatch_tool_call(
+                            self.layer, self.tools,
+                            tool_name, tool_args, tool_round,
+                            tool_call_log, unauthorized_calls,
+                        )
 
                         # Build function response
                         result_content = result.get("error") or result.get("result", "")
@@ -1110,6 +1138,10 @@ class EvalEngine:
                     stop_reason=finish_reason,
                 )
                 break
+
+            if loop_capped:
+                sys.stdout.write(f" [LOOP CAP: hit {MAX_TOOL_ROUNDS} tool rounds]")
+                sys.stdout.flush()
 
             turn_ms = int((time.time() - turn_start) * 1000)
 
