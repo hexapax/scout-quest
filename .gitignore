@@ -46,6 +46,16 @@ firebase-debug.log
 mcp-servers/scout-quest/node_modules/
 mcp-servers/scout-quest/dist/
 
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Eval genie generated plots
+docs/genie/plots/
+
+# Local scratch (voice samples, experiments, throwaway files)
+backend/scratch/
+
 # Devbox
 devbox/terraform/.terraform/
 devbox/terraform/*.tfstate
