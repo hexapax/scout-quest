@@ -173,20 +173,85 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
 
     // [2] Per-user context (dynamic — not cached)
     if (userEmail) {
+      // Role-composition for context injection.
+      //
+      // Roles aren't mutually exclusive: a very common pattern in scouting is a
+      // parent who registers as an adult leader so they can come on campouts.
+      // That user has roles=["parent","leader"]; the legacy primary-role switch
+      // would have taken only the leader branch and lost their scouts' context.
+      // We now check the full roles[] list and accumulate context blocks.
+      const userRoles = authRoleInfo?.roles || [];
+      const isScoutUser = userRoles.includes("scout") || userRoles.includes("test_scout");
+      const isParentUser = userRoles.includes("parent");
+      const isLeaderUser =
+        userRoles.includes("leader") ||
+        userRoles.includes("admin") ||
+        userRoles.includes("superuser");
+      const scoutEmails = authRoleInfo?.scoutEmails || [];
+      const troopLabel = authRoleInfo?.troop || "2024";
+
       const scoutCtx = await getScoutContext(userEmail);
-      if (scoutCtx) {
+
+      // 1. Scout user — inject their own profile.
+      if (scoutCtx && isScoutUser) {
         systemBlocks.push(scoutCtx);
-      } else if (userRole === "admin" || userRole === "superuser" || userRole === "leader") {
-        // Leader context — no scout profile, inject identity + instructions
-        const roleLabel = userRole === "leader" ? "Troop leader" : "Scoutmaster (admin)";
-        const troopLabel = authRoleInfo?.troop || "2024";
+      }
+
+      // 2. Parent user — surface their scouts' state regardless of whether they're
+      // also a leader. Assistant stays in its coach/scoutmaster persona and speaks
+      // TO the parent ABOUT their scout.
+      if (isParentUser && scoutEmails.length > 0) {
+        const kidContexts = (
+          await Promise.all(scoutEmails.map((se) => getScoutContext(se)))
+        ).filter((c): c is AnthropicSystemBlock => c !== null);
+
         systemBlocks.push({
           type: "text",
-          text: `LEADER CONTEXT\nEmail: ${userEmail}\nRole: ${roleLabel}\nTroop: ${troopLabel}\n\n` +
+          text: `PARENT USER — the person chatting with you is the parent of one or more scouts in this troop.\n` +
+            `Speak TO the parent about their scout ("your scout", "they") — do not speak AS the parent.\n\n` +
+            `Parent email: ${userEmail}\n` +
+            `Troop: ${troopLabel}\n` +
+            `Their scout(s): ${scoutEmails.join(", ")}\n` +
+            (isLeaderUser
+              ? `This parent is ALSO a registered adult leader for the troop — see LEADER CONTEXT below.\n`
+              : ``) +
+            `\n` +
+            `Guidance:\n` +
+            `- When the parent asks about their scout's progress, look it up with get_scout_status using the scout's email (from the list above) or name.\n` +
+            `- Help the parent help their scout with rank advancement, merit badges, upcoming events, chores, and scouting habits.\n` +
+            (isLeaderUser
+              ? `- As a registered leader, this parent may have write access to Scoutbook via leader tools. Use them if the parent is logging something for their own scout or another scout they're approved to advance.\n`
+              : `- This parent has read-only tools. If an advancement needs to be logged in Scoutbook, recommend the scout or a troop leader log it.\n`) +
+            `- The scoutbook userId shown in the scout context block(s) below belongs to the SCOUT. The parent may separately have their own Scoutbook userId from an adult leader registration — that's distinct and not captured here.`,
+        });
+        for (const kid of kidContexts) {
+          systemBlocks.push(kid);
+        }
+      }
+
+      // 3. Leader/admin user — inject leader identity and tool guidance.
+      if (isLeaderUser) {
+        const roleLabel =
+          userRoles.includes("admin") || userRoles.includes("superuser")
+            ? "Scoutmaster (admin)"
+            : "Troop leader";
+        systemBlocks.push({
+          type: "text",
+          text: `LEADER CONTEXT\nEmail: ${userEmail}\nRole: ${roleLabel}\nTroop: ${troopLabel}\n` +
+            (isParentUser && scoutEmails.length > 0
+              ? `This leader is also a parent — see PARENT USER block above for their scout(s).\n`
+              : ``) +
+            `\n` +
             `You have access to leader tools. Use troop_insights and session_planner freely.\n` +
             `For individual scout lookups, use get_scout_status with a scout name via get_roster first.\n` +
-            `You do NOT have a personal Scoutbook userId — you are a leader, not a scout.`,
+            `This user may have their own Scoutbook adult-leader userId; it is separate from any scout userId shown in context blocks.`,
         });
+      }
+
+      // 4. Fallback: scoutCtx exists but user isn't a scout and isn't a parent-with-scouts.
+      // Example: adult_readonly user whose email happens to match a scoutbook parents[] entry.
+      if (scoutCtx && !isScoutUser && !(isParentUser && scoutEmails.length > 0)) {
+        systemBlocks.push(scoutCtx);
       }
     }
 
