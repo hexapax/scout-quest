@@ -264,14 +264,53 @@ Realistic: 8–10 working days accounting for integration friction on `chat.ts`.
   Priority order: `superuser > admin > leader > parent > scout > adult_readonly > test_scout > unknown`.
 - **Cache**: 60s TTL in-memory map in `auth/role-lookup.ts`. Seed script docs
   note to restart the backend (or wait 60s) after seeding.
-- **Multi-role users** resolve to a single primary role by priority but
-  `roles[]` keeps the full set so downstream consumers (e.g., a parent who
-  is also a leader) can make context-appropriate decisions.
-- **JWT payload unchanged** — roles are re-resolved on every `/auth/me`
-  request so seeding a user doc doesn't require re-login.
+- **Multi-role users** resolve to a single primary role by priority, but the
+  full `roles[]` list is preserved. `chat.ts` checks the list (not just primary)
+  so a parent who is ALSO a registered leader accumulates both parent and
+  leader context blocks with per-kid scout context appended.
+- **Parent framing**: assistant stays in its coach/adult-guide persona and
+  speaks TO the parent ABOUT their scout (not AS the parent). Parents may
+  have their own Scoutbook userId from adult-leader registration — that's
+  distinct from any scout userId in context blocks.
+- **Persona consolidation**: two personas total — `scout-coach` (Woody tone
+  for scouts) and `adult-guide` (direct tone for parents, leaders, scoutmaster).
+  Use-case differentiation (support-your-scout vs. run-the-programming) comes
+  from role-specific context blocks, not from a third persona. Resolved by role
+  via `resolvePersonaByRole`, not by model string.
+- **JWT payload unchanged** — roles re-resolved on every `/auth/me` so seeding
+  a user doc doesn't require re-login.
 - **Admin-domain override** preserved but now gated: a non-admin hitting
   `ai-chat.hexapax.com` cannot elevate tool access.
 - **Allowlist fallback** (Jeremy's two emails) stays until Stream F seeds
   the full cohort. A seeded DB doc always wins over the allowlist.
 - **Contract published** for streams B/C/E via `AppUser`, `Role`,
   `UserRoleInfo` in `backend/src/types.ts`. Do not mutate that shape.
+
+## Stream D implementation notes (2026-04-16)
+
+- **Archives:** moved `scout-coach-v4`, `scout-coach-v5`, `scout-eval-v6`,
+  and `scout-eval-graph-v1` to `eval-sets/archived/` with a README.
+  `run-eval.py`, `run-model-eval.py`, `rescore-eval.py`,
+  `knowledge.py`, and `eval-runner.html` now default to v7; archived
+  paths still load with a deprecation warning.
+- **Multi-turn tools:** `scripts/eval_engine.py` shares a
+  `_dispatch_tool_call` helper and `MAX_TOOL_ROUNDS = 10` cap across
+  the Anthropic, OpenAI-compat (openai/xai/deepseek/openrouter/backend),
+  and Gemini paths. TW1 smoke tests verified tool calling end-to-end on
+  Claude Sonnet, Opus, GPT-4.1, GPT-5.4, Gemini 2.5 Flash, DeepSeek V3,
+  and Grok 4.1 Fast (~$4.29 total).
+- **Backend Gemini:** new `backend/src/providers/gemini.ts` via
+  `@google/genai` ^1.50; `registry.ts` routes `gemini-*`. API key order:
+  `GEMINI_API_KEY → GOOGLE_API_KEY → GOOGLE_KEY` — existing deploys
+  keep working.
+- **Pricing:** `PRICING` moved to `config/pricing.yaml`; Stream C
+  consumes the same file. `UsageTracker.to_dict()` exposes
+  `pricing_source` (path + sha256 + git commit) for provenance.
+- **Capability matrix:** `docs/model-capability-matrix.md`.
+- **LibreChat MCP constraint:** scout-quest routes all chat through our
+  backend; the "custom-endpoint = no MCP" rule is scoped to
+  LibreChat-native presets only — clarification added to `CLAUDE.md`
+  and `future-research.md`.
+- **Shimming:** not needed — every target model has native tool calls.
+  If a tool-less model ever needs it, hook a schema-shim into
+  `_run_legacy`.

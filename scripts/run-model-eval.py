@@ -119,12 +119,23 @@ troop_context = TROOP_CONTEXT.read_text() if TROOP_CONTEXT.exists() else ""
 # ---------------------------------------------------------------
 
 EVAL_SET_DIR = PROJECT_ROOT / "eval-sets"
-DEFAULT_EVAL_SET = "scout-coach-v5.yaml"
+# v7 is canonical. v5 was archived on 2026-04-16 (alpha launch, Stream D).
+DEFAULT_EVAL_SET = "scout-eval-v7.yaml"
 
 def load_eval_set(name=None):
     """Load questions from a YAML eval set file."""
     import yaml
     path = EVAL_SET_DIR / (name or DEFAULT_EVAL_SET)
+    # Fall back to archived copy if the root path doesn't exist.
+    if not path.exists():
+        archived = EVAL_SET_DIR / "archived" / (name or DEFAULT_EVAL_SET)
+        if archived.exists():
+            import sys as _sys
+            _sys.stderr.write(
+                f"[DEPRECATION] '{name or DEFAULT_EVAL_SET}' is archived; "
+                f"using archived copy. Prefer scout-eval-v7.yaml.\n"
+            )
+            path = archived
     if path.exists():
         with open(path) as f:
             es = yaml.safe_load(f)

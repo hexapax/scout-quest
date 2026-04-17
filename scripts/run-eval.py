@@ -218,6 +218,19 @@ Examples:
 
     # Load eval set
     eval_set_path = args.eval_set or perspective.default_eval_set
+
+    # Deprecation warning: archived sets still load, but nudge toward v7.
+    _archived_name = Path(eval_set_path).name
+    _archived_dir = PROJECT_ROOT / "eval-sets" / "archived"
+    if ("archived/" in eval_set_path
+            or (not (PROJECT_ROOT / "eval-sets" / _archived_name).exists()
+                and (_archived_dir / _archived_name).exists())):
+        print(
+            f"\n[DEPRECATION] Eval set '{_archived_name}' is archived.\n"
+            f"  Canonical set: eval-sets/scout-eval-v7.yaml\n"
+            f"  Run continues, but results should not be compared against v7 baselines.\n"
+        )
+
     eval_set = perspective.load_eval_set(eval_set_path)
     print(f"Eval set: {eval_set.name} v{eval_set.version} ({len(eval_set.dimensions)} dimensions)")
 
