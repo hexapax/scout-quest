@@ -2,13 +2,20 @@
  *
  * GET  /auth/google   — redirect to Google consent screen
  * GET  /auth/callback — exchange code for tokens, set JWT cookie, redirect to app
- * GET  /auth/me       — return current user from cookie
+ * GET  /auth/me       — return current user (JWT payload enriched with role info)
  * POST /auth/logout   — clear cookie
+ *
+ * Role model: the JWT stores only the stable identity claims
+ * (`email`, `name`, `picture`). Role info is re-resolved on each request
+ * via `lookupUserRole` so seeding a new user doc takes effect without
+ * forcing anyone to re-login. See `backend/src/auth/role-lookup.ts`.
  */
 
 import type { Request, Response, Router } from "express";
 import { Router as createRouter } from "express";
 import jwt from "jsonwebtoken";
+import type { AppUser } from "../types.js";
+import { lookupUserRole } from "../auth/role-lookup.js";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
@@ -16,22 +23,51 @@ const JWT_SECRET = process.env.APP_JWT_SECRET || process.env.BACKEND_API_KEY || 
 const COOKIE_NAME = "sq_session";
 const COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-export interface AppUser {
+/**
+ * Identity claims embedded in the JWT cookie. Intentionally a strict subset of
+ * {@link AppUser} — role info is NOT stored in the JWT (it's re-resolved from
+ * MongoDB on each request to avoid stale role claims).
+ */
+export interface CookieUser {
   email: string;
   name: string;
   picture: string;
 }
 
-/** Extract user from JWT cookie. Returns null if not authenticated. */
-export function getUserFromCookie(req: Request): AppUser | null {
+/** Extract JWT identity from the cookie. Returns null if not authenticated. */
+export function getUserFromCookie(req: Request): CookieUser | null {
   const token = req.cookies?.[COOKIE_NAME] || parseCookieManual(req, COOKIE_NAME);
   if (!token) return null;
   try {
-    const payload = jwt.verify(token, JWT_SECRET) as AppUser;
+    const payload = jwt.verify(token, JWT_SECRET) as CookieUser;
     return { email: payload.email, name: payload.name, picture: payload.picture };
   } catch {
     return null;
   }
+}
+
+/**
+ * Resolve the full {@link AppUser} for a request — identity claims plus
+ * role info from the `users` collection (with allowlist fallback).
+ *
+ * Returns null when there's no valid JWT cookie at all. When the cookie is
+ * valid but the email has no role record, returns an AppUser with role="unknown"
+ * (the caller decides whether to reject).
+ */
+export async function getAppUser(req: Request): Promise<AppUser | null> {
+  const cookie = getUserFromCookie(req);
+  if (!cookie) return null;
+  const roleInfo = await lookupUserRole(cookie.email);
+  return {
+    email: cookie.email,
+    name: cookie.name,
+    picture: cookie.picture,
+    role: roleInfo.role,
+    roles: roleInfo.roles,
+    troop: roleInfo.troop,
+    scoutEmails: roleInfo.scoutEmails,
+    isAdmin: roleInfo.isAdmin,
+  };
 }
 
 /** Manual cookie parsing (no cookie-parser middleware needed). */
@@ -114,7 +150,7 @@ export function createAuthRouter(): Router {
       const userInfo = (await userResp.json()) as { email: string; name: string; picture: string };
       console.log(`[auth] User logged in: ${userInfo.email} (${userInfo.name})`);
 
-      // Issue JWT
+      // Issue JWT — identity claims only; roles resolved per-request.
       const token = jwt.sign(
         { email: userInfo.email, name: userInfo.name, picture: userInfo.picture },
         JWT_SECRET,
@@ -132,9 +168,9 @@ export function createAuthRouter(): Router {
     }
   });
 
-  // Get current user
-  router.get("/auth/me", (req: Request, res: Response) => {
-    const user = getUserFromCookie(req);
+  // Get current user — enriched with role info from MongoDB.
+  router.get("/auth/me", async (req: Request, res: Response) => {
+    const user = await getAppUser(req);
     if (!user) {
       res.status(401).json({ error: "Not authenticated" });
       return;
