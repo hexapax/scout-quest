@@ -15,6 +15,7 @@ import { resolveProvider } from "./providers/registry.js";
 import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
 import { lookupUserRole } from "./auth/role-lookup.js";
 import type { Role } from "./types.js";
+import { logUsage, type LoggedToolCall } from "./cost/logger.js";
 
 const MAX_TOOL_TURNS = 5;
 
@@ -52,6 +53,10 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
     res.status(401).json({ error: { message: "Unauthorized", type: "auth_error" } });
     return;
   }
+
+  // Wall-clock timer for cost logging — captures full handler latency including
+  // multi-turn tool dispatch, not just the provider RTT.
+  const requestStartedAt = Date.now();
 
   const body = req.body as OpenAIChatRequest;
   const doStream = body.stream !== false;
@@ -352,6 +357,10 @@ Rules for voice output:
 
     const requestId = `chatcmpl-${Date.now()}`;
 
+    // Streaming path tracks the most recent provider response's usage so we
+    // can log a single message_usage row after the full multi-turn loop ends.
+    let streamLastUsage: ProviderResponse["usage"] | null = null;
+
     if (doStream) {
       initSSE(res);
       writeRoleChunk(res, requestId, model);
@@ -364,6 +373,7 @@ Rules for voice output:
           const response: ProviderResponse = await provider.stream(workingReq, (delta) => {
             writeContentChunk(res, requestId, model, delta);
           });
+          streamLastUsage = response.usage;
 
           // No tool calls — done
           if (response.stopReason !== "tool_use") break;
@@ -431,6 +441,22 @@ Rules for voice output:
         mode: isVoice ? "voice" : "chat",
         toolsUsed: toolsUsedInRequest,
       });
+
+      // Stream C: cost logging (fire-and-forget — never blocks the response).
+      logUsage(buildUsageRecord({
+        usage: streamLastUsage,
+        cookieEmail: cookieUser?.email,
+        userEmail,
+        emulateEmail: emulateEmail ?? null,
+        userRole,
+        troopId: authRoleInfo?.troop ?? null,
+        provider: providerName,
+        modelExact: modelId,
+        requestedModel: model,
+        toolCallRecords,
+        channel: isVoice ? "voice" : "chat",
+        latencyMs: Date.now() - requestStartedAt,
+      })).catch(() => { /* logger swallows already; defensive */ });
     } else {
       // Non-streaming: complete() with tool loop
       let workingReq = { ...providerReq };
@@ -505,6 +531,22 @@ Rules for voice output:
           cache_read_input_tokens: lastUsage.cacheReadTokens ?? 0,
         },
       });
+
+      // Stream C: cost logging (fire-and-forget).
+      logUsage(buildUsageRecord({
+        usage: lastUsage,
+        cookieEmail: cookieUser?.email,
+        userEmail,
+        emulateEmail: emulateEmail ?? null,
+        userRole,
+        troopId: authRoleInfo?.troop ?? null,
+        provider: providerName,
+        modelExact: modelId,
+        requestedModel: model,
+        toolCallRecords,
+        channel: isVoice ? "voice" : "chat",
+        latencyMs: Date.now() - requestStartedAt,
+      })).catch(() => { /* logger swallows already; defensive */ });
     }
   } catch (err: unknown) {
     console.error("Chat handler error:", err);
@@ -513,4 +555,60 @@ Rules for voice output:
       res.status(500).json({ error: { message, type: "server_error" } });
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// Cost logging helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Build the LogUsageInput record for `cost/logger.ts`.
+ *
+ * Attribution rules:
+ *   - userEmail: the *actual* spender — cookie owner > LibreChat header user.
+ *     Never the emulated scout, even when admin is emulating.
+ *   - scoutEmail: who the conversation is *about* — the emulated scout when
+ *     admin is emulating, else the user themselves if they're a scout, else null.
+ */
+function buildUsageRecord(args: {
+  usage: { inputTokens: number; outputTokens: number; cacheCreationTokens?: number; cacheReadTokens?: number } | null;
+  cookieEmail: string | undefined;
+  userEmail: string | undefined;
+  emulateEmail: string | null;
+  userRole: string;
+  troopId: string | null;
+  provider: string;
+  modelExact: string;
+  requestedModel: string;
+  toolCallRecords: Array<{ name: string; args: unknown; result: string }>;
+  channel: "chat" | "voice";
+  latencyMs: number;
+}): Parameters<typeof logUsage>[0] {
+  const attributedEmail = args.cookieEmail ?? args.userEmail ?? null;
+  const scoutEmail = args.emulateEmail
+    ?? (args.userRole === "scout" || args.userRole === "test_scout" ? args.userEmail ?? null : null);
+
+  // Tool calls are recorded as success when a tool_result was returned
+  // (executeToolCalls always returns a result block — error states get folded
+  // into the content string today). When we add structured failure tracking,
+  // update this to honor the real outcome.
+  const toolCalls: LoggedToolCall[] = args.toolCallRecords.map((r) => ({
+    name: r.name,
+    success: true,
+  }));
+
+  return {
+    userEmail: attributedEmail,
+    scoutEmail: scoutEmail ?? null,
+    troopId: args.troopId,
+    conversationId: null, // Stream B will populate this
+    channel: args.channel,
+    provider: args.provider,
+    modelExact: args.modelExact,
+    requestedModel: args.requestedModel,
+    usage: args.usage ?? { inputTokens: 0, outputTokens: 0, cacheCreationTokens: 0, cacheReadTokens: 0 },
+    latencyMs: args.latencyMs,
+    toolCalls,
+    role: args.userRole,
+  };
 }

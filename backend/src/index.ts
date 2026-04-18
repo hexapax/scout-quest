@@ -9,6 +9,8 @@ import { createProgressRouter } from "./routes/progress.js";
 import { createEvalReportsRouter } from "./routes/eval-reports.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createConversationsRouter } from "./routes/conversations.js";
+import { createCostRouter } from "./routes/cost.js";
+import { loadPricing } from "./cost/pricing.js";
 
 const app = express();
 
@@ -40,6 +42,9 @@ app.use("/", createAuthRouter());
 
 // Conversation persistence
 app.use("/", createConversationsRouter());
+
+// Production cost summary (admin-only)
+app.use("/", createCostRouter());
 
 // Serve static micro-app files
 import { join, dirname } from "path";
@@ -180,6 +185,7 @@ app.get("/v1/models", (_req, res) => {
 async function start(): Promise<void> {
   await connectDb();
   loadKnowledge();
+  loadPricing();
 
   // FalkorDB is optional — backend works without it (tools degrade gracefully)
   connectFalkorDB().catch((err: unknown) => {
