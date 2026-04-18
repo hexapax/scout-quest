@@ -891,7 +891,7 @@ async function persistMessages(newMessages) {
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: appModel,
+          model: getModel(),
           channel: 'chat',
           messages: newMessages,
         }),
