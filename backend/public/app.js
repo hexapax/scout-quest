@@ -149,13 +149,9 @@ function paintViews(user) {
     links.push({ label: 'Progress', sub: 'admin', href: '/progress.html' });
   }
 
-  // Only render the section at all if there's something beyond "My history"
-  // — scouts get a cleaner sidebar without a one-item navigation block.
-  if (links.length <= 1 && !user.isAdmin) {
-    box.classList.add('hidden');
-    return;
-  }
-
+  // Always show the Views section — even a one-item list is worth a tap.
+  // (Earlier revision hid it for non-admin/non-parent users which made
+  // /history.html unreachable from the UI for anyone not on the allowlist.)
   box.classList.remove('hidden');
   box.innerHTML = `<div class="conv-views-label">Views</div>`;
   for (const l of links) {
