@@ -109,6 +109,21 @@ sudo chown scoutcoach:scoutcoach "$BACKEND_DIR"
 echo "  Extracting tarball..."
 sudo -u scoutcoach tar xzf "$SRC_DIR/backend-deploy.tar.gz" -C "$BACKEND_DIR"
 
+# Snapshot the current backend logs before the container is recreated.
+# Rationale: `docker compose build backend` + `up -d` removes the prior
+# container and wipes /var/lib/docker/containers/<id>/<id>-json.log. We
+# lost Jeremy'\''s voice chat with Ben (2026-04-18) when a deploy overwrote
+# logs needed to investigate a mid-session backend error. One rotating
+# archive per deploy is enough to make that case survivable.
+echo "  Snapshotting pre-deploy backend logs..."
+ARCHIVE_DIR="/var/log/scoutcoach/backend"
+sudo mkdir -p "$ARCHIVE_DIR"
+STAMP=$(date -u +%Y%m%dT%H%M%SZ)
+sudo -u scoutcoach docker compose -f "$SQUAD_DIR/docker-compose.yml" logs --timestamps backend \
+  | sudo tee "$ARCHIVE_DIR/backend.predeploy.${STAMP}.log" >/dev/null 2>&1 || true
+# Keep the most recent 10 archives (rotate by mtime).
+sudo bash -c "ls -1t $ARCHIVE_DIR/backend.predeploy.*.log 2>/dev/null | tail -n +11 | xargs -r rm -f"
+
 echo "  Building Docker image..."
 cd "$SQUAD_DIR"
 sudo -u scoutcoach docker compose build backend

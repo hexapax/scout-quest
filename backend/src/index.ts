@@ -12,6 +12,7 @@ import { createConversationsRouter } from "./routes/conversations.js";
 import { createHistoryRouter } from "./routes/history.js";
 import { createCostRouter } from "./routes/cost.js";
 import { loadPricing } from "./cost/pricing.js";
+import { lookupUserRole } from "./auth/role-lookup.js";
 
 const app = express();
 
@@ -75,18 +76,45 @@ app.post("/internal/reload-knowledge", (req, res) => {
   }
 });
 
-// ElevenLabs Conversational AI — domain-aware agent selection.
-// Different domains get different voices/agents.
-const AGENT_IDS: Record<string, string> = {
-  scout: process.env.ELEVENLABS_AGENT_ID || "agent_8001kn8cac71ekpt18tcaxrn8whg",
-  admin: process.env.ELEVENLABS_ADMIN_AGENT_ID || process.env.ELEVENLABS_AGENT_ID || "agent_8001kn8cac71ekpt18tcaxrn8whg",
+// ElevenLabs Conversational AI — role-aware (preferred) + domain-aware
+// (fallback) agent selection. Per Stream E: parents and leaders should get a
+// different persona/voice than scouts. The env vars are additive — if a
+// role-specific agent isn't set, we fall back to the admin agent (if admin
+// domain) or the scout agent.
+const AGENT_IDS: Record<string, string | undefined> = {
+  scout: process.env.ELEVENLABS_SCOUT_AGENT_ID || process.env.ELEVENLABS_AGENT_ID,
+  parent: process.env.ELEVENLABS_PARENT_AGENT_ID,
+  leader: process.env.ELEVENLABS_LEADER_AGENT_ID,
+  admin: process.env.ELEVENLABS_ADMIN_AGENT_ID,
 };
 
-/** Pick ElevenLabs agent based on request hostname. */
-function pickAgentId(req: express.Request): string {
+const DEFAULT_AGENT_ID = process.env.ELEVENLABS_AGENT_ID || "agent_8001kn8cac71ekpt18tcaxrn8whg";
+
+/**
+ * Pick an ElevenLabs agent for a request.
+ *
+ * Precedence:
+ *   1. Authenticated role (cookie → lookupUserRole) — parent, leader, admin, scout
+ *   2. Admin-domain fallback for anonymous admin-domain callers
+ *   3. Default scout agent
+ */
+async function pickAgentIdAsync(req: express.Request): Promise<string> {
+  const cookie = getUserFromCookie(req);
+  if (cookie) {
+    try {
+      const info = await lookupUserRole(cookie.email);
+      if (info.isAdmin && AGENT_IDS.admin) return AGENT_IDS.admin;
+      if (info.roles.includes("leader") && AGENT_IDS.leader) return AGENT_IDS.leader;
+      if (info.roles.includes("parent") && AGENT_IDS.parent) return AGENT_IDS.parent;
+      if ((info.role === "scout" || info.role === "test_scout") && AGENT_IDS.scout) return AGENT_IDS.scout;
+    } catch (err) {
+      console.warn("[voice] role lookup failed; falling back to domain-based agent:", err);
+    }
+  }
+
   const host = (req.headers["x-forwarded-host"] || req.hostname || "").toString();
-  if (host.includes("ai-chat") || host.includes("admin")) return AGENT_IDS.admin;
-  return AGENT_IDS.scout;
+  if ((host.includes("ai-chat") || host.includes("admin")) && AGENT_IDS.admin) return AGENT_IDS.admin;
+  return AGENT_IDS.scout || DEFAULT_AGENT_ID;
 }
 
 // Returns both token (for WebRTC) and signedUrl (for WebSocket)
@@ -96,7 +124,7 @@ app.get("/api/voice/signed-url", async (req, res) => {
     res.status(500).json({ error: "ELEVENLABS_API_KEY not configured" });
     return;
   }
-  const agentId = pickAgentId(req);
+  const agentId = await pickAgentIdAsync(req);
   try {
     const tokenResp = await fetch(
       `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`,
