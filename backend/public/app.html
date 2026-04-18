@@ -27,6 +27,8 @@
       </div>
       <button class="conv-new-btn" id="convNewBtn">+ New Chat</button>
       <div class="conv-list" id="convList"></div>
+      <!-- Role-aware navigation (Stream E). Populated by paintViews() in app.js. -->
+      <div class="conv-views hidden" id="convViews"></div>
     </div>
 
     <div class="header">
@@ -132,10 +134,6 @@
         <div class="setting-section">Emulate Scout</div>
         <div class="setting-desc">Act as a specific scout to test their experience</div>
         <input type="text" class="setting-input" id="settingEmulateEmail" placeholder="scout-email@example.com">
-        <div class="setting-section">Views</div>
-        <div class="setting-views" id="settingViews">
-          <!-- Populated by app.js based on role -->
-        </div>
         <div class="setting-section">Actions</div>
         <button class="setting-action" id="copyTranscriptBtn">Copy full transcript</button>
         <button class="setting-action danger" id="clearChatBtn">Clear conversation</button>

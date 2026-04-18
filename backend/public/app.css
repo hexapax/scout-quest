@@ -28,41 +28,73 @@ body {
 
 .hidden { display: none !important; }
 
-/* Role badge + settings-drawer view links (Stream E) */
+/* Role badge (Stream E).
+ *
+ * Bigger than the v1 chip (12.5px → reads at a glance on mobile), and now uses
+ * a colored dot + role word instead of all-text. The colored dot is the fast
+ * visual cue; the word confirms. Troop suffix is shown when present. */
 .role-badge {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 7px;
-  border-radius: 10px;
-  font-size: 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 11px;
+  font-size: 12.5px;
   font-weight: 600;
   background: var(--bg3);
-  color: var(--green-bright);
-  border: 1px solid var(--green-dim);
-  letter-spacing: 0.02em;
+  color: var(--text);
+  border: 1px solid var(--bg3);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
 }
-.role-badge.r-admin, .role-badge.r-superuser { color: #fbbf24; border-color: #b45309; }
-.role-badge.r-leader { color: #93c5fd; border-color: #1d4ed8; }
-.role-badge.r-parent { color: #c4b5fd; border-color: #6d28d9; }
-.role-badge.r-scout, .role-badge.r-test_scout { color: var(--green-bright); border-color: var(--green-dim); }
+.role-badge::before {
+  content: '';
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.role-badge.r-admin, .role-badge.r-superuser { color: #fbbf24; }
+.role-badge.r-leader { color: #93c5fd; }
+.role-badge.r-parent { color: #c4b5fd; }
+.role-badge.r-scout, .role-badge.r-test_scout { color: var(--green-bright); }
+.role-badge.r-unknown { color: var(--text-dim); }
+.role-badge .role-troop { color: var(--text-dim); font-weight: 500; }
 
-.setting-views {
+/* Views section lives inside the conversation sidebar now (Stream E iter-2),
+ * not in the settings drawer. One always-accessible place for navigation. */
+.conv-views {
+  flex-shrink: 0;
+  padding: 8px 8px 12px;
+  border-top: 1px solid var(--bg3);
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: 2px;
 }
-.setting-views a {
+.conv-views-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 8px 6px;
+}
+.conv-views a {
   display: block;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border-radius: 6px;
-  background: var(--bg3);
   color: var(--text);
   text-decoration: none;
   font-size: 13px;
+  transition: background 0.1s;
 }
-.setting-views a:hover { background: #22304a; }
-.setting-views .view-label { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+.conv-views a:hover { background: var(--bg3); }
+.conv-views a .view-sub {
+  color: var(--text-faint);
+  font-size: 11px;
+  margin-left: 6px;
+}
 
 /* Toasts (Stream E: surface SSE / auth / tool errors) */
 .toast-root {

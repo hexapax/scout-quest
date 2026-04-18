@@ -91,7 +91,7 @@ async function init() {
     app.classList.remove('hidden');
     userName.textContent = currentUser.name?.split(' ')[0] || '';
     paintRoleBadge(currentUser);
-    paintSettingViews(currentUser);
+    paintViews(currentUser);
     // Pre-load conversation list (non-blocking)
     loadConversationList();
   }
@@ -103,46 +103,66 @@ async function init() {
 
 // --- Role-aware UI (Stream E) ---
 
-/** Label + styling for the small role chip next to the user's name. */
+/** Label + styling for the small role chip next to the user's name.
+ *  Colored dot (via ::before) + role word + optional troop suffix. */
 function paintRoleBadge(user) {
   const badge = $('roleBadge');
   if (!badge) return;
   const role = user.role || 'unknown';
-  const troop = user.troop ? ` · T${user.troop}` : '';
-  badge.textContent = role + troop;
   badge.className = 'role-badge r-' + role;
+  badge.innerHTML = `${esc(role)}${user.troop ? ` <span class="role-troop">T${esc(String(user.troop))}</span>` : ''}`;
   badge.classList.remove('hidden');
 }
 
-/** Populate the settings drawer "Views" section with role-aware links. */
-function paintSettingViews(user) {
-  const box = $('settingViews');
+/** Populate the conversation sidebar's "Views" section with role-aware links.
+ *  Secondary navigation — lives under the conversation list so it's one tap
+ *  away on any screen (the sidebar is always reachable via the header menu). */
+function paintViews(user) {
+  const box = $('convViews');
   if (!box) return;
+
   const links = [
-    { label: 'My history', href: '/history.html' },
+    { label: 'My history', sub: 'your chats', href: '/history.html' },
   ];
   if (Array.isArray(user.scoutEmails)) {
     for (const se of user.scoutEmails) {
       const first = se.split('@')[0];
-      links.push({ label: `🧒 ${first}'s history`, href: `/history.html#scout:${encodeURIComponent(se)}` });
+      links.push({
+        label: `${first}'s history`,
+        sub: 'your scout',
+        href: `/history.html#scout:${encodeURIComponent(se)}`,
+      });
     }
   }
   const roles = user.roles || [];
   const isLeader = roles.includes('leader') || roles.includes('admin') || roles.includes('superuser');
   if (user.troop && isLeader) {
-    links.push({ label: `🏕️ Troop ${user.troop} history`, href: `/history.html#troop:${encodeURIComponent(user.troop)}` });
+    links.push({
+      label: `Troop ${user.troop}`,
+      sub: 'leader view',
+      href: `/history.html#troop:${encodeURIComponent(user.troop)}`,
+    });
   }
   if (user.isAdmin) {
-    links.push({ label: '🛠️ All conversations (admin)', href: '/history.html#all' });
-    links.push({ label: '📊 Eval viewer', href: '/eval-viewer.html' });
-    links.push({ label: '📈 Progress', href: '/progress.html' });
+    links.push({ label: 'All conversations', sub: 'admin', href: '/history.html#all' });
+    links.push({ label: 'Eval viewer', sub: 'admin', href: '/eval-viewer.html' });
+    links.push({ label: 'Progress', sub: 'admin', href: '/progress.html' });
   }
-  box.innerHTML = '';
+
+  // Only render the section at all if there's something beyond "My history"
+  // — scouts get a cleaner sidebar without a one-item navigation block.
+  if (links.length <= 1 && !user.isAdmin) {
+    box.classList.add('hidden');
+    return;
+  }
+
+  box.classList.remove('hidden');
+  box.innerHTML = `<div class="conv-views-label">Views</div>`;
   for (const l of links) {
     const a = document.createElement('a');
     a.href = l.href;
-    a.textContent = l.label;
     a.target = '_self';
+    a.innerHTML = `${esc(l.label)}${l.sub ? `<span class="view-sub">${esc(l.sub)}</span>` : ''}`;
     box.appendChild(a);
   }
 }
