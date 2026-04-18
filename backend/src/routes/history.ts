@@ -20,6 +20,7 @@
  */
 
 import express, { type Request, type Response } from "express";
+import { ObjectId } from "mongodb";
 import { getScoutQuestDb } from "../db.js";
 import { getUserFromCookie } from "./auth.js";
 import { lookupUserRole } from "../auth/role-lookup.js";
@@ -129,6 +130,66 @@ export function createHistoryRouter(): express.Router {
 
     const filter = applyChannelFilter({}, req);
     res.json(await listConversations(filter));
+  });
+
+  /**
+   * Role-aware transcript endpoint — returns the full message body.
+   *
+   * Authorized when ANY of:
+   *   - caller owns the conversation (userEmail matches)
+   *   - caller is a parent of the conversation's scoutEmail
+   *   - caller is a leader of the conversation's troopId
+   *   - caller is admin/superuser
+   *
+   * Kept separate from the existing `GET /api/conversations/:id` (which
+   * is strictly own-only) so app.html's user-side UX stays unchanged.
+   */
+  router.get("/api/history/conversation/:id", async (req: Request, res: Response) => {
+    const user = getUserFromCookie(req);
+    if (!user) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    let oid: ObjectId;
+    try {
+      oid = new ObjectId(String(req.params.id));
+    } catch {
+      res.status(400).json({ error: "Invalid conversation ID" });
+      return;
+    }
+
+    try {
+      const db = getScoutQuestDb();
+      const doc = await db.collection("conversations").findOne({ _id: oid });
+      if (!doc) {
+        res.status(404).json({ error: "Conversation not found" });
+        return;
+      }
+
+      const roleInfo = await lookupUserRole(user.email);
+      const lowerEmail = user.email.toLowerCase();
+      const ownsIt = String(doc.userEmail ?? "").toLowerCase() === lowerEmail;
+      const isParentOfScout =
+        !!doc.scoutEmail &&
+        roleInfo.scoutEmails.map((e) => e.toLowerCase()).includes(String(doc.scoutEmail).toLowerCase());
+      const isLeaderForTroop =
+        !!doc.troopId &&
+        (roleInfo.roles.includes("leader") ||
+          roleInfo.roles.includes("admin") ||
+          roleInfo.roles.includes("superuser")) &&
+        (roleInfo.troop === doc.troopId || roleInfo.isAdmin);
+
+      if (!(ownsIt || isParentOfScout || isLeaderForTroop || roleInfo.isAdmin)) {
+        res.status(403).json({ error: "You don't have access to this conversation." });
+        return;
+      }
+
+      res.json(doc);
+    } catch (err) {
+      console.error("[history] conversation read error:", err);
+      res.status(500).json({ error: "Failed to load conversation" });
+    }
   });
 
   return router;

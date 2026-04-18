@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scout Quest — History</title>
+  <link rel="stylesheet" href="/app.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 0;
+      padding: 0 1rem;
+      max-width: 960px;
+      margin-inline: auto;
+      color: #1f2933;
+      background: #fafafa;
+    }
+    header {
+      padding: 1rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+    header h1 { margin: 0; font-size: 1.25rem; }
+    header .user { color: #6b7280; font-size: .9rem; }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .25rem;
+      margin: 1rem 0;
+    }
+    .tab {
+      padding: .4rem .8rem;
+      border: 1px solid #d1d5db;
+      background: white;
+      border-radius: 4px;
+      cursor: pointer;
+      font: inherit;
+    }
+    .tab:hover { background: #eef2ff; }
+    .tab.active { background: #1f2933; color: white; border-color: #1f2933; }
+    .filter-row {
+      display: flex; gap: .5rem; align-items: center;
+      margin-bottom: .75rem; flex-wrap: wrap;
+    }
+    .filter-row input {
+      padding: .35rem .5rem; border: 1px solid #d1d5db; border-radius: 4px; font: inherit;
+    }
+    .layout { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 1rem; }
+    @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } }
+    .list {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: white;
+      max-height: 72vh;
+      overflow-y: auto;
+    }
+    .conv {
+      padding: .6rem .8rem;
+      border-bottom: 1px solid #eef0f3;
+      cursor: pointer;
+    }
+    .conv:hover { background: #f9fafb; }
+    .conv.active { background: #eef2ff; }
+    .conv .title { font-weight: 600; font-size: .95rem; }
+    .conv .meta { color: #6b7280; font-size: .8rem; margin-top: .15rem; }
+    .conv .badges { display: inline-flex; gap: .25rem; margin-right: .3rem; }
+    .badge {
+      font-size: .68rem; padding: 1px 5px; border-radius: 3px;
+      background: #e5e7eb; color: #374151;
+    }
+    .badge.voice { background: #ddd6fe; color: #5b21b6; }
+    .badge.chat { background: #dbeafe; color: #1e40af; }
+    .transcript {
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      background: white;
+      padding: 1rem;
+      min-height: 72vh;
+    }
+    .transcript h2 { margin-top: 0; font-size: 1rem; color: #374151; }
+    .transcript .meta { color: #6b7280; font-size: .85rem; margin-bottom: 1rem; }
+    .msg { margin-bottom: .8rem; padding: .6rem .8rem; border-radius: 6px; }
+    .msg.user { background: #e0f2fe; }
+    .msg.assistant { background: #f3f4f6; }
+    .msg .role { font-weight: 600; font-size: .7rem; text-transform: uppercase; color: #6b7280; }
+    .msg .content { white-space: pre-wrap; font-size: .92rem; margin-top: .2rem; }
+    .msg .tools { margin-top: .4rem; font-size: .8rem; color: #374151; }
+    .msg .tools summary { cursor: pointer; color: #6b7280; }
+    .msg .tools pre { white-space: pre-wrap; background: #f9fafb; padding: .4rem; border-radius: 3px; font-size: .75rem; overflow-x: auto; }
+    .empty, .loading { color: #6b7280; padding: 1rem; text-align: center; }
+    .error { color: #991b1b; padding: 1rem; background: #fef2f2; border-radius: 4px; margin: 1rem 0; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎙️ Scout Quest — History</h1>
+    <div class="user" id="user-info">Loading…</div>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div class="filter-row">
+    <label>
+      <input type="checkbox" id="filter-voice-only">
+      Voice only
+    </label>
+    <span id="scope-label" style="color:#6b7280; font-size:.85rem;"></span>
+  </div>
+
+  <div id="error-box" class="error hidden"></div>
+
+  <div class="layout">
+    <div id="list" class="list">
+      <div class="loading">Loading…</div>
+    </div>
+    <div id="transcript" class="transcript">
+      <div class="empty">Select a conversation from the list</div>
+    </div>
+  </div>
+
+  <script>
+  (async function () {
+    const userInfo = document.getElementById('user-info');
+    const tabsEl = document.getElementById('tabs');
+    const listEl = document.getElementById('list');
+    const transcriptEl = document.getElementById('transcript');
+    const errorBox = document.getElementById('error-box');
+    const scopeLabel = document.getElementById('scope-label');
+    const voiceOnlyEl = document.getElementById('filter-voice-only');
+
+    const state = {
+      user: null,
+      activeScope: 'mine',
+      activeId: null,
+      conversations: [],
+    };
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.classList.remove('hidden');
+    }
+    function clearError() { errorBox.classList.add('hidden'); }
+
+    async function fetchJSON(url, opts = {}) {
+      const r = await fetch(url, { credentials: 'include', ...opts });
+      if (!r.ok) {
+        const msg = await r.text().catch(() => r.statusText);
+        throw new Error(`${url}: ${r.status} ${msg.substring(0, 200)}`);
+      }
+      return r.json();
+    }
+
+    async function loadUser() {
+      try {
+        state.user = await fetchJSON('/auth/me');
+        userInfo.textContent = `${state.user.email} · ${state.user.role}${state.user.troop ? ' · Troop ' + state.user.troop : ''}`;
+      } catch (e) {
+        userInfo.innerHTML = `<a href="/auth/google">Sign in</a>`;
+        throw e;
+      }
+    }
+
+    function buildTabs() {
+      const tabs = [{ id: 'mine', label: 'My history' }];
+      if (state.user.scoutEmails && state.user.scoutEmails.length) {
+        for (const se of state.user.scoutEmails) {
+          tabs.push({ id: 'scout:' + se, label: '🧒 ' + se.split('@')[0] });
+        }
+      }
+      const roles = state.user.roles || [];
+      if (state.user.troop && (roles.includes('leader') || state.user.isAdmin)) {
+        tabs.push({ id: 'troop:' + state.user.troop, label: '🏕️ Troop ' + state.user.troop });
+      }
+      if (state.user.isAdmin) {
+        tabs.push({ id: 'all', label: '🛠️ All (admin)' });
+      }
+
+      tabsEl.innerHTML = '';
+      for (const t of tabs) {
+        const btn = document.createElement('button');
+        btn.className = 'tab' + (t.id === state.activeScope ? ' active' : '');
+        btn.textContent = t.label;
+        btn.onclick = () => { state.activeScope = t.id; render(); };
+        tabsEl.appendChild(btn);
+      }
+    }
+
+    function scopeUrl() {
+      const base = state.activeScope;
+      const voiceQS = voiceOnlyEl.checked ? '?channel=voice' : '';
+      if (base === 'mine') return '/api/history/mine' + voiceQS;
+      if (base === 'all') return '/api/history/all' + voiceQS;
+      if (base.startsWith('scout:')) return '/api/history/scout/' + encodeURIComponent(base.slice(6)) + voiceQS;
+      if (base.startsWith('troop:')) return '/api/history/troop/' + encodeURIComponent(base.slice(6)) + voiceQS;
+      return '/api/history/mine' + voiceQS;
+    }
+
+    async function loadList() {
+      listEl.innerHTML = '<div class="loading">Loading…</div>';
+      try {
+        const convs = await fetchJSON(scopeUrl());
+        state.conversations = convs;
+        scopeLabel.textContent = `${convs.length} conversation${convs.length === 1 ? '' : 's'}`;
+        renderList();
+      } catch (e) {
+        listEl.innerHTML = '';
+        showError('Failed to load history: ' + e.message);
+      }
+    }
+
+    function renderList() {
+      listEl.innerHTML = '';
+      if (!state.conversations.length) {
+        listEl.innerHTML = '<div class="empty">No conversations</div>';
+        return;
+      }
+      for (const c of state.conversations) {
+        const el = document.createElement('div');
+        el.className = 'conv' + (c._id === state.activeId ? ' active' : '');
+        const channel = c.channel === 'voice' ? 'voice' : (c.channel === 'chat' ? 'chat' : '');
+        const badge = channel
+          ? `<span class="badges"><span class="badge ${channel}">${channel}</span></span>`
+          : '';
+        const date = c.updatedAt ? new Date(c.updatedAt).toLocaleString() : '';
+        const whoFor = c.scoutEmail ? ` · for ${c.scoutEmail.split('@')[0]}` : '';
+        el.innerHTML = `
+          <div class="title">${badge}${escapeHtml(c.title || '(untitled)')}</div>
+          <div class="meta">${date} · ${c.messageCount || 0} msg${whoFor}</div>
+        `;
+        el.onclick = () => { state.activeId = c._id; loadTranscript(c._id); renderList(); };
+        listEl.appendChild(el);
+      }
+    }
+
+    async function loadTranscript(id) {
+      transcriptEl.innerHTML = '<div class="loading">Loading transcript…</div>';
+      try {
+        const doc = await fetchJSON('/api/history/conversation/' + encodeURIComponent(id));
+        renderTranscript(doc);
+      } catch (e) {
+        transcriptEl.innerHTML = `<div class="error">${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    function renderTranscript(doc) {
+      const when = doc.createdAt ? new Date(doc.createdAt).toLocaleString() : '?';
+      const header = `
+        <h2>${escapeHtml(doc.title || '(untitled)')}</h2>
+        <div class="meta">
+          ${doc.channel || 'chat'} ·
+          ${doc.model || '?'} ·
+          started ${when} ·
+          user=${doc.userEmail || '?'}${doc.scoutEmail ? ' · scout=' + doc.scoutEmail : ''}
+        </div>
+      `;
+      const msgs = (doc.messages || []).map((m) => {
+        const role = (m.role || '').toLowerCase();
+        const cls = role === 'user' ? 'user' : 'assistant';
+        let toolsHtml = '';
+        if (Array.isArray(m.toolCalls) && m.toolCalls.length) {
+          toolsHtml = `<details class="tools"><summary>${m.toolCalls.length} tool call${m.toolCalls.length === 1 ? '' : 's'}</summary>`;
+          for (const tc of m.toolCalls) {
+            toolsHtml += `<div><strong>${escapeHtml(tc.name || '')}</strong></div>`;
+            if (tc.args != null) {
+              toolsHtml += `<pre>args: ${escapeHtml(JSON.stringify(tc.args, null, 2))}</pre>`;
+            }
+            if (tc.result != null) {
+              const resultStr = typeof tc.result === 'string' ? tc.result : JSON.stringify(tc.result, null, 2);
+              toolsHtml += `<pre>${escapeHtml(resultStr.slice(0, 1200))}${resultStr.length > 1200 ? '\n…(truncated)' : ''}</pre>`;
+            }
+          }
+          toolsHtml += '</details>';
+        }
+        return `
+          <div class="msg ${cls}">
+            <div class="role">${escapeHtml(m.role || '?')}</div>
+            <div class="content">${escapeHtml(m.content || '')}</div>
+            ${toolsHtml}
+          </div>
+        `;
+      }).join('');
+      transcriptEl.innerHTML = header + msgs;
+    }
+
+    function render() {
+      clearError();
+      buildTabs();
+      loadList();
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[c]));
+    }
+
+    voiceOnlyEl.onchange = loadList;
+
+    try {
+      await loadUser();
+      render();
+    } catch (e) {
+      // error already surfaced via user-info sign-in link
+    }
+  })();
+  </script>
+</body>
+</html>
