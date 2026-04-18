@@ -436,10 +436,17 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
   {
     name: "scout_buddies",
     description:
-      "Help a scout find other scouts to work with. " +
-      "Use when a scout asks who else is working on the same things, who can help them, " +
-      "what they could teach younger scouts, or what they could work on with a friend. " +
-      "Requires the scout's userId (from their profile context).",
+      "Find pairing / teaching / co-work opportunities between scouts.\n" +
+      "\n" +
+      "CALL THIS when either a SCOUT or a LEADER asks about pairing two specific scouts, " +
+      "who can help whom, who's working on the same things, or what requirements two " +
+      "scouts could knock out together. For leader questions like 'can Finn and Aiden " +
+      "pair up on X?' use scope=next_together and pass either scout's userId as " +
+      "scoutUserId with the other's name as friendName.\n" +
+      "\n" +
+      "Prefer this over calling get_scout_status twice — it understands the difference " +
+      "between 'overlapping open requirements' and 'one scout already earned it and can " +
+      "now teach the other', which is usually the real answer to pairing questions.",
     input_schema: {
       type: "object",
       properties: {
@@ -447,18 +454,23 @@ export const SCOUT_TOOLS: ToolDefinition[] = [
           type: "string",
           enum: ["working_on_same", "can_help_me", "i_can_help", "next_together"],
           description:
-            "working_on_same: who else is working on the same rank/badge? " +
-            "can_help_me: who completed what I need and could help? " +
-            "i_can_help: what could I help teach to other scouts? " +
-            "next_together: what requirements could I work on with a specific friend?",
+            "working_on_same: scouts currently working on the same rank/badge. " +
+            "can_help_me: scouts who already completed what this scout still needs. " +
+            "i_can_help: requirements this scout could help others with. " +
+            "next_together: specific pairing — what this scout + friendName could do together. " +
+            "For leader-side pairing questions, use next_together.",
         },
         scoutUserId: {
           type: "string",
-          description: "The requesting scout's Scoutbook userId.",
+          description:
+            "Scout's Scoutbook userId. For scout-initiated questions, use the scout's own " +
+            "userId (from their context block). For leader-initiated pairing questions " +
+            "('can X and Y pair up?'), use either scout's userId — scout_buddies will " +
+            "resolve the full pairing from both sides.",
         },
         friendName: {
           type: "string",
-          description: "Friend's name for next_together scope.",
+          description: "Friend's name for next_together scope (required when scope=next_together).",
         },
         rankName: {
           type: "string",

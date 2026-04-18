@@ -226,6 +226,35 @@ async function getRequirements(userId: string, name: string, advType: "rank" | "
   const advancementId = Number(advRows[0].advancementId);
   const displayName = advRows[0].name;
 
+  // Guard against the "Finn already has First Class but we list all 83 reqs as
+  // Not started" bug that scored SM-PLAN3 at 2-4 across all three models in
+  // the 2026-04-18 scoutmaster eval. Legacy scouts earned ranks before the
+  // scoutbook sync tracked individual requirement edges, so per-req edges
+  // don't exist — but the HAS_ADVANCEMENT edge carries the earned date.
+  // Listing the req text as "Not started" misleads the model into suggesting
+  // the scout can still "work on" a rank they've already completed.
+  const earnedRows = await graphQuery<{ dateCompleted: string; status: string }>(
+    "MATCH (s:Scout {userId: $userId})-[r:HAS_ADVANCEMENT]->(a:Advancement {advancementId: $advancementId}) " +
+      "WHERE r.dateCompleted IS NOT NULL " +
+      "RETURN r.dateCompleted AS dateCompleted, r.status AS status",
+    { userId, advancementId }
+  );
+  if (earnedRows.length > 0) {
+    const when = earnedRows[0].dateCompleted?.substring(0, 10) ?? "unknown date";
+    const label = advType === "rank" ? displayName.toUpperCase() : displayName;
+    // Deliberately emphatic — the model needs to treat this as a terminal
+    // signal, not a hint. "Not started" text would undo the cue.
+    return [
+      `${label} — ALREADY EARNED`,
+      ``,
+      `This scout earned ${displayName} on ${when}.`,
+      `All requirements for this ${advType === "rank" ? "rank" : "merit badge"} are satisfied.`,
+      `If planning pair-work, this scout CANNOT re-earn these requirements and should be`,
+      `positioned as a mentor/teacher for scouts who still need them. Query a different`,
+      `rank or a specific incomplete merit badge to see what they can still advance on.`,
+    ].join("\n");
+  }
+
   // All requirements
   const allReqs = await graphQuery<{
     reqId: number; reqNumber: string; reqName: string; parentReqId: number | null;
