@@ -789,16 +789,26 @@ class EvalEngine:
                 if "error" in d and "choices" not in d:
                     raise Exception(f"{provider} error: {d.get('error', d)}")
 
-                # Track usage
+                # Track usage. Our backend-compat endpoints return Anthropic-style
+                # cache_read_input_tokens / cache_creation_input_tokens at the
+                # top of usage alongside the OpenAI-compat fields; native OpenAI
+                # nests cached_tokens under prompt_tokens_details. Read both
+                # locations so backend-routed configs price correctly instead
+                # of reporting $0 because the cached-tokens field is missing.
                 u = d.get("usage", {})
                 output_tokens = u.get("completion_tokens", 0)
-                cached = u.get("prompt_tokens_details", {}).get("cached_tokens", 0)
+                cached = (
+                    u.get("cache_read_input_tokens", 0)
+                    or u.get("prompt_tokens_details", {}).get("cached_tokens", 0)
+                )
+                cache_creation = u.get("cache_creation_input_tokens", 0)
                 self.usage.record(
                     model_id,
                     input_tokens=u.get("prompt_tokens", 0),
                     output_tokens=output_tokens,
                     cached_tokens=cached,
                     label=model_id,
+                    extra={"cache_creation": cache_creation} if cache_creation else None,
                 )
 
                 choice = d["choices"][0]
