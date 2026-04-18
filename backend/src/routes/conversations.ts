@@ -13,6 +13,7 @@ import { Router as createRouter } from "express";
 import { ObjectId } from "mongodb";
 import { getScoutQuestDb } from "../db.js";
 import { getUserFromCookie } from "./auth.js";
+import { lookupUserRole } from "../auth/role-lookup.js";
 
 interface ConversationMessage {
   role: string;
@@ -24,6 +25,15 @@ interface ConversationMessage {
 interface ConversationDoc {
   _id: ObjectId;
   userEmail: string;
+  /** The scout this conversation is *about* — set when the user is a scout
+   *  themselves, or when an adult is talking about a specific scout. Stream B
+   *  history viewers filter on this. */
+  scoutEmail?: string | null;
+  /** Troop label, mirrored from the user's role doc at create time. Used by
+   *  the leader-history viewer (/api/history/troop/:id). */
+  troopId?: string | null;
+  /** "chat" or "voice" — set on creation, used by history filters and viewers. */
+  channel?: "chat" | "voice";
   title: string;
   model: string;
   messages: ConversationMessage[];
@@ -87,11 +97,30 @@ export function createConversationsRouter(): Router {
 
     try {
       const db = getScoutQuestDb();
-      const { title, model, messages } = req.body as {
+      const {
+        title,
+        model,
+        messages,
+        scoutEmail: bodyScoutEmail,
+        channel,
+      } = req.body as {
         title?: string;
         model?: string;
         messages?: { role: string; content: string; toolCalls?: unknown[] }[];
+        scoutEmail?: string | null;
+        channel?: "chat" | "voice";
       };
+
+      // Stream B attribution: pull troop + (default) scout from the user's
+      // role doc. The client may override scoutEmail when an admin emulates
+      // a scout — but we still require role auth so a random scout can't
+      // claim to be a different scout.
+      const roleInfo = await lookupUserRole(user.email);
+      const resolvedScoutEmail =
+        (typeof bodyScoutEmail === "string" && bodyScoutEmail) ||
+        (roleInfo.role === "scout" || roleInfo.role === "test_scout"
+          ? user.email
+          : null);
 
       const now = new Date();
       const msgDocs: ConversationMessage[] = (messages || []).map((m) => ({
@@ -106,6 +135,9 @@ export function createConversationsRouter(): Router {
 
       const doc: Omit<ConversationDoc, "_id"> = {
         userEmail: user.email,
+        scoutEmail: resolvedScoutEmail,
+        troopId: roleInfo.troop ?? null,
+        channel: channel === "voice" ? "voice" : "chat",
         title: autoTitle,
         model: model || "scout-coach",
         messages: msgDocs,

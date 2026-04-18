@@ -9,6 +9,7 @@ import { createProgressRouter } from "./routes/progress.js";
 import { createEvalReportsRouter } from "./routes/eval-reports.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createConversationsRouter } from "./routes/conversations.js";
+import { createHistoryRouter } from "./routes/history.js";
 import { createCostRouter } from "./routes/cost.js";
 import { loadPricing } from "./cost/pricing.js";
 
@@ -42,6 +43,9 @@ app.use("/", createAuthRouter());
 
 // Conversation persistence
 app.use("/", createConversationsRouter());
+
+// Role-based history viewers (Stream B)
+app.use("/", createHistoryRouter());
 
 // Production cost summary (admin-only)
 app.use("/", createCostRouter());
