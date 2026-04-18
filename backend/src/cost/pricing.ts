@@ -92,9 +92,16 @@ export function getPricingMeta(): PricingFileMeta {
 /**
  * Compute the USD cost of a single request, given the model and the token counts.
  *
- * Cache_read tokens are billed at the cached rate; cache_creation is billed at
- * the cache-write rate when present, otherwise treated as ordinary input.
- * Tokens NOT served from cache and NOT cache-creation are billed at the input rate.
+ * Anthropic's usage shape (mirrored by our provider adapter):
+ *   - `inputTokens` = uncached input tokens only (does NOT include cache reads or writes)
+ *   - `cacheReadTokens` = tokens served from cache (billed at cache_read rate)
+ *   - `cacheCreationTokens` = tokens written to cache this request (billed at cache_write rate)
+ *   - `outputTokens` = completion tokens
+ *
+ * These three input buckets DO NOT overlap — a single prompt token is either
+ * uncached input, a cache read, or a cache write. Summing gets the total
+ * billable tokens. (v1 of this code subtracted cache_read+cache_write from
+ * inputTokens, which undercounted cost by 100%+ on cached requests.)
  *
  * Returns 0 (and logs a warning) if the model has no pricing entry — better to
  * record a free call than to crash the request hot path.
@@ -107,9 +114,8 @@ export function computeCostUsd(modelId: string, usage: UsageTokens): number {
   }
   const cacheRead = usage.cacheReadTokens ?? 0;
   const cacheWrite = usage.cacheCreationTokens ?? 0;
-  const uncachedInput = Math.max(0, usage.inputTokens - cacheRead - cacheWrite);
 
-  const inputCost = (uncachedInput / 1e6) * p.inputPerMillion;
+  const inputCost = (usage.inputTokens / 1e6) * p.inputPerMillion;
   const cacheReadCost = (cacheRead / 1e6) * (p.cacheReadPerMillion ?? p.inputPerMillion);
   const cacheWriteCost = (cacheWrite / 1e6) * (p.cacheWritePerMillion ?? p.inputPerMillion);
   const outputCost = (usage.outputTokens / 1e6) * p.outputPerMillion;

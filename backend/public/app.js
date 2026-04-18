@@ -399,13 +399,22 @@ async function sendMessage(text) {
   isStreaming = false;
   sendBtn.disabled = !textInput.value.trim();
 
-  // Persist messages (non-blocking)
-  if (assistantText.trim()) {
+  // Persist messages (non-blocking). We persist whenever a user message was
+  // actually sent — even if the assistant response was empty or tool-only.
+  // Previously the `if (assistantText.trim())` guard dropped entire turns
+  // whose final content was cleared by a tool_call/tool_result sequence,
+  // which is why the conversations collection was empty.
+  if (userText && userText.trim()) {
     const toSave = [{ role: 'user', content: userText }];
     if (turnToolCalls.length) {
       toSave.push({ role: 'tool_call', content: '', toolCalls: turnToolCalls });
     }
-    toSave.push({ role: 'assistant', content: assistantText });
+    if (assistantText.trim()) {
+      toSave.push({ role: 'assistant', content: assistantText });
+    } else {
+      console.warn('[conv] assistantText was empty for this turn — persisting anyway');
+      toSave.push({ role: 'assistant', content: '(no text content — see tool calls)' });
+    }
     persistMessages(toSave);
   }
 }
@@ -550,9 +559,13 @@ async function loadVoiceSDK() {
   Conversation = mod.Conversation;
 }
 
-// Push chat history to backend before starting voice
+// Push chat history + identity to the backend before starting voice.
+// ALWAYS runs — even with zero prior messages — because the voice context
+// is also what carries the authenticated userEmail into the voice turn
+// handler (ElevenLabs requests can't send a cookie). Without this, voice
+// persistence silently no-op'd for any session that didn't follow a text
+// chat. That's how Jeremy's 2026-04-18 chat with Ben went untracked.
 async function pushChatContext() {
-  if (!history.length) return;
   const msgs = history.slice(-20).map(m => ({
     role: m.role === 'agent' ? 'assistant' : m.role,
     content: typeof m.content === 'string' ? m.content : '(attachment)',
@@ -568,7 +581,7 @@ async function pushChatContext() {
         userEmail: currentUser?.email || undefined,
       }),
     });
-    console.log('[voice] Pushed', msgs.length, 'messages as context');
+    console.log('[voice] Pushed', msgs.length, 'messages as context (userEmail=' + (currentUser?.email || 'none') + ')');
   } catch (e) { console.warn('[voice] Failed to push context:', e); }
 }
 
@@ -872,7 +885,7 @@ async function loadConversation(id) {
 
 /** Save new messages to the current conversation (or create one). */
 async function persistMessages(newMessages) {
-  if (!currentUser) return;
+  if (!currentUser) { console.warn('[conv] persist skipped — no currentUser'); return; }
 
   try {
     if (!currentConversationId) {
@@ -883,24 +896,35 @@ async function persistMessages(newMessages) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: appModel,
+          channel: 'chat',
           messages: newMessages,
         }),
       });
       if (resp.ok) {
         const conv = await resp.json();
         currentConversationId = conv._id;
+        console.log('[conv] created conversation', currentConversationId);
+      } else {
+        const body = await resp.text().catch(() => '');
+        console.warn('[conv] POST /api/conversations failed:', resp.status, body.slice(0, 200));
+        if (typeof toast === 'function') toast(`Conversation save failed (${resp.status})`, 'warn');
       }
     } else {
       // Append to existing conversation
-      await fetch('/api/conversations/' + currentConversationId + '/messages', {
+      const resp = await fetch('/api/conversations/' + currentConversationId + '/messages', {
         method: 'PUT',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages }),
       });
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => '');
+        console.warn('[conv] PUT /api/conversations failed:', resp.status, body.slice(0, 200));
+      }
     }
   } catch (e) {
     console.warn('[conv] Failed to persist messages:', e);
+    if (typeof toast === 'function') toast(`Conversation save failed: ${e.message || e}`, 'warn');
   }
 }
 
