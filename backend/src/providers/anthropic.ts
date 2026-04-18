@@ -12,6 +12,21 @@ import { fromAnthropicToolCalls, type AnthropicToolUseBlock } from "./tool-forma
 
 const DEFAULT_MODEL = "claude-sonnet-4-6";
 
+/**
+ * Opus 4.7 (and presumably future 4.7+) reject `temperature`/`top_p`/`top_k`
+ * with a 400 error. Earlier Anthropic models accept them. This guard centralizes
+ * the rule so callers can keep passing temperature naively.
+ *
+ * Matches `claude-opus-4-7`, `claude-opus-4-7-*`, and any future `4-8`+ Opus.
+ * Update this list when newer models extend the same restriction (e.g., a future
+ * Sonnet 5 release that drops sampling params).
+ */
+function modelAcceptsTemperature(modelId: string): boolean {
+  // Opus 4.7+ rejects temperature/top_p/top_k entirely (returns 400).
+  if (/^claude-opus-4-([7-9]|\d{2,})/.test(modelId)) return false;
+  return true;
+}
+
 export class AnthropicProvider implements LLMProvider {
   private client: Anthropic;
 
@@ -22,6 +37,12 @@ export class AnthropicProvider implements LLMProvider {
   async complete(req: ProviderRequest): Promise<ProviderResponse> {
     const model = req.model || DEFAULT_MODEL;
 
+    const includeTemperature =
+      req.temperature !== undefined && modelAcceptsTemperature(model);
+    if (req.temperature !== undefined && !includeTemperature) {
+      console.log(`[anthropic] dropping temperature=${req.temperature} for ${model} (model rejects it)`);
+    }
+
     const resp = await this.client.messages.create({
       model,
       max_tokens: req.maxTokens,
@@ -29,7 +50,7 @@ export class AnthropicProvider implements LLMProvider {
       messages: req.messages as Anthropic.MessageParam[],
       tools: req.tools as Anthropic.MessageCreateParams["tools"],
       stream: false,
-      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
+      ...(includeTemperature ? { temperature: req.temperature } : {}),
     });
 
     const usage = extractUsage(resp.usage);
@@ -61,13 +82,19 @@ export class AnthropicProvider implements LLMProvider {
   ): Promise<ProviderResponse> {
     const model = req.model || DEFAULT_MODEL;
 
+    const includeTemperature =
+      req.temperature !== undefined && modelAcceptsTemperature(model);
+    if (req.temperature !== undefined && !includeTemperature) {
+      console.log(`[anthropic] dropping temperature=${req.temperature} for ${model} (model rejects it)`);
+    }
+
     const stream = this.client.messages.stream({
       model,
       max_tokens: req.maxTokens,
       system: req.systemBlocks as Anthropic.MessageCreateParams["system"],
       messages: req.messages as Anthropic.MessageParam[],
       tools: req.tools as Anthropic.MessageCreateParams["tools"],
-      ...(req.temperature !== undefined ? { temperature: req.temperature } : {}),
+      ...(includeTemperature ? { temperature: req.temperature } : {}),
     });
 
     stream.on("text", onText);
