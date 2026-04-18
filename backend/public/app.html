@@ -36,6 +36,7 @@
         </button>
         <span class="header-title">Scout Coach</span>
         <span class="header-user" id="userName"></span>
+        <span class="role-badge hidden" id="roleBadge" title="Role"></span>
       </div>
       <div class="header-right">
         <button class="icon-btn" id="settingsBtn" title="Settings">
@@ -131,12 +132,19 @@
         <div class="setting-section">Emulate Scout</div>
         <div class="setting-desc">Act as a specific scout to test their experience</div>
         <input type="text" class="setting-input" id="settingEmulateEmail" placeholder="scout-email@example.com">
+        <div class="setting-section">Views</div>
+        <div class="setting-views" id="settingViews">
+          <!-- Populated by app.js based on role -->
+        </div>
         <div class="setting-section">Actions</div>
         <button class="setting-action" id="copyTranscriptBtn">Copy full transcript</button>
         <button class="setting-action danger" id="clearChatBtn">Clear conversation</button>
       </div>
     </div>
   </div>
+
+  <!-- Toast container (top-center) for SSE/auth errors (Stream E) -->
+  <div id="toastRoot" class="toast-root"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked@15/lib/marked.umd.min.js"></script>
   <script type="module" src="app.js?v=__BUILD_EPOCH__"></script>

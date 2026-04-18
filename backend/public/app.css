@@ -28,6 +28,74 @@ body {
 
 .hidden { display: none !important; }
 
+/* Role badge + settings-drawer view links (Stream E) */
+.role-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg3);
+  color: var(--green-bright);
+  border: 1px solid var(--green-dim);
+  letter-spacing: 0.02em;
+}
+.role-badge.r-admin, .role-badge.r-superuser { color: #fbbf24; border-color: #b45309; }
+.role-badge.r-leader { color: #93c5fd; border-color: #1d4ed8; }
+.role-badge.r-parent { color: #c4b5fd; border-color: #6d28d9; }
+.role-badge.r-scout, .role-badge.r-test_scout { color: var(--green-bright); border-color: var(--green-dim); }
+
+.setting-views {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.setting-views a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--bg3);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+}
+.setting-views a:hover { background: #22304a; }
+.setting-views .view-label { color: var(--text-dim); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* Toasts (Stream E: surface SSE / auth / tool errors) */
+.toast-root {
+  position: fixed;
+  top: env(safe-area-inset-top, 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  max-width: min(90vw, 480px);
+}
+.toast {
+  pointer-events: auto;
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid #3a4a5a;
+  border-left: 4px solid var(--green-dim);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { border-left-color: var(--danger); }
+.toast.warn { border-left-color: #d97706; }
+.toast.info { border-left-color: var(--green-dim); }
+
 /* Auth gate */
 .auth-gate {
   height: 100dvh;

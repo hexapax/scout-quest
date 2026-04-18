@@ -90,6 +90,8 @@ async function init() {
     authGate.classList.add('hidden');
     app.classList.remove('hidden');
     userName.textContent = currentUser.name?.split(' ')[0] || '';
+    paintRoleBadge(currentUser);
+    paintSettingViews(currentUser);
     // Pre-load conversation list (non-blocking)
     loadConversationList();
   }
@@ -98,6 +100,70 @@ async function init() {
   const settingModel = $('settingModel');
   if (settingModel) settingModel.value = settings.model;
 }
+
+// --- Role-aware UI (Stream E) ---
+
+/** Label + styling for the small role chip next to the user's name. */
+function paintRoleBadge(user) {
+  const badge = $('roleBadge');
+  if (!badge) return;
+  const role = user.role || 'unknown';
+  const troop = user.troop ? ` · T${user.troop}` : '';
+  badge.textContent = role + troop;
+  badge.className = 'role-badge r-' + role;
+  badge.classList.remove('hidden');
+}
+
+/** Populate the settings drawer "Views" section with role-aware links. */
+function paintSettingViews(user) {
+  const box = $('settingViews');
+  if (!box) return;
+  const links = [
+    { label: 'My history', href: '/history.html' },
+  ];
+  if (Array.isArray(user.scoutEmails)) {
+    for (const se of user.scoutEmails) {
+      const first = se.split('@')[0];
+      links.push({ label: `🧒 ${first}'s history`, href: `/history.html#scout:${encodeURIComponent(se)}` });
+    }
+  }
+  const roles = user.roles || [];
+  const isLeader = roles.includes('leader') || roles.includes('admin') || roles.includes('superuser');
+  if (user.troop && isLeader) {
+    links.push({ label: `🏕️ Troop ${user.troop} history`, href: `/history.html#troop:${encodeURIComponent(user.troop)}` });
+  }
+  if (user.isAdmin) {
+    links.push({ label: '🛠️ All conversations (admin)', href: '/history.html#all' });
+    links.push({ label: '📊 Eval viewer', href: '/eval-viewer.html' });
+    links.push({ label: '📈 Progress', href: '/progress.html' });
+  }
+  box.innerHTML = '';
+  for (const l of links) {
+    const a = document.createElement('a');
+    a.href = l.href;
+    a.textContent = l.label;
+    a.target = '_self';
+    box.appendChild(a);
+  }
+}
+
+// --- Toasts (Stream E: surface SSE / auth / tool errors) ---
+function toast(message, kind = 'info', ms = 4000) {
+  const root = $('toastRoot');
+  if (!root) { console.log(`[toast:${kind}] ${message}`); return; }
+  const el = document.createElement('div');
+  el.className = `toast ${kind}`;
+  el.textContent = message;
+  root.appendChild(el);
+  // Force layout so the transition triggers
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 250);
+  }, ms);
+}
+// Expose for console debugging + ad-hoc calls.
+window.sqToast = toast;
 
 // --- Conversation history (for chat API) ---
 const history = []; // {role, content}
@@ -254,9 +320,11 @@ async function sendMessage(text) {
     });
 
     if (!resp.ok) {
+      const body = await resp.text().catch(() => '');
       appendStream(`Error: ${resp.status}`);
       finalizeStream();
       isStreaming = false;
+      toast(`Chat error ${resp.status}${body ? ': ' + body.slice(0, 120) : ''}`, 'error');
       return;
     }
 
@@ -302,6 +370,7 @@ async function sendMessage(text) {
     }
   } catch (err) {
     appendStream(`Connection error: ${err.message}`);
+    toast(`Connection dropped: ${err.message || err}`, 'error');
   }
 
   // Capture assistant text before finalizing (finalizeStream resets agentStreamText)
@@ -531,7 +600,9 @@ async function startVoice() {
   } catch (err) {
     console.error('Voice start failed:', err);
     setBlob('idle');
-    setVS(err.name === 'NotAllowedError' ? 'Mic access needed' : 'Tap to talk', false);
+    const msg = err?.name === 'NotAllowedError' ? 'Microphone access needed' : `Voice start failed: ${err?.message || err}`;
+    setVS(err?.name === 'NotAllowedError' ? 'Mic access needed' : 'Tap to talk', false);
+    toast(msg, 'error', 6000);
   }
 }
 
