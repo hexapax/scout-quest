@@ -31,6 +31,7 @@ import { findUserByEmail, type UserDoc, type UserRoleEntry } from "../models/use
 export const ADMIN_ALLOWLIST: readonly string[] = [
   "jeremy@hexapax.com",
   "jebramwell@gmail.com",
+  "jeremy_bramwell@meditech.com",
 ];
 
 const CACHE_TTL_MS = 60 * 1000;
