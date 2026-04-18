@@ -9,7 +9,8 @@ import type { OpenAIChatRequest, AnthropicSystemBlock } from "./types.js";
 import { getToolsForRole, type UserRole } from "./tools/definitions.js";
 import { executeToolCalls } from "./tool-executor.js";
 import { getUserFromCookie } from "./routes/auth.js";
-import { getVoiceContext, pushToolEvent } from "./voice-context.js";
+import { getVoiceContext, getVoiceConversationId, pushToolEvent } from "./voice-context.js";
+import { persistVoiceTurn } from "./voice-persistence.js";
 import { captureEpisode } from "./episodes.js";
 import { resolveProvider } from "./providers/registry.js";
 import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
@@ -360,6 +361,9 @@ Rules for voice output:
     // Streaming path tracks the most recent provider response's usage so we
     // can log a single message_usage row after the full multi-turn loop ends.
     let streamLastUsage: ProviderResponse["usage"] | null = null;
+    // Accumulate the assistant's streamed text so voice-persistence can write
+    // the final assistant message (streaming deltas are fire-and-forget to SSE).
+    let streamedAssistantText = "";
 
     if (doStream) {
       initSSE(res);
@@ -372,6 +376,7 @@ Rules for voice output:
         for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
           const response: ProviderResponse = await provider.stream(workingReq, (delta) => {
             writeContentChunk(res, requestId, model, delta);
+            streamedAssistantText += delta;
           });
           streamLastUsage = response.usage;
 
@@ -456,7 +461,23 @@ Rules for voice output:
         toolCallRecords,
         channel: isVoice ? "voice" : "chat",
         latencyMs: Date.now() - requestStartedAt,
+        conversationId: isVoice ? getVoiceConversationId() : null,
       })).catch(() => { /* logger swallows already; defensive */ });
+
+      // Stream B follow-up: voice-session conversation persistence. Creates
+      // (or appends to) a conversations doc with channel:"voice" so the user
+      // can view voice transcripts in history.html. Closes the long-standing
+      // conversationId TODO that lost Jeremy's chat with Ben on 2026-04-18.
+      if (isVoice) {
+        persistVoiceTurn({
+          userEmail: cookieUser?.email ?? voiceCtx?.userEmail ?? null,
+          effectiveEmail: userEmail ?? null,
+          model,
+          userMessage: lastUserTextFrom(body.messages),
+          assistantMessage: streamedAssistantText,
+          toolCalls: toolCallRecords,
+        }).catch(() => { /* persistence swallows already; defensive */ });
+      }
     } else {
       // Non-streaming: complete() with tool loop
       let workingReq = { ...providerReq };
@@ -546,7 +567,20 @@ Rules for voice output:
         toolCallRecords,
         channel: isVoice ? "voice" : "chat",
         latencyMs: Date.now() - requestStartedAt,
+        conversationId: isVoice ? getVoiceConversationId() : null,
       })).catch(() => { /* logger swallows already; defensive */ });
+
+      // Voice persistence — see streaming branch for rationale.
+      if (isVoice) {
+        persistVoiceTurn({
+          userEmail: cookieUser?.email ?? voiceCtx?.userEmail ?? null,
+          effectiveEmail: userEmail ?? null,
+          model,
+          userMessage: lastUserTextFrom(body.messages),
+          assistantMessage: finalText,
+          toolCalls: toolCallRecords,
+        }).catch(() => { /* persistence swallows already; defensive */ });
+      }
     }
   } catch (err: unknown) {
     console.error("Chat handler error:", err);
@@ -583,6 +617,7 @@ function buildUsageRecord(args: {
   toolCallRecords: Array<{ name: string; args: unknown; result: string }>;
   channel: "chat" | "voice";
   latencyMs: number;
+  conversationId: string | null;
 }): Parameters<typeof logUsage>[0] {
   const attributedEmail = args.cookieEmail ?? args.userEmail ?? null;
   const scoutEmail = args.emulateEmail
@@ -601,7 +636,7 @@ function buildUsageRecord(args: {
     userEmail: attributedEmail,
     scoutEmail: scoutEmail ?? null,
     troopId: args.troopId,
-    conversationId: null, // Stream B will populate this
+    conversationId: args.conversationId,
     channel: args.channel,
     provider: args.provider,
     modelExact: args.modelExact,
@@ -611,4 +646,21 @@ function buildUsageRecord(args: {
     toolCalls,
     role: args.userRole,
   };
+}
+
+/** Extract the most recent user-authored text from an OpenAI-style message list. */
+function lastUserTextFrom(messages: OpenAIChatRequest["messages"] | undefined): string {
+  if (!messages || !messages.length) return "";
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i];
+    if (m.role !== "user") continue;
+    if (typeof m.content === "string") return m.content;
+    if (Array.isArray(m.content)) {
+      return m.content
+        .filter((c): c is { type: "text"; text: string } => (c as { type?: string }).type === "text" && typeof (c as { text?: string }).text === "string")
+        .map((c) => c.text)
+        .join(" ");
+    }
+  }
+  return "";
 }

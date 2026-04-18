@@ -4,6 +4,10 @@ let voiceContext: {
   messages: Array<{role: string; content: string}>;
   emulateEmail?: string;
   userEmail?: string;
+  /** MongoDB _id of the conversation doc for this voice session. Set after
+   *  the first assistant turn persists; reused by subsequent turns so the
+   *  whole voice call lands in a single conversation row. */
+  conversationId?: string;
   ts: number;
 } | null = null;
 
@@ -42,4 +46,17 @@ export function getToolEvents(since = 0): { events: typeof toolEventBuffer; curs
 /** Clear tool events (called when voice session starts). */
 export function clearToolEvents(): void {
   toolEventBuffer = [];
+}
+
+/** Attach a conversation _id to the active voice context (first-turn). */
+export function setVoiceConversationId(conversationId: string): void {
+  if (!voiceContext) return;
+  voiceContext.conversationId = conversationId;
+  voiceContext.ts = Date.now(); // bump TTL — active voice session
+}
+
+/** Read the conversation _id for the active voice context, if any. */
+export function getVoiceConversationId(): string | null {
+  const ctx = getVoiceContext();
+  return ctx?.conversationId ?? null;
 }
