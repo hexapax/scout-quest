@@ -74,6 +74,22 @@
     }
     .badge.voice { background: #ddd6fe; color: #5b21b6; }
     .badge.chat { background: #dbeafe; color: #1e40af; }
+    .badge.mixed { background: linear-gradient(90deg, #ddd6fe 50%, #dbeafe 50%); color: #374151; }
+    .badge.msg-channel { margin-left: 6px; font-weight: 500; font-size: .62rem; opacity: .8; }
+    .mode-marker {
+      margin: 8px 0;
+      padding: 4px 10px;
+      text-align: center;
+      font-size: .72rem;
+      color: #6b7280;
+      border-top: 1px dashed #d1d5db;
+      position: relative;
+    }
+    .mode-marker span {
+      background: white;
+      padding: 0 10px;
+      position: relative; top: -10px;
+    }
     .transcript {
       border: 1px solid #e5e7eb;
       border-radius: 6px;
@@ -258,7 +274,20 @@
           user=${doc.userEmail || '?'}${doc.scoutEmail ? ' · scout=' + doc.scoutEmail : ''}
         </div>
       `;
-      const msgs = (doc.messages || []).map((m) => {
+      // Render messages with a mode-transition marker whenever two consecutive
+      // messages have different channel tags (chat → voice or voice → chat).
+      // Gives the reader a clear visual cue in mixed conversations without
+      // cluttering same-mode sequences.
+      const allMsgs = doc.messages || [];
+      const pieces = [];
+      let prevChannel = null;
+      for (const m of allMsgs) {
+        const channel = m.channel || null;
+        if (channel && prevChannel && channel !== prevChannel) {
+          pieces.push(`<div class="mode-marker"><span>switched to ${escapeHtml(channel)}</span></div>`);
+        }
+        if (channel) prevChannel = channel;
+
         const role = (m.role || '').toLowerCase();
         const cls = role === 'user' ? 'user' : 'assistant';
         let toolsHtml = '';
@@ -276,15 +305,18 @@
           }
           toolsHtml += '</details>';
         }
-        return `
+        const channelBadge = channel
+          ? `<span class="badge msg-channel ${channel}">${channel}</span>`
+          : '';
+        pieces.push(`
           <div class="msg ${cls}">
-            <div class="role">${escapeHtml(m.role || '?')}</div>
+            <div class="role">${escapeHtml(m.role || '?')}${channelBadge}</div>
             <div class="content">${escapeHtml(m.content || '')}</div>
             ${toolsHtml}
           </div>
-        `;
-      }).join('');
-      transcriptEl.innerHTML = header + msgs;
+        `);
+      }
+      transcriptEl.innerHTML = header + pieces.join('');
     }
 
     function render() {

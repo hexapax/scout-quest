@@ -23,6 +23,8 @@ import { lookupUserRole } from "./auth/role-lookup.js";
 interface VoiceTurnMessage {
   role: string;
   content: string;
+  /** Mode this specific turn was captured in — voice for this module. */
+  channel: "voice";
   /** Structured tool-call records for this turn. Attached to the assistant
    *  message so the history viewer can render them inline. */
   toolCalls?: Array<{ name: string; args: unknown; result: string }>;
@@ -60,13 +62,18 @@ export async function persistVoiceTurn(args: {
     const coll = db.collection<Document>(COLLECTION);
     const now = new Date();
 
+    // Tag each message with channel:"voice" so the history viewer can render
+    // mode transitions inline and so we can distinguish voice turns from text
+    // turns within a mixed conversation.
     const userMsg: VoiceTurnMessage = {
       role: "user",
       content: args.userMessage,
+      channel: "voice",
     };
     const assistantMsg: VoiceTurnMessage = {
       role: "assistant",
       content: args.assistantMessage,
+      channel: "voice",
       ...(args.toolCalls.length ? { toolCalls: args.toolCalls } : {}),
     };
 
@@ -77,6 +84,18 @@ export async function persistVoiceTurn(args: {
       // refuses pushes into an arbitrary field on a generic `Document`;
       // conversations.ts owns the real schema, so we cast the update to the
       // driver's generic shape here.
+      //
+      // If the existing conversation was originally "chat", the top-level
+      // channel field becomes "mixed" so the viewer can surface that and
+      // the voice-only filter can include it.
+      const existing = await coll.findOne(
+        { _id: new ObjectId(existingId) },
+        { projection: { channel: 1 } },
+      );
+      const setFields: Record<string, unknown> = { updatedAt: now };
+      if (existing && existing.channel && existing.channel !== "voice" && existing.channel !== "mixed") {
+        setFields.channel = "mixed";
+      }
       const update = {
         $push: {
           messages: {
@@ -86,7 +105,7 @@ export async function persistVoiceTurn(args: {
             ],
           },
         },
-        $set: { updatedAt: now },
+        $set: setFields,
       } as unknown as Parameters<typeof coll.updateOne>[1];
       await coll.updateOne({ _id: new ObjectId(existingId) }, update);
       return;

@@ -555,12 +555,13 @@ async function loadVoiceSDK() {
   Conversation = mod.Conversation;
 }
 
-// Push chat history + identity to the backend before starting voice.
-// ALWAYS runs — even with zero prior messages — because the voice context
-// is also what carries the authenticated userEmail into the voice turn
-// handler (ElevenLabs requests can't send a cookie). Without this, voice
-// persistence silently no-op'd for any session that didn't follow a text
-// chat. That's how Jeremy's 2026-04-18 chat with Ben went untracked.
+// Push chat history + identity + active conversation id to the backend before
+// starting voice. Runs unconditionally so:
+//   (a) voiceCtx.userEmail is always set (ElevenLabs requests can't send a
+//       cookie, so this is the only identity carrier)
+//   (b) voiceCtx.conversationId inherits the current text conversation, so
+//       voice turns append to the same row instead of creating a new one
+//       — that's what stitches chat+voice into one conversation.
 async function pushChatContext() {
   const msgs = history.slice(-20).map(m => ({
     role: m.role === 'agent' ? 'assistant' : m.role,
@@ -575,10 +576,28 @@ async function pushChatContext() {
         messages: msgs,
         emulateEmail: settings.emulateEmail || undefined,
         userEmail: currentUser?.email || undefined,
+        conversationId: currentConversationId || undefined,
       }),
     });
-    console.log('[voice] Pushed', msgs.length, 'messages as context (userEmail=' + (currentUser?.email || 'none') + ')');
+    console.log('[voice] Pushed', msgs.length, 'messages as context (user=' +
+      (currentUser?.email || 'none') + ', conv=' + (currentConversationId || 'none') + ')');
   } catch (e) { console.warn('[voice] Failed to push context:', e); }
+}
+
+// After a voice session ends, sync the client-side currentConversationId to
+// whatever id the voice session landed on. This matters when voice CREATED a
+// new conversation (no text convo preceded it) and the user then wants to
+// switch to text — their typed messages should append to the same convo.
+async function adoptVoiceConversationId() {
+  try {
+    const r = await fetch('/api/voice/active-conversation', { credentials: 'same-origin' });
+    if (!r.ok) return;
+    const { conversationId } = await r.json();
+    if (conversationId && conversationId !== currentConversationId) {
+      console.log('[voice] adopting conversationId', conversationId, '(was', currentConversationId, ')');
+      currentConversationId = conversationId;
+    }
+  } catch (e) { console.warn('[voice] Failed to sync conversationId:', e); }
 }
 
 async function startVoice() {
@@ -599,7 +618,19 @@ async function startVoice() {
     const sessionOpts = {
       signedUrl,
       onConnect: () => { dbg('connected'); setBlob('listening'); setVS('Listening...', true); startVolLoop(); startToolPoll(); },
-      onDisconnect: () => { dbg('disconnected'); stopVolLoop(); stopToolPoll(); finalizeStream(); voiceConversation = null; setBlob('idle'); setVS('Tap to talk', false); },
+      onDisconnect: () => {
+        dbg('disconnected');
+        stopVolLoop();
+        stopToolPoll();
+        finalizeStream();
+        voiceConversation = null;
+        setBlob('idle');
+        setVS('Tap to talk', false);
+        // Adopt the conversationId the voice session landed on so if the
+        // user now types something, it appends to the same row instead of
+        // creating a second conversation.
+        adoptVoiceConversationId();
+      },
       onError: (err) => { dbg('error: ' + (err?.message || err)); setVS('Error', false); },
       onModeChange: (mode) => {
         dbg('mode: ' + mode.mode);
@@ -906,12 +937,14 @@ async function persistMessages(newMessages) {
         if (typeof toast === 'function') toast(`Conversation save failed (${resp.status})`, 'warn');
       }
     } else {
-      // Append to existing conversation
+      // Append to existing conversation. Tag each message with channel:"chat"
+      // so the viewer can render mode transitions in mixed conversations.
+      const tagged = newMessages.map((m) => ({ channel: 'chat', ...m }));
       const resp = await fetch('/api/conversations/' + currentConversationId + '/messages', {
         method: 'PUT',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: tagged }),
       });
       if (!resp.ok) {
         const body = await resp.text().catch(() => '');
