@@ -123,6 +123,7 @@ function paintViews(user) {
 
   const links = [
     { label: 'My history', sub: 'your chats', href: '/history.html' },
+    { label: 'Pending emails', sub: 'review drafts', href: '/email.html' },
   ];
   if (Array.isArray(user.scoutEmails)) {
     for (const se of user.scoutEmails) {

@@ -28,6 +28,11 @@ import { lookupUserRole } from "../auth/role-lookup.js";
 interface ConversationListItem {
   _id: unknown;
   title: string;
+  /** First user-message snippet, trimmed to ~80 chars. Shown as fallback when
+   *  `title` is blank or literally "(untitled)". Derived by the aggregation
+   *  pipeline in listConversations so the client can render without fetching
+   *  the full doc. */
+  firstMessage?: string;
   model: string;
   channel: "chat" | "voice" | null;
   userEmail: string;
@@ -36,6 +41,11 @@ interface ConversationListItem {
   messageCount: number;
   updatedAt: Date;
   createdAt: Date;
+  /** Set by POST /api/history/conversation/:id/reviewed. A reviewer marking a
+   *  conversation stamps their email + timestamp; the client shows a tick and
+   *  can filter unread-only. Does not modify the conversation body. */
+  reviewedBy?: string;
+  reviewedAt?: Date;
 }
 
 const COLLECTION = "conversations";
@@ -192,6 +202,78 @@ export function createHistoryRouter(): express.Router {
     }
   });
 
+  /**
+   * Mark a conversation as reviewed by the caller (or clear the mark).
+   *
+   *   POST /api/history/conversation/:id/reviewed    { reviewed: true|false }
+   *
+   * Authorization re-uses the read check from GET /api/history/conversation/:id
+   * — if you can see a conversation, you can mark it reviewed. Scouts can
+   * mark their own conversations reviewed too; harmless, and saves us a
+   * second role check.
+   */
+  router.post("/api/history/conversation/:id/reviewed", async (req: Request, res: Response) => {
+    const user = getUserFromCookie(req);
+    if (!user) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+
+    let oid: ObjectId;
+    try {
+      oid = new ObjectId(String(req.params.id));
+    } catch {
+      res.status(400).json({ error: "Invalid conversation ID" });
+      return;
+    }
+
+    const reviewed = req.body?.reviewed !== false;
+
+    try {
+      const db = getScoutQuestDb();
+      const doc = await db.collection("conversations").findOne({ _id: oid });
+      if (!doc) {
+        res.status(404).json({ error: "Conversation not found" });
+        return;
+      }
+
+      const roleInfo = await lookupUserRole(user.email);
+      const lowerEmail = user.email.toLowerCase();
+      const ownsIt = String(doc.userEmail ?? "").toLowerCase() === lowerEmail;
+      const isParentOfScout =
+        !!doc.scoutEmail &&
+        roleInfo.scoutEmails.map((e) => e.toLowerCase()).includes(String(doc.scoutEmail).toLowerCase());
+      const isLeaderForTroop =
+        !!doc.troopId &&
+        (roleInfo.roles.includes("leader") ||
+          roleInfo.roles.includes("admin") ||
+          roleInfo.roles.includes("superuser")) &&
+        (roleInfo.troop === doc.troopId || roleInfo.isAdmin);
+
+      if (!(ownsIt || isParentOfScout || isLeaderForTroop || roleInfo.isAdmin)) {
+        res.status(403).json({ error: "You don't have access to this conversation." });
+        return;
+      }
+
+      if (reviewed) {
+        await db.collection("conversations").updateOne(
+          { _id: oid },
+          { $set: { reviewedBy: user.email, reviewedAt: new Date() } },
+        );
+      } else {
+        await db.collection("conversations").updateOne(
+          { _id: oid },
+          { $unset: { reviewedBy: "", reviewedAt: "" } },
+        );
+      }
+
+      res.json({ ok: true, reviewed });
+    } catch (err) {
+      console.error("[history] reviewed update error:", err);
+      res.status(500).json({ error: "Failed to update review state" });
+    }
+  });
+
   return router;
 }
 
@@ -217,21 +299,50 @@ async function listConversations(
   const db = getScoutQuestDb();
   const docs = await db
     .collection(COLLECTION)
-    .find(filter)
-    .sort({ updatedAt: -1 })
-    .limit(MAX_LIST)
-    .project({
-      _id: 1,
-      title: 1,
-      model: 1,
-      channel: 1,
-      userEmail: 1,
-      scoutEmail: 1,
-      troopId: 1,
-      updatedAt: 1,
-      createdAt: 1,
-      messageCount: { $size: { $ifNull: ["$messages", []] } },
-    })
+    .aggregate([
+      { $match: filter },
+      { $sort: { updatedAt: -1 } },
+      { $limit: MAX_LIST },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          model: 1,
+          channel: 1,
+          userEmail: 1,
+          scoutEmail: 1,
+          troopId: 1,
+          updatedAt: 1,
+          createdAt: 1,
+          messageCount: { $size: { $ifNull: ["$messages", []] } },
+          reviewedBy: 1,
+          reviewedAt: 1,
+          // Pull the first user message's content for the fallback label on
+          // rows where `title` is blank/"(untitled)". `$filter` keeps only
+          // user-role turns; `$arrayElemAt` 0 grabs the earliest.
+          firstMessage: {
+            $let: {
+              vars: {
+                userMsgs: {
+                  $filter: {
+                    input: { $ifNull: ["$messages", []] },
+                    as: "m",
+                    cond: { $eq: ["$$m.role", "user"] },
+                  },
+                },
+              },
+              in: {
+                $substrCP: [
+                  { $ifNull: [{ $arrayElemAt: ["$$userMsgs.content", 0] }, ""] },
+                  0,
+                  80,
+                ],
+              },
+            },
+          },
+        },
+      },
+    ])
     .toArray();
 
   return docs as unknown as ConversationListItem[];

@@ -103,6 +103,29 @@ export async function executePendingAction(
   return result ?? null;
 }
 
+/** List pending actions matching a filter. Results sorted newest-first,
+ *  capped at `limit`. Auto-marks expired docs as "expired" as a side effect
+ *  so the inbox doesn't show stale rows. */
+export async function listPendingActions(
+  filter: Record<string, unknown>,
+  limit = 50,
+): Promise<WithId<PendingActionDoc>[]> {
+  const db = getScoutQuestDb();
+  const now = new Date();
+  // Sweep expired: any pending action past expiresAt is transitioned before
+  // we read, so the returned list reflects current truth.
+  await db.collection<PendingActionDoc>(COLLECTION).updateMany(
+    { status: "pending", expiresAt: { $lt: now } },
+    { $set: { status: "expired" } },
+  );
+  return db
+    .collection<PendingActionDoc>(COLLECTION)
+    .find(filter)
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .toArray();
+}
+
 /** Cancel a pending action. */
 export async function cancelPendingAction(
   id: string

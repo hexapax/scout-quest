@@ -25,6 +25,13 @@
       gap: .5rem;
     }
     header h1 { margin: 0; font-size: 1.25rem; }
+    header .title-wrap { display: flex; align-items: center; gap: .75rem; }
+    header .back-link {
+      color: #1f2933; text-decoration: none; font-size: .95rem;
+      padding: .5rem .6rem; border-radius: 4px; min-height: 44px;
+      display: inline-flex; align-items: center;
+    }
+    header .back-link:hover { background: #eef2ff; }
     header .user { color: #6b7280; font-size: .9rem; }
     .tabs {
       display: flex;
@@ -33,12 +40,13 @@
       margin: 1rem 0;
     }
     .tab {
-      padding: .4rem .8rem;
+      padding: .6rem 1rem;
       border: 1px solid #d1d5db;
       background: white;
       border-radius: 4px;
       cursor: pointer;
       font: inherit;
+      min-height: 44px;
     }
     .tab:hover { background: #eef2ff; }
     .tab.active { background: #1f2933; color: white; border-color: #1f2933; }
@@ -46,8 +54,20 @@
       display: flex; gap: .5rem; align-items: center;
       margin-bottom: .75rem; flex-wrap: wrap;
     }
-    .filter-row input {
-      padding: .35rem .5rem; border: 1px solid #d1d5db; border-radius: 4px; font: inherit;
+    .filter-row input[type="text"] {
+      padding: .5rem .6rem; border: 1px solid #d1d5db; border-radius: 4px; font: inherit;
+      min-height: 44px;
+    }
+    /* Wrap the voice-only checkbox in a 44x44 hit area (WCAG AA) —
+       the raw 13px checkbox is unreachable on mobile. */
+    .filter-row .toggle-label {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .5rem .6rem;
+      min-height: 44px; cursor: pointer;
+      user-select: none;
+    }
+    .filter-row .toggle-label input {
+      width: 20px; height: 20px; cursor: pointer;
     }
     .layout { display: grid; grid-template-columns: minmax(240px, 1fr) 2fr; gap: 1rem; }
     @media (max-width: 720px) { .layout { grid-template-columns: 1fr; } }
@@ -59,9 +79,10 @@
       overflow-y: auto;
     }
     .conv {
-      padding: .6rem .8rem;
+      padding: .75rem .8rem;
       border-bottom: 1px solid #eef0f3;
       cursor: pointer;
+      min-height: 56px;
     }
     .conv:hover { background: #f9fafb; }
     .conv.active { background: #eef2ff; }
@@ -102,7 +123,8 @@
     .msg { margin-bottom: .8rem; padding: .6rem .8rem; border-radius: 6px; }
     .msg.user { background: #e0f2fe; }
     .msg.assistant { background: #f3f4f6; }
-    .msg .role { font-weight: 600; font-size: .7rem; text-transform: uppercase; color: #6b7280; }
+    .msg .role { font-weight: 600; font-size: .7rem; text-transform: uppercase; color: #6b7280; display: inline-flex; align-items: center; gap: .4rem; }
+    .msg .ts { font-size: .7rem; color: #9ca3af; text-transform: none; font-weight: 400; }
     .msg .content { white-space: pre-wrap; font-size: .92rem; margin-top: .2rem; }
     .msg .tools { margin-top: .4rem; font-size: .8rem; color: #374151; }
     .msg .tools summary { cursor: pointer; color: #6b7280; }
@@ -114,17 +136,27 @@
 </head>
 <body>
   <header>
-    <h1>🎙️ Scout Quest — History</h1>
+    <div class="title-wrap">
+      <a class="back-link" href="/" title="Back to Scout Quest">←</a>
+      <h1>🎙️ Scout Quest — History</h1>
+    </div>
     <div class="user" id="user-info">Loading…</div>
   </header>
 
   <div class="tabs" id="tabs"></div>
 
   <div class="filter-row">
-    <label>
+    <label class="toggle-label">
       <input type="checkbox" id="filter-voice-only">
       Voice only
     </label>
+    <label class="toggle-label">
+      <input type="checkbox" id="filter-unread-only">
+      Unread only
+    </label>
+    <input type="text" id="filter-q" placeholder="Search title/email…" style="flex:1; min-width:180px;">
+    <input type="date" id="filter-since" title="Since" style="min-height:44px;">
+    <input type="date" id="filter-until" title="Until" style="min-height:44px;">
     <span id="scope-label" style="color:#6b7280; font-size:.85rem;"></span>
   </div>
 
@@ -148,6 +180,10 @@
     const errorBox = document.getElementById('error-box');
     const scopeLabel = document.getElementById('scope-label');
     const voiceOnlyEl = document.getElementById('filter-voice-only');
+    const unreadOnlyEl = document.getElementById('filter-unread-only');
+    const qEl = document.getElementById('filter-q');
+    const sinceEl = document.getElementById('filter-since');
+    const untilEl = document.getElementById('filter-until');
 
     const state = {
       user: null,
@@ -181,14 +217,45 @@
       }
     }
 
+    // Dedicated empty state for the unauthenticated case. Replaces the
+    // previous behavior where the list pane stayed stuck on "Loading…"
+    // because render() was never called on the 401 path.
+    function renderSignedOut() {
+      tabsEl.innerHTML = '';
+      scopeLabel.textContent = '';
+      listEl.innerHTML = '';
+      transcriptEl.innerHTML = `
+        <div class="empty" style="padding:2rem;">
+          <h2 style="margin:0 0 .5rem;">Sign in to view history</h2>
+          <p>Review your own chats, your scout's chats (if you're a parent),
+             or your troop (if you're a leader).</p>
+          <p style="margin-top:1rem;">
+            <a href="/auth/google" style="
+              display:inline-block; padding:.75rem 1.25rem;
+              background:#1f2933; color:white; border-radius:6px;
+              text-decoration:none; min-height:44px; min-width:44px;
+              line-height:1.5;
+            ">Sign in with Google</a>
+          </p>
+        </div>`;
+    }
+
     function buildTabs() {
       const tabs = [{ id: 'mine', label: 'My history' }];
-      if (state.user.scoutEmails && state.user.scoutEmails.length) {
-        for (const se of state.user.scoutEmails) {
+      const scoutEmails = (state.user.scoutEmails && state.user.scoutEmails.length)
+        ? state.user.scoutEmails : [];
+      const roles = state.user.roles || [];
+
+      // Leaders with many scouts get a <select> scope picker instead of a tab
+      // wall — past ~3 scouts the tab row wraps to multiple rows and becomes
+      // hard to scan. Threshold chosen empirically from the usability pass.
+      const useSelect = scoutEmails.length > 3;
+
+      if (!useSelect) {
+        for (const se of scoutEmails) {
           tabs.push({ id: 'scout:' + se, label: '🧒 ' + se.split('@')[0] });
         }
       }
-      const roles = state.user.roles || [];
       if (state.user.troop && (roles.includes('leader') || state.user.isAdmin)) {
         tabs.push({ id: 'troop:' + state.user.troop, label: '🏕️ Troop ' + state.user.troop });
       }
@@ -203,6 +270,33 @@
         btn.textContent = t.label;
         btn.onclick = () => { state.activeScope = t.id; render(); };
         tabsEl.appendChild(btn);
+      }
+
+      if (useSelect) {
+        const wrapper = document.createElement('span');
+        wrapper.className = 'scout-picker';
+        wrapper.style.cssText = 'display:inline-flex; align-items:center; gap:.25rem;';
+        const sel = document.createElement('select');
+        sel.style.cssText = 'min-height:44px; padding:.4rem .5rem; border:1px solid #d1d5db; border-radius:4px; font:inherit;';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = `🧒 Pick a scout (${scoutEmails.length})`;
+        sel.appendChild(placeholder);
+        for (const se of scoutEmails) {
+          const opt = document.createElement('option');
+          opt.value = 'scout:' + se;
+          opt.textContent = se.split('@')[0] + '  ·  ' + se;
+          sel.appendChild(opt);
+        }
+        // Reflect active selection.
+        if (state.activeScope.startsWith('scout:')) sel.value = state.activeScope;
+        sel.onchange = () => {
+          if (!sel.value) return;
+          state.activeScope = sel.value;
+          render();
+        };
+        wrapper.appendChild(sel);
+        tabsEl.appendChild(wrapper);
       }
     }
 
@@ -221,7 +315,6 @@
       try {
         const convs = await fetchJSON(scopeUrl());
         state.conversations = convs;
-        scopeLabel.textContent = `${convs.length} conversation${convs.length === 1 ? '' : 's'}`;
         renderList();
       } catch (e) {
         listEl.innerHTML = '';
@@ -229,13 +322,42 @@
       }
     }
 
+    /** Apply title/email/date filters client-side. Server returns the
+     *  role-scoped list; the client narrows it further. */
+    function filteredConversations() {
+      const q = (qEl.value || '').trim().toLowerCase();
+      const sinceMs = sinceEl.value ? new Date(sinceEl.value).getTime() : null;
+      // Until is inclusive of the selected day — add 24h.
+      const untilMs = untilEl.value ? new Date(untilEl.value).getTime() + 86_400_000 : null;
+
+      const unreadOnly = unreadOnlyEl.checked;
+      return state.conversations.filter((c) => {
+        if (unreadOnly && c.reviewedAt) return false;
+        if (q) {
+          const hay = [c.title || '', c.userEmail || '', c.scoutEmail || ''].join(' ').toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (sinceMs || untilMs) {
+          const t = new Date(c.updatedAt || c.createdAt || 0).getTime();
+          if (sinceMs && t < sinceMs) return false;
+          if (untilMs && t >= untilMs) return false;
+        }
+        return true;
+      });
+    }
+
     function renderList() {
       listEl.innerHTML = '';
-      if (!state.conversations.length) {
-        listEl.innerHTML = '<div class="empty">No conversations</div>';
+      const shown = filteredConversations();
+      const total = state.conversations.length;
+      scopeLabel.textContent = shown.length === total
+        ? `${total} conversation${total === 1 ? '' : 's'}`
+        : `${shown.length} of ${total}`;
+      if (!shown.length) {
+        listEl.innerHTML = '<div class="empty">No conversations match</div>';
         return;
       }
-      for (const c of state.conversations) {
+      for (const c of shown) {
         const el = document.createElement('div');
         el.className = 'conv' + (c._id === state.activeId ? ' active' : '');
         const channel = c.channel === 'voice' ? 'voice' : (c.channel === 'chat' ? 'chat' : '');
@@ -244,11 +366,26 @@
           : '';
         const date = c.updatedAt ? new Date(c.updatedAt).toLocaleString() : '';
         const whoFor = c.scoutEmail ? ` · for ${c.scoutEmail.split('@')[0]}` : '';
+        const titleText = (c.title && c.title !== '(untitled)') ? c.title
+          : (c.firstMessage ? c.firstMessage + (c.firstMessage.length >= 80 ? '…' : '')
+          : '(untitled)');
+        const reviewMark = c.reviewedAt
+          ? `<span title="Reviewed by ${escapeHtml(c.reviewedBy || '')} on ${escapeHtml(new Date(c.reviewedAt).toLocaleString())}" style="color:#16a34a; margin-right:.3rem;">✓</span>`
+          : '';
         el.innerHTML = `
-          <div class="title">${badge}${escapeHtml(c.title || '(untitled)')}</div>
+          <div class="title">${reviewMark}${badge}${escapeHtml(titleText)}</div>
           <div class="meta">${date} · ${c.messageCount || 0} msg${whoFor}</div>
         `;
-        el.onclick = () => { state.activeId = c._id; loadTranscript(c._id); renderList(); };
+        el.onclick = () => {
+          state.activeId = c._id;
+          loadTranscript(c._id);
+          renderList();
+          // On narrow viewports the transcript is stacked below the list,
+          // so tapping a row gives no visible feedback. Scroll to it.
+          if (window.innerWidth <= 720) {
+            transcriptEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        };
         listEl.appendChild(el);
       }
     }
@@ -263,15 +400,63 @@
       }
     }
 
+    async function toggleReviewed(id, markAsReviewed) {
+      try {
+        const r = await fetch('/api/history/conversation/' + encodeURIComponent(id) + '/reviewed', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ reviewed: markAsReviewed }),
+        });
+        if (!r.ok) {
+          const text = await r.text().catch(() => '');
+          showError('Could not update review state: ' + r.status + ' ' + text.substring(0, 120));
+          return;
+        }
+        // Mirror into our in-memory list so the tick + unread-only filter
+        // update without a full refetch.
+        const row = state.conversations.find((c) => c._id === id);
+        if (row) {
+          if (markAsReviewed) {
+            row.reviewedBy = state.user.email;
+            row.reviewedAt = new Date().toISOString();
+          } else {
+            delete row.reviewedBy;
+            delete row.reviewedAt;
+          }
+        }
+        renderList();
+        loadTranscript(id);
+      } catch (e) {
+        showError('Error: ' + e.message);
+      }
+    }
+
     function renderTranscript(doc) {
       const when = doc.createdAt ? new Date(doc.createdAt).toLocaleString() : '?';
+      const reviewed = !!doc.reviewedAt;
+      const reviewBtnLabel = reviewed ? 'Reviewed ✓' : 'Mark reviewed';
+      const reviewInfo = reviewed
+        ? `<div class="meta" style="color:#16a34a; margin-top:.4rem;">
+             Reviewed by ${escapeHtml(doc.reviewedBy || '')} on ${escapeHtml(new Date(doc.reviewedAt).toLocaleString())}
+           </div>`
+        : '';
       const header = `
-        <h2>${escapeHtml(doc.title || '(untitled)')}</h2>
-        <div class="meta">
-          ${doc.channel || 'chat'} ·
-          ${doc.model || '?'} ·
-          started ${when} ·
-          user=${doc.userEmail || '?'}${doc.scoutEmail ? ' · scout=' + doc.scoutEmail : ''}
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem; flex-wrap:wrap;">
+          <div style="flex:1; min-width:220px;">
+            <h2>${escapeHtml(doc.title || '(untitled)')}</h2>
+            <div class="meta">
+              ${doc.channel || 'chat'} ·
+              ${doc.model || '?'} ·
+              started ${when} ·
+              user=${doc.userEmail || '?'}${doc.scoutEmail ? ' · scout=' + doc.scoutEmail : ''}
+            </div>
+            ${reviewInfo}
+          </div>
+          <button id="btn-review"
+                  style="min-height:44px; padding:.5rem .9rem; border:1px solid ${reviewed ? '#16a34a' : '#d1d5db'}; background:${reviewed ? '#dcfce7' : 'white'}; color:${reviewed ? '#166534' : '#1f2933'}; border-radius:4px; cursor:pointer; font:inherit;">
+            ${reviewBtnLabel}
+          </button>
         </div>
       `;
       // Render messages with a mode-transition marker whenever two consecutive
@@ -308,15 +493,22 @@
         const channelBadge = channel
           ? `<span class="badge msg-channel ${channel}">${channel}</span>`
           : '';
+        const tsHtml = m.ts
+          ? `<span class="ts" title="${escapeHtml(new Date(m.ts).toLocaleString())}">${escapeHtml(formatRelative(m.ts))}</span>`
+          : '';
         pieces.push(`
           <div class="msg ${cls}">
-            <div class="role">${escapeHtml(m.role || '?')}${channelBadge}</div>
+            <div class="role">${escapeHtml(m.role || '?')}${channelBadge}${tsHtml}</div>
             <div class="content">${escapeHtml(m.content || '')}</div>
             ${toolsHtml}
           </div>
         `);
       }
       transcriptEl.innerHTML = header + pieces.join('');
+      const btn = document.getElementById('btn-review');
+      if (btn) {
+        btn.onclick = () => toggleReviewed(doc._id, !reviewed);
+      }
     }
 
     function render() {
@@ -331,13 +523,40 @@
       }[c]));
     }
 
+    /** Relative time like "3m ago", "2h ago", "Tue 3:04 PM", "Apr 12". */
+    function formatRelative(ts) {
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return '';
+      const diffMs = Date.now() - d.getTime();
+      const sec = Math.round(diffMs / 1000);
+      if (sec < 60) return 'just now';
+      const min = Math.round(sec / 60);
+      if (min < 60) return `${min}m ago`;
+      const hr = Math.round(min / 60);
+      if (hr < 24) return `${hr}h ago`;
+      const day = Math.round(hr / 24);
+      if (day < 7) return `${day}d ago`;
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+
     voiceOnlyEl.onchange = loadList;
+    unreadOnlyEl.onchange = renderList;
+    // Search/date filters are applied client-side, so re-render is enough.
+    let qDebounce;
+    qEl.oninput = () => {
+      clearTimeout(qDebounce);
+      qDebounce = setTimeout(renderList, 120);
+    };
+    sinceEl.onchange = renderList;
+    untilEl.onchange = renderList;
 
     try {
       await loadUser();
       render();
     } catch (e) {
-      // error already surfaced via user-info sign-in link
+      // Show the full sign-in state (sign-in link + explanation) instead of
+      // leaving the list pane stuck on "Loading…".
+      renderSignedOut();
     }
   })();
   </script>
