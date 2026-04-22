@@ -27,6 +27,8 @@
       </div>
       <button class="conv-new-btn" id="convNewBtn">+ New Chat</button>
       <div class="conv-list" id="convList"></div>
+      <!-- Role-aware navigation (Stream E). Populated by paintViews() in app.js. -->
+      <div class="conv-views hidden" id="convViews"></div>
     </div>
 
     <div class="header">
@@ -36,6 +38,7 @@
         </button>
         <span class="header-title">Scout Coach</span>
         <span class="header-user" id="userName"></span>
+        <span class="role-badge hidden" id="roleBadge" title="Role"></span>
       </div>
       <div class="header-right">
         <button class="icon-btn" id="settingsBtn" title="Settings">
@@ -137,6 +140,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Toast container (top-center) for SSE/auth errors (Stream E) -->
+  <div id="toastRoot" class="toast-root"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/marked@15/lib/marked.umd.min.js"></script>
   <script type="module" src="app.js?v=__BUILD_EPOCH__"></script>

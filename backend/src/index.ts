@@ -164,7 +164,13 @@ app.get("/api/voice/signed-url", async (req, res) => {
 // Voice context — client POSTs chat history before starting a voice session.
 // Requires cookie auth because this is the trust anchor for voice sessions:
 // ElevenLabs requests are authorized by the existence of a valid voice context.
-import { setVoiceContext, getToolEvents, clearToolEvents } from "./voice-context.js";
+import {
+  setVoiceContext,
+  getVoiceContext,
+  getVoiceConversationId,
+  getToolEvents,
+  clearToolEvents,
+} from "./voice-context.js";
 import { getUserFromCookie } from "./routes/auth.js";
 
 app.post("/api/voice/context", (req, res) => {
@@ -176,15 +182,35 @@ app.post("/api/voice/context", (req, res) => {
 
   const msgs = req.body?.messages;
   if (Array.isArray(msgs)) {
+    // conversationId flows text→voice when the client is already in an
+    // active text conversation. persistVoiceTurn then APPENDS voice turns
+    // to that existing conversation instead of creating a new voice-only
+    // one — this is what stitches chat+voice into a single transcript.
     setVoiceContext(msgs, {
       emulateEmail: req.body?.emulateEmail,
       userEmail: req.body?.userEmail || user.email,
+      conversationId: typeof req.body?.conversationId === "string" ? req.body.conversationId : undefined,
     });
     clearToolEvents(); // Fresh session
     res.json({ ok: true, count: msgs.length });
   } else {
     res.status(400).json({ error: "messages array required" });
   }
+});
+
+// Active-voice-conversation id — lets app.js sync currentConversationId when
+// the user flips voice→text mid-session. Returns null if no active voice
+// context or if voice persistence hasn't yet created a conversation doc.
+app.get("/api/voice/active-conversation", (req, res) => {
+  if (!getUserFromCookie(req)) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  res.json({
+    conversationId: getVoiceConversationId(),
+    // Also echo the context's known email for sanity-check from the client.
+    userEmail: getVoiceContext()?.userEmail ?? null,
+  });
 });
 
 // Poll for tool events during voice sessions (requires cookie auth)

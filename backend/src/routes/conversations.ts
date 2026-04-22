@@ -18,6 +18,10 @@ import { lookupUserRole } from "../auth/role-lookup.js";
 interface ConversationMessage {
   role: string;
   content: string;
+  /** Mode this turn was captured in. Text turns from app.html default to "chat";
+   *  voice turns come in via voice-persistence.ts with "voice". Used by the
+   *  history viewer to render mode-transition markers inline. */
+  channel?: "chat" | "voice";
   toolCalls?: unknown[];
   ts: Date;
 }
@@ -32,8 +36,11 @@ interface ConversationDoc {
   /** Troop label, mirrored from the user's role doc at create time. Used by
    *  the leader-history viewer (/api/history/troop/:id). */
   troopId?: string | null;
-  /** "chat" or "voice" — set on creation, used by history filters and viewers. */
-  channel?: "chat" | "voice";
+  /** "chat" or "voice" — set on creation. Promotes to "mixed" when messages
+   *  of the other mode are later appended (see PUT /messages below and
+   *  voice-persistence.ts). The per-message `channel` field is authoritative
+   *  for rendering; this top-level field is for fast filtering. */
+  channel?: "chat" | "voice" | "mixed";
   title: string;
   model: string;
   messages: ConversationMessage[];
@@ -206,7 +213,7 @@ export function createConversationsRouter(): Router {
       }
 
       const { messages } = req.body as {
-        messages?: { role: string; content: string; toolCalls?: unknown[] }[];
+        messages?: { role: string; content: string; channel?: "chat" | "voice"; toolCalls?: unknown[] }[];
       };
 
       if (!Array.isArray(messages) || !messages.length) {
@@ -218,18 +225,37 @@ export function createConversationsRouter(): Router {
         const db = getScoutQuestDb();
         const now = new Date();
 
+        // Default to "chat" for anything coming in through this text-oriented
+        // endpoint; voice turns go through persistVoiceTurn and are tagged
+        // "voice" there.
         const msgDocs: ConversationMessage[] = messages.map((m) => ({
           role: m.role,
           content: m.content,
+          channel: m.channel === "voice" ? "voice" : "chat",
           ...(m.toolCalls?.length ? { toolCalls: m.toolCalls } : {}),
           ts: now,
         }));
+
+        // If we're appending chat messages to a conversation that was created
+        // as voice-only (or vice versa), flip the top-level channel to "mixed"
+        // so the viewer and the voice-only filter can surface that.
+        const existing = await db
+          .collection<ConversationDoc>(COLLECTION)
+          .findOne({ _id: oid, userEmail: user.email }, { projection: { channel: 1 } });
+        const appendedChannels = new Set(msgDocs.map((m) => m.channel));
+        let topLevelUpdate: { channel?: ConversationDoc["channel"] } = {};
+        if (existing && existing.channel) {
+          const isMixed =
+            (existing.channel === "chat" && appendedChannels.has("voice")) ||
+            (existing.channel === "voice" && appendedChannels.has("chat"));
+          if (isMixed) topLevelUpdate = { channel: "mixed" };
+        }
 
         const result = await db.collection<ConversationDoc>(COLLECTION).updateOne(
           { _id: oid, userEmail: user.email },
           {
             $push: { messages: { $each: msgDocs } },
-            $set: { updatedAt: now },
+            $set: { updatedAt: now, ...topLevelUpdate },
           }
         );
 

@@ -91,9 +91,20 @@
     .eagle-badge { border-color: var(--gold); background: #fffde7; }
     .loading { text-align: center; padding: 40px; color: var(--gray); }
     .error { text-align: center; padding: 40px; color: #c62828; }
+    .back-bar {
+      max-width: 720px; margin: 0 auto 8px;
+      padding: 0 0 8px;
+    }
+    .back-bar a {
+      color: #1f2933; text-decoration: none; font-size: .95rem;
+      padding: .5rem .6rem; border-radius: 4px;
+      display: inline-flex; align-items: center; min-height: 44px;
+    }
+    .back-bar a:hover { background: #eef2ff; }
   </style>
 </head>
 <body>
+  <div class="back-bar"><a href="/" title="Back to Scout Quest">← Scout Quest</a></div>
   <div class="container" id="app">
     <div class="card">
       <div class="loading" id="loading">Loading advancement data...</div>

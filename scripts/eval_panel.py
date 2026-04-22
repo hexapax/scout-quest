@@ -41,12 +41,15 @@ from pathlib import Path
 _PRICING_YAML = Path(__file__).resolve().parent.parent / "config" / "pricing.yaml"
 
 
-def _load_pricing_yaml(path: Path) -> dict[str, tuple[float, float, float]]:
+def _load_pricing_yaml(path: Path) -> dict[str, tuple[float, float, float, float]]:
     """Load pricing.yaml into the legacy tuple form.
 
-    Returns a mapping of model_id → (input, output, cache_read) in $/M tokens.
-    If the YAML is missing or malformed, returns an empty dict and logs a
-    warning — callers will see $0 cost but the eval will keep running.
+    Returns a mapping of model_id → (input, output, cache_read, cache_write)
+    in $/M tokens. If the YAML is missing or malformed, returns an empty dict
+    and logs a warning — callers will see $0 cost but the eval will keep
+    running. When cache_write is not specified in the YAML, it defaults to
+    the input rate (conservative floor — real Anthropic cache_write is ~1.25x
+    input, so we may under-report a little but won't over-charge).
     """
     try:
         import yaml  # type: ignore
@@ -67,15 +70,17 @@ def _load_pricing_yaml(path: Path) -> dict[str, tuple[float, float, float]]:
         sys.stderr.write(f"[eval_panel] failed to parse pricing.yaml: {e}\n")
         return {}
 
-    out: dict[str, tuple[float, float, float]] = {}
+    out: dict[str, tuple[float, float, float, float]] = {}
     models = (data or {}).get("models", {}) or {}
     for model_id, spec in models.items():
         if not isinstance(spec, dict):
             continue
+        input_rate = float(spec.get("input_per_million", 0.0))
         out[model_id] = (
-            float(spec.get("input_per_million", 0.0)),
+            input_rate,
             float(spec.get("output_per_million", 0.0)),
             float(spec.get("cache_read_per_million", 0.0)),
+            float(spec.get("cache_write_per_million", input_rate)),
         )
     return out
 
@@ -107,7 +112,7 @@ def _compute_pricing_source() -> dict[str, str]:
     return info
 
 
-PRICING: dict[str, tuple[float, float, float]] = _load_pricing_yaml(_PRICING_YAML)
+PRICING: dict[str, tuple[float, float, float, float]] = _load_pricing_yaml(_PRICING_YAML)
 PRICING_SOURCE: dict[str, str] = _compute_pricing_source()
 
 
@@ -137,11 +142,29 @@ class UsageTracker:
 
     def record(self, model_id, input_tokens=0, output_tokens=0,
                cached_tokens=0, label="", extra=None):
+        """Record a single provider call's usage and compute its cost.
+
+        Cost model: Anthropic's usage fields DO NOT overlap — `input_tokens` is
+        the uncached amount only, `cached_tokens` (cache_read) is separate,
+        and `cache_creation` (passed via `extra`) is a third separate bucket.
+        Previous formula subtracted cached from input, which undercounted cost
+        ~100% on cached requests. Same bug was in backend/src/cost/pricing.ts
+        and is also fixed there; see 2026-04-18 commit.
+
+        Backend-provider configs route through our scout-quest backend as
+        `scoutmaster:claude-opus-4-7` etc. Strip the persona prefix so the
+        pricing lookup hits the underlying model row in config/pricing.yaml.
+        """
         from datetime import datetime, timezone
-        pricing = PRICING.get(model_id, (0, 0, 0))
-        uncached_input = max(0, input_tokens - cached_tokens)
-        cost = (uncached_input * pricing[0] / 1e6 +
+        cache_creation = (extra or {}).get("cache_creation", 0) or 0
+
+        bare_model = model_id.split(":", 1)[1] if ":" in model_id else model_id
+        pricing = PRICING.get(bare_model) or PRICING.get(model_id, (0, 0, 0, 0))
+
+        # pricing tuple = (input_per_M, output_per_M, cache_read_per_M, cache_write_per_M)
+        cost = (input_tokens * pricing[0] / 1e6 +
                 cached_tokens * pricing[2] / 1e6 +
+                cache_creation * pricing[3] / 1e6 +
                 output_tokens * pricing[1] / 1e6)
         record = {
             "model": model_id, "label": label,

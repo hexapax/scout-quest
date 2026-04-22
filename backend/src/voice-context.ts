@@ -17,10 +17,13 @@ let toolEventCursor = 0; // client tracks what it's already seen
 
 export function setVoiceContext(
   messages: Array<{role: string; content: string}>,
-  opts?: { emulateEmail?: string; userEmail?: string }
+  opts?: { emulateEmail?: string; userEmail?: string; conversationId?: string }
 ): void {
   voiceContext = { messages, ts: Date.now(), ...opts };
-  console.log(`[voice-ctx] Stored ${messages.length} messages, emulate=${opts?.emulateEmail || 'none'}, user=${opts?.userEmail || 'none'}`);
+  console.log(
+    `[voice-ctx] Stored ${messages.length} messages, emulate=${opts?.emulateEmail || 'none'}, ` +
+    `user=${opts?.userEmail || 'none'}, conversationId=${opts?.conversationId || 'none'}`
+  );
 }
 
 /** Get stored voice context (expires after 5 min). */

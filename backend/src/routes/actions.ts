@@ -10,10 +10,13 @@ import {
   getPendingAction,
   executePendingAction,
   cancelPendingAction,
+  listPendingActions,
   type PendingActionDoc,
 } from "../pending-action.js";
 import { getBsaToken } from "../bsa-token.js";
 import { advanceRequirement, rsvpEvent, ORG_GUID } from "../bsa-api.js";
+import { getUserFromCookie } from "./auth.js";
+import { lookupUserRole } from "../auth/role-lookup.js";
 
 /** Execute the actual BSA API call for a pending action. */
 async function executeActionPayload(
@@ -84,6 +87,62 @@ async function executeActionPayload(
 
 export function createActionsRouter(): Router {
   const router = createRouter();
+
+  /** List pending actions scoped to the caller's role.
+   *
+   *   admin/superuser  → all actions
+   *   leader           → actions whose scoutUserId is in the leader's troop
+   *                      (approximated today as "all" until troop→scoutUserId
+   *                      mapping lands; see future-research)
+   *   parent           → actions createdBy ∈ scoutEmails ∪ {self}
+   *   scout            → actions createdBy = self
+   *
+   *   ?status=pending|executed|cancelled|expired  (default: pending)
+   *   ?type=send_email|advance_requirement|rsvp_event  (optional)
+   */
+  router.get("/actions", async (req: Request, res: Response) => {
+    const user = getUserFromCookie(req);
+    if (!user) {
+      res.status(401).json({ error: "Authentication required" });
+      return;
+    }
+    const roleInfo = await lookupUserRole(user.email);
+
+    const status = (String(req.query.status ?? "pending")) as PendingActionDoc["status"];
+    const typeFilter = req.query.type ? String(req.query.type) : undefined;
+
+    const filter: Record<string, unknown> = { status };
+    if (typeFilter) filter.type = typeFilter;
+
+    // Scope by role.
+    if (roleInfo.isAdmin || roleInfo.roles.includes("leader") || roleInfo.roles.includes("superuser")) {
+      // unfiltered — admin/leader see all in-scope actions
+    } else if (roleInfo.scoutEmails.length > 0) {
+      // parent: own + any of their scouts
+      const emails = [user.email.toLowerCase(), ...roleInfo.scoutEmails.map((e) => e.toLowerCase())];
+      filter.createdBy = { $in: emails };
+    } else {
+      // scout / unknown: only own
+      filter.createdBy = user.email.toLowerCase();
+    }
+
+    const docs = await listPendingActions(filter, 50);
+    res.json(
+      docs.map((d) => {
+        const safePayload = { ...d.payload };
+        delete safePayload.token;
+        return {
+          id: d._id.toHexString(),
+          type: d.type,
+          status: d.status,
+          payload: safePayload,
+          createdBy: d.createdBy,
+          createdAt: d.createdAt,
+          expiresAt: d.expiresAt,
+        };
+      }),
+    );
+  });
 
   /** Get pending action details. */
   router.get("/actions/:id", async (req: Request, res: Response) => {

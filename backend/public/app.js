@@ -90,6 +90,8 @@ async function init() {
     authGate.classList.add('hidden');
     app.classList.remove('hidden');
     userName.textContent = currentUser.name?.split(' ')[0] || '';
+    paintRoleBadge(currentUser);
+    paintViews(currentUser);
     // Pre-load conversation list (non-blocking)
     loadConversationList();
   }
@@ -98,6 +100,87 @@ async function init() {
   const settingModel = $('settingModel');
   if (settingModel) settingModel.value = settings.model;
 }
+
+// --- Role-aware UI (Stream E) ---
+
+/** Label + styling for the small role chip next to the user's name.
+ *  Colored dot (via ::before) + role word + optional troop suffix. */
+function paintRoleBadge(user) {
+  const badge = $('roleBadge');
+  if (!badge) return;
+  const role = user.role || 'unknown';
+  badge.className = 'role-badge r-' + role;
+  badge.innerHTML = `${esc(role)}${user.troop ? ` <span class="role-troop">T${esc(String(user.troop))}</span>` : ''}`;
+  badge.classList.remove('hidden');
+}
+
+/** Populate the conversation sidebar's "Views" section with role-aware links.
+ *  Secondary navigation — lives under the conversation list so it's one tap
+ *  away on any screen (the sidebar is always reachable via the header menu). */
+function paintViews(user) {
+  const box = $('convViews');
+  if (!box) return;
+
+  const links = [
+    { label: 'My history', sub: 'your chats', href: '/history.html' },
+    { label: 'Pending emails', sub: 'review drafts', href: '/email.html' },
+  ];
+  if (Array.isArray(user.scoutEmails)) {
+    for (const se of user.scoutEmails) {
+      const first = se.split('@')[0];
+      links.push({
+        label: `${first}'s history`,
+        sub: 'your scout',
+        href: `/history.html#scout:${encodeURIComponent(se)}`,
+      });
+    }
+  }
+  const roles = user.roles || [];
+  const isLeader = roles.includes('leader') || roles.includes('admin') || roles.includes('superuser');
+  if (user.troop && isLeader) {
+    links.push({
+      label: `Troop ${user.troop}`,
+      sub: 'leader view',
+      href: `/history.html#troop:${encodeURIComponent(user.troop)}`,
+    });
+  }
+  if (user.isAdmin) {
+    links.push({ label: 'All conversations', sub: 'admin', href: '/history.html#all' });
+    links.push({ label: 'Eval viewer', sub: 'admin', href: '/eval-viewer.html' });
+    links.push({ label: 'Progress', sub: 'admin', href: '/progress.html' });
+  }
+
+  // Always show the Views section — even a one-item list is worth a tap.
+  // (Earlier revision hid it for non-admin/non-parent users which made
+  // /history.html unreachable from the UI for anyone not on the allowlist.)
+  box.classList.remove('hidden');
+  box.innerHTML = `<div class="conv-views-label">Views</div>`;
+  for (const l of links) {
+    const a = document.createElement('a');
+    a.href = l.href;
+    a.target = '_self';
+    a.innerHTML = `${esc(l.label)}${l.sub ? `<span class="view-sub">${esc(l.sub)}</span>` : ''}`;
+    box.appendChild(a);
+  }
+}
+
+// --- Toasts (Stream E: surface SSE / auth / tool errors) ---
+function toast(message, kind = 'info', ms = 4000) {
+  const root = $('toastRoot');
+  if (!root) { console.log(`[toast:${kind}] ${message}`); return; }
+  const el = document.createElement('div');
+  el.className = `toast ${kind}`;
+  el.textContent = message;
+  root.appendChild(el);
+  // Force layout so the transition triggers
+  requestAnimationFrame(() => el.classList.add('show'));
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 250);
+  }, ms);
+}
+// Expose for console debugging + ad-hoc calls.
+window.sqToast = toast;
 
 // --- Conversation history (for chat API) ---
 const history = []; // {role, content}
@@ -254,9 +337,11 @@ async function sendMessage(text) {
     });
 
     if (!resp.ok) {
+      const body = await resp.text().catch(() => '');
       appendStream(`Error: ${resp.status}`);
       finalizeStream();
       isStreaming = false;
+      toast(`Chat error ${resp.status}${body ? ': ' + body.slice(0, 120) : ''}`, 'error');
       return;
     }
 
@@ -302,6 +387,7 @@ async function sendMessage(text) {
     }
   } catch (err) {
     appendStream(`Connection error: ${err.message}`);
+    toast(`Connection dropped: ${err.message || err}`, 'error');
   }
 
   // Capture assistant text before finalizing (finalizeStream resets agentStreamText)
@@ -310,13 +396,22 @@ async function sendMessage(text) {
   isStreaming = false;
   sendBtn.disabled = !textInput.value.trim();
 
-  // Persist messages (non-blocking)
-  if (assistantText.trim()) {
+  // Persist messages (non-blocking). We persist whenever a user message was
+  // actually sent — even if the assistant response was empty or tool-only.
+  // Previously the `if (assistantText.trim())` guard dropped entire turns
+  // whose final content was cleared by a tool_call/tool_result sequence,
+  // which is why the conversations collection was empty.
+  if (userText && userText.trim()) {
     const toSave = [{ role: 'user', content: userText }];
     if (turnToolCalls.length) {
       toSave.push({ role: 'tool_call', content: '', toolCalls: turnToolCalls });
     }
-    toSave.push({ role: 'assistant', content: assistantText });
+    if (assistantText.trim()) {
+      toSave.push({ role: 'assistant', content: assistantText });
+    } else {
+      console.warn('[conv] assistantText was empty for this turn — persisting anyway');
+      toSave.push({ role: 'assistant', content: '(no text content — see tool calls)' });
+    }
     persistMessages(toSave);
   }
 }
@@ -461,9 +556,14 @@ async function loadVoiceSDK() {
   Conversation = mod.Conversation;
 }
 
-// Push chat history to backend before starting voice
+// Push chat history + identity + active conversation id to the backend before
+// starting voice. Runs unconditionally so:
+//   (a) voiceCtx.userEmail is always set (ElevenLabs requests can't send a
+//       cookie, so this is the only identity carrier)
+//   (b) voiceCtx.conversationId inherits the current text conversation, so
+//       voice turns append to the same row instead of creating a new one
+//       — that's what stitches chat+voice into one conversation.
 async function pushChatContext() {
-  if (!history.length) return;
   const msgs = history.slice(-20).map(m => ({
     role: m.role === 'agent' ? 'assistant' : m.role,
     content: typeof m.content === 'string' ? m.content : '(attachment)',
@@ -477,10 +577,28 @@ async function pushChatContext() {
         messages: msgs,
         emulateEmail: settings.emulateEmail || undefined,
         userEmail: currentUser?.email || undefined,
+        conversationId: currentConversationId || undefined,
       }),
     });
-    console.log('[voice] Pushed', msgs.length, 'messages as context');
+    console.log('[voice] Pushed', msgs.length, 'messages as context (user=' +
+      (currentUser?.email || 'none') + ', conv=' + (currentConversationId || 'none') + ')');
   } catch (e) { console.warn('[voice] Failed to push context:', e); }
+}
+
+// After a voice session ends, sync the client-side currentConversationId to
+// whatever id the voice session landed on. This matters when voice CREATED a
+// new conversation (no text convo preceded it) and the user then wants to
+// switch to text — their typed messages should append to the same convo.
+async function adoptVoiceConversationId() {
+  try {
+    const r = await fetch('/api/voice/active-conversation', { credentials: 'same-origin' });
+    if (!r.ok) return;
+    const { conversationId } = await r.json();
+    if (conversationId && conversationId !== currentConversationId) {
+      console.log('[voice] adopting conversationId', conversationId, '(was', currentConversationId, ')');
+      currentConversationId = conversationId;
+    }
+  } catch (e) { console.warn('[voice] Failed to sync conversationId:', e); }
 }
 
 async function startVoice() {
@@ -501,7 +619,19 @@ async function startVoice() {
     const sessionOpts = {
       signedUrl,
       onConnect: () => { dbg('connected'); setBlob('listening'); setVS('Listening...', true); startVolLoop(); startToolPoll(); },
-      onDisconnect: () => { dbg('disconnected'); stopVolLoop(); stopToolPoll(); finalizeStream(); voiceConversation = null; setBlob('idle'); setVS('Tap to talk', false); },
+      onDisconnect: () => {
+        dbg('disconnected');
+        stopVolLoop();
+        stopToolPoll();
+        finalizeStream();
+        voiceConversation = null;
+        setBlob('idle');
+        setVS('Tap to talk', false);
+        // Adopt the conversationId the voice session landed on so if the
+        // user now types something, it appends to the same row instead of
+        // creating a second conversation.
+        adoptVoiceConversationId();
+      },
       onError: (err) => { dbg('error: ' + (err?.message || err)); setVS('Error', false); },
       onModeChange: (mode) => {
         dbg('mode: ' + mode.mode);
@@ -531,7 +661,9 @@ async function startVoice() {
   } catch (err) {
     console.error('Voice start failed:', err);
     setBlob('idle');
-    setVS(err.name === 'NotAllowedError' ? 'Mic access needed' : 'Tap to talk', false);
+    const msg = err?.name === 'NotAllowedError' ? 'Microphone access needed' : `Voice start failed: ${err?.message || err}`;
+    setVS(err?.name === 'NotAllowedError' ? 'Mic access needed' : 'Tap to talk', false);
+    toast(msg, 'error', 6000);
   }
 }
 
@@ -781,7 +913,7 @@ async function loadConversation(id) {
 
 /** Save new messages to the current conversation (or create one). */
 async function persistMessages(newMessages) {
-  if (!currentUser) return;
+  if (!currentUser) { console.warn('[conv] persist skipped — no currentUser'); return; }
 
   try {
     if (!currentConversationId) {
@@ -791,25 +923,38 @@ async function persistMessages(newMessages) {
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: appModel,
+          model: getModel(),
+          channel: 'chat',
           messages: newMessages,
         }),
       });
       if (resp.ok) {
         const conv = await resp.json();
         currentConversationId = conv._id;
+        console.log('[conv] created conversation', currentConversationId);
+      } else {
+        const body = await resp.text().catch(() => '');
+        console.warn('[conv] POST /api/conversations failed:', resp.status, body.slice(0, 200));
+        if (typeof toast === 'function') toast(`Conversation save failed (${resp.status})`, 'warn');
       }
     } else {
-      // Append to existing conversation
-      await fetch('/api/conversations/' + currentConversationId + '/messages', {
+      // Append to existing conversation. Tag each message with channel:"chat"
+      // so the viewer can render mode transitions in mixed conversations.
+      const tagged = newMessages.map((m) => ({ channel: 'chat', ...m }));
+      const resp = await fetch('/api/conversations/' + currentConversationId + '/messages', {
         method: 'PUT',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: tagged }),
       });
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => '');
+        console.warn('[conv] PUT /api/conversations failed:', resp.status, body.slice(0, 200));
+      }
     }
   } catch (e) {
     console.warn('[conv] Failed to persist messages:', e);
+    if (typeof toast === 'function') toast(`Conversation save failed: ${e.message || e}`, 'warn');
   }
 }
 

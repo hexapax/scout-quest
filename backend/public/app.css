@@ -28,6 +28,106 @@ body {
 
 .hidden { display: none !important; }
 
+/* Role badge (Stream E).
+ *
+ * Bigger than the v1 chip (12.5px → reads at a glance on mobile), and now uses
+ * a colored dot + role word instead of all-text. The colored dot is the fast
+ * visual cue; the word confirms. Troop suffix is shown when present. */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--bg3);
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+.role-badge::before {
+  content: '';
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.role-badge.r-admin, .role-badge.r-superuser { color: #fbbf24; }
+.role-badge.r-leader { color: #93c5fd; }
+.role-badge.r-parent { color: #c4b5fd; }
+.role-badge.r-scout, .role-badge.r-test_scout { color: var(--green-bright); }
+.role-badge.r-unknown { color: var(--text-dim); }
+.role-badge .role-troop { color: var(--text-dim); font-weight: 500; }
+
+/* Views section lives inside the conversation sidebar now (Stream E iter-2),
+ * not in the settings drawer. One always-accessible place for navigation. */
+.conv-views {
+  flex-shrink: 0;
+  padding: 8px 8px 12px;
+  border-top: 1px solid var(--bg3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.conv-views-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 4px 8px 6px;
+}
+.conv-views a {
+  display: block;
+  padding: 7px 10px;
+  border-radius: 6px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  transition: background 0.1s;
+}
+.conv-views a:hover { background: var(--bg3); }
+.conv-views a .view-sub {
+  color: var(--text-faint);
+  font-size: 11px;
+  margin-left: 6px;
+}
+
+/* Toasts (Stream E: surface SSE / auth / tool errors) */
+.toast-root {
+  position: fixed;
+  top: env(safe-area-inset-top, 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+  max-width: min(90vw, 480px);
+}
+.toast {
+  pointer-events: auto;
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid #3a4a5a;
+  border-left: 4px solid var(--green-dim);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity .2s ease, transform .2s ease;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.error { border-left-color: var(--danger); }
+.toast.warn { border-left-color: #d97706; }
+.toast.info { border-left-color: var(--green-dim); }
+
 /* Auth gate */
 .auth-gate {
   height: 100dvh;
