@@ -14,6 +14,7 @@ import { createSummariesRouter } from "./routes/summaries.js";
 import { createCostRouter } from "./routes/cost.js";
 import { loadPricing } from "./cost/pricing.js";
 import { lookupUserRole } from "./auth/role-lookup.js";
+import { startSummarySweeper } from "./cron/summary-sweeper.js";
 
 const app = express();
 
@@ -253,6 +254,12 @@ async function start(): Promise<void> {
   connectFalkorDB().catch((err: unknown) => {
     console.warn("FalkorDB not available — graph tools will be disabled:", err);
   });
+
+  // Stream G — periodic conversation summaries (in-process, no separate cron container).
+  // Disable with SUMMARY_SWEEPER_DISABLED=1 (e.g. for tests or one-off runs).
+  if (process.env.SUMMARY_SWEEPER_DISABLED !== "1") {
+    startSummarySweeper();
+  }
 
   const port = Number(process.env.PORT || 3090);
   app.listen(port, "0.0.0.0", () => {
