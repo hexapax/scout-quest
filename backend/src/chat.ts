@@ -388,7 +388,7 @@ Rules for voice output:
       maxTokens: body.max_tokens || 16384,
       temperature: body.temperature,
       model: modelId,
-      conversationId: undefined, // TODO: from conversation persistence
+      conversationId: body.conversationId ?? undefined,
     };
 
     const requestId = `chatcmpl-${Date.now()}`;
@@ -496,7 +496,7 @@ Rules for voice output:
         toolCallRecords,
         channel: isVoice ? "voice" : "chat",
         latencyMs: Date.now() - requestStartedAt,
-        conversationId: isVoice ? getVoiceConversationId() : null,
+        conversationId: isVoice ? getVoiceConversationId() : (body.conversationId ?? null),
       })).catch(() => { /* logger swallows already; defensive */ });
 
       // Stream B follow-up: voice-session conversation persistence. Creates
@@ -602,7 +602,7 @@ Rules for voice output:
         toolCallRecords,
         channel: isVoice ? "voice" : "chat",
         latencyMs: Date.now() - requestStartedAt,
-        conversationId: isVoice ? getVoiceConversationId() : null,
+        conversationId: isVoice ? getVoiceConversationId() : (body.conversationId ?? null),
       })).catch(() => { /* logger swallows already; defensive */ });
 
       // Voice persistence — see streaming branch for rationale.

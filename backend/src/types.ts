@@ -103,6 +103,12 @@ export interface OpenAIChatRequest {
   stream?: boolean;
   max_tokens?: number;
   temperature?: number;
+  /** ID of the conversations doc this exchange belongs to. Sent by the
+   *  frontend after it has POSTed to /api/conversations. Used by the backend
+   *  to stamp usage logs and (Stream G) trigger summary regeneration on the
+   *  matching conversation. Optional — voice traffic supplies its id via the
+   *  voice-context layer instead. */
+  conversationId?: string | null;
   // ElevenLabs Conversational AI fields
   user_id?: string;
   elevenlabs_extra_body?: Record<string, unknown>;

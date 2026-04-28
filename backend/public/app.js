@@ -333,7 +333,14 @@ async function sendMessage(text) {
       method: 'POST',
       credentials: 'same-origin',
       headers,
-      body: JSON.stringify({ model: getModel(), messages: apiMessages, stream: true }),
+      body: JSON.stringify({
+        model: getModel(),
+        messages: apiMessages,
+        stream: true,
+        // Stream G: conversationId enables backend usage-log attribution and
+        // summary-sweeper match. Set after the first /api/conversations POST.
+        conversationId: currentConversationId || undefined,
+      }),
     });
 
     if (!resp.ok) {
