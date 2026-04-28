@@ -50,12 +50,36 @@ jeremy.hexapax.com {
         reverse_proxy localhost:8100
     }
 
+    # MCP OAuth 2.1 discovery + flow — must bypass oauth2-proxy so MCP clients
+    # can read JSON metadata and complete the auth code exchange.
+    handle /.well-known/oauth-protected-resource {
+        reverse_proxy localhost:8100
+    }
+    handle /.well-known/oauth-authorization-server {
+        reverse_proxy localhost:8100
+    }
+    handle /authorize {
+        reverse_proxy localhost:8100
+    }
+    handle /token {
+        reverse_proxy localhost:8100
+    }
+    handle /register {
+        reverse_proxy localhost:8100
+    }
+    handle /revoke {
+        reverse_proxy localhost:8100
+    }
+    handle /oauth/* {
+        reverse_proxy localhost:8100
+    }
+
     # Grafana dashboards
     handle /grafana* {
         reverse_proxy localhost:3000
     }
 
-    # Everything else through oauth2-proxy (Google login)
+    # Everything else (including /oauth2/* webviewer login callbacks) through oauth2-proxy
     handle {
         reverse_proxy localhost:4180
     }
