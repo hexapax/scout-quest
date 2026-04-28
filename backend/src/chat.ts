@@ -11,7 +11,7 @@ import { executeToolCalls } from "./tool-executor.js";
 import { getUserFromCookie } from "./routes/auth.js";
 import { getVoiceContext, getVoiceConversationId, pushToolEvent } from "./voice-context.js";
 import { persistVoiceTurn } from "./voice-persistence.js";
-import { captureEpisode } from "./episodes.js";
+import { captureEpisode, getRecentEpisodes, type Episode } from "./episodes.js";
 import { resolveProvider } from "./providers/registry.js";
 import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
 import { lookupUserRole } from "./auth/role-lookup.js";
@@ -19,6 +19,33 @@ import type { Role } from "./types.js";
 import { logUsage, type LoggedToolCall } from "./cost/logger.js";
 
 const MAX_TOOL_TURNS = 5;
+
+async function buildRecentEpisodesBlock(scoutEmail: string): Promise<AnthropicSystemBlock | null> {
+  let episodes: Episode[];
+  try {
+    episodes = await getRecentEpisodes(scoutEmail, 5);
+  } catch (err) {
+    console.error(`[chat] getRecentEpisodes failed for ${scoutEmail}:`, err);
+    return null;
+  }
+  if (!episodes.length) return null;
+
+  const lines = episodes.map((ep) => {
+    const when = ep.timestamp instanceof Date ? ep.timestamp.toISOString().slice(0, 10) : String(ep.timestamp).slice(0, 10);
+    const topics = ep.topics?.length ? ep.topics.slice(0, 4).join(", ") : "general";
+    const summary = (ep.summary || "(no summary)").trim();
+    const unresolved = ep.unresolved?.length ? ep.unresolved.slice(0, 2).join("; ") : null;
+    return `- ${when} (${ep.mode}, ${ep.turnCount} turns) — ${topics}\n  Summary: ${summary}` +
+      (unresolved ? `\n  Open: ${unresolved}` : "");
+  });
+
+  return {
+    type: "text",
+    text: `PRIOR SESSIONS — ${scoutEmail}\n\n${lines.join("\n")}\n\n` +
+      `These are observations from prior conversations, not authoritative state. ` +
+      `For current rank/badge/event totals, call get_scout_status.`,
+  };
+}
 
 /** Validate request authorization. Accepts:
  *  1. Correct BACKEND_API_KEY in Authorization header (LibreChat)
@@ -208,6 +235,8 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       // 1. Scout user — inject their own profile.
       if (scoutCtx && isScoutUser) {
         systemBlocks.push(scoutCtx);
+        const ep = await buildRecentEpisodesBlock(userEmail);
+        if (ep) systemBlocks.push(ep);
       }
 
       // 2. Parent user — surface their scouts' state regardless of whether they're
@@ -240,6 +269,10 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
         for (const kid of kidContexts) {
           systemBlocks.push(kid);
         }
+        const epBlocks = (
+          await Promise.all(scoutEmails.map((se) => buildRecentEpisodesBlock(se)))
+        ).filter((b): b is AnthropicSystemBlock => b !== null);
+        for (const ep of epBlocks) systemBlocks.push(ep);
       }
 
       // 3. Leader/admin user — inject leader identity and tool guidance.
@@ -265,6 +298,8 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       // Example: adult_readonly user whose email happens to match a scoutbook parents[] entry.
       if (scoutCtx && !isScoutUser && !(isParentUser && scoutEmails.length > 0)) {
         systemBlocks.push(scoutCtx);
+        const ep = await buildRecentEpisodesBlock(userEmail);
+        if (ep) systemBlocks.push(ep);
       }
     }
 
