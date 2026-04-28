@@ -1,6 +1,6 @@
 # Scout Quest — Strategy
 
-**Last updated:** 2026-03-18
+**Last updated:** 2026-04-26
 
 ## Vision
 
@@ -92,13 +92,37 @@ The prototype was very effective with individual scouts. The open questions are:
 
 ## Strategic Next Steps
 
+### Phase 0 — foundation (complete or in flight)
+
 1. ~~Get Scoutbook sync fully working~~ — DONE (2026-03-15, 20 scouts, manual refresh workflow)
 2. ~~Map BSA write API~~ — DONE (2026-03-18, 8 write endpoints confirmed via network interception, `docs/bsa-api-reference.md`)
-3. **Build v2 architecture** — custom API backend with prompt caching, FalkorDB knowledge graph, tool rationalization (plan: `docs/plans/2026-03-18-architecture-v2.md`)
-4. **Acquire BSA corpus** — web scrape scouting.org, extract PDFs, build distilled 200K-token knowledge document (plan: `docs/plans/2026-03-18-corpus-acquisition-plan.md`)
-5. **Implement BSA write-back** — requirement updates, events, RSVPs, emails through the BSA API with auth token management
-6. Run with 2-3 scouts from the troop as a pilot
-7. Support Eagle candidates — William McDaid, Connor Goldstrom, Charles Brunt
-8. Add scouter-facing features — event/RSVP queries, advancement dashboards, planning assistant
-9. If it works, prepare a demo for the Atlanta Area Council or Scouting America
-10. Document the pedagogy approach for broader audiences
+3. ~~Build v2 architecture~~ — DONE (custom backend with prompt caching, FalkorDB graph, multi-provider tools landed across Streams A & D, see `docs/plans/2026-03-18-architecture-v2.md`)
+4. ~~Acquire BSA corpus~~ — DONE (interim 165K-token knowledge document, see `docs/plans/2026-03-18-corpus-acquisition-plan.md`)
+5. ~~Eval framework v2~~ — DONE (v7 canonical, multi-model coverage, MongoDB-backed results)
+
+### Phase 1 — alpha launch readiness (current focus, target ~6 weeks from 2026-04-26)
+
+The path to a real-youth alpha is governed by `docs/plans/2026-04-26-alpha-evolution-roadmap.md`. Hard prerequisites:
+
+6. **Session memory** — scout-state rolling summary + per-conversation parent recap (`docs/plans/2026-04-26-scout-state-and-summaries.md`)
+7. **Safety flagging** — three-tier escalation, two-deep notifications, mandated-reporter workflow (`docs/plans/2026-04-26-safety-flagging.md`)
+8. **Observability + budget guards** — cost dashboards, per-user hard limits, loop detection, status page (`docs/plans/2026-04-26-observability-cicd.md`)
+9. **Parent visibility finish** — summary-first history viewer with safety banners (`docs/plans/2026-04-16-alpha-launch-plan.md` Stream B' continuation)
+10. **Tool hardening** — input validation, scout-userId match checks, error-path eval coverage
+11. **Onboarding + runbook + welcome page** — Stream F continuation
+12. **Calibration week** — internal dry-run before any external user; <5% Tier-2 false-positive target
+
+### Phase 2 — alpha cohort + early-access
+
+13. Launch with 5-10 alpha users (scouts + parents/leaders), 30-day support commitment
+14. **Stable + Dev environments** — opt-in early-access tier with summary-only writeback to stable (`docs/plans/2026-04-26-ab-environments.md`)
+15. CI/CD eval gates — block prompt/persona/tool PRs that regress quality (`docs/plans/2026-04-26-observability-cicd.md` week 4)
+
+### Phase 3 — broaden if Phase 1-2 prove out
+
+16. Support Eagle candidates — William McDaid, Connor Goldstrom, Charles Brunt
+17. Scouter-facing features — event/RSVP queries, advancement dashboards, planning assistant
+18. Multi-troop tenancy
+19. Native mobile shell (Capacitor — research already in `docs/future-research.md`)
+20. If it works, prepare demo for Atlanta Area Council or Scouting America
+21. Document the pedagogy approach for broader audiences

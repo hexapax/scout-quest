@@ -1,6 +1,27 @@
 # Scout Quest — Development State
 
-**Last updated:** 2026-03-20
+**Last updated:** 2026-04-26
+
+## Active roadmap
+
+The current direction is the **Alpha Evolution Roadmap** (`docs/plans/2026-04-26-alpha-evolution-roadmap.md`), which extends the 2026-04-16 alpha-launch plan with four new streams (G/H/I/J) and one post-alpha stream (K). Hard prerequisites for first real-youth user:
+
+| Stream | Status | Design doc |
+|--------|--------|-----------|
+| A — Roles | ✅ landed 2026-04-16 | 2026-04-16-alpha-launch-plan.md |
+| D — Eval cleanup + multi-model tools | ✅ landed 2026-04-16 | 2026-04-16-alpha-launch-plan.md |
+| C — Cost logging | ✅ landed | 2026-04-16-alpha-launch-plan.md |
+| B' — Parent visibility (finish) | 🟡 partial — needs summary integration | 2026-04-16-alpha-launch-plan.md + 2026-04-26-scout-state-and-summaries.md |
+| E — UI polish + voice | 🟡 partial | 2026-04-16-alpha-launch-plan.md |
+| F — Onboarding + runbook | ⬜ not started | 2026-04-16-alpha-launch-plan.md |
+| **G — Scout state + summaries** | ⬜ designed 2026-04-26 | 2026-04-26-scout-state-and-summaries.md |
+| **H — Safety flagging** | ⬜ designed 2026-04-26 | 2026-04-26-safety-flagging.md |
+| **I — Observability + budget** | ⬜ designed 2026-04-26 | 2026-04-26-observability-cicd.md |
+| **J — CI/CD eval gates** | ⬜ designed 2026-04-26 | 2026-04-26-observability-cicd.md |
+| **K — Stable + Dev envs** (post-alpha) | ⬜ designed 2026-04-26 | 2026-04-26-ab-environments.md |
+| Tool hardening | ⬜ scoped | 2026-04-26-alpha-evolution-roadmap.md |
+
+Target alpha launch: **2026-06-07** (realistic) / 2026-05-24 (aggressive with three-agent parallelism).
 
 ## Current Architecture
 
@@ -181,34 +202,29 @@ Domains registered:
 
 ## Critical Path to MVP
 
-The minimum needed to run a pilot with 2-3 scouts from the troop:
+**Updated 2026-04-26**: this section is superseded by `docs/plans/2026-04-26-alpha-evolution-roadmap.md`. The roadmap is the source of truth for sequencing and effort estimates. Below is a condensed view; consult the roadmap for stream details.
 
-### Phase 1: Data Foundation ✓ COMPLETE
-1. ~~**Complete Scoutbook sync — roster + advancement**~~ — DONE: all 18 sync tasks implemented
-2. ~~**Add calendar/events sync**~~ — DONE: events with RSVP and attendance data (Tasks 14-18)
-3. ~~**Map Scoutbook scouts to quest system**~~ — DONE: questBridge.ts initQuestFromScoutbook (Task 10)
-4. ~~**Load real data into production MongoDB**~~ — DONE (2026-03-15): 20 scouts, 15 adults, 419 advancement, 2,535 requirements loaded via Chrome CDP capture + mongosh import
-5. **Verify email matching** — scouts log in via Google OAuth, email must match Scoutbook
-6. **Set up periodic data refresh** — BSA automated auth broken (503). Manual Chrome CDP refresh is current workflow (see `docs/scoutbook-data-refresh.md`)
+### Phase 1 — Data Foundation ✅ COMPLETE
+- Scoutbook sync (roster + advancement + events) — all 18 tasks landed
+- Real data in production MongoDB — 20 scouts, 15 adults, 419 advancement, 2,535 requirements
+- BSA automated auth still broken (503); manual Chrome CDP refresh workflow documented in `docs/scoutbook-data-refresh.md`
 
-### Phase 2: Close the Loop
-7. **Test MCP tools end-to-end** — verify a scout can log chores, track budget, advance requirements
-8. **Test resource loading** — verify quest-state, character, etc. return meaningful data
-9. **Test calendar/event queries** — scouts, parents, and scouters can ask about upcoming events and RSVPs
-10. **Fix tool hallucination** — confirm models actually call tools after instruction update
-11. **Test guide flow** — parent can see their scout's progress, upcoming events, set up quest parameters
+### Phase 2 — Backend v2 + eval framework ✅ COMPLETE
+- Custom backend with prompt caching, FalkorDB graph, multi-provider tools
+- 9 server-side tools deployed
+- v7 eval set (109 questions + 25 chain steps), MongoDB-backed results
+- Cost-per-message logging (`message_usage`) shipped via Stream C
 
-### Phase 3: Verify Consistency
-12. **Multi-session continuity** — does session_notes → last_session flow preserve context?
-13. **Character consistency** — does the AI maintain character persona across sessions?
-14. **Cron verification** — do automated checks (Scoutbook sync, backfill, plan review) actually run?
-15. **Data freshness** — is the periodic sync keeping data current enough for useful responses?
+### Phase 3 — Alpha launch readiness 🟡 IN FLIGHT (2026-04-26 → ~2026-06-07)
+- Streams G, H, I, B', F, J + tool hardening — see Alpha Evolution Roadmap
+- Internal calibration week before any external user
 
-### Phase 4: Pilot
-16. **Onboard 2-3 scouts** — walk parents through guide setup, scouts through first session
-17. **Test scouter flow** — can I (as scoutmaster) get useful event/RSVP/advancement info from the assistant?
-18. **Monitor via admin panel** — watch for issues, gaps, hallucinations
-19. **Iterate** — fix what breaks, refine what's awkward
+### Phase 4 — External alpha
+- 5-10 users, 30-day support commitment
+- Then add Stream K (dev environments) once stable has a baseline
+
+### Phase 5 — Broaden
+- Multi-troop, mobile, scouter features, council demo
 
 ## Known Issues
 

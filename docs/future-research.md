@@ -16,6 +16,9 @@ This document is the **persistent research store** for the Scout Quest project. 
 6. [Push Notification & Native App Shell Research](#push-notification--native-app-shell-research)
 7. [Android Conversational Notifications in Capacitor](#android-conversational-notifications-in-capacitor)
 8. [Embedding & Vector Search: Google Ecosystem vs Current Plan](#embedding--vector-search-google-ecosystem-vs-current-plan)
+9. [Youth-Safety Classifiers (added 2026-04-26)](#youth-safety-classifiers-added-2026-04-26)
+10. [Stable + Dev Environment Architecture (added 2026-04-26)](#stable--dev-environment-architecture-added-2026-04-26)
+11. [LLM Observability Stack (added 2026-04-26)](#llm-observability-stack-added-2026-04-26)
 
 ---
 
@@ -1314,6 +1317,125 @@ Anthropic wins on caching economics for low-volume applications.
 **Architecture for multi-model testing:** Backend receives OpenAI format, translates to Anthropic. Adding GPT-4.1 = skip translation (trivial). Adding Gemini = new provider adapter (moderate). OpenRouter is an option but adds middleman.
 
 **Revisit if:** GPT-5.x improves character consistency, Gemini Flash implicit caching is confirmed free, or a new model excels at both tool use and persona maintenance.
+
+---
+
+## Youth-Safety Classifiers (added 2026-04-26)
+
+**Last updated:** 2026-04-26
+
+Research conducted for the Safety Flagging design (`docs/plans/2026-04-26-safety-flagging.md`).
+
+### Why we evaluated this
+
+Stock content-moderation APIs are not built for the contextual signals that matter when a 13-year-old talks to an AI coach (overheard substance use, peer-pressure questions about identity, slow-burn hopelessness phrasing).
+
+### Performance landscape (as of 2026-04)
+
+| Classifier | F1 on youth-safety benchmarks | Notes |
+|-----------|-------------------------------|-------|
+| OpenAI Moderation API | ~0.09 | Adult-toxicity-trained; misses youth-specific signals |
+| Google Perspective API | ~0.35 | Better but **discontinued — sunsets after 2026** ([source](https://perspectiveapi.com)) |
+| Anthropic content classifier | unmeasured for youth | General-purpose, not youth-tuned |
+| LLaMA-Guard 3 (open) | ~0.74 | Generic; adapt-able via fine-tune |
+| **YouthSafe** (open, fine-tuned LLaMA-Guard on YAIR dataset) | **0.88** | Best published; ~7B params; quantizable to CPU |
+| Claude Haiku w/ youth-tuned system prompt | unmeasured but cheap | Recommended for alpha; recalibrate against YouthSafe at week 8 |
+
+### Decision for Scout Quest alpha
+
+Use **Claude Haiku** as the primary classifier with a YPT-tuned structured-output system prompt. Defer YouthSafe self-hosting until we have ~4-8 weeks of real conversations to A/B against.
+
+### Revisit if
+- Haiku FPR exceeds 10% in calibration week
+- Anthropic ships a youth-specific classifier
+- Compute budget makes self-hosting YouthSafe attractive (~7B model, CPU-OK with quantization)
+
+### Sources
+- YouthSafe / YAIR dataset: arxiv.org/html/2509.08997v1
+- Crisis Text Line tiered escalation: crisistextline.org/blog/2020/01/03/understanding-suicide-prevention-and-active-rescues-at-crisis-text-line/
+- OpenAI under-18 API guidance: developers.openai.com/api/docs/guides/safety-checks/under-18-api-guidance
+- Anthropic child-safety commitments PDF: www-cdn.anthropic.com/0fad284f89c8f9b95ee0f59bdde78928b9a7c425.pdf
+
+---
+
+## Stable + Dev Environment Architecture (added 2026-04-26)
+
+**Last updated:** 2026-04-26
+
+Research conducted for `docs/plans/2026-04-26-ab-environments.md`.
+
+### Patterns considered
+
+| Pattern | Verdict for our use case |
+|---------|-------------------------|
+| Blue/green deployments | Wrong shape — assumes both envs converge |
+| Canary release | Doesn't address forked persistent state |
+| Shadow traffic | Validates new code, doesn't allow user-facing dev mutations |
+| Dual-write to two DBs | **Anti-pattern** — Confluent's documented dual-write problem; partial-failure produces silent inconsistency |
+| **Database branching with event-sourced reconciliation** | ✅ Selected |
+
+### Architecture chosen
+
+Per-user copy-on-opt-in fork into `scoutquest_dev` collection. Daily reconciliation: dev → summarized events → stable's reconciler. Stable is canonical; only stable's logic writes to canonical state. Schemas evolve additive-only across the boundary.
+
+### Key constraint discovered
+
+**Dev cannot share BSA write tokens with stable.** Solution: dev runs Scoutbook tools in read-only mode. Eliminates the entire class of "dev prompt is buggy and corrupts BSA records" risk. Bonus: makes dev a safe place to test risky tool changes.
+
+### Sources
+- Xata DB branching: xata.io/blog/what-is-database-branching-a-complete-guide-for-development-teams
+- Confluent dual-write anti-pattern: confluent.io/blog/dual-write-problem/
+- Microsoft event-sourcing pattern: learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing
+- Schema evolution best practices (additive backward+forward compat): conduktor.io/glossary/schema-evolution-best-practices
+
+### Revisit if
+- We need realtime instead of daily reconciliation (per-session boundary)
+- We exceed ~50 users — fork-storage cost becomes worth optimizing
+- We need a third env (red-team) — likely solved by short-lived worktrees not a third tier
+
+---
+
+## LLM Observability Stack (added 2026-04-26)
+
+**Last updated:** 2026-04-26
+
+Research conducted for `docs/plans/2026-04-26-observability-cicd.md`.
+
+### Tools evaluated
+
+| Tool | Verdict for our scale (15 alpha users, $50-200/mo) |
+|------|---------------------------------------------------|
+| Datadog LLM module | Too expensive (~$8/10K reqs, 100K min commit). Lock-in. ❌ |
+| Helicone (gateway) | Strong feature set, semantic cache, +50-80ms latency, vendor dependency. **Defer** until we need semantic cache or A/B routing. |
+| Langfuse | Open-source, self-host on VM, 50K events free. Good fallback if Helicone wins later. |
+| **Prometheus + Grafana on VM + MongoDB-native cost log** | ✅ Selected. Stream C already wrote `message_usage`; build on top. $0 in new infra. |
+| OpenLLMetry / OpenTelemetry | Standardized but adds instrumentation overhead exceeding benefit at our scale. |
+| BetterStack status page (free tier) | ✅ Selected for public status |
+| Cachet (self-hosted) | Operational overhead too high for solo dev |
+
+### Key alert rules (validated against published LLM-app failure modes)
+
+- Token velocity >20K tokens/user/min → loop suspect
+- Identical-prompt burst (same hash 5x in 60s) → tool loop
+- Per-conversation cost >$5 → token explosion
+- Provider error rate >20% over 10m → degradation
+- Cache hit rate <20% over 1h → prompt-change side effect or cache infra problem
+
+### Per-user budget enforcement
+
+Two-tier (research-validated): soft warn at 50%, hard cutoff at 100%. HTTP 402 with friendly "let's pick this back up tomorrow" message rather than infrastructure-error styling.
+
+### Sources
+- LLM observability tools comparison: helicone.ai/blog/the-complete-guide-to-LLM-observability-platforms
+- Loop detection: aisecuritygateway.ai/docs/llm-budget-enforcement
+- Promptfoo CI patterns: promptfoo.dev/docs/integrations/ci-cd/
+- LangSmith regression testing: langchain.com/blog/regression-testing
+- GitHub soft budgets reference design: docs.github.com/en/enterprise-cloud@latest/billing/tutorials/soft-budgets
+
+### Revisit if
+- Prompt caching needs semantic-cache layering (Helicone-shaped)
+- Eval CI runs exceed $50/month (consider self-hosted runner)
+- We need cross-user A/B test routing (Helicone or LaunchDarkly)
 
 ---
 

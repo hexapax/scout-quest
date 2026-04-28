@@ -1,5 +1,7 @@
 # Alpha Launch Plan — 2026-04-16
 
+> **Update 2026-04-26**: this plan's Streams A and D are landed; B/C/E are partial; F is not started. The roadmap below is **superseded in part** by `2026-04-26-alpha-evolution-roadmap.md`, which adds Streams G (scout state), H (safety flagging), I (observability), J (CI/CD), and K (stable+dev environments) as hard prerequisites for real-youth alpha. The Stream A-F text below remains accurate as historical context and as the source for B/C/E/F continuation work.
+
 ## Context
 
 We're preparing the first alpha with real scout + parent/leader users. This plan gets Scout Quest into a supportable, unified state across UIs, voice, evals, multi-model tool support, role-based chat history viewing, and cost accounting.

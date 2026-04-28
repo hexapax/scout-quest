@@ -42,7 +42,18 @@ Start with **strategy.md** for why this project exists, then **development-state
 | [reports/2026-03-20-project-progression.md](reports/2026-03-20-project-progression.md) | Project progression narrative | 2026-03-20 |
 
 ### Plans (in docs/plans/)
-Design specs and implementation plans for specific features. See directory listing.
+Design specs and implementation plans for specific features. Active alpha-launch plans:
+
+| Document | Purpose |
+|----------|---------|
+| [plans/2026-04-26-alpha-evolution-roadmap.md](plans/2026-04-26-alpha-evolution-roadmap.md) | **Read first** — phased plan from current state to alpha launch (~6 weeks) |
+| [plans/2026-04-16-alpha-launch-plan.md](plans/2026-04-16-alpha-launch-plan.md) | Original alpha plan (Streams A-F); A and D landed, B/C/E partial, F open |
+| [plans/2026-04-26-scout-state-and-summaries.md](plans/2026-04-26-scout-state-and-summaries.md) | Stream G — session memory: rolling state + per-conversation summaries |
+| [plans/2026-04-26-safety-flagging.md](plans/2026-04-26-safety-flagging.md) | Stream H — three-tier safety classifier + adult notification routing |
+| [plans/2026-04-26-observability-cicd.md](plans/2026-04-26-observability-cicd.md) | Streams I + J — cost dashboards, budget enforcement, Prometheus, CI eval gates |
+| [plans/2026-04-26-ab-environments.md](plans/2026-04-26-ab-environments.md) | Stream K (post-alpha) — stable + dev tier with summary-only writeback |
+
+See directory listing for design specs of features already shipped.
 
 ## Key Concepts
 
