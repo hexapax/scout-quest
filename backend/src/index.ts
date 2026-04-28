@@ -10,6 +10,7 @@ import { createEvalReportsRouter } from "./routes/eval-reports.js";
 import { createAuthRouter } from "./routes/auth.js";
 import { createConversationsRouter } from "./routes/conversations.js";
 import { createHistoryRouter } from "./routes/history.js";
+import { createSummariesRouter } from "./routes/summaries.js";
 import { createCostRouter } from "./routes/cost.js";
 import { loadPricing } from "./cost/pricing.js";
 import { lookupUserRole } from "./auth/role-lookup.js";
@@ -47,6 +48,9 @@ app.use("/", createConversationsRouter());
 
 // Role-based history viewers (Stream B)
 app.use("/", createHistoryRouter());
+
+// Conversation summaries — Stream G read endpoints
+app.use("/", createSummariesRouter());
 
 // Production cost summary (admin-only)
 app.use("/", createCostRouter());
