@@ -94,6 +94,9 @@ async function init() {
     paintViews(currentUser);
     // Pre-load conversation list (non-blocking)
     loadConversationList();
+    // Coach recap card — non-blocking, only renders when there's a recent
+    // summary the user hasn't dismissed.
+    fetchAndShowRecap();
   }
   settingShowTools.checked = settings.showTools;
   settingEmulateEmail.value = settings.emulateEmail;
@@ -164,6 +167,92 @@ function paintViews(user) {
   }
 }
 
+// --- Coach recap card (Stream G step 9) ---
+//
+// Pulls the most recent ConversationSummary for the signed-in user from
+// /api/summaries/mine and renders it as a compact card above the welcome
+// message. Visible only at "session start" — currentConversationId === null
+// and the chat is at the welcome state. Dismissed cards stay dismissed in
+// localStorage keyed by conversation _id, so a fresh summary later still
+// shows up.
+
+const RECAP_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+
+async function fetchAndShowRecap() {
+  const card = $('recapCard');
+  if (!card) return;
+  // Only show at the welcome state — never during an active conversation.
+  if (currentConversationId) {
+    card.classList.add('hidden');
+    return;
+  }
+  try {
+    const r = await fetch('/api/summaries/mine', { credentials: 'same-origin' });
+    if (!r.ok) return;
+    const summaries = await r.json();
+    if (!Array.isArray(summaries) || summaries.length === 0) return;
+    const latest = summaries[0];
+    if (!latest || !latest._id) return;
+
+    const generatedAt = new Date(latest.generated_at || 0).getTime();
+    if (!generatedAt || Date.now() - generatedAt > RECAP_MAX_AGE_MS) return;
+
+    const dismissedKey = 'sq_recapDismissed_' + String(latest._id);
+    if (localStorage.getItem(dismissedKey) === '1') return;
+
+    renderRecapCard(latest, dismissedKey);
+  } catch (e) {
+    console.warn('[recap] fetch failed:', e);
+  }
+}
+
+function renderRecapCard(summary, dismissedKey) {
+  const card = $('recapCard');
+  if (!card) return;
+
+  // scout_recap is the coach-voice "to the scout" recap. Fall back to
+  // parent_recap (information-forward) for users where scout_recap may be
+  // empty (e.g., a parent's own session). one_liner is the short title.
+  const body = (summary.scout_recap && summary.scout_recap.trim())
+    || (summary.parent_recap && summary.parent_recap.trim())
+    || '';
+  const title = summary.one_liner || 'Last session';
+  const nextSteps = Array.isArray(summary.next_steps) ? summary.next_steps.slice(0, 3) : [];
+
+  if (!body && nextSteps.length === 0) {
+    card.classList.add('hidden');
+    return;
+  }
+
+  const when = summary.generated_at ? relativeTime(summary.generated_at) : '';
+  card.innerHTML = `
+    <div class="recap-eyebrow">Last time${when ? ' · ' + esc(when) : ''}</div>
+    <div class="recap-title">${esc(title)}</div>
+    ${body ? `<div class="recap-body">${esc(body)}</div>` : ''}
+    ${nextSteps.length ? `
+      <div class="recap-next-label">Next steps</div>
+      <ul class="recap-next">
+        ${nextSteps.map((s) => `<li>${esc(s)}</li>`).join('')}
+      </ul>
+    ` : ''}
+    <button class="recap-dismiss" id="recapDismissBtn" title="Dismiss" aria-label="Dismiss recap">×</button>
+  `;
+  card.classList.remove('hidden');
+
+  const btn = document.getElementById('recapDismissBtn');
+  if (btn) {
+    btn.onclick = () => {
+      try { localStorage.setItem(dismissedKey, '1'); } catch { /* ignore quota */ }
+      card.classList.add('hidden');
+    };
+  }
+}
+
+function hideRecapCard() {
+  const card = $('recapCard');
+  if (card) card.classList.add('hidden');
+}
+
 // --- Toasts (Stream E: surface SSE / auth / tool errors) ---
 function toast(message, kind = 'info', ms = 4000) {
   const root = $('toastRoot');
@@ -191,6 +280,7 @@ function scrollEnd() { messages.scrollTop = messages.scrollHeight; }
 // --- Add message bubble ---
 function addMsg(role, content, opts = {}) {
   welcomeMsg?.remove();
+  hideRecapCard();
   const div = document.createElement('div');
   div.className = `msg ${role}`;
   if (opts.streaming) div.classList.add('streaming');
@@ -710,7 +800,13 @@ $('clearChatBtn').addEventListener('click', () => {
   currentConversationId = null;
   history.length = 0;
   messages.innerHTML = '';
+  // Re-add recap-card placeholder so the next fetchAndShowRecap can render.
+  const recap = document.createElement('div');
+  recap.id = 'recapCard';
+  recap.className = 'recap-card hidden';
+  messages.appendChild(recap);
   settingsOverlay.classList.add('hidden');
+  fetchAndShowRecap();
 });
 
 // --- Copy transcript ---
@@ -789,13 +885,21 @@ convNewBtn.addEventListener('click', () => {
   currentConversationId = null;
   history.length = 0;
   messages.innerHTML = '';
-  // Restore welcome message
+  // Re-add the recap-card placeholder so renderRecapCard has a target
+  // (messages.innerHTML='' wiped it). Then re-add welcome-msg.
+  const recap = document.createElement('div');
+  recap.id = 'recapCard';
+  recap.className = 'recap-card hidden';
+  messages.appendChild(recap);
   const w = document.createElement('div');
   w.className = 'welcome-msg';
   w.id = 'welcomeMsg';
   w.innerHTML = '<strong>Hey!</strong> Ask me about rank requirements, merit badges, or your advancement progress.';
   messages.appendChild(w);
   closeConvSidebar();
+  // Pull a fresh recap — the just-ended session may have produced a new
+  // summary by the time the user opens the next chat.
+  fetchAndShowRecap();
 });
 
 function relativeTime(dateStr) {

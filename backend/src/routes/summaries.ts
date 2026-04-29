@@ -34,6 +34,7 @@ interface SummaryListItem {
   channel: "chat" | "voice" | "mixed";
   one_liner: string;
   parent_recap: string;
+  scout_recap: string;
   topics: string[];
   achievements: string[];
   next_steps: string[];
@@ -51,6 +52,11 @@ const LIST_PROJECTION = {
   channel: 1,
   one_liner: 1,
   parent_recap: 1,
+  // scout_recap: needed by the in-app coach-recap card (Stream G step 9).
+  // Small enough not to bloat the list; safe to expose since /mine is
+  // already self-scoped and the role-gated endpoints already gate on
+  // membership.
+  scout_recap: 1,
   topics: 1,
   achievements: 1,
   next_steps: 1,

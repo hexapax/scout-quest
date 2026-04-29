@@ -213,6 +213,43 @@ body {
 }
 .welcome-msg strong { color: var(--green); }
 
+/* Coach recap card (Stream G step 9). Pulls scout_recap + next_steps from
+   the most recent ConversationSummary; shown above the welcome-msg whenever
+   the user has a recent summary they haven't dismissed. */
+.recap-card {
+  margin: 12px 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--bg2);
+  border-left: 3px solid var(--green);
+  font-size: 13px;
+  line-height: 1.5;
+  position: relative;
+}
+.recap-card .recap-eyebrow {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--text-dim); margin-bottom: 4px; font-weight: 600;
+}
+.recap-card .recap-title {
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  margin-bottom: 6px; padding-right: 28px;
+}
+.recap-card .recap-body { color: var(--text); margin-bottom: 6px; white-space: pre-wrap; }
+.recap-card .recap-next-label {
+  margin-top: 6px; font-size: 11px; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--text-dim); font-weight: 600;
+}
+.recap-card .recap-next { margin: 2px 0 0 16px; padding: 0; color: var(--text); font-size: 12.5px; }
+.recap-card .recap-next li { margin-top: 2px; }
+.recap-card .recap-dismiss {
+  position: absolute; top: 6px; right: 6px;
+  width: 26px; height: 26px;
+  background: transparent; border: 0; cursor: pointer;
+  color: var(--text-dim); font-size: 18px; line-height: 1;
+  border-radius: 4px;
+}
+.recap-card .recap-dismiss:hover { color: var(--text); background: var(--bg3); }
+
 /* Message bubbles — compact */
 .msg {
   margin-bottom: 4px; max-width: 88%;
