@@ -33,6 +33,7 @@ const ALL_SCENARIO_FILES = [
   "sweeper-selection",
   "scout-state-roundtrip",
   "event-extractor",
+  "event-extractor-shapes",
   "rolling-summary-debounce",
 ];
 
