@@ -12,6 +12,7 @@ import { getUserFromCookie } from "./routes/auth.js";
 import { getVoiceContext, getVoiceConversationId, pushToolEvent } from "./voice-context.js";
 import { persistVoiceTurn } from "./voice-persistence.js";
 import { captureEpisode, getRecentEpisodes, type Episode } from "./episodes.js";
+import { getScoutState } from "./scout-state.js";
 import { resolveProvider } from "./providers/registry.js";
 import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
 import { lookupUserRole } from "./auth/role-lookup.js";
@@ -20,7 +21,29 @@ import { logUsage, type LoggedToolCall } from "./cost/logger.js";
 
 const MAX_TOOL_TURNS = 5;
 
-async function buildRecentEpisodesBlock(scoutEmail: string): Promise<AnthropicSystemBlock | null> {
+async function buildScoutMemoryBlock(scoutEmail: string): Promise<AnthropicSystemBlock | null> {
+  // Prefer the rolling summary (Stream G step 1) — it's a Haiku-curated
+  // narrative that travels well across many sessions. If a scout doesn't
+  // yet have a state doc (cold start), fall back to the most recent
+  // episodes — same shape as before, lower fidelity, but better than nothing.
+  try {
+    const state = await getScoutState(scoutEmail);
+    if (state?.rolling_summary && state.rolling_summary.trim().length > 0) {
+      return {
+        type: "text",
+        text:
+          `RECENT COACHING CONTEXT — ${scoutEmail}\n\n` +
+          `${state.rolling_summary.trim()}\n\n` +
+          `(Source: scout-reported observations across ${state.stats.total_sessions} prior sessions, ` +
+          `last updated ${state.rolling_summary_updated_at?.toISOString().slice(0, 10) ?? "unknown"}. ` +
+          `For authoritative current rank/badge/event totals, call get_scout_status.)`,
+      };
+    }
+  } catch (err) {
+    console.error(`[chat] getScoutState failed for ${scoutEmail}:`, err);
+    // Fall through to episodes fallback.
+  }
+
   let episodes: Episode[];
   try {
     episodes = await getRecentEpisodes(scoutEmail, 5);
@@ -235,7 +258,7 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       // 1. Scout user — inject their own profile.
       if (scoutCtx && isScoutUser) {
         systemBlocks.push(scoutCtx);
-        const ep = await buildRecentEpisodesBlock(userEmail);
+        const ep = await buildScoutMemoryBlock(userEmail);
         if (ep) systemBlocks.push(ep);
       }
 
@@ -270,7 +293,7 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
           systemBlocks.push(kid);
         }
         const epBlocks = (
-          await Promise.all(scoutEmails.map((se) => buildRecentEpisodesBlock(se)))
+          await Promise.all(scoutEmails.map((se) => buildScoutMemoryBlock(se)))
         ).filter((b): b is AnthropicSystemBlock => b !== null);
         for (const ep of epBlocks) systemBlocks.push(ep);
       }
@@ -298,7 +321,7 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       // Example: adult_readonly user whose email happens to match a scoutbook parents[] entry.
       if (scoutCtx && !isScoutUser && !(isParentUser && scoutEmails.length > 0)) {
         systemBlocks.push(scoutCtx);
-        const ep = await buildRecentEpisodesBlock(userEmail);
+        const ep = await buildScoutMemoryBlock(userEmail);
         if (ep) systemBlocks.push(ep);
       }
     }

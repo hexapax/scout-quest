@@ -15,6 +15,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { ObjectId } from "mongodb";
 import { getScoutQuestDb } from "./db.js";
+import { getRecentEpisodes } from "./episodes.js";
+import { extractEventsFromSummary } from "./event-extractor.js";
+import { appendScoutStateEvents, maybeRegenerateRollingSummary } from "./scout-state.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const SUMMARY_MODEL = "claude-haiku-4-5-20251001";
@@ -152,13 +155,40 @@ export async function writeConversationSummary(summary: ConversationSummary): Pr
   );
 }
 
-/** Fire-and-forget: generate + write. Mirrors the captureEpisode pattern.
- *  Errors are logged, never thrown. Wire-up callers should not await. */
+/** Fire-and-forget: generate + write + extract events + maybe regen rolling
+ *  summary. Mirrors the captureEpisode pattern. Errors are logged, never
+ *  thrown. Wire-up callers should not await. */
 export function captureConversationSummary(input: SummaryInput): void {
   generateConversationSummary(input)
-    .then((summary) => {
+    .then(async (summary) => {
       if (!summary) return;
-      return writeConversationSummary(summary);
+      await writeConversationSummary(summary);
+
+      // Stream G step 3+1: extract events into scout_state, then regenerate
+      // rolling_summary if the threshold is hit. No-op if no scoutEmail
+      // (e.g. an admin-only conversation with no scout in scope).
+      if (!summary.scoutEmail) return;
+      try {
+        // Pull the matching episode for richer context (unresolved fallback
+        // events). Episodes are written separately by chat.ts on each turn,
+        // so the latest episode for this scout is the closest match.
+        const episodes = await getRecentEpisodes(summary.scoutEmail, 1);
+        const episode = episodes.length > 0 ? episodes[0] : null;
+
+        const events = extractEventsFromSummary(summary, episode, {
+          conversationId: summary._id,
+          ts: summary.generated_at,
+        });
+        if (events.length > 0) {
+          await appendScoutStateEvents(summary.scoutEmail, events, {
+            troopId: summary.troopId ?? null,
+          });
+          // Regen check uses post-append event count; debounced internally.
+          await maybeRegenerateRollingSummary(summary.scoutEmail);
+        }
+      } catch (err) {
+        console.error("[summary] event-extract/state-update failed:", err instanceof Error ? err.message : err);
+      }
     })
     .catch((err) => {
       console.error("[summary] capture failed:", err instanceof Error ? err.message : err);

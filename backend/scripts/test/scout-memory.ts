@@ -31,6 +31,9 @@ const ALL_SCENARIO_FILES = [
   "episode-roundtrip",
   "summary-write-roundtrip",
   "sweeper-selection",
+  "scout-state-roundtrip",
+  "event-extractor",
+  "rolling-summary-debounce",
 ];
 
 interface Args {
