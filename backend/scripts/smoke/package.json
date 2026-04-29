@@ -1,0 +1,14 @@
+{
+  "name": "sq-smoke",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Headless Chromium smoke against scout-quest.hexapax.com (or override via BASE env var). Stand-alone install (own node_modules) so it does not bloat the backend production image.",
+  "scripts": {
+    "install-browser": "playwright install chromium",
+    "smoke": "node smoke.js",
+    "smoke:auth": "node smoke.js --auth"
+  },
+  "dependencies": {
+    "playwright": "^1.59.0"
+  }
+}
