@@ -35,6 +35,9 @@ const ALL_SCENARIO_FILES = [
   "event-extractor",
   "event-extractor-shapes",
   "rolling-summary-debounce",
+  "safety-tier-rules",
+  "safety-classifier-parser",
+  "safety-event-roundtrip",
 ];
 
 interface Args {
