@@ -773,9 +773,13 @@ export async function syncAll(client: ScoutbookApiClient): Promise<SyncAllResult
   // Step 1: Sync roster
   const roster = await syncRoster(client);
 
-  // Step 2: Sync each scout individually, continuing on failures
+  // Step 2: Sync each scout individually, continuing on failures.
+  // Skip scouts without a personGuid — those are local test fixtures (e.g. 99000001–99000005)
+  // and every BSA API call against them returns 500 "personGuid evaluated to null".
   const scoutsCol = await scoutbookScouts();
-  const allScouts = await scoutsCol.find({}, { projection: { userId: 1 } }).toArray();
+  const allScouts = await scoutsCol
+    .find({ personGuid: { $type: "string" } }, { projection: { userId: 1 } })
+    .toArray();
   const scoutResults: SyncAllResult["scoutResults"] = [];
 
   for (const scout of allScouts) {
