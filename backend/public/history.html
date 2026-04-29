@@ -50,6 +50,61 @@
     }
     .tab:hover { background: #eef2ff; }
     .tab.active { background: #1f2933; color: white; border-color: #1f2933; }
+    /* View toggle (Conversations | Summaries) — sits above scope tabs and
+       picks which API the list pulls from. Scope (mine/scout/troop/all)
+       is orthogonal to view mode. */
+    .view-toggle {
+      display: inline-flex;
+      gap: 0;
+      margin-top: .75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      overflow: hidden;
+      background: white;
+    }
+    .view-toggle button {
+      padding: .5rem .9rem;
+      border: 0;
+      background: white;
+      cursor: pointer;
+      font: inherit;
+      min-height: 44px;
+      color: #374151;
+    }
+    .view-toggle button + button { border-left: 1px solid #d1d5db; }
+    .view-toggle button.active { background: #1f2933; color: white; }
+    .view-toggle button:not(.active):hover { background: #eef2ff; }
+    /* Summary detail card — rich layout for parent/leader recap. */
+    .summary-card h2 { margin-top: 0; font-size: 1.1rem; }
+    .summary-card .one-liner { font-size: 1rem; color: #1f2933; margin: .25rem 0 .75rem; }
+    .summary-card .recap { background: #f9fafb; padding: .75rem .9rem; border-radius: 6px; margin: .5rem 0; }
+    .summary-card .recap.parent { border-left: 3px solid #2563eb; }
+    .summary-card .recap.scout { border-left: 3px solid #16a34a; }
+    .summary-card .recap .label { font-size: .7rem; text-transform: uppercase; color: #6b7280; font-weight: 600; letter-spacing: .03em; }
+    .summary-card .recap .body { margin-top: .25rem; font-size: .92rem; white-space: pre-wrap; }
+    .summary-card .section { margin-top: 1rem; }
+    .summary-card .section h3 { font-size: .8rem; text-transform: uppercase; color: #6b7280; margin: 0 0 .35rem; letter-spacing: .03em; }
+    .summary-card ul { margin: 0; padding-left: 1.2rem; font-size: .92rem; }
+    .summary-card ul li { margin-bottom: .2rem; }
+    .summary-card .topics { display: flex; flex-wrap: wrap; gap: .35rem; }
+    .summary-card .topic-chip { font-size: .78rem; padding: 2px 8px; background: #e0e7ff; color: #3730a3; border-radius: 999px; }
+    .summary-card .safety {
+      margin-top: .75rem; padding: .5rem .75rem; border-radius: 6px; font-size: .85rem;
+      background: #fef3c7; color: #92400e; border-left: 3px solid #d97706;
+    }
+    .summary-card .safety.tier-3 { background: #fee2e2; color: #991b1b; border-left-color: #dc2626; }
+    .summary-card .empty-section { color: #9ca3af; font-style: italic; font-size: .88rem; }
+    .summary-card .open-transcript {
+      display: inline-block; margin-top: 1rem; padding: .5rem .9rem;
+      border: 1px solid #d1d5db; background: white; border-radius: 4px;
+      cursor: pointer; font: inherit; min-height: 44px; color: #1f2933;
+      text-decoration: none;
+    }
+    .summary-card .open-transcript:hover { background: #eef2ff; }
+    .conv .summary-line { color: #4b5563; font-size: .85rem; margin-top: .15rem;
+      overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
     .filter-row {
       display: flex; gap: .5rem; align-items: center;
       margin-bottom: .75rem; flex-wrap: wrap;
@@ -143,6 +198,11 @@
     <div class="user" id="user-info">Loading…</div>
   </header>
 
+  <div class="view-toggle" id="view-toggle">
+    <button id="view-conversations" class="active" type="button">Conversations</button>
+    <button id="view-summaries" type="button">Summaries</button>
+  </div>
+
   <div class="tabs" id="tabs"></div>
 
   <div class="filter-row">
@@ -150,7 +210,7 @@
       <input type="checkbox" id="filter-voice-only">
       Voice only
     </label>
-    <label class="toggle-label">
+    <label class="toggle-label" id="unread-wrap">
       <input type="checkbox" id="filter-unread-only">
       Unread only
     </label>
@@ -181,14 +241,19 @@
     const scopeLabel = document.getElementById('scope-label');
     const voiceOnlyEl = document.getElementById('filter-voice-only');
     const unreadOnlyEl = document.getElementById('filter-unread-only');
+    const unreadWrap = document.getElementById('unread-wrap');
     const qEl = document.getElementById('filter-q');
     const sinceEl = document.getElementById('filter-since');
     const untilEl = document.getElementById('filter-until');
+    const viewConvBtn = document.getElementById('view-conversations');
+    const viewSumBtn = document.getElementById('view-summaries');
 
     const state = {
       user: null,
       activeScope: 'mine',
       activeId: null,
+      // 'conversations' = transcripts (existing behavior) ; 'summaries' = G recap cards
+      viewMode: 'conversations',
       conversations: [],
     };
 
@@ -302,12 +367,15 @@
 
     function scopeUrl() {
       const base = state.activeScope;
-      const voiceQS = voiceOnlyEl.checked ? '?channel=voice' : '';
-      if (base === 'mine') return '/api/history/mine' + voiceQS;
-      if (base === 'all') return '/api/history/all' + voiceQS;
-      if (base.startsWith('scout:')) return '/api/history/scout/' + encodeURIComponent(base.slice(6)) + voiceQS;
-      if (base.startsWith('troop:')) return '/api/history/troop/' + encodeURIComponent(base.slice(6)) + voiceQS;
-      return '/api/history/mine' + voiceQS;
+      // Summaries route ignores ?channel filtering (filter is client-side on
+      // summary.channel) — only conversations honor the query string.
+      const voiceQS = (state.viewMode === 'conversations' && voiceOnlyEl.checked) ? '?channel=voice' : '';
+      const root = state.viewMode === 'summaries' ? '/api/summaries' : '/api/history';
+      if (base === 'mine') return root + '/mine' + voiceQS;
+      if (base === 'all') return root + '/all' + voiceQS;
+      if (base.startsWith('scout:')) return root + '/scout/' + encodeURIComponent(base.slice(6)) + voiceQS;
+      if (base.startsWith('troop:')) return root + '/troop/' + encodeURIComponent(base.slice(6)) + voiceQS;
+      return root + '/mine' + voiceQS;
     }
 
     async function loadList() {
@@ -330,15 +398,24 @@
       // Until is inclusive of the selected day — add 24h.
       const untilMs = untilEl.value ? new Date(untilEl.value).getTime() + 86_400_000 : null;
 
-      const unreadOnly = unreadOnlyEl.checked;
+      const isSummaries = state.viewMode === 'summaries';
+      const unreadOnly = !isSummaries && unreadOnlyEl.checked;
+      const voiceOnlyForSummaries = isSummaries && voiceOnlyEl.checked;
       return state.conversations.filter((c) => {
         if (unreadOnly && c.reviewedAt) return false;
+        if (voiceOnlyForSummaries && c.channel !== 'voice') return false;
         if (q) {
-          const hay = [c.title || '', c.userEmail || '', c.scoutEmail || ''].join(' ').toLowerCase();
+          const hay = isSummaries
+            ? [c.one_liner || '', c.parent_recap || '', c.userEmail || '', c.scoutEmail || '', (c.topics || []).join(' ')].join(' ').toLowerCase()
+            : [c.title || '', c.userEmail || '', c.scoutEmail || ''].join(' ').toLowerCase();
           if (!hay.includes(q)) return false;
         }
         if (sinceMs || untilMs) {
-          const t = new Date(c.updatedAt || c.createdAt || 0).getTime();
+          const t = new Date(
+            isSummaries
+              ? c.generated_at || 0
+              : c.updatedAt || c.createdAt || 0
+          ).getTime();
           if (sinceMs && t < sinceMs) return false;
           if (untilMs && t >= untilMs) return false;
         }
@@ -350,35 +427,56 @@
       listEl.innerHTML = '';
       const shown = filteredConversations();
       const total = state.conversations.length;
+      const isSummaries = state.viewMode === 'summaries';
+      const noun = isSummaries ? 'summary' : 'conversation';
+      const plural = isSummaries ? 'summaries' : 'conversations';
       scopeLabel.textContent = shown.length === total
-        ? `${total} conversation${total === 1 ? '' : 's'}`
+        ? `${total} ${total === 1 ? noun : plural}`
         : `${shown.length} of ${total}`;
       if (!shown.length) {
-        listEl.innerHTML = '<div class="empty">No conversations match</div>';
+        listEl.innerHTML = `<div class="empty">No ${plural} match</div>`;
         return;
       }
       for (const c of shown) {
         const el = document.createElement('div');
         el.className = 'conv' + (c._id === state.activeId ? ' active' : '');
-        const channel = c.channel === 'voice' ? 'voice' : (c.channel === 'chat' ? 'chat' : '');
+        const channel = c.channel === 'voice' ? 'voice' : (c.channel === 'chat' ? 'chat' : (c.channel === 'mixed' ? 'mixed' : ''));
         const badge = channel
           ? `<span class="badges"><span class="badge ${channel}">${channel}</span></span>`
           : '';
-        const date = c.updatedAt ? new Date(c.updatedAt).toLocaleString() : '';
         const whoFor = c.scoutEmail ? ` · for ${c.scoutEmail.split('@')[0]}` : '';
-        const titleText = (c.title && c.title !== '(untitled)') ? c.title
-          : (c.firstMessage ? c.firstMessage + (c.firstMessage.length >= 80 ? '…' : '')
-          : '(untitled)');
-        const reviewMark = c.reviewedAt
-          ? `<span title="Reviewed by ${escapeHtml(c.reviewedBy || '')} on ${escapeHtml(new Date(c.reviewedAt).toLocaleString())}" style="color:#16a34a; margin-right:.3rem;">✓</span>`
-          : '';
-        el.innerHTML = `
-          <div class="title">${reviewMark}${badge}${escapeHtml(titleText)}</div>
-          <div class="meta">${date} · ${c.messageCount || 0} msg${whoFor}</div>
-        `;
+
+        if (isSummaries) {
+          const date = c.generated_at ? new Date(c.generated_at).toLocaleString() : '';
+          const titleText = c.one_liner || '(no summary)';
+          const turns = typeof c.turnCount === 'number' ? `${c.turnCount} turn${c.turnCount === 1 ? '' : 's'}` : '';
+          const safety = c.safety_tier ? `<span class="badge" style="background:#fee2e2;color:#991b1b;">flag T${c.safety_tier}</span>` : '';
+          const recapPreview = c.parent_recap ? escapeHtml(c.parent_recap) : '';
+          el.innerHTML = `
+            <div class="title">${badge}${safety}${escapeHtml(titleText)}</div>
+            <div class="summary-line">${recapPreview}</div>
+            <div class="meta">${date}${turns ? ' · ' + turns : ''}${whoFor}</div>
+          `;
+        } else {
+          const date = c.updatedAt ? new Date(c.updatedAt).toLocaleString() : '';
+          const titleText = (c.title && c.title !== '(untitled)') ? c.title
+            : (c.firstMessage ? c.firstMessage + (c.firstMessage.length >= 80 ? '…' : '')
+            : '(untitled)');
+          const reviewMark = c.reviewedAt
+            ? `<span title="Reviewed by ${escapeHtml(c.reviewedBy || '')} on ${escapeHtml(new Date(c.reviewedAt).toLocaleString())}" style="color:#16a34a; margin-right:.3rem;">✓</span>`
+            : '';
+          el.innerHTML = `
+            <div class="title">${reviewMark}${badge}${escapeHtml(titleText)}</div>
+            <div class="meta">${date} · ${c.messageCount || 0} msg${whoFor}</div>
+          `;
+        }
         el.onclick = () => {
           state.activeId = c._id;
-          loadTranscript(c._id);
+          if (isSummaries) {
+            loadSummaryDetail(c._id);
+          } else {
+            loadTranscript(c._id);
+          }
           renderList();
           // On narrow viewports the transcript is stacked below the list,
           // so tapping a row gives no visible feedback. Scroll to it.
@@ -398,6 +496,97 @@
       } catch (e) {
         transcriptEl.innerHTML = `<div class="error">${escapeHtml(e.message)}</div>`;
       }
+    }
+
+    async function loadSummaryDetail(id) {
+      transcriptEl.innerHTML = '<div class="loading">Loading summary…</div>';
+      try {
+        const doc = await fetchJSON('/api/summaries/conversation/' + encodeURIComponent(id));
+        renderSummaryDetail(doc);
+      } catch (e) {
+        transcriptEl.innerHTML = `<div class="error">${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    function renderSummaryDetail(doc) {
+      const generated = doc.generated_at ? new Date(doc.generated_at).toLocaleString() : '?';
+      const channel = doc.channel || 'chat';
+      const turns = typeof doc.turnCount === 'number' ? `${doc.turnCount} turn${doc.turnCount === 1 ? '' : 's'}` : '';
+      const dur = (doc.durationMs && doc.durationMs > 0) ? formatDuration(doc.durationMs) : '';
+      const meta = [generated, channel, doc.userEmail, doc.scoutEmail ? 'scout=' + doc.scoutEmail : '', turns, dur]
+        .filter(Boolean).join(' · ');
+      const safety = doc.safety_tier
+        ? `<div class="safety tier-${doc.safety_tier}">Safety flag — Tier ${doc.safety_tier}</div>`
+        : '';
+      const parentRecap = doc.parent_recap
+        ? `<div class="recap parent"><div class="label">Parent recap</div><div class="body">${escapeHtml(doc.parent_recap)}</div></div>`
+        : '';
+      const scoutRecap = doc.scout_recap
+        ? `<div class="recap scout"><div class="label">Coach recap (to the scout)</div><div class="body">${escapeHtml(doc.scout_recap)}</div></div>`
+        : '';
+      const topicChips = (doc.topics || []).map((t) =>
+        `<span class="topic-chip">${escapeHtml(t)}</span>`
+      ).join('');
+      const topicsBlock = topicChips
+        ? `<div class="section"><h3>Topics</h3><div class="topics">${topicChips}</div></div>`
+        : '';
+      const achievementsBlock = renderListSection('Achievements', doc.achievements);
+      const nextStepsBlock = renderListSection('Next steps', doc.next_steps);
+      const blockersBlock = renderListSection('Blockers', doc.blockers);
+
+      transcriptEl.innerHTML = `
+        <div class="summary-card">
+          <h2>${escapeHtml(doc.one_liner || '(no summary)')}</h2>
+          <div class="meta">${escapeHtml(meta)}</div>
+          ${safety}
+          ${parentRecap}
+          ${scoutRecap}
+          ${topicsBlock}
+          ${achievementsBlock}
+          ${nextStepsBlock}
+          ${blockersBlock}
+          <a class="open-transcript" href="#" id="open-transcript">Open full transcript →</a>
+        </div>
+      `;
+      const link = document.getElementById('open-transcript');
+      if (link) {
+        link.onclick = (ev) => {
+          ev.preventDefault();
+          // Switch to conversations view, keep the same activeId, load transcript.
+          setViewMode('conversations');
+          loadTranscript(doc._id);
+        };
+      }
+    }
+
+    function renderListSection(label, items) {
+      if (!Array.isArray(items) || items.length === 0) return '';
+      return `<div class="section"><h3>${escapeHtml(label)}</h3><ul>${items.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></div>`;
+    }
+
+    function formatDuration(ms) {
+      const s = Math.round(ms / 1000);
+      if (s < 60) return `${s}s`;
+      const m = Math.round(s / 60);
+      if (m < 60) return `${m}m`;
+      const h = Math.floor(m / 60);
+      const rem = m % 60;
+      return rem ? `${h}h ${rem}m` : `${h}h`;
+    }
+
+    function setViewMode(mode) {
+      if (mode !== 'conversations' && mode !== 'summaries') return;
+      if (state.viewMode === mode) return;
+      state.viewMode = mode;
+      state.activeId = null;
+      viewConvBtn.classList.toggle('active', mode === 'conversations');
+      viewSumBtn.classList.toggle('active', mode === 'summaries');
+      // Unread filter only applies to conversations.
+      unreadWrap.style.display = mode === 'summaries' ? 'none' : '';
+      qEl.placeholder = mode === 'summaries' ? 'Search recap/topics…' : 'Search title/email…';
+      // Clear the right pane back to its empty prompt.
+      transcriptEl.innerHTML = `<div class="empty">Select a ${mode === 'summaries' ? 'summary' : 'conversation'} from the list</div>`;
+      render();
     }
 
     async function toggleReviewed(id, markAsReviewed) {
@@ -539,7 +728,17 @@
       return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     }
 
-    voiceOnlyEl.onchange = loadList;
+    viewConvBtn.onclick = () => setViewMode('conversations');
+    viewSumBtn.onclick = () => setViewMode('summaries');
+    voiceOnlyEl.onchange = () => {
+      // Conversations: server filters via ?channel=voice — refetch.
+      // Summaries: filter is client-side on summary.channel — re-render.
+      if (state.viewMode === 'conversations') {
+        loadList();
+      } else {
+        renderList();
+      }
+    };
     unreadOnlyEl.onchange = renderList;
     // Search/date filters are applied client-side, so re-render is enough.
     let qDebounce;
