@@ -31,7 +31,10 @@ import type { TierContext } from "./types.js";
 
 export interface CaptureInput {
   scoutEmail: string | null;
-  conversationId: ObjectId | null;
+  /** Accept string | ObjectId | null at the call site; we coerce to
+   *  ObjectId internally. Coercion failure (malformed string) drops the
+   *  event silently — this isn't worth surfacing to the user. */
+  conversationId: ObjectId | string | null;
   messages: Array<{ role: string; content: string }>;
   /** Optional pre-computed signals; default false on each. */
   hints?: {
@@ -46,14 +49,23 @@ export function captureSafetyEvent(input: CaptureInput): void {
   if (!input.scoutEmail || !input.conversationId) return;
   if (!input.messages || input.messages.length === 0) return;
 
-  void runCapture(input).catch((err) => {
+  let convOid: ObjectId;
+  try {
+    convOid = typeof input.conversationId === "string"
+      ? new ObjectId(input.conversationId)
+      : input.conversationId;
+  } catch {
+    return; // bad ObjectId string — silently drop
+  }
+
+  void runCapture({ ...input, conversationId: convOid }).catch((err) => {
     console.error("[safety] capture failed:", err instanceof Error ? err.message : err);
   });
 }
 
-async function runCapture(input: CaptureInput): Promise<void> {
+async function runCapture(input: CaptureInput & { conversationId: ObjectId }): Promise<void> {
   const scoutEmail = input.scoutEmail!;
-  const conversationId = input.conversationId!;
+  const conversationId = input.conversationId;
 
   const rv = await classifyTurn({ messages: input.messages });
   if (!rv) return;

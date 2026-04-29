@@ -12,6 +12,7 @@ import { getUserFromCookie } from "./routes/auth.js";
 import { getVoiceContext, getVoiceConversationId, pushToolEvent } from "./voice-context.js";
 import { persistVoiceTurn } from "./voice-persistence.js";
 import { captureEpisode, getRecentEpisodes, type Episode } from "./episodes.js";
+import { captureSafetyEvent } from "./safety/capture.js";
 import { getScoutState } from "./scout-state.js";
 import { resolveProvider } from "./providers/registry.js";
 import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
@@ -504,6 +505,19 @@ Rules for voice output:
         mode: isVoice ? "voice" : "chat",
         toolsUsed: toolsUsedInRequest,
       });
+
+      // Stream H Phase 1: safety classifier on the youth-side conversation.
+      // Detection-only — no notifications fire (Phase 2 routes admin alerts;
+      // Phase 3 fans out). Gate on userRole==="scout" so we don't classify
+      // parent/leader sessions as if they were youth conversations.
+      if (userRole === "scout" && userEmail) {
+        const safetyConvId = isVoice ? getVoiceConversationId() : (body.conversationId ?? null);
+        captureSafetyEvent({
+          scoutEmail: userEmail,
+          conversationId: safetyConvId,
+          messages: episodeMessages,
+        });
+      }
 
       // Stream C: cost logging (fire-and-forget — never blocks the response).
       logUsage(buildUsageRecord({
