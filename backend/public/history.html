@@ -576,6 +576,9 @@
 
     function setViewMode(mode) {
       if (mode !== 'conversations' && mode !== 'summaries') return;
+      // Signed-out: no data to show in either view. Don't flip classes —
+      // the renderSignedOut empty state is the owned UI here.
+      if (!state.user) return;
       if (state.viewMode === mode) return;
       state.viewMode = mode;
       state.activeId = null;
@@ -701,6 +704,12 @@
     }
 
     function render() {
+      // Guard: the view-toggle buttons exist in HTML and are clickable from
+      // page load — including before loadUser() resolves or in the signed-out
+      // state. buildTabs() reads state.user.scoutEmails, so render() must
+      // only run after the user is loaded. The signed-out empty state is
+      // owned by renderSignedOut().
+      if (!state.user) return;
       clearError();
       buildTabs();
       loadList();
