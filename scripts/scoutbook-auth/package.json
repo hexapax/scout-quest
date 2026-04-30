@@ -1,0 +1,18 @@
+{
+  "name": "scoutbook-auth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Refresh the Scoutbook JWT by driving real Chrome through my.scouting.org. One-time interactive bootstrap captures a persistent user profile; subsequent runs are headless cookie refreshes.",
+  "type": "module",
+  "scripts": {
+    "install-browser": "playwright install chromium",
+    "bootstrap": "node refresh-token.mjs --bootstrap",
+    "refresh": "node refresh-token.mjs",
+    "refresh:headed": "node refresh-token.mjs --headed"
+  },
+  "dependencies": {
+    "playwright": "^1.59.0",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
