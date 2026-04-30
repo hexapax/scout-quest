@@ -5,14 +5,14 @@
 #
 # Idempotent: if a task with the same name already exists, it's replaced.
 #
-# Run from an elevated PowerShell (Run as Administrator) the first time —
+# Run from an elevated PowerShell (Run as Administrator) the first time --
 # Task Scheduler needs admin to register tasks under the user's principal
 # in some environments. After that the task itself runs as the current
 # user, no elevation needed.
 #
 # IMPORTANT: invoke as
 #   powershell -ExecutionPolicy Bypass -File .\install-task.ps1
-# if the repo lives on the WSL filesystem (\\wsl.localhost\…) — Windows
+# if the repo lives on the WSL filesystem (\\wsl.localhost\...) -- Windows
 # tags those files as remote/untrusted and the default ExecutionPolicy
 # refuses to run them. The scheduled task this script *creates* already
 # uses Bypass, so once installed the recurring refresh runs cleanly.
@@ -70,7 +70,7 @@ try {
   Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction Stop
   Write-Host "Removed existing task: $TaskName"
 } catch {
-  # No existing task — fine.
+  # No existing task -- fine.
 }
 
 Register-ScheduledTask -TaskName $TaskName -InputObject $task | Out-Null

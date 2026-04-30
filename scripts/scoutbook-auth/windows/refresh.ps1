@@ -4,7 +4,7 @@
 # persistent profile. Designed to be invoked unattended by Task Scheduler.
 #
 # Logs to .\windows\refresh.log next to this script. Rotates at 1 MB.
-# Exit codes: 0 success, non-zero failure (including "session expired —
+# Exit codes: 0 success, non-zero failure (including "session expired --
 # re-bootstrap on workstation").
 
 $ErrorActionPreference = "Stop"

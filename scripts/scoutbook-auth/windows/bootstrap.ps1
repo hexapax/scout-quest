@@ -4,13 +4,13 @@
 # closes the window once a JWT cookie is detected. The persistent profile
 # in ..\profile\ is reused by every subsequent refresh.
 #
-# Run this from regular PowerShell — NOT from WSL2. Headed Chrome from
+# Run this from regular PowerShell -- NOT from WSL2. Headed Chrome from
 # WSL2 needs WSLg working and adds moving parts for no benefit on a
 # one-shot interactive step.
 #
 # IMPORTANT: invoke as
 #   powershell -ExecutionPolicy Bypass -File .\bootstrap.ps1
-# if the repo lives on the WSL filesystem (\\wsl.localhost\…) — Windows
+# if the repo lives on the WSL filesystem (\\wsl.localhost\...) -- Windows
 # tags those files as remote/untrusted and the default ExecutionPolicy
 # refuses to run them.
 #
@@ -34,7 +34,7 @@ if (-not (Test-Path "node_modules")) {
 }
 
 Write-Host ""
-Write-Host "Launching Chrome — sign in when the window appears."
+Write-Host "Launching Chrome -- sign in when the window appears."
 Write-Host "The script will close it automatically once your session is captured."
 Write-Host ""
 
