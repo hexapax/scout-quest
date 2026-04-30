@@ -70,15 +70,25 @@ cd scripts\scoutbook-auth\windows
 
 # One-time interactive sign-in. Chrome opens, you sign in + click reCAPTCHA,
 # the script captures cookies and exits.
-.\bootstrap.ps1
+powershell -ExecutionPolicy Bypass -File .\bootstrap.ps1
 
 # Register the weekly headless refresh in Task Scheduler (default: Sunday 3am).
 # Run elevated the first time; the task itself runs as your normal user.
-.\install-task.ps1
-# Or pick a different time:  .\install-task.ps1 -Day Monday -At 06:30
+powershell -ExecutionPolicy Bypass -File .\install-task.ps1
+# Or pick a different time:
+#   powershell -ExecutionPolicy Bypass -File .\install-task.ps1 -Day Monday -At 06:30
 ```
 
-After that, Task Scheduler runs `windows\refresh.ps1` weekly. Logs
+**Why `-ExecutionPolicy Bypass`:** if your repo lives on the WSL2
+filesystem (`\\wsl.localhost\Ubuntu\…`) Windows tags `.ps1` files there
+as remote/untrusted regardless of your ExecutionPolicy setting, and the
+default `Restricted` / `RemoteSigned` will refuse to run them. Per-call
+bypass is the safest narrow fix. Once `install-task.ps1` runs, the
+scheduled task itself is registered with `-ExecutionPolicy Bypass`
+already, so the recurring `refresh.ps1` invocations don't have this
+problem.
+
+After bootstrap, Task Scheduler runs `windows\refresh.ps1` weekly. Logs
 land in `windows\refresh.log` (rotated at 1 MB). The fresh JWT lands
 in `..\token.txt`. To verify on demand:
 
@@ -88,7 +98,8 @@ Get-Content -Tail 30 .\refresh.log
 ```
 
 The token can be consumed from WSL2 — it's just a file on the Windows
-filesystem at `\\wsl$\…` or `/mnt/c/…` from the WSL side.
+filesystem (`/mnt/c/...`) or on the WSL filesystem accessed from
+Windows (`\\wsl$\...`), depending on where you cloned.
 
 ## One-time bootstrap (do this on your workstation)
 

@@ -8,6 +8,12 @@
 # WSL2 needs WSLg working and adds moving parts for no benefit on a
 # one-shot interactive step.
 #
+# IMPORTANT: invoke as
+#   powershell -ExecutionPolicy Bypass -File .\bootstrap.ps1
+# if the repo lives on the WSL filesystem (\\wsl.localhost\…) — Windows
+# tags those files as remote/untrusted and the default ExecutionPolicy
+# refuses to run them.
+#
 # Prereqs:
 #   - Node.js 20+ on PATH (winget install OpenJS.NodeJS.LTS)
 #   - Real Chrome installed (the default Chrome install is fine)

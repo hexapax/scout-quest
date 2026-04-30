@@ -9,6 +9,13 @@
 # Task Scheduler needs admin to register tasks under the user's principal
 # in some environments. After that the task itself runs as the current
 # user, no elevation needed.
+#
+# IMPORTANT: invoke as
+#   powershell -ExecutionPolicy Bypass -File .\install-task.ps1
+# if the repo lives on the WSL filesystem (\\wsl.localhost\…) — Windows
+# tags those files as remote/untrusted and the default ExecutionPolicy
+# refuses to run them. The scheduled task this script *creates* already
+# uses Bypass, so once installed the recurring refresh runs cleanly.
 
 [CmdletBinding()]
 param(
