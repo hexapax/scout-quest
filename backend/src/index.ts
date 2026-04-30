@@ -11,6 +11,7 @@ import { createAuthRouter } from "./routes/auth.js";
 import { createConversationsRouter } from "./routes/conversations.js";
 import { createHistoryRouter } from "./routes/history.js";
 import { createSummariesRouter } from "./routes/summaries.js";
+import { createSafetyRouter } from "./routes/safety.js";
 import { createCostRouter } from "./routes/cost.js";
 import { loadPricing } from "./cost/pricing.js";
 import { lookupUserRole } from "./auth/role-lookup.js";
@@ -52,6 +53,9 @@ app.use("/", createHistoryRouter());
 
 // Conversation summaries — Stream G read endpoints
 app.use("/", createSummariesRouter());
+
+// Admin Safety Queue — Stream H step 7 (read-only in Phase 1)
+app.use("/", createSafetyRouter());
 
 // Production cost summary (admin-only)
 app.use("/", createCostRouter());

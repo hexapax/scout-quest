@@ -149,6 +149,7 @@ function paintViews(user) {
   }
   if (user.isAdmin) {
     links.push({ label: 'All conversations', sub: 'admin', href: '/history.html#all' });
+    links.push({ label: 'Safety queue', sub: 'admin', href: '/safety.html' });
     links.push({ label: 'Eval viewer', sub: 'admin', href: '/eval-viewer.html' });
     links.push({ label: 'Progress', sub: 'admin', href: '/progress.html' });
   }

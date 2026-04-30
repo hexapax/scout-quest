@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scout Quest — Safety Queue</title>
+  <link rel="stylesheet" href="/app.css">
+  <style>
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      margin: 0;
+      padding: 0 1rem;
+      max-width: 1100px;
+      margin-inline: auto;
+      color: #1f2933;
+      background: #fafafa;
+    }
+    header {
+      padding: 1rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: .5rem;
+    }
+    header h1 { margin: 0; font-size: 1.25rem; }
+    header .title-wrap { display: flex; align-items: center; gap: .75rem; }
+    header .back-link {
+      color: #1f2933; text-decoration: none; font-size: .95rem;
+      padding: .5rem .6rem; border-radius: 4px; min-height: 44px;
+      display: inline-flex; align-items: center;
+    }
+    header .back-link:hover { background: #eef2ff; }
+    header .user { color: #6b7280; font-size: .9rem; }
+    .filter-bar {
+      display: flex; flex-wrap: wrap; gap: .35rem; align-items: center;
+      margin: 1rem 0;
+    }
+    .tier-btn {
+      padding: .55rem .9rem; border: 1px solid #d1d5db; background: white;
+      border-radius: 4px; cursor: pointer; font: inherit; min-height: 44px;
+    }
+    .tier-btn:hover { background: #eef2ff; }
+    .tier-btn.active { background: #1f2933; color: white; border-color: #1f2933; }
+    .toggle-label {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .5rem .6rem; min-height: 44px; cursor: pointer; user-select: none;
+    }
+    .toggle-label input { width: 20px; height: 20px; cursor: pointer; }
+    .scope-label { color: #6b7280; font-size: .85rem; margin-left: auto; }
+    .layout {
+      display: grid; grid-template-columns: minmax(360px, 1fr) 1fr; gap: 1rem;
+    }
+    @media (max-width: 820px) { .layout { grid-template-columns: 1fr; } }
+    .list {
+      border: 1px solid #e5e7eb; border-radius: 6px; background: white;
+      max-height: 76vh; overflow-y: auto;
+    }
+    .row {
+      padding: .75rem .85rem; border-bottom: 1px solid #eef0f3;
+      cursor: pointer; min-height: 56px;
+    }
+    .row:hover { background: #f9fafb; }
+    .row.active { background: #eef2ff; }
+    .row .row-head { display: flex; align-items: baseline; gap: .4rem; flex-wrap: wrap; }
+    .row .scout { font-weight: 600; font-size: .92rem; }
+    .row .meta { color: #6b7280; font-size: .78rem; margin-top: .15rem; }
+    .row .quote { color: #4b5563; font-size: .82rem; margin-top: .2rem;
+      overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .tier-pill {
+      display: inline-flex; align-items: center; padding: 2px 8px;
+      font-size: .7rem; font-weight: 700; border-radius: 999px;
+      letter-spacing: .03em;
+    }
+    .tier-pill.t1 { background: #e5e7eb; color: #374151; }
+    .tier-pill.t2 { background: #fef3c7; color: #92400e; }
+    .tier-pill.t3 { background: #fee2e2; color: #991b1b; }
+    .cat-chip {
+      font-size: .7rem; padding: 1px 7px; border-radius: 999px;
+      background: #e0e7ff; color: #3730a3;
+    }
+    .suppressed-chip {
+      font-size: .7rem; padding: 1px 7px; border-radius: 999px;
+      background: #f3f4f6; color: #6b7280; font-style: italic;
+    }
+    .detail {
+      border: 1px solid #e5e7eb; border-radius: 6px; background: white;
+      padding: 1rem; min-height: 76vh;
+    }
+    .detail h2 { margin-top: 0; font-size: 1.05rem; }
+    .detail .field { margin: .55rem 0; }
+    .detail .field .label {
+      font-size: .7rem; text-transform: uppercase; color: #6b7280;
+      letter-spacing: .04em; font-weight: 600;
+    }
+    .detail .field .value { font-size: .92rem; color: #1f2933; word-break: break-word; }
+    .detail .quote-block {
+      background: #f9fafb; padding: .65rem .8rem; border-radius: 6px;
+      border-left: 3px solid #d1d5db; white-space: pre-wrap; font-size: .92rem;
+    }
+    .detail .quote-block.t3 { border-left-color: #dc2626; background: #fef2f2; }
+    .detail .quote-block.t2 { border-left-color: #d97706; background: #fef3c7; }
+    .empty, .loading { color: #6b7280; padding: 1rem; text-align: center; }
+    .error { color: #991b1b; padding: 1rem; background: #fef2f2; border-radius: 4px; margin: 1rem 0; }
+    .hidden { display: none !important; }
+    .conv-link { color: #1d4ed8; font-size: .9rem; text-decoration: none; }
+    .conv-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-wrap">
+      <a class="back-link" href="/" title="Back">←</a>
+      <h1>🛡️ Safety Queue</h1>
+    </div>
+    <div class="user" id="user-info">Loading…</div>
+  </header>
+
+  <div class="filter-bar">
+    <button class="tier-btn active" data-tier="all" type="button">All</button>
+    <button class="tier-btn" data-tier="1" type="button">Tier 1</button>
+    <button class="tier-btn" data-tier="2" type="button">Tier 2</button>
+    <button class="tier-btn" data-tier="3" type="button">Tier 3</button>
+    <label class="toggle-label">
+      <input type="checkbox" id="open-only">
+      Open cases only
+    </label>
+    <span class="scope-label" id="scope-label"></span>
+  </div>
+
+  <div id="error-box" class="error hidden"></div>
+
+  <div class="layout">
+    <div id="list" class="list">
+      <div class="loading">Loading…</div>
+    </div>
+    <div id="detail" class="detail">
+      <div class="empty">Select a flagged event from the list</div>
+    </div>
+  </div>
+
+  <script>
+  (async function () {
+    const userInfo = document.getElementById('user-info');
+    const listEl = document.getElementById('list');
+    const detailEl = document.getElementById('detail');
+    const errorBox = document.getElementById('error-box');
+    const scopeLabel = document.getElementById('scope-label');
+    const openOnlyEl = document.getElementById('open-only');
+    const tierBtns = Array.from(document.querySelectorAll('.tier-btn'));
+
+    const state = {
+      user: null,
+      tier: 'all',     // 'all' | '1' | '2' | '3'
+      activeId: null,
+      events: [],
+    };
+
+    function showError(msg) { errorBox.textContent = msg; errorBox.classList.remove('hidden'); }
+    function clearError() { errorBox.classList.add('hidden'); }
+
+    async function fetchJSON(url, opts = {}) {
+      const r = await fetch(url, { credentials: 'include', ...opts });
+      if (!r.ok) {
+        const msg = await r.text().catch(() => r.statusText);
+        throw new Error(`${url}: ${r.status} ${msg.substring(0, 200)}`);
+      }
+      return r.json();
+    }
+
+    function renderSignedOut() {
+      detailEl.innerHTML = `
+        <div class="empty" style="padding:2rem;">
+          <h2 style="margin:0 0 .5rem;">Sign in to view the safety queue</h2>
+          <p>This dashboard is admin-only.</p>
+          <p style="margin-top:1rem;">
+            <a href="/auth/google" style="
+              display:inline-block; padding:.75rem 1.25rem;
+              background:#1f2933; color:white; border-radius:6px;
+              text-decoration:none; min-height:44px; min-width:44px; line-height:1.5;
+            ">Sign in with Google</a>
+          </p>
+        </div>`;
+      listEl.innerHTML = '';
+    }
+
+    function renderNonAdmin() {
+      detailEl.innerHTML = `
+        <div class="empty" style="padding:2rem;">
+          <h2 style="margin:0 0 .5rem;">Admin access required</h2>
+          <p>The safety queue is restricted to administrators.</p>
+        </div>`;
+      listEl.innerHTML = '';
+    }
+
+    async function loadUser() {
+      state.user = await fetchJSON('/auth/me');
+      const role = state.user.role || '';
+      const troopSuffix = state.user.troop ? ' · Troop ' + state.user.troop : '';
+      userInfo.textContent = `${state.user.email} · ${role}${troopSuffix}`;
+    }
+
+    function buildUrl() {
+      const params = new URLSearchParams();
+      if (state.tier !== 'all') params.set('tier', state.tier);
+      if (openOnlyEl.checked) params.set('openOnly', '1');
+      const qs = params.toString();
+      return '/api/safety/events' + (qs ? '?' + qs : '');
+    }
+
+    async function loadList() {
+      listEl.innerHTML = '<div class="loading">Loading…</div>';
+      try {
+        const events = await fetchJSON(buildUrl());
+        state.events = events;
+        renderList();
+      } catch (e) {
+        listEl.innerHTML = '';
+        showError('Failed to load safety queue: ' + e.message);
+      }
+    }
+
+    function renderList() {
+      listEl.innerHTML = '';
+      const total = state.events.length;
+      scopeLabel.textContent = `${total} event${total === 1 ? '' : 's'}`;
+      if (!total) {
+        listEl.innerHTML = '<div class="empty">No events match</div>';
+        return;
+      }
+      for (const ev of state.events) {
+        const el = document.createElement('div');
+        el.className = 'row' + (ev._id === state.activeId ? ' active' : '');
+        const tier = ev.tier;
+        const cat = (ev.riskVector?.category || '').replace(/_/g, ' ');
+        const ts = ev.ts ? new Date(ev.ts).toLocaleString() : '';
+        const when = ev.ts ? formatRelative(ev.ts) : '';
+        const conf = typeof ev.riskVector?.confidence === 'number' ? `c=${ev.riskVector.confidence.toFixed(2)}` : '';
+        const sev = ev.riskVector?.severity != null ? `s=${ev.riskVector.severity}` : '';
+        const suppressed = ev.suppressedReason
+          ? `<span class="suppressed-chip" title="suppressed: ${escapeHtml(ev.suppressedReason)}">${escapeHtml(ev.suppressedReason)}</span>`
+          : '';
+        const quote = ev.riskVector?.quote ? escapeHtml(ev.riskVector.quote) : '';
+        el.innerHTML = `
+          <div class="row-head">
+            <span class="tier-pill t${tier}">T${tier}</span>
+            <span class="cat-chip">${escapeHtml(cat || 'unknown')}</span>
+            <span class="scout">${escapeHtml(ev.scoutEmail || '?')}</span>
+            ${suppressed}
+          </div>
+          <div class="meta">${escapeHtml(ts)} · ${escapeHtml(when)} · ${escapeHtml([sev, conf].filter(Boolean).join(' · '))}</div>
+          ${quote ? `<div class="quote">"${quote}"</div>` : ''}
+        `;
+        el.onclick = () => {
+          state.activeId = ev._id;
+          loadDetail(ev._id);
+          renderList();
+          if (window.innerWidth <= 820) {
+            detailEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        };
+        listEl.appendChild(el);
+      }
+    }
+
+    async function loadDetail(id) {
+      detailEl.innerHTML = '<div class="loading">Loading…</div>';
+      try {
+        const ev = await fetchJSON('/api/safety/events/' + encodeURIComponent(id));
+        renderDetail(ev);
+      } catch (e) {
+        detailEl.innerHTML = `<div class="error">${escapeHtml(e.message)}</div>`;
+      }
+    }
+
+    function renderDetail(ev) {
+      const rv = ev.riskVector || {};
+      const tier = ev.tier;
+      const ts = ev.ts ? new Date(ev.ts).toLocaleString() : '?';
+      const cat = (rv.category || 'unknown').replace(/_/g, ' ');
+      const conv = ev.conversationId
+        ? `<a class="conv-link" href="/history.html" title="Open transcript viewer">conv ${escapeHtml(String(ev.conversationId).slice(-6))}</a>`
+        : '<span style="color:#9ca3af;">no conversation id</span>';
+
+      detailEl.innerHTML = `
+        <h2>
+          <span class="tier-pill t${tier}">Tier ${tier}</span>
+          <span class="cat-chip" style="margin-left:.4rem;">${escapeHtml(cat)}</span>
+        </h2>
+        <div class="field">
+          <div class="label">Scout</div>
+          <div class="value">${escapeHtml(ev.scoutEmail || '?')}</div>
+        </div>
+        <div class="field">
+          <div class="label">Triggering quote</div>
+          <div class="quote-block t${tier}">${rv.quote ? escapeHtml(rv.quote) : '(no quote — classifier returned empty)'}</div>
+        </div>
+        <div class="field">
+          <div class="label">Risk vector</div>
+          <div class="value">
+            severity=${escapeHtml(String(rv.severity ?? '?'))} ·
+            confidence=${typeof rv.confidence === 'number' ? rv.confidence.toFixed(3) : '?'} ·
+            initiator=${escapeHtml(rv.initiator || '?')}
+          </div>
+        </div>
+        ${ev.suppressedReason ? `
+          <div class="field">
+            <div class="label">Suppression / promotion reason</div>
+            <div class="value" style="font-style:italic; color:#6b7280;">${escapeHtml(ev.suppressedReason)}</div>
+          </div>
+        ` : ''}
+        <div class="field">
+          <div class="label">When</div>
+          <div class="value">${escapeHtml(ts)}</div>
+        </div>
+        <div class="field">
+          <div class="label">Conversation</div>
+          <div class="value">${conv}</div>
+        </div>
+        <div class="field">
+          <div class="label">Classifier version</div>
+          <div class="value" style="font-family:ui-monospace, monospace; font-size:.85rem;">${escapeHtml(ev.classifierVersion || '?')}</div>
+        </div>
+        <div class="field">
+          <div class="label">Notifications dispatched</div>
+          <div class="value">
+            ${(ev.notifications || []).map((n) => `
+              <div style="font-size:.85rem;">
+                ${escapeHtml(n.channel)} → ${escapeHtml(n.recipientRole)}
+                ${n.recipient ? '(' + escapeHtml(n.recipient) + ')' : ''}
+                · sent ${escapeHtml(new Date(n.sentAt).toLocaleString())}
+              </div>
+            `).join('') || '<span style="color:#9ca3af;">none</span>'}
+            <div style="margin-top:.4rem; color:#6b7280; font-size:.78rem; font-style:italic;">
+              Phase 1: detection only — no email/SMS/ntfy fires. Dashboard entry above is the only "notification" recorded.
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <div class="label">Case status</div>
+          <div class="value">${ev.caseClosed ? 'closed' : 'open'} ${ev.reviewedAt ? '· reviewed ' + escapeHtml(new Date(ev.reviewedAt).toLocaleString()) : ''}</div>
+        </div>
+      `;
+    }
+
+    // Tier filter buttons
+    for (const btn of tierBtns) {
+      btn.onclick = () => {
+        if (!state.user) return;
+        state.tier = btn.dataset.tier;
+        for (const b of tierBtns) b.classList.toggle('active', b === btn);
+        loadList();
+      };
+    }
+    openOnlyEl.onchange = () => state.user && loadList();
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+      }[c]));
+    }
+
+    function formatRelative(ts) {
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return '';
+      const sec = Math.round((Date.now() - d.getTime()) / 1000);
+      if (sec < 60) return 'just now';
+      const min = Math.round(sec / 60);
+      if (min < 60) return `${min}m ago`;
+      const hr = Math.round(min / 60);
+      if (hr < 24) return `${hr}h ago`;
+      const day = Math.round(hr / 24);
+      if (day < 30) return `${day}d ago`;
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+
+    try {
+      await loadUser();
+      if (!state.user.isAdmin) {
+        renderNonAdmin();
+        return;
+      }
+      clearError();
+      await loadList();
+    } catch (e) {
+      renderSignedOut();
+    }
+  })();
+  </script>
+</body>
+</html>

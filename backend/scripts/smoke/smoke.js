@@ -172,12 +172,75 @@ async function checkHistoryUnauth(browser) {
 
 async function checkApiUnauth() {
   const checks = [];
-  const r = await fetch(`${BASE}/api/summaries/mine`);
+  const summaries = await fetch(`${BASE}/api/summaries/mine`);
   checks.push([
-    `/api/summaries/mine → 401 unauth (got ${r.status})`,
-    r.status === 401,
+    `/api/summaries/mine → 401 unauth (got ${summaries.status})`,
+    summaries.status === 401,
   ]);
-  return { name: '/api/summaries/mine (unauth)', checks, errors: [], failedReqs: [] };
+  const safety = await fetch(`${BASE}/api/safety/events`);
+  checks.push([
+    `/api/safety/events → 401 unauth (got ${safety.status})`,
+    safety.status === 401,
+  ]);
+  return { name: 'api routes (unauth)', checks, errors: [], failedReqs: [] };
+}
+
+async function checkSafetyUnauth(browser) {
+  const ctx = await makeContext(browser);
+  const { page, status, errors, failedReqs } = await visit(ctx, `${BASE}/safety.html`, {
+    allowMissing: ['/auth/me'],
+  });
+
+  const checks = [];
+  checks.push(['HTTP 200', status === 200]);
+
+  // Tier filter buttons exist (static HTML — visible regardless of auth).
+  const tierBtns = await page.evaluate(() => {
+    return Array.from(document.querySelectorAll('.tier-btn')).map((b) => ({
+      tier: b.dataset.tier,
+      text: b.textContent.trim(),
+      active: b.classList.contains('active'),
+    }));
+  });
+  checks.push([
+    'tier-btns: All / 1 / 2 / 3 present',
+    tierBtns.length === 4 &&
+      tierBtns.map((b) => b.tier).join(',') === 'all,1,2,3',
+    JSON.stringify(tierBtns),
+  ]);
+  checks.push([
+    'All is the default-active filter',
+    tierBtns[0]?.active === true,
+  ]);
+
+  // Detail pane shows the sign-in prompt.
+  const detailHtml = await page.evaluate(
+    () => document.getElementById('detail')?.innerHTML || '',
+  );
+  checks.push([
+    'signed-out: detail pane shows sign-in prompt',
+    /Sign in to view/i.test(detailHtml),
+    detailHtml.slice(0, 160),
+  ]);
+
+  // Click another tier — should be inert (no user loaded), no crash.
+  await page.click('.tier-btn[data-tier="3"]');
+  await page.waitForTimeout(200);
+  const afterClick = await page.evaluate(() => {
+    const btns = Array.from(document.querySelectorAll('.tier-btn'));
+    return btns.map((b) => ({
+      tier: b.dataset.tier,
+      active: b.classList.contains('active'),
+    }));
+  });
+  checks.push([
+    'signed-out tier click is inert (active stays on All)',
+    afterClick[0]?.active === true && afterClick[3]?.active === false,
+    JSON.stringify(afterClick),
+  ]);
+
+  await ctx.close();
+  return { name: 'safety.html (unauth)', checks, errors, failedReqs };
 }
 
 // --- Authenticated suite ------------------------------------------------------
@@ -352,6 +415,7 @@ async function main() {
     console.log(`\n## Unauthenticated suite (BASE=${BASE})`);
     results.push(await checkAppUnauth(browser));
     results.push(await checkHistoryUnauth(browser));
+    results.push(await checkSafetyUnauth(browser));
 
     if (RUN_AUTH) {
       console.log(`\n## Authenticated suite`);
