@@ -59,6 +59,37 @@ echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.asc] http://dl.g
 sudo apt-get update && sudo apt-get install -y google-chrome-stable
 ```
 
+## Quick start on Windows
+
+If your workstation is Windows, the `windows/` subdir has PowerShell
+wrappers that bundle the steps below. From regular PowerShell (not WSL2,
+since the bootstrap step needs a real Chrome window):
+
+```powershell
+cd scripts\scoutbook-auth\windows
+
+# One-time interactive sign-in. Chrome opens, you sign in + click reCAPTCHA,
+# the script captures cookies and exits.
+.\bootstrap.ps1
+
+# Register the weekly headless refresh in Task Scheduler (default: Sunday 3am).
+# Run elevated the first time; the task itself runs as your normal user.
+.\install-task.ps1
+# Or pick a different time:  .\install-task.ps1 -Day Monday -At 06:30
+```
+
+After that, Task Scheduler runs `windows\refresh.ps1` weekly. Logs
+land in `windows\refresh.log` (rotated at 1 MB). The fresh JWT lands
+in `..\token.txt`. To verify on demand:
+
+```powershell
+Start-ScheduledTask -TaskName ScoutbookTokenRefresh
+Get-Content -Tail 30 .\refresh.log
+```
+
+The token can be consumed from WSL2 — it's just a file on the Windows
+filesystem at `\\wsl$\…` or `/mnt/c/…` from the WSL side.
+
 ## One-time bootstrap (do this on your workstation)
 
 The bootstrap step does the actual interactive sign-in, including the
