@@ -114,34 +114,86 @@ async function main() {
     let valid = picked && picked.payload.exp > nowSec + minMargin;
 
     if (BOOTSTRAP) {
-      // Block until JWT is detected (or 5min timeout).
+      // Block until JWT is detected (or 5min timeout). Bail early if the
+      // user closes the Chrome window — Playwright closes the context as
+      // soon as the last page is gone, but listening for that is more
+      // ergonomic than polling page.isClosed().
+      let userClosed = false;
+      const onClose = () => { userClosed = true; };
+      context.once("close", onClose);
+      page.once("close", onClose);
+
       if (!valid) {
-        console.log("[scoutbook-auth] Waiting for sign-in. Polling cookies every 2s…");
+        console.log("[scoutbook-auth] Waiting for sign-in. Polling cookies every 2s for up to 5 min.");
+        console.log("[scoutbook-auth] If Chrome isn't visible, check the taskbar / Alt-Tab.");
         const start = Date.now();
+        let lastProgressLog = 0;
         while (Date.now() - start < 5 * 60 * 1000) {
-          await page.waitForTimeout(2000);
-          picked = await readJwtFromContext(context);
+          if (userClosed) {
+            console.log("[scoutbook-auth] Chrome window closed before a JWT was captured. Re-run bootstrap.");
+            break;
+          }
+          await new Promise((r) => setTimeout(r, 2000));
+          picked = await readJwtFromContext(context).catch(() => null);
           valid = picked && picked.payload.exp > nowSec + minMargin;
           if (valid) break;
+
+          // Progress log every 30s with current page URL so user can see
+          // the script is alive and where the browser landed.
+          const elapsed = Date.now() - start;
+          if (elapsed - lastProgressLog >= 30_000) {
+            lastProgressLog = elapsed;
+            const url = page.isClosed?.() ? "(page closed)" : await page.url().catch(() => "(unknown)");
+            const sec = Math.round(elapsed / 1000);
+            console.log(`  [${sec}s] still waiting; page is at: ${url}`);
+          }
         }
       }
     }
 
     if (!valid) {
-      // Snapshot for diagnosis.
+      // Snapshot for diagnosis + dump every cookie on scouting.org so we
+      // can tell whether sign-in completed but our detector missed it,
+      // versus sign-in never happening.
       mkdirSync(DEBUG_DIR, { recursive: true });
       const shot = join(DEBUG_DIR, `failed-${Date.now()}.png`);
-      const finalUrl = page.url();
+      let finalUrl = "(unavailable)";
+      try { finalUrl = page.url(); } catch { /* page may be closed */ }
       try {
         await page.screenshot({ path: shot, fullPage: true });
-      } catch { /* ignore */ }
+      } catch { /* page closed or other transient issue */ }
+
+      let scoutingCookies = [];
+      try {
+        const all = await context.cookies();
+        scoutingCookies = all
+          .filter((c) => /scouting\.org$/i.test(c.domain))
+          .map((c) => ({
+            name: c.name,
+            domain: c.domain,
+            jwt: isJwtish(c.value),
+            valueLen: c.value.length,
+            expIn: c.expires > 0
+              ? `${Math.round((c.expires - Date.now() / 1000) / 86400)}d`
+              : "session",
+          }));
+      } catch { /* context may be closed */ }
 
       const onLogin = /\/login(\?|$)/.test(finalUrl);
       const hint = BOOTSTRAP
-        ? "No valid JWT cookie after 5min of waiting. Did sign-in complete? Check the open browser window or the screenshot."
+        ? "No valid JWT cookie after 5 min. Did sign-in complete? See the cookie dump below."
         : onLogin
-          ? "Session has expired (the SPA redirected to /login). Re-run with --bootstrap on a workstation with a residential IP, then re-sync the profile dir to this host."
+          ? "Session has expired (SPA redirected to /login). Re-run --bootstrap on a workstation with a residential IP."
           : "No valid JWT cookie in profile. Run with --bootstrap to sign in.";
+
+      console.error("[scoutbook-auth] cookies on *.scouting.org at failure time:");
+      if (scoutingCookies.length === 0) {
+        console.error("  (none)");
+      } else {
+        for (const c of scoutingCookies) {
+          console.error(`  ${c.name}@${c.domain}  jwt=${c.jwt}  len=${c.valueLen}  exp=${c.expIn}`);
+        }
+      }
 
       throw new Error(`${hint}\n  final URL: ${finalUrl}\n  screenshot: ${shot}`);
     }
