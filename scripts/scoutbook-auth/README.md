@@ -61,9 +61,24 @@ sudo apt-get update && sudo apt-get install -y google-chrome-stable
 
 ## Quick start on Windows
 
-If your workstation is Windows, the `windows/` subdir has PowerShell
-wrappers that bundle the steps below. From regular PowerShell (not WSL2,
-since the bootstrap step needs a real Chrome window):
+The `windows/` subdir holds three PowerShell scripts. Two of them
+(`install-task.ps1`, `refresh.ps1`) are real value-add — they wire up
+Windows Task Scheduler and serve as the entry point the scheduled task
+invokes. The third (`bootstrap.ps1`) is a thin convenience wrapper
+around `npm run bootstrap` that pre-sets env vars; you can skip it if
+you'd rather run things by hand.
+
+The architecture in one paragraph: the persistent Chrome profile lives
+on the **local Windows filesystem** at `%LOCALAPPDATA%\scoutbook-auth\`
+— not on the WSL UNC share, because Chrome on Windows is unreliable
+persisting cookies into a UNC profile dir. The repo itself can stay on
+`\\wsl.localhost\...`; only the live profile and token sit local. Both
+the bootstrap wrapper and `refresh.ps1` set `SCOUTBOOK_PROFILE_DIR` and
+`SCOUTBOOK_TOKEN_FILE` to that path so the two sides see the same
+state.
+
+From regular PowerShell (not WSL2 — bootstrap needs a Windows-native
+Chrome window):
 
 ```powershell
 cd scripts\scoutbook-auth\windows

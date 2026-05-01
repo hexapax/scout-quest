@@ -79,6 +79,22 @@ async function readJwtFromContext(context) {
 
 async function main() {
   if (BOOTSTRAP) {
+    // Catch the "ran bootstrap in the wrong place" case clearly. Headed
+    // Chrome needs a display server; headless cloud VMs (no DISPLAY,
+    // probably also a cloud IP that reCAPTCHA dislikes) are the wrong
+    // host for this step. Windows / Mac / WSL2-with-WSLg are fine.
+    if (process.platform === "linux" && !process.env.DISPLAY && !process.env.WAYLAND_DISPLAY && !process.env.SCOUTBOOK_ALLOW_HEADLESS_BOOTSTRAP) {
+      console.error("[scoutbook-auth] No display server detected ($DISPLAY and $WAYLAND_DISPLAY both unset).");
+      console.error("");
+      console.error("The bootstrap step needs a real desktop session because BSA's login");
+      console.error("page has reCAPTCHA. Run it on your laptop / desktop, not on a headless");
+      console.error("server. Bootstrap on the laptop, then the persistent profile will be");
+      console.error("reused by unattended refreshes there (or, if you really want to bootstrap");
+      console.error("on a headless box, set SCOUTBOOK_ALLOW_HEADLESS_BOOTSTRAP=1 and run under");
+      console.error("xvfb-run -- but reCAPTCHA will probably block you from a cloud IP).");
+      process.exit(2);
+    }
+
     console.log("[scoutbook-auth] BOOTSTRAP — opening headed Chrome.");
     console.log("    Profile dir : " + PROFILE_DIR);
     console.log("    Sign in manually (and complete the reCAPTCHA). The");
