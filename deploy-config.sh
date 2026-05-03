@@ -189,10 +189,14 @@ deploy() {
   # --- Upload combined config to VM ---
   echo ""
   echo "→ Uploading config files..."
-  # Clean stale temp dirs first to prevent SCP nesting issues
+  # Clean stale temp dirs first to prevent SCP nesting issues. Use sudo
+  # because /tmp/scout-config-* may have been left by a different user
+  # (e.g. an old service account from a prior deploy) — without sudo,
+  # rm -rf silently fails with EACCES, then the SCP below fails with a
+  # misleading "stat remote: No such file or directory". See issue #3.
   if [ "${MODE}" = "gcloud" ]; then
     gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=${PROJECT_ID} \
-      --command="rm -rf /tmp/scout-config-ai-chat /tmp/scout-config-scout-quest" 2>/dev/null || true
+      --command="sudo rm -rf /tmp/scout-config-ai-chat /tmp/scout-config-scout-quest"
     for INSTANCE in "${INSTANCES[@]}"; do
       gcloud compute scp --recurse "${TEMP_DIR}/${INSTANCE}" \
         "scout-coach-vm:/tmp/scout-config-${INSTANCE}" --zone=us-east4-b --project=${PROJECT_ID}
@@ -200,7 +204,7 @@ deploy() {
     done
   else
     ssh -o StrictHostKeyChecking=no "ubuntu@${MODE}" \
-      "rm -rf /tmp/scout-config-ai-chat /tmp/scout-config-scout-quest" 2>/dev/null || true
+      "sudo rm -rf /tmp/scout-config-ai-chat /tmp/scout-config-scout-quest"
     for INSTANCE in "${INSTANCES[@]}"; do
       ssh -o StrictHostKeyChecking=no "ubuntu@${MODE}" "mkdir -p /tmp/scout-config-${INSTANCE}"
       scp -o StrictHostKeyChecking=no -r "${TEMP_DIR}/${INSTANCE}/." \
