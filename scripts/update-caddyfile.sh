@@ -98,6 +98,19 @@ hexapax.com {
 mcp-proxy.hexapax.com {
     reverse_proxy localhost:8200
 }
+
+# scout-quest MCP servers — Streamable HTTP transport, bearer-token auth.
+# Each scout server gets a path here and can be added to a remote
+# claude.ai connector or referenced by mcp-remote in claude_desktop_config.json.
+mcp.hexapax.com {
+    handle /admin* {
+        reverse_proxy localhost:3083
+    }
+    # Future: /guide → 3084, /scout → 3085, etc.
+    handle /healthz {
+        reverse_proxy localhost:3083
+    }
+}
 CADDYEOF
 
 sudo systemctl reload caddy

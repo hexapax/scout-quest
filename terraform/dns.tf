@@ -98,6 +98,16 @@ resource "google_dns_record_set" "admin" {
   rrdatas      = [google_compute_address.static.address]
 }
 
+# --- mcp.hexapax.com (Streamable HTTP MCP servers, e.g. /admin) ---
+resource "google_dns_record_set" "mcp" {
+  project      = var.dns_project_id
+  name         = "mcp.hexapax.com."
+  type         = "A"
+  ttl          = 300
+  managed_zone = data.google_dns_managed_zone.hexapax.name
+  rrdatas      = [google_compute_address.static.address]
+}
+
 # --- jeremy.hexapax.com (personal memory viewer) ---
 resource "google_dns_record_set" "jeremy" {
   project      = var.dns_project_id
