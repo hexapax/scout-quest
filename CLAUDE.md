@@ -42,6 +42,7 @@ Deploy flow: pulls `.env` from GCS (secrets), combines with git-tracked `librech
 ./scripts/nvm-run.sh <cmd> [args]    # Run any command with nvm Node.js 24
 ./scripts/build-admin.sh [--docker]  # Build admin app (TS compile, optional Docker)
 ./scripts/deploy-admin.sh [gcloud]   # Full admin deploy: build, SCP, Docker, start
+./scripts/deploy-mcp-dist.sh         # Build MCP servers locally, ship dist/ to VM, restart
 ./scripts/ssh-vm.sh "command"        # Run a command on the VM via gcloud SSH
 ./scripts/update-caddyfile.sh        # Update Caddy with all three reverse proxy rules
 ```

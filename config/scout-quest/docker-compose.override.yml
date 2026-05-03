@@ -95,6 +95,35 @@ services:
     depends_on:
       - mongodb
 
+  # Remote MCP entry point for the admin server.
+  # Same tools as the stdio admin.ts that LibreChat spawns inside the api
+  # container, but exposed over Streamable HTTP at /admin so a laptop's
+  # Claude Desktop (via mcp-remote bridge, or registered as a claude.ai
+  # connector) can call them. Auth: shared-secret bearer token.
+  admin-mcp:
+    image: node:24-alpine
+    container_name: scout-quest-admin-mcp
+    ports:
+      # Bind localhost only — Caddy reverse-proxies from the same host.
+      - "127.0.0.1:3083:3083"
+    volumes:
+      - ./mcp-servers/scout-quest/dist:/app/dist:ro
+      - ./mcp-servers/scout-quest/node_modules:/app/node_modules:ro
+      - ./mcp-servers/scout-quest/package.json:/app/package.json:ro
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017/scoutquest"
+      LIBRECHAT_MONGO_URI: "mongodb://mongodb:27017/librechat"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY}"
+      ADMIN_EMAIL: "${ADMIN_EMAIL}"
+      MCP_BEARER_TOKEN: "${MCP_BEARER_TOKEN}"
+      MCP_HTTP_PORT: "3083"
+      MCP_HTTP_PATH: "/admin"
+    working_dir: /app
+    command: ["node", "/app/dist/admin-http.js"]
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+
 volumes:
   falkordb_data:
 
