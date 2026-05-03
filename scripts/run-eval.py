@@ -409,7 +409,36 @@ Examples:
             # Chain state management: chain items share a TestState
             chain_states: dict = {}  # chain_id -> TestState
 
+            # Per-item cost samples for this config — used by the pre-item
+            # budget guard. Reset per config because cost-per-item varies
+            # wildly between cheap (Gemini Flash, Grok Fast) and expensive
+            # (Sonnet/Opus on full knowledge layer) models.
+            config_item_costs: list[float] = []
+
             for item in items:
+                # Pre-item budget guard: refuse to start an item we likely
+                # can't afford. Uses the max observed item cost in this
+                # config as a conservative buffer. The first item in each
+                # config gets a free pass (no prior cost samples) — if it
+                # overshoots, the post-call BudgetExceeded inside record()
+                # still catches it.
+                if usage.budget is not None:
+                    if usage.totals["cost"] >= usage.budget:
+                        print(f"  [budget cap reached at ${usage.totals['cost']:.2f}/"
+                              f"${usage.budget:.2f} — skipping remaining items]")
+                        budget_stopped = True
+                        break
+                    if config_item_costs:
+                        next_estimate = max(config_item_costs)
+                        if usage.totals["cost"] + next_estimate > usage.budget:
+                            print(f"  [budget guard: ${usage.totals['cost']:.2f} + "
+                                  f"max-item ${next_estimate:.2f} would exceed "
+                                  f"${usage.budget:.2f} — stopping config]")
+                            budget_stopped = True
+                            break
+
+                cost_at_item_start = usage.totals["cost"]
+
                 sys.stdout.write(f"  {item.id}: {item.description[:50]}... ")
                 sys.stdout.flush()
 
@@ -543,6 +572,7 @@ Examples:
                     }
                     results.append(result_entry)
                     consecutive_errors = 0
+                    config_item_costs.append(usage.totals["cost"] - cost_at_item_start)
 
                     # Incremental save — viewer can show progress during long runs
                     all_results[config_key] = results
@@ -626,6 +656,12 @@ Examples:
             # Save incrementally
             with open(run_dir / "results.json", "w") as f:
                 json.dump(all_results, f, indent=2)
+
+            # Honor the pre-item budget guard at the config boundary too —
+            # otherwise we'd start the next config and burn its first item.
+            if budget_stopped:
+                print(f"  [budget cap reached — skipping remaining configs]")
+                break
 
     except BudgetExceeded:
         if results:
