@@ -98,15 +98,13 @@ resource "google_dns_record_set" "admin" {
   rrdatas      = [google_compute_address.static.address]
 }
 
-# --- mcp.hexapax.com (Streamable HTTP MCP servers, e.g. /admin) ---
-resource "google_dns_record_set" "mcp" {
-  project      = var.dns_project_id
-  name         = "mcp.hexapax.com."
-  type         = "A"
-  ttl          = 300
-  managed_zone = data.google_dns_managed_zone.hexapax.name
-  rrdatas      = [google_compute_address.static.address]
-}
+# NOTE: mcp.hexapax.com is intentionally NOT defined here. hexapax.com is
+# authoritative on Cloudflare (june+sevki.ns.cloudflare.com), not this
+# Cloud DNS zone, so records here are dead-letters that public DNS never
+# resolves. mcp.hexapax.com lives at Cloudflare as a DNS-only A record
+# pointing to the scout-coach-vm static IP. The records still listed in
+# this file (scout_quest, ai_chat, admin, jeremy, root, mx, etc.) are
+# similarly stale infrastructure — see issue #6 for the cleanup.
 
 # --- jeremy.hexapax.com (personal memory viewer) ---
 resource "google_dns_record_set" "jeremy" {
