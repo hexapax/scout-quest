@@ -870,6 +870,16 @@ export interface ScoutbookScoutDoc {
     hikingMiles: number;
     serviceHours: number;
   };
+  /**
+   * If true, the sync loop will skip this scout. Use for local test fixtures
+   * or stale records where BSA reliably returns 403/500 — we don't want BSA
+   * to chase down errors for accounts that don't exist on their side.
+   */
+  syncSkip?: boolean;
+  /** Human-readable reason for `syncSkip`, e.g. "BSA API 403 — local test fixture". */
+  syncSkipReason?: string;
+  /** Timestamp the skip flag was set. */
+  syncSkipSetAt?: Date;
   syncedAt: Date;
 }
 

@@ -774,11 +774,16 @@ export async function syncAll(client: ScoutbookApiClient): Promise<SyncAllResult
   const roster = await syncRoster(client);
 
   // Step 2: Sync each scout individually, continuing on failures.
-  // Skip scouts without a personGuid — those are local test fixtures (e.g. 99000001–99000005)
-  // and every BSA API call against them returns 500 "personGuid evaluated to null".
+  // Skip scouts without a personGuid AND scouts with syncSkip:true — those are
+  // local test fixtures (e.g. 99000001–99000005) where BSA reliably returns
+  // 403/500. We don't want BSA to chase down errors for accounts that don't
+  // exist on their side.
   const scoutsCol = await scoutbookScouts();
   const allScouts = await scoutsCol
-    .find({ personGuid: { $type: "string" } }, { projection: { userId: 1 } })
+    .find(
+      { personGuid: { $type: "string" }, syncSkip: { $ne: true } },
+      { projection: { userId: 1 } },
+    )
     .toArray();
   const scoutResults: SyncAllResult["scoutResults"] = [];
 

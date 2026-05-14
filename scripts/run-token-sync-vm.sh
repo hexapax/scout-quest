@@ -78,9 +78,13 @@ if (!TARGET_IDS) {
 }
 
 const scoutsCol = await scoutbookScouts();
+// Non-targeted sync: require personGuid AND skip records flagged syncSkip:true
+// (e.g. local test fixtures 99000001-5 that BSA returns 403 for — we do not
+// want BSA chasing down errors for accounts that do not exist on their side).
+// Targeted sync (--scout-ids) still respects syncSkip so explicit skips win.
 const filter = TARGET_IDS
-  ? { userId: { $in: TARGET_IDS } }
-  : { personGuid: { $type: "string" } };
+  ? { userId: { $in: TARGET_IDS }, syncSkip: { $ne: true } }
+  : { personGuid: { $type: "string" }, syncSkip: { $ne: true } };
 const scouts = await scoutsCol
   .find(filter, { projection: { userId: 1, firstName: 1, lastName: 1, personGuid: 1 } })
   .toArray();
@@ -89,12 +93,21 @@ const scouts = await scoutsCol
 const realScouts = scouts.filter(s => typeof s.personGuid === "string" && s.personGuid.length > 0);
 const skipped = scouts.length - realScouts.length;
 
+// Report how many records the syncSkip flag suppressed (excluding the personGuid-null
+// strip above, since they would not appear in `scouts` anyway).
+const skipFlagged = await scoutsCol.countDocuments(
+  TARGET_IDS
+    ? { userId: { $in: TARGET_IDS }, syncSkip: true }
+    : { personGuid: { $type: "string" }, syncSkip: true },
+);
+
 if (TARGET_IDS && realScouts.length === 0) {
   console.error("No real scouts matched. Targeted IDs: " + TARGET_IDS.join(","));
+  console.error("(" + skipFlagged + " of those carry syncSkip:true — clear the flag to re-include)");
   process.exit(1);
 }
 
-console.log(`\n[2/4] Scouts (${realScouts.length} to sync${skipped > 0 ? ", " + skipped + " test/no-guid skipped" : ""})...`);
+console.log(`\n[2/4] Scouts (${realScouts.length} to sync${skipped > 0 ? ", " + skipped + " test/no-guid skipped" : ""}${skipFlagged > 0 ? ", " + skipFlagged + " syncSkip-flagged" : ""})...`);
 let ok = 0, fail = 0;
 for (let i = 0; i < realScouts.length; i++) {
   const s = realScouts[i];
