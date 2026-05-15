@@ -29,6 +29,59 @@ import {
 } from "./collections.js";
 
 // ---------------------------------------------------------------------------
+// Filter helpers — SINGLE-PATH: every per-scout iteration goes through this.
+// If you find yourself writing `find({ personGuid: ... })` somewhere else,
+// import this instead. See ~/.claude/shared/single-path-principle.md.
+// ---------------------------------------------------------------------------
+
+/** A scout we'll consider for sync (real personGuid, syncSkip flag respected). */
+export interface ScoutToSync {
+  userId: string;
+  firstName?: string;
+  lastName?: string;
+  personGuid: string;
+}
+
+/**
+ * Return the scouts a sync pass should iterate over.
+ *
+ * Always excludes:
+ *   - Records without a personGuid (local fixtures BSA can't resolve).
+ *   - Records flagged `syncSkip: true` (BSA returns 403/500 reliably; we
+ *     don't want them chasing errors for accounts that don't exist on
+ *     their side).
+ *
+ * @param opts.targetUserIds  If provided, restricts to these userIds (still
+ *                            subject to the personGuid + syncSkip filters).
+ */
+export async function getScoutsToSync(opts?: {
+  targetUserIds?: readonly string[];
+}): Promise<ScoutToSync[]> {
+  const col = await scoutbookScouts();
+  const filter: Record<string, unknown> = {
+    personGuid: { $type: "string" },
+    syncSkip: { $ne: true },
+  };
+  if (opts?.targetUserIds && opts.targetUserIds.length > 0) {
+    filter.userId = { $in: [...opts.targetUserIds] };
+  }
+  const docs = await col
+    .find(filter, {
+      projection: { userId: 1, firstName: 1, lastName: 1, personGuid: 1 },
+    })
+    .toArray();
+  // Defensive strip: a record with personGuid:"" would slip past the $type filter.
+  return docs
+    .filter((s) => typeof s.personGuid === "string" && s.personGuid.length > 0)
+    .map((s) => ({
+      userId: s.userId,
+      firstName: s.firstName,
+      lastName: s.lastName,
+      personGuid: s.personGuid,
+    }));
+}
+
+// ---------------------------------------------------------------------------
 // Result types
 // ---------------------------------------------------------------------------
 
@@ -774,17 +827,8 @@ export async function syncAll(client: ScoutbookApiClient): Promise<SyncAllResult
   const roster = await syncRoster(client);
 
   // Step 2: Sync each scout individually, continuing on failures.
-  // Skip scouts without a personGuid AND scouts with syncSkip:true — those are
-  // local test fixtures (e.g. 99000001–99000005) where BSA reliably returns
-  // 403/500. We don't want BSA to chase down errors for accounts that don't
-  // exist on their side.
-  const scoutsCol = await scoutbookScouts();
-  const allScouts = await scoutsCol
-    .find(
-      { personGuid: { $type: "string" }, syncSkip: { $ne: true } },
-      { projection: { userId: 1 } },
-    )
-    .toArray();
+  // Selection rules live in getScoutsToSync — see that helper for the filter.
+  const allScouts = await getScoutsToSync();
   const scoutResults: SyncAllResult["scoutResults"] = [];
 
   for (const scout of allScouts) {

@@ -135,6 +135,27 @@ export class ScoutbookApiClient {
     return this.jwt!;
   }
 
+  /**
+   * Inject a pre-acquired JWT (e.g. one copied from a my.scouting.org cookie)
+   * and disable BSA re-auth. Used by the token-sync CLI path while BSA's
+   * automated login flow is 503'ing. The injected token is treated as the
+   * canonical credential until process exit — `authenticate()` becomes a
+   * no-op and `ensureAuth()` returns the same token regardless of expiry,
+   * so a transient 401 cannot trigger a real BSA auth call with dummy creds.
+   */
+  injectToken(token: string): void {
+    const payload = decodeJwtPayload(token);
+    this.jwt = token;
+    this.jwtExp = payload.exp;
+    // Replace both auth methods so the 401-retry path in fetchJson() does not
+    // round-trip to BSA with whatever SCOUTBOOK_PASSWORD env we happen to have.
+    this.authenticate = async () => {
+      this.jwt = token;
+      this.jwtExp = payload.exp;
+    };
+    this.ensureAuth = async () => token;
+  }
+
   // -------------------------------------------------------------------------
   // Rate limiting
   // -------------------------------------------------------------------------
