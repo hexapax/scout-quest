@@ -85,18 +85,27 @@ export function registerGetScoutDashboard(server: McpServer, guideEmail: string)
       }
 
       // --- Budget health (last 30 days) ---
+      // BudgetEntry is a weekly record (week_start, week_number) with `income`
+      // and `expenses` as ARRAYS of line items, not a flat {type, amount}
+      // shape. This block previously read .type/.amount off the entry — a
+      // leftover from an earlier schema. Aligned with the canonical producer
+      // in tools/scout/logBudgetEntry.ts.
       try {
         const budgetCol = await budgetEntries();
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         const recentEntries = await budgetCol
-          .find({ scout_email, date: { $gte: thirtyDaysAgo } })
+          .find({ scout_email, week_start: { $gte: thirtyDaysAgo } })
           .toArray();
-        const income = recentEntries
-          .filter((e) => e.type === "income")
-          .reduce((sum, e) => sum + (e.amount ?? 0), 0);
-        const expenses = recentEntries
-          .filter((e) => e.type === "expense")
-          .reduce((sum, e) => sum + (e.amount ?? 0), 0);
+        const income = recentEntries.reduce(
+          (sum, e) =>
+            sum + (e.income ?? []).reduce((s, item) => s + (item.amount ?? 0), 0),
+          0,
+        );
+        const expenses = recentEntries.reduce(
+          (sum, e) =>
+            sum + (e.expenses ?? []).reduce((s, item) => s + (item.amount ?? 0), 0),
+          0,
+        );
         if (recentEntries.length > 0) {
           lines.push(`Budget (last 30 days): +$${income.toFixed(2)} income, -$${expenses.toFixed(2)} expenses`);
         }
