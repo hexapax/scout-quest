@@ -1,4 +1,24 @@
 #!/bin/bash
+# !!! DEPRECATED 2026-05-15 — DO NOT EXTEND !!!
+#
+# Sync internals (auth shim, per-scout iteration, syncSkip filter, jitter)
+# have moved into a canonical CLI subcommand:
+#     dist/scoutbook/cli.js sync-with-token
+# called by `scripts/run-token-sync-vm.sh` (thin SSH wrapper).
+#
+# This script's *distinct* value is the CDP token-scrape step (step b below).
+# Everything after the scrape duplicates the new CLI and will silently drift.
+#
+# REMOVAL CONDITION: either (a) this script is refactored so only the CDP
+# scrape is local and the sync delegates to `cli.js sync-with-token`, or
+# (b) the CDP scrape itself is abandoned and the file is deleted outright.
+# REMOVE BY: 2026-07-01 if neither has happened. (Don't accept "patched it
+# in both places" as a resolution — that's the bug.)
+#
+# See ~/.claude/shared/single-path-principle.md for why this matters.
+# ---------------------------------------------------------------------------
+# Original purpose (still accurate for steps a–b):
+#
 # Scoutbook data sync using a manually-obtained JWT token.
 #
 # The BSA auth endpoint is broken (503), so we extract the token
@@ -14,8 +34,8 @@
 # The script will:
 #   a) Connect to Chrome CDP on port 9222
 #   b) Extract the JWT from cookies
-#   c) Run the Scoutbook sync-all against production MongoDB
-#   d) Reload the FalkorDB graph
+#   c) Run the Scoutbook sync-all against production MongoDB    [duplicates cli.js]
+#   d) Reload the FalkorDB graph                                 [duplicates ssh-vm.sh]
 
 set -euo pipefail
 

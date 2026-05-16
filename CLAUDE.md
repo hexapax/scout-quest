@@ -116,6 +116,12 @@ Terraform manages DNS records in the `hexapax-com` zone owned by the `hexapax-we
 - `docs/plans/` — Design specs and implementation plans
 - `mcp-servers/scout-quest/` — MCP server source (TypeScript, two entry points)
 
+## Shared Principles
+
+This project explicitly opts into the global Single-Path Principle. Before adding a "new" code path next to an existing one, read it — it almost always says don't.
+
+@~/.claude/shared/single-path-principle.md
+
 ## Conventions
 
 - **Secrets** go in `.env` files synced via GCS, never committed to git
