@@ -122,14 +122,18 @@ async function loadGraph(): Promise<void> {
 
   await batchWrite(scoutQueries, "Scout nodes");
 
-  // ── 2. Load canonical Advancement nodes (deduplicated by advancementId) ──
+  // ── 2. Load canonical Advancement nodes (deduplicated by (type, advancementId)) ──
+  // BSA uses overlapping advancementId namespaces for rank / meritBadge / award
+  // (e.g. rank=8 is Arrow of Light AND meritBadge=8 is Art). Deduping by
+  // advancementId alone collapses them into one node and silently mis-routes
+  // every HAS_ADVANCEMENT edge in the affected range. Compound key fixes it.
   console.log("Loading advancement nodes...");
   const advancements = await db.collection<AdvancementDoc>("scoutbook_advancement").find().toArray();
 
-  // Deduplicate by advancementId
-  const advMap = new Map<number, AdvancementDoc>();
+  const advMap = new Map<string, AdvancementDoc>();
   for (const a of advancements) {
-    if (!advMap.has(a.advancementId)) advMap.set(a.advancementId, a);
+    const key = `${a.type}:${a.advancementId}`;
+    if (!advMap.has(key)) advMap.set(key, a);
   }
 
   // Rank level lookup — handles both "Star" and "Star Scout" variants
@@ -156,6 +160,7 @@ async function loadGraph(): Promise<void> {
   await batchWrite(advNodeQueries, "Advancement nodes");
 
   // ── 3. Scout ↔ Advancement edges ──────────────────────────────────────────
+  // MATCH must include type alongside advancementId — see the advMap comment above.
   console.log("Creating scout-advancement edges...");
   const edgeQueries = advancements.map((a) => {
     const status = a.status.replace(/'/g, "\\'");
@@ -163,7 +168,7 @@ async function loadGraph(): Promise<void> {
     const dateCompleted = a.dateCompleted ? `'${a.dateCompleted}'` : "null";
     return (
       `MATCH (s:Scout {userId: '${a.userId}'}), ` +
-      `(adv:Advancement {advancementId: ${a.advancementId}}) ` +
+      `(adv:Advancement {advancementId: ${a.advancementId}, type: '${a.type}'}) ` +
       `CREATE (s)-[:HAS_ADVANCEMENT {status: '${status}', ` +
       `percentCompleted: ${a.percentCompleted}, ` +
       `dateStarted: ${dateStarted}, dateCompleted: ${dateCompleted}}]->(adv)`
@@ -172,14 +177,16 @@ async function loadGraph(): Promise<void> {
 
   await batchWrite(edgeQueries, "Scout-Advancement edges");
 
-  // ── 4. Requirement nodes (deduplicated by reqId + advancementId) ──────────
+  // ── 4. Requirement nodes (deduplicated by (advancementType, advancementId, reqId)) ──
+  // Same collision risk as Advancement: a rank's reqId can match a meritBadge's
+  // reqId numerically. Mongo's upsert key is (userId, advancementType,
+  // advancementId, reqId) — the canonical dedup mirrors that minus userId.
   console.log("Loading requirement nodes...");
   const requirements = await db.collection<RequirementDoc>("scoutbook_requirements").find().toArray();
 
-  // Deduplicate canonical requirements
   const reqMap = new Map<string, RequirementDoc>();
   for (const r of requirements) {
-    const key = `${r.advancementId}:${r.reqId}`;
+    const key = `${r.advancementType}:${r.advancementId}:${r.reqId}`;
     if (!reqMap.has(key)) reqMap.set(key, r);
   }
 
@@ -197,11 +204,13 @@ async function loadGraph(): Promise<void> {
   await batchWrite(reqNodeQueries, "Requirement nodes");
 
   // ── 5. Advancement → Requirement edges ───────────────────────────────────
+  // MATCH on both Advancement and Requirement must include the type
+  // discriminator to avoid the same collision the dedup just guarded against.
   console.log("Creating advancement-requirement edges...");
   const advReqEdges = Array.from(reqMap.values()).map((r) => {
     return (
-      `MATCH (adv:Advancement {advancementId: ${r.advancementId}}), ` +
-      `(req:Requirement {reqId: ${r.reqId}, advancementId: ${r.advancementId}}) ` +
+      `MATCH (adv:Advancement {advancementId: ${r.advancementId}, type: '${r.advancementType}'}), ` +
+      `(req:Requirement {reqId: ${r.reqId}, advancementId: ${r.advancementId}, advancementType: '${r.advancementType}'}) ` +
       `CREATE (adv)-[:HAS_REQUIREMENT]->(req)`
     );
   });
@@ -218,7 +227,7 @@ async function loadGraph(): Promise<void> {
     const leaderDate = r.leaderApprovedDate ? `'${r.leaderApprovedDate}'` : "null";
     return (
       `MATCH (s:Scout {userId: '${r.userId}'}), ` +
-      `(req:Requirement {reqId: ${r.reqId}, advancementId: ${r.advancementId}}) ` +
+      `(req:Requirement {reqId: ${r.reqId}, advancementId: ${r.advancementId}, advancementType: '${r.advancementType}'}) ` +
       `CREATE (s)-[:COMPLETED_REQ {dateCompleted: ${dateCompleted}, leaderApprovedDate: ${leaderDate}}]->(req)`
     );
   });
@@ -226,7 +235,7 @@ async function loadGraph(): Promise<void> {
   const startedEdges = startedNotCompleted.map((r) => {
     return (
       `MATCH (s:Scout {userId: '${r.userId}'}), ` +
-      `(req:Requirement {reqId: ${r.reqId}, advancementId: ${r.advancementId}}) ` +
+      `(req:Requirement {reqId: ${r.reqId}, advancementId: ${r.advancementId}, advancementType: '${r.advancementType}'}) ` +
       `CREATE (s)-[:STARTED_REQ]->(req)`
     );
   });
