@@ -75,12 +75,14 @@ echo "  Tarball: $(du -h "$TARBALL" | cut -f1)"
 echo ""
 echo "=== Uploading to VM ==="
 if [ "$MODE" = "gcloud" ]; then
-  gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" \
-    --command="rm -rf /tmp/scout-backend-deploy && mkdir -p /tmp/scout-backend-deploy" 2>/dev/null || true
+  # Use sudo so cleanup works when the staging dir is owned by a different
+  # OS-Login user from a previous deploy (e.g. different SA impersonation).
+  gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" --tunnel-through-iap \
+    --command="sudo rm -rf /tmp/scout-backend-deploy && sudo mkdir -p /tmp/scout-backend-deploy && sudo chown \$(whoami) /tmp/scout-backend-deploy" 2>/dev/null || true
 
   gcloud compute scp "$TARBALL" \
     "scout-coach-vm:/tmp/scout-backend-deploy/backend-deploy.tar.gz" \
-    --zone=us-east4-b --project="$PROJECT_ID"
+    --zone=us-east4-b --project="$PROJECT_ID" --tunnel-through-iap
 else
   ssh -o StrictHostKeyChecking=no "ubuntu@$MODE" \
     "rm -rf /tmp/scout-backend-deploy && mkdir -p /tmp/scout-backend-deploy" 2>/dev/null || true
@@ -147,7 +149,7 @@ echo "  Backend deployed!"
 '
 
 if [ "$MODE" = "gcloud" ]; then
-  gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" --command="$REMOTE_SCRIPT"
+  gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" --tunnel-through-iap --command="$REMOTE_SCRIPT"
 else
   ssh -o StrictHostKeyChecking=no "ubuntu@$MODE" "$REMOTE_SCRIPT"
 fi
