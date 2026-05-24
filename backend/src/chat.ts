@@ -212,14 +212,23 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
   }
 
   try {
-    // Models with context windows too small for full knowledge (~177K tokens).
-    // These get compact knowledge (~115K tokens) instead.
-    // Match against the raw model string (e.g., "scout-coach:deepseek/deepseek-v3.2").
-    const COMPACT_KNOWLEDGE_PATTERNS = [
-      "deepseek",   // DeepSeek V3/V3.2: 163K context
-      "grok-3",     // Grok 3: 131K context
+    // Knowledge-block sizing vs the target model's context window.
+    // The FULL knowledge block is ~177K tokens; once persona (~11K), per-user
+    // context, tool definitions, and the multi-turn tool-loop history stack on
+    // top, it only fits models with a very large (>=~1M) context window. So we
+    // DEFAULT to the compact (~115K) block and use full ONLY for large-context
+    // models. Loading full on a 200K model (the Anthropic default behind the
+    // scout-coach / scout-guide / scoutmaster personas) overflowed the window
+    // and made Anthropic reject the request with a hard 400 — the "chat mode
+    // failed" outage (2026-05-18 -> 05-24). deepseek (163K) / grok-3 (131K)
+    // can't fit full either, so default-compact keeps them correct too.
+    // Match against the raw model string (e.g. "scout-coach:gemini-2.5-pro").
+    const LARGE_CONTEXT_PATTERNS = [
+      "gemini",  // Gemini 1.5 / 2.x: 1M+ tokens
+      "1m",      // any explicit 1M-context model variant
     ];
-    const needsCompact = COMPACT_KNOWLEDGE_PATTERNS.some(p => model.includes(p));
+    const hasLargeContext = LARGE_CONTEXT_PATTERNS.some(p => model.toLowerCase().includes(p));
+    const needsCompact = !hasLargeContext;
 
     // Resolve persona by role, not model name. Two personas total:
     //   scout-coach  — Woody tone for scouts
@@ -233,7 +242,7 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
       getKnowledgeBlock(needsCompact), // [0] BSA knowledge — cached (ephemeral)
       getPersonaBlock(personaKey),      // [1] Agent persona (scout-coach or adult-guide)
     ];
-    if (needsCompact) console.log(`[chat] Using compact knowledge for model ${model}`);
+    console.log(`[chat] knowledge=${needsCompact ? "compact(~115K)" : "full(~177K)"} model=${model}`);
 
     // [2] Per-user context (dynamic — not cached)
     if (userEmail) {
@@ -480,13 +489,26 @@ Rules for voice output:
           workingReq = { ...workingReq, messages: updatedMessages };
         }
       } catch (streamErr) {
-        console.error("Stream error:", streamErr);
+        // Surface the real provider error (status + type + message) instead of
+        // swallowing it — a silent generic string is what made the 2026-05
+        // context-overflow 400s un-diagnosable without DB forensics.
+        const se = streamErr as any;
+        console.error(
+          `[chat] stream failed model=${model} status=${se?.status ?? "?"} ` +
+          `type=${se?.error?.type ?? se?.name ?? "?"} ` +
+          `msg=${se?.error?.message ?? se?.message ?? String(streamErr)}`,
+        );
         // Fallback: try a non-streaming complete() call
         try {
           const fallbackResp = await provider.complete(providerReq);
           writeContentChunk(res, requestId, model, fallbackResp.text);
         } catch (fallbackErr) {
-          console.error("Fallback complete() also failed:", fallbackErr);
+          const fe = fallbackErr as any;
+          console.error(
+            `[chat] fallback complete() failed model=${model} status=${fe?.status ?? "?"} ` +
+            `type=${fe?.error?.type ?? fe?.name ?? "?"} ` +
+            `msg=${fe?.error?.message ?? fe?.message ?? String(fallbackErr)}`,
+          );
           writeContentChunk(res, requestId, model, "I encountered an error processing your request.");
         }
       }

@@ -57,6 +57,12 @@ mkdir -p "$STAGE_DIR"
 cp -r "$BACKEND_DIR/dist" "$BACKEND_DIR/node_modules" "$BACKEND_DIR/knowledge" "$BACKEND_DIR/public" "$STAGE_DIR/"
 cp "$BACKEND_DIR/package.json" "$BACKEND_DIR/package-lock.json" "$BACKEND_DIR/Dockerfile" "$STAGE_DIR/"
 
+# Stage the cost rate card so the container can resolve config/pricing.yaml
+# (the Dockerfile COPYs config/). Without this the backend logs ENOENT at
+# startup and every costUsd falls back to 0.
+mkdir -p "$STAGE_DIR/config"
+cp "$PROJECT_ROOT/config/pricing.yaml" "$STAGE_DIR/config/"
+
 # Stamp the staged copy
 for f in "$STAGE_DIR/public/voice.html" "$STAGE_DIR/public/app.html"; do
   if [ -f "$f" ]; then
@@ -68,7 +74,7 @@ done
 
 TARBALL="$TEMP_DIR/backend-deploy.tar.gz"
 cd "$STAGE_DIR"
-tar czf "$TARBALL" dist/ node_modules/ knowledge/ public/ package.json package-lock.json Dockerfile
+tar czf "$TARBALL" dist/ node_modules/ knowledge/ public/ config/ package.json package-lock.json Dockerfile
 echo "  Tarball: $(du -h "$TARBALL" | cut -f1)"
 
 # --- Upload to VM ---

@@ -72,10 +72,11 @@ function getGeminiProvider(): GeminiProvider {
   if (!geminiProvider) {
     const hasKey = process.env.GEMINI_API_KEY
       || process.env.GOOGLE_API_KEY
-      || process.env.GOOGLE_KEY;
+      || process.env.GOOGLE_KEY
+      || process.env.GEMINI_KEY;   // the name the scout-quest stack actually sets
     if (!hasKey) {
       throw new Error(
-        "No Gemini API key set — expected GEMINI_API_KEY, GOOGLE_API_KEY, or GOOGLE_KEY",
+        "No Gemini API key set — expected GEMINI_API_KEY, GOOGLE_API_KEY, GOOGLE_KEY, or GEMINI_KEY",
       );
     }
     geminiProvider = new GeminiProvider();

@@ -9,7 +9,7 @@
  * in a `yaml` dependency. If we ever need real YAML support, swap in `yaml`.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { execSync } from "node:child_process";
@@ -44,8 +44,17 @@ interface PricingFileMeta {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// backend/dist/cost → ../../../config/pricing.yaml ; backend/src/cost → ../../../config/pricing.yaml
-const PRICING_PATH = resolve(__dirname, "../../../config/pricing.yaml");
+// Resolve pricing.yaml across both layouts:
+//   dev:       backend/{src,dist}/cost → ../../../config/pricing.yaml  (repo root)
+//   container: /app/dist/cost → ../../config/pricing.yaml = /app/config  (config/ is
+//              COPYed into the image by the Dockerfile + staged by deploy-backend.sh)
+// Previously only the dev path was tried, so the container logged ENOENT and all
+// costUsd fell back to 0.
+const PRICING_CANDIDATES = [
+  resolve(__dirname, "../../../config/pricing.yaml"),
+  resolve(__dirname, "../../config/pricing.yaml"),
+];
+const PRICING_PATH = PRICING_CANDIDATES.find(existsSync) ?? PRICING_CANDIDATES[0];
 
 let pricing: Record<string, ModelPricing> = {};
 let meta: PricingFileMeta = { path: "config/pricing.yaml", contentHash: "", commitHash: null };
