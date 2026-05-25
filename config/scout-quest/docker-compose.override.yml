@@ -1,6 +1,7 @@
 services:
   api:
     container_name: scout-quest-api
+    mem_limit: 512m   # cap: contain runaway -> cgroup OOM (alertable), not whole-box OOM
     volumes:
       - type: bind
         source: ./librechat.yaml
@@ -22,6 +23,7 @@ services:
   backend:
     build: ./backend
     container_name: scout-quest-backend
+    mem_limit: 512m   # active voice-chat app — headroom above its working set
     ports:
       - "3090:3090"
     environment:
@@ -52,6 +54,7 @@ services:
   falkordb:
     image: falkordb/falkordb:latest
     container_name: scout-quest-falkordb
+    mem_limit: 256m
     volumes:
       - falkordb_data:/data
     networks:
@@ -60,22 +63,27 @@ services:
 
   mongodb:
     container_name: scout-quest-mongodb
+    mem_limit: 512m   # raise if WiredTiger cache grows (container-OOM alert will flag it)
     networks:
       - default
       - scout-shared
 
   meilisearch:
     container_name: scout-quest-meilisearch
+    mem_limit: 256m
 
   vectordb:
     container_name: scout-quest-vectordb
+    mem_limit: 256m
 
   rag_api:
     container_name: scout-quest-rag-api
+    mem_limit: 256m
 
   cron:
     image: node:24-alpine
     container_name: scout-quest-cron
+    mem_limit: 128m
     volumes:
       - ./mcp-servers/scout-quest/dist:/app/dist:ro
       - ./mcp-servers/scout-quest/node_modules:/app/node_modules:ro
@@ -103,6 +111,7 @@ services:
   admin-mcp:
     image: node:24-alpine
     container_name: scout-quest-admin-mcp
+    mem_limit: 256m
     ports:
       # Bind localhost only — Caddy reverse-proxies from the same host.
       - "127.0.0.1:3083:3083"

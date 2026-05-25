@@ -1,6 +1,7 @@
 services:
   api:
     container_name: ai-chat-api
+    mem_limit: 512m   # cap: contain runaway -> cgroup OOM (alertable), not whole-box OOM
     volumes:
       - type: bind
         source: ./librechat.yaml
@@ -20,18 +21,22 @@ services:
 
   mongodb:
     container_name: ai-chat-mongodb
+    mem_limit: 512m   # raise if WiredTiger cache grows (container-OOM alert will flag it)
     networks:
       - default
       - scout-shared
 
   meilisearch:
     container_name: ai-chat-meilisearch
+    mem_limit: 256m
 
   vectordb:
     container_name: ai-chat-vectordb
+    mem_limit: 256m
 
   rag_api:
     container_name: ai-chat-rag-api
+    mem_limit: 256m
 
 networks:
   scout-shared:
