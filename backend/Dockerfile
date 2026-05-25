@@ -7,6 +7,7 @@ COPY package*.json ./
 COPY dist/ ./dist/
 COPY knowledge/ ./knowledge/
 COPY public/ ./public/
+COPY config/ ./config/
 
 # Install production dependencies only
 RUN npm ci --omit=dev

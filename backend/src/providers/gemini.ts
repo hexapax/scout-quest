@@ -9,6 +9,7 @@
  *   1. GEMINI_API_KEY  (preferred — matches backend convention)
  *   2. GOOGLE_API_KEY
  *   3. GOOGLE_KEY      (the env var already used by scripts/)
+ *   4. GEMINI_KEY      (the name the scout-quest docker stack sets)
  */
 
 import { GoogleGenAI } from "@google/genai";
@@ -258,6 +259,7 @@ function resolveApiKey(): string | undefined {
     process.env.GEMINI_API_KEY
     || process.env.GOOGLE_API_KEY
     || process.env.GOOGLE_KEY
+    || process.env.GEMINI_KEY   // the name the scout-quest stack actually sets
     || undefined
   );
 }
