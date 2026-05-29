@@ -476,7 +476,7 @@ async function loadGraph(): Promise<void> {
     if (embeddedCount > 0 && dim > 0) {
       try {
         await graphWrite(
-          `CALL db.idx.vector.createNodeIndex('ChunkVector', 'embedding', ${dim}, 'cosine')`
+          `CREATE VECTOR INDEX FOR (c:ChunkVector) ON (c.embedding) OPTIONS {dimension:${dim}, similarityFunction:'cosine'}`
         );
         console.log(`  Vector index created (${dim} dimensions, cosine)`);
       } catch (err) {
