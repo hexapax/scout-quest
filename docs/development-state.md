@@ -1,6 +1,6 @@
 # Scout Quest — Development State
 
-**Last updated:** 2026-04-26
+**Last updated:** 2026-07-06 — retrospective refresh covering everything landed through 2026-05-29 (the most recent commit). The repo has been idle since then; the 2026-06-07 alpha target passed with no launch or re-plan recorded here.
 
 ## Active roadmap
 
@@ -11,35 +11,44 @@ The current direction is the **Alpha Evolution Roadmap** (`docs/plans/2026-04-26
 | A — Roles | ✅ landed 2026-04-16 | 2026-04-16-alpha-launch-plan.md |
 | D — Eval cleanup + multi-model tools | ✅ landed 2026-04-16 | 2026-04-16-alpha-launch-plan.md |
 | C — Cost logging | ✅ landed | 2026-04-16-alpha-launch-plan.md |
-| B' — Parent visibility (finish) | 🟡 partial — needs summary integration | 2026-04-16-alpha-launch-plan.md + 2026-04-26-scout-state-and-summaries.md |
+| B' — Parent visibility (finish) | 🟡 mostly closed — Summaries tab + Coach recap card landed via Stream G; safety banners await Stream H | 2026-04-16-alpha-launch-plan.md + 2026-04-26-scout-state-and-summaries.md |
 | E — UI polish + voice | 🟡 partial | 2026-04-16-alpha-launch-plan.md |
 | F — Onboarding + runbook | ⬜ not started | 2026-04-16-alpha-launch-plan.md |
-| **G — Scout state + summaries** | ⬜ designed 2026-04-26 | 2026-04-26-scout-state-and-summaries.md |
-| **H — Safety flagging** | ⬜ designed 2026-04-26 | 2026-04-26-safety-flagging.md |
-| **I — Observability + budget** | ⬜ designed 2026-04-26 | 2026-04-26-observability-cicd.md |
-| **J — CI/CD eval gates** | ⬜ designed 2026-04-26 | 2026-04-26-observability-cicd.md |
+| **G — Scout state + summaries** | ✅ landed 2026-04-29 (steps 1–10; step-11 tests partial) | 2026-04-26-scout-state-and-summaries.md |
+| **H — Safety flagging** | 🟡 half — classifier + tier rules + store + Safety Queue landed 2026-04-30; **notification routing (steps 5–13) not built** | 2026-04-26-safety-flagging.md |
+| **I — Observability + budget** | ⬜ designed, not started | 2026-04-26-observability-cicd.md |
+| **J — CI/CD eval gates** | ⬜ designed, not started | 2026-04-26-observability-cicd.md |
 | **K — Stable + Dev envs** (post-alpha) | ⬜ designed 2026-04-26 | 2026-04-26-ab-environments.md |
 | Tool hardening | ⬜ scoped | 2026-04-26-alpha-evolution-roadmap.md |
 
-Target alpha launch: **2026-06-07** (realistic) / 2026-05-24 (aggressive with three-agent parallelism).
+Target alpha launch was **2026-06-07**; the date passed with Stream H's notification half, Streams I/J/F, and tool hardening still open. Next session should re-baseline the launch date and sequencing.
 
 ## Current Architecture
 
 ```
 Internet → Caddy (auto-HTTPS)
-  ├── ai-chat.hexapax.com:3080       — Full-access LibreChat (admin)
-  ├── scout-quest.hexapax.com:3081   — Locked-down LibreChat (scouts/parents/scouters)
-  │     └── /backend/*               → Custom v2 backend (port 3090)
-  │           ├── Anthropic Claude Sonnet 4.6 (with 165K cached BSA knowledge)
-  │           ├── FalkorDB (graph + vector + full-text search)
-  │           ├── 9 server-side tools (get_scout_status, search_bsa_reference,
-  │           │   cross_reference, advance_requirement, rsvp_event, log_activity,
-  │           │   log_requirement_work, create_pending_action, bsa_token)
-  │           └── Micro-apps: /backend/progress.html, /backend/email.html
-  └── admin.hexapax.com:3082         — AdminJS panel (system visibility)
+  ├── ai-chat.hexapax.com       → :3080  LibreChat (admin full access)
+  ├── scout-quest.hexapax.com   → :3090  Custom v2 backend (scouts/parents/scouters)
+  ├── voice-chat.hexapax.com    → :3090  same backend, root rewritten to /app.html
+  ├── api / voice-api           → :3090  ElevenLabs + external integrations
+  ├── admin.hexapax.com         → :3082  AdminJS panel (system visibility)
+  └── mcp.hexapax.com/admin     → :3083  admin MCP over Streamable HTTP (remote clients)
+  (eval.hexapax.com → eval viewer, port 9090 via Cloudflare tunnel)
 
-MCP servers: still running in parallel (scout.js, guide.js, admin.js)
-  └── Will be retired when v2 backend handles all tool functions
+Custom v2 backend (:3090) — the production scout-facing surface:
+  ├── Multi-provider adapters (Anthropic Sonnet 4.6 primary; OpenAI-compat, Gemini)
+  ├── 165K cached BSA knowledge (compact doc auto-selected for ≤200K-context models)
+  ├── FalkorDB (graph + vector + full-text search)
+  ├── 9 server-side tools (get_scout_status, search_bsa_reference,
+  │   cross_reference, advance_requirement, rsvp_event, log_activity,
+  │   log_requirement_work, create_pending_action, bsa_token)
+  ├── scout_state rolling summaries + conversation_summaries (Stream G)
+  ├── Haiku safety classifier → safety_events + admin Safety Queue (Stream H, partial)
+  └── Micro-apps: app.html (chat+voice), history.html, progress.html, email.html
+
+LibreChat scout-quest instance (:3081): still in the Docker Compose stack but NO LONGER
+ROUTED by Caddy — the v2 backend replaced it as the scout-facing surface. Its scout.js /
+guide.js MCP servers have no public path. Formal retirement pending (single-path cleanup).
 
 Domains registered:
   ├── troopquest.com (Cloudflare, primary)
@@ -115,7 +124,7 @@ Domains registered:
 - [ ] **All Scout Quest resources are empty** — no data has been created yet
 - [ ] **Dense CSS not rendering** — dashboard still shows default AdminJS styling
 
-### Scoutbook Sync (Deployed, Data Loaded — Manual Refresh Workflow)
+### Scoutbook Sync (Deployed — Token-Injection Refresh Workflow)
 - [x] Design spec approved (`docs/plans/2026-02-22-scoutbook-sync-design.md`)
 - [x] Implementation plan with 18 tasks (roster + advancement + events + dashboards + calendars)
 - [x] API client with auth, rate limiting, and tests
@@ -126,10 +135,13 @@ Domains registered:
 - [x] MCP admin tools — 9 tools deployed to ai-chat instance
 - [x] **MongoDB populated (2026-03-15)** — 20 scouts, 15 adults, 419 advancement records, 2,535 requirements
 - [x] **`scoutbook_get_scout_advancement` tool verified working** with real data in MongoDB
-- [ ] **BSA automated auth is broken** — `my.scouting.org/api/users/{username}/authenticate` returns 503 (since ~March 2026). Automated CLI sync cannot authenticate. See manual refresh workflow below.
-- [ ] **Manual refresh via Chrome CDP** — working workaround: launch Chrome with `--remote-debugging-port=9222`, log in manually, run `scripts/scoutbook/fetch-all-data.mjs` to extract JWT from cookies and fetch all data, then `scripts/mongo/load-fresh-data.mjs` to load into MongoDB. See `docs/scoutbook-data-refresh.md` for full procedure.
+- [x] **Token-injection sync is the single path (2026-05-15)** — all sync flows collapsed into `cli.js sync-with-token`; run via `SCOUTBOOK_TOKEN=eyJ... bash scripts/run-token-sync-vm.sh`, then reload the FalkorDB graph with `graph-loader.js` (see CLAUDE.md "Scoutbook Data Refresh")
+- [x] **Playwright token refresh (2026-04-30 → 05-01)** — persistent Chrome profile, Windows PowerShell wrappers + Task Scheduler installer; manual JWT copy from DevTools also works
+- [x] **Sync hardening (2026-04-29 → 05-13)** — targeted IDs, auth override, jitter, `syncSkip` flag to suppress known-bad scout syncs
+- [ ] **BSA automated username/password auth still broken** — `my.scouting.org/api/users/{username}/authenticate` returns 503 (since ~March 2026); token injection is the workaround until BSA fixes it
+- [ ] **`docs/scoutbook-data-refresh.md` is stale** — still documents the retired Chrome CDP flow (last updated 2026-03-15); needs rewrite around token-injection sync
 - [ ] **Smart rate limiting** — enhancement, not blocking
-- [ ] **Cron-based periodic sync** — blocked by BSA auth issue; manual refresh is current workflow
+- [ ] **Cron-based periodic sync** — still blocked by BSA auth; Task Scheduler token refresh gets partway there
 
 ### Cron System (Exists, Not Verified)
 - [x] Cron sidecar in Docker Compose
@@ -143,7 +155,7 @@ Domains registered:
 - [x] Tone dial and domain intensity calibration
 - [ ] **Untested with real scouts** — personality calibration is theoretical
 
-### Custom API Backend v2 (Phase 1 — Built, Not Yet Deployed)
+### Custom API Backend v2 (Deployed — Production Scout-Facing Surface)
 - [x] `backend/` directory with TypeScript + Express
 - [x] OpenAI-compatible `/v1/chat/completions` endpoint
 - [x] Anthropic SSE → OpenAI SSE streaming translation
@@ -155,8 +167,28 @@ Domains registered:
 - [x] `scripts/deploy-backend.sh` deploy script
 - [x] Interim knowledge document: 40 scouting-knowledge/ files → 52K tokens
 - [x] `BACKEND_API_KEY` auth between LibreChat and backend
-- [ ] **Not yet deployed** — run `scripts/deploy-backend.sh gcloud` then `deploy-config.sh gcloud`
-- [ ] **Needs testing** — verify streaming, cache hits, per-scout context, model spec UI
+- [x] **Deployed and serving production** — Caddy routes scout-quest.hexapax.com and voice-chat.hexapax.com directly to :3090; LibreChat is out of the scout-facing path
+- [x] Multi-provider adapters + server-side tool dispatch for every wired model (Streams A/D) — the LibreChat MCP constraint does not apply to this path
+- [x] UI smoke harness — headless Chromium against the deployed backend (2026-04-29)
+- [x] May 2026 hardening: compact-knowledge fallback for ≤200K-context models, provider errors surfaced to the UI, per-container mem limits, graph-loader typed Advancement/Requirement keys, modern `CREATE VECTOR INDEX` syntax (orphaned load-vectors dropped)
+- Note: the 52K interim knowledge doc below is historical — production runs the 165K doc with a compact variant
+
+### Scout State + Summaries — Stream G (Landed 2026-04-28/29)
+- [x] `scout_state` collection — rolling event log + Haiku-generated rolling summary, regenerated on new events (steps 1+3)
+- [x] `conversation_summaries` — per-conversation parent-facing recaps: generator, writer, readers (step 2)
+- [x] End-of-session pipeline wired into chat.ts + voice persistence; in-process sweeper every 15m, idle ≥ 30m (steps 4+5)
+- [x] Rolling summary + recent episodes injected into the system prompt — cold-start gap closed (step 6)
+- [x] Role-checked read APIs; Summaries tab in history.html; Coach recap card in chat UI (steps 7–9)
+- [x] 30-day backfill script; conversationId plumbed through the text-chat path (step 10)
+- [x] Isolated-DB test harness for scout-memory scenarios; extractor fixture coverage + idempotency
+- [ ] **Step 11 partial** — full-pipeline integration test still outstanding
+
+### Safety Flagging — Stream H (Half-Landed 2026-04-29/30)
+- [x] Haiku safety classifier, post-response fire-and-forget (`backend/src/safety/`) — steps 1–2
+- [x] Piped into chat.ts; `safety_events` collection + writer — steps 3–4
+- [x] Admin Safety Queue dashboard — list flagged events, filter by tier, ack — step 7
+- [ ] **Notification routing (step 5) NOT BUILT** — Tier 2/3 flags reach the dashboard but notify no one. This is the hard blocker for real youth users.
+- [ ] Remaining: pattern-detection cron (6), parent email templates (8), in-conversation crisis response (9), mandated-report review/decide UI (10), Twilio (11), tier fixture tests (12), parent-facing "what we flag" page (13)
 
 ### Scouting Knowledge Base (Superseded by v2 Architecture)
 - [x] 40 scouting-knowledge/ docs assembled into `backend/knowledge/interim-bsa-knowledge.md` (52K tokens)
@@ -171,7 +203,7 @@ Domains registered:
 - [ ] **Not integrated with CI** — manual runs on devbox only
 
 ### Evaluation Framework v2 (Built 2026-03-20/21)
-- [x] **Eval Runner** (`scripts/run-model-eval.py`) — 54 questions, 7 categories, YAML eval sets
+- [x] **Eval Runner** (`scripts/run-eval.py`) — v7 canonical set: 109 questions + 25 chain steps (`eval-sets/scout-eval-v7.yaml`); legacy `run-model-eval.py` deleted 2026-07-06
 - [x] **Eval Viewer** (`eval.hexapax.com`) — web app for browsing results, drill-down, voice narration
 - [x] **12-model comparison** — Claude, GPT-4.1/5.4, Gemini 2.5/3.x, DeepSeek tested
 - [x] **Adaptive thinking sweep** — medium effort is sweet spot (8.0 avg)
@@ -185,7 +217,9 @@ Domains registered:
 - [x] **ElevenLabs TTS** — v3 voices (Liam/Scoutmaster1/Brian), viewer integration
 - [x] **Eval set versioning** — v5 with rubric-style eval_notes, question types
 - [x] **Web search tool** — Brave Search integration for layer ablation
-- [ ] **Viewer runner tab** — configure + launch evals from browser
+- [x] **Pre-item budget guard + Grok pricing rows** (2026-05-03) — budget enforced before each item, not just per run
+- [x] **Scoutmaster sweep** — `run-scoutmaster-full-eval.sh`: 8 questions × 3 Anthropic configs (2026-04-29)
+- [x] **Viewer runner tab** — `/run` page + `/api/eval/launch` endpoints (landed 2026-03-22; `backend/src/routes/eval-runner.ts`, served by `eval-server.mjs`)
 - [ ] **Bug tracking** — auto-detect failures, triage workflow
 - [ ] **Layer ablation** — L0-L5 with working web search (partially tested)
 - [ ] **Bradley-Terry proper** — currently using Borda count, BT would give confidence intervals
@@ -215,8 +249,9 @@ Domains registered:
 - v7 eval set (109 questions + 25 chain steps), MongoDB-backed results
 - Cost-per-message logging (`message_usage`) shipped via Stream C
 
-### Phase 3 — Alpha launch readiness 🟡 IN FLIGHT (2026-04-26 → ~2026-06-07)
-- Streams G, H, I, B', F, J + tool hardening — see Alpha Evolution Roadmap
+### Phase 3 — Alpha launch readiness 🟡 STALLED (last repo activity 2026-05-29)
+- Stream G ✅ landed; Stream H 🟡 half (notification routing missing); Streams I, J, F + tool hardening ⬜ not started
+- Remaining hard blockers for real youth users: Stream H notifications, budget guards (I), onboarding + runbook (F)
 - Internal calibration week before any external user
 
 ### Phase 4 — External alpha
@@ -230,9 +265,11 @@ Domains registered:
 
 | Issue | Severity | Status |
 |-------|----------|--------|
-| AI hallucinates MCP tool calls | High | Instructions updated 2026-02-22, needs retest. Eval confirms models attempt tool calls when tools not available — persona now has tool-free variant. |
+| Stream H notifications missing — safety flags reach the dashboard but notify no one | High | Steps 5–13 of `2026-04-26-safety-flagging.md` not started. Hard blocker for real youth users. |
+| LibreChat scout-quest instance (:3081) unrouted but still deployed | Medium | The v2 backend replaced it. Retire the stack + scout.js/guide.js MCP registration, or re-route — single-path violation as-is. |
+| BSA automated auth endpoint 503 | Medium | Still 503. Workaround shipped: Playwright token refresh + token-injection sync (`scripts/run-token-sync-vm.sh`). `docs/scoutbook-data-refresh.md` still documents the old CDP flow — rewrite needed. |
+| AI hallucinates MCP tool calls (LibreChat path) | Low (was High) | Largely mooted — scout traffic now goes through the v2 backend, which dispatches tools server-side. Only relevant if the LibreChat scout-quest instance is revived. |
 | Eval scoring inconsistency | Medium | Panel evaluator + ranking cross-validation identifies blind spots. Score-rank disagreement on 3/3 pilot questions — investigating. |
-| BSA automated auth endpoint 503 | High | `my.scouting.org/api/users/{username}/authenticate` returns 503. Workaround: manual Chrome login + CDP token extraction. See `docs/scoutbook-data-refresh.md` |
 | Admin panel shows only ai-chat conversations | Medium | Need second LibreChat DB connection or config fix |
 | Scoutbook API has no documented rate limits | Medium | Using conservative 1 req/sec with randomized timing |
 | Cron system not verified | Medium | Need to check if sidecar is running |

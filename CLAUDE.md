@@ -4,11 +4,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Scout Quest deploys **two independent LibreChat instances** on a single GCP VM:
+Scout Quest runs an AI coaching/coordination system for a Boy Scout troop on a single GCP VM:
 
-- **ai-chat** (`ai-chat.hexapax.com`, port 3080) — Full-access AI chat for the admin
-- **scout-quest** (`scout-quest.hexapax.com`, port 3081) — Locked-down instance with curated model presets, memory agent, and MCP server for a Boy Scout quest system
+- **scout-quest** (`scout-quest.hexapax.com` + `voice-chat.hexapax.com`, port 3090) — the custom v2 backend, the **production scout/parent/scouter-facing surface**: multi-provider chat with server-side tools, cached BSA knowledge, FalkorDB graph, voice, safety classifier, micro-apps (`app.html`, `history.html`, `progress.html`, `email.html`)
+- **ai-chat** (`ai-chat.hexapax.com`, port 3080) — Full-access LibreChat for the admin (admin MCP tools registered here)
 - **admin** (`admin.hexapax.com`, port 3082) — AdminJS web panel for MongoDB visibility and system observability
+- **eval viewer** (`eval.hexapax.com`, port 9090) — eval results browser + `/run` launcher
+
+A second LibreChat instance (scout-quest, port 3081) is still in the Docker Compose stack but is **no longer routed by Caddy** — the v2 backend replaced it. Formal retirement pending.
 
 ## Common Commands
 
@@ -81,13 +84,22 @@ gcloud compute ssh devbox-vm --zone=us-east4-b --project=hexapax-devbox --tunnel
 
 ```
 Internet → Caddy (auto-HTTPS)
-  ├── ai-chat:3080      — Full-access LibreChat (admin)
-  ├── scout-quest:3081   — Locked-down LibreChat (scouts/parents/scouters)
-  └── admin:3082         — AdminJS panel (system visibility)
-Each LibreChat instance: LibreChat + MongoDB + Redis
+  ├── scout-quest.hexapax.com  → :3090  Custom v2 backend (scouts/parents/scouters)
+  ├── voice-chat.hexapax.com   → :3090  same backend, root rewritten to /app.html
+  ├── api / voice-api          → :3090  ElevenLabs + external integrations
+  ├── ai-chat.hexapax.com      → :3080  LibreChat (admin full access)
+  ├── admin.hexapax.com        → :3082  AdminJS panel
+  └── mcp.hexapax.com/admin    → :3083  admin MCP over Streamable HTTP
+  (eval.hexapax.com → eval viewer :9090 via Cloudflare tunnel)
+
+v2 backend (backend/): Express + TypeScript, multi-provider adapters (Anthropic
+primary; OpenAI-compat, Gemini), server-side tool dispatch, 165K cached BSA
+knowledge (compact variant for ≤200K-context models), FalkorDB graph+vector,
+scout_state rolling summaries, Haiku safety classifier.
+LibreChat scout-quest (:3081): unrouted, retirement pending.
 ```
 
-**Dual-instance on one VM** — separate Docker Compose stacks with isolated databases. Docker Compose derives project names from directory names, so no container conflicts.
+**Separate Docker Compose stacks with isolated databases** on one VM. Docker Compose derives project names from directory names, so no container conflicts. `scripts/update-caddyfile.sh` is the source of truth for routing.
 
 ### Configuration Layers
 

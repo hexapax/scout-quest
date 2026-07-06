@@ -1,129 +1,57 @@
 # Scoutbook Data Refresh Procedure
 
-**Last updated:** 2026-03-15
+**Last updated:** 2026-07-06
 
-## Why Manual Refresh?
+## Current State of BSA Auth
 
-The automated sync pipeline (`cli.ts` → `sync.ts`) authenticates via `POST my.scouting.org/api/users/{username}/authenticate`. Since ~March 2026, this endpoint returns **503** from all IPs (not just cloud — residential IPs fail too). The endpoint may have been deprecated or placed behind a WAF.
+The JSON-API auth endpoint (`POST my.scouting.org/api/users/{username}/authenticate`) has returned **503** from all IPs since ~March 2026. The browser sign-in flow at `advancements.scouting.org` still works. All refresh workflows therefore run on an **injected JWT** obtained from a real browser session.
 
-**Workaround:** Log into BSA manually in Chrome (handles CAPTCHA/MFA), extract the JWT from cookies via Chrome DevTools Protocol, then use it to make API calls from Node.js.
+**Revisit automated credential auth if:** the BSA auth endpoint starts returning 200 again, or a new auth flow is discovered. When that happens, retire `scripts/run-token-sync-vm.sh` and call `node dist/scoutbook/cli.js sync-all` directly — the CLI is the canonical path.
 
-**Revisit automated sync if:** BSA auth endpoint starts returning 200 again, or a new auth flow is discovered.
+## Canonical Workflow (Token-Injection Sync)
 
-## Prerequisites
+Since 2026-05-15 all sync flows are collapsed into a single path: the `sync-with-token` subcommand of `mcp-servers/scout-quest/dist/scoutbook/cli.js`, invoked on the VM via the thin SSH wrapper `scripts/run-token-sync-vm.sh`. Token validation, the auth shim, per-scout iteration, jitter, and the `syncSkip` filter all live in the CLI, not the wrapper.
 
-- **Chrome** (Windows or Linux) — any recent version
-- **Node.js 24+** — via nvm (`nvm exec 24 node ...`)
-- **gcloud CLI** — authenticated as `jeremy@hexapax.com` for VM access
-- Scripts in `scripts/`:
-  - `scripts/scoutbook/fetch-all-data.mjs` — fetches all data from BSA API
-  - `scripts/mongo/load-fresh-data.mjs` — loads JSON data directly into MongoDB
+### 1. Get a JWT token
 
-## Step-by-Step Refresh
+**Option A — Playwright token refresh (preferred, mostly unattended).** See `scripts/scoutbook-auth/README.md`. One-time interactive bootstrap signs into `advancements.scouting.org` in a persistent Chrome profile (reCAPTCHA scores low on a residential IP); after that, `refresh-token.mjs` re-derives a fresh JWT headlessly from the persisted session cookies (~30-day lifetime). Windows wrappers + Task Scheduler installer live in `scripts/scoutbook-auth/windows/`.
 
-### 1. Launch Chrome with Remote Debugging
+**Option B — manual copy.** Log into `my.scouting.org` / `advancements.scouting.org` in Chrome, then DevTools (F12) → Application → Cookies → copy the JWT starting with `eyJ`.
 
-**From Windows PowerShell/CMD:**
-```
-"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="%TEMP%\chrome-debug" https://my.scouting.org
-```
-
-Or **from WSL2** (if X11/display is working):
-```bash
-google-chrome --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-debug https://my.scouting.org
-```
-
-### 2. Log In Manually
-
-1. Enter username (`jebramwell`) and password in the Chrome window
-2. Complete reCAPTCHA if prompted
-3. Click LOGIN
-4. Navigate to `advancements.scouting.org` — verify you see the roster/dashboard
-5. **Important:** Don't close the Chrome window until the data fetch is complete
-
-### 3. Verify Chrome Debug Port is Accessible
-
-From WSL2:
-```bash
-curl -s http://localhost:9222/json/version | head -3
-```
-Should show `"Browser": "Chrome/..."`. If not, Chrome may not have started with the debug flag.
-
-### 4. Fetch All Data
+### 2. Run the sync
 
 ```bash
-source ~/.nvm/nvm.sh
-nvm exec 24 node scripts/scoutbook/fetch-all-data.mjs
+# Sync ALL scouts in the roster:
+SCOUTBOOK_TOKEN=eyJ... bash scripts/run-token-sync-vm.sh
+
+# Sync only specific scouts by userId (space or comma separated):
+SCOUTBOOK_TOKEN=eyJ... bash scripts/run-token-sync-vm.sh 8539237 12352438
+SCOUTBOOK_TOKEN=eyJ... SCOUT_IDS="8539237,12352438" bash scripts/run-token-sync-vm.sh
 ```
 
-This will:
-- Extract the JWT from Chrome's cookies via CDP
-- Make ~230 API calls (roster, advancement, per-requirement detail for all scouts)
-- Save to `scouting-org-research/data/fresh/` (~230 JSON files)
-- Rate-limited at 800ms between requests (~3-4 minutes total)
+Notes:
+- Runs inside the `scout-quest-api` container on the VM against `mongodb://mongodb:27017/scoutquest`.
+- Scouts flagged `syncSkip` in MongoDB are suppressed (known-bad syncs; added 2026-05-13).
+- From the devbox, cross-project SSH needs `CLOUDSDK_AUTH_IMPERSONATE_SERVICE_ACCOUNT` — see `docs/gcloud-admin-mode.md`.
 
-**If you get "No JWT token found":** Your BSA session expired. Go back to Chrome and log in again at `advancements.scouting.org/login`.
+### 3. Reload the FalkorDB graph
 
-### 5. Load into MongoDB
+The graph is loaded from MongoDB, so it must be refreshed after every sync:
 
-**Option A: Direct connection (local or tunneled):**
 ```bash
-source ~/.nvm/nvm.sh
-nvm exec 24 node scripts/mongo/load-fresh-data.mjs --mongo-uri=mongodb://localhost:27017/scoutquest
+./scripts/ssh-vm.sh 'sudo -u scoutcoach docker exec scout-quest-backend node dist/graph-loader.js'
 ```
 
-**Option B: Via SSH tunnel to production:**
-```bash
-# Open SSH tunnel to production MongoDB
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=scout-assistant-487523 \
-  --tunnel-through-iap -- -L 27018:172.19.0.4:27017 -N &
+### 4. Verify
 
-# Load data through tunnel
-nvm exec 24 node scripts/mongo/load-fresh-data.mjs --mongo-uri=mongodb://localhost:27018/scoutquest
-```
-
-Expected output:
-```
-=== Loading Scouts ===
-  20 scouts upserted
-=== Loading Adults ===
-  15 adults upserted
-=== Loading Parents ===
-  N parents upserted
-=== Loading Advancement ===
-  ~420 advancement records upserted
-=== Loading Requirements ===
-  ~2500 requirement records upserted
-```
-
-### 6. Verify in ai-chat
-
-Go to `ai-chat.hexapax.com` and ask the assistant to use the `scoutbook_get_scout_advancement` tool for a specific scout. It should return rank, merit badge, and requirement data.
-
-## What Gets Captured
-
-| Data Type | API Endpoint | Per-Scout? | File Pattern |
-|---|---|---|---|
-| Youth roster | `/organizations/v2/units/{orgGuid}/youths` | No | `org_units_youths.json` |
-| Adult roster | `/organizations/v2/units/{orgGuid}/adults` | No | `org_units_adults.json` |
-| Parent roster | `/organizations/v2/units/{orgGuid}/parents` | No | `org_units_parents.json` |
-| Patrols | `/organizations/v2/units/{orgGuid}/subUnits` | No | `org_units_subUnits.json` |
-| Rank progress | `/advancements/v2/youth/{userId}/ranks` | Yes × 20 | `youth_{userId}_ranks.json` |
-| Merit badges | `/advancements/v2/youth/{userId}/meritBadges` | Yes × 20 | `youth_{userId}_meritBadges.json` |
-| Awards | `/advancements/v2/youth/{userId}/awards` | Yes × 20 | `youth_{userId}_awards.json` |
-| Activity summary | `/advancements/v2/{userId}/userActivitySummary` | Yes × 20 | `youth_{userId}_activitySummary.json` |
-| Rank requirements | `/advancements/v2/youth/{userId}/ranks/{rankId}/requirements` | Yes × ~7 per scout | `youth_{userId}_rank_{rankId}_requirements.json` |
-| Person profile | `/persons/v2/{userId}/personprofile` | Yes × 20 | `person_{userId}_profile.json` |
-| Rank definitions | `/advancements/v2/ranks/{rankId}/requirements` | No × 7 | `ref_rank_{rankId}_requirements.json` |
-| Reference data | `/advancements/ranks`, `/meritBadges`, `/awards` | No | `ref_*.json` |
-| Dashboards | `/organizations/v2/{orgGuid}/advancementDashboard` | No | `org_advancementDashboard.json` |
+Ask the assistant (ai-chat, or the scout-quest backend) for a specific scout's advancement — e.g. via `scoutbook_get_scout_advancement` or `get_scout_status` — and confirm rank/merit-badge/requirement data is current. `scoutbook_sync_log` in MongoDB records timestamps and counts per sync.
 
 ## MongoDB Collections
 
 | Collection | Documents | What's In It |
 |---|---|---|
-| `scoutbook_scouts` | 20 | Youth roster with contact info, rank, patrol, activity summary |
-| `scoutbook_adults` | 15 | Adult leaders with positions |
+| `scoutbook_scouts` | ~20 | Youth roster with contact info, rank, patrol, activity summary |
+| `scoutbook_adults` | ~15 | Adult leaders with positions |
 | `scoutbook_parents` | varies | Parent contacts linked to youth |
 | `scoutbook_advancement` | ~420 | Rank/MB/award progress per scout (type, name, %, status, dates) |
 | `scoutbook_requirements` | ~2,535 | Per-requirement completion for each rank for each scout |
@@ -133,13 +61,12 @@ Go to `ai-chat.hexapax.com` and ask the assistant to use the `scoutbook_get_scou
 
 | Problem | Solution |
 |---|---|
-| "No JWT token found" | Session expired. Log into `advancements.scouting.org` again in Chrome. |
-| "No scouting.org tab found" | Chrome isn't open or isn't on a scouting.org page. |
-| 401 errors on API calls | Token expired mid-run. Log in again and re-run. |
-| Chrome not accessible on port 9222 | Ensure Chrome was started with `--remote-debugging-port=9222`. Close ALL other Chrome windows first if not using `--user-data-dir`. |
-| MongoDB connection refused | Check tunnel is open or MongoDB is running. |
-| gcloud permission denied | Run `gcloud config set account jeremy@hexapax.com` first. |
+| Token rejected / 401 on API calls | JWT expired. Re-run the Playwright refresh or copy a fresh cookie. |
+| Playwright refresh fails headlessly | Persisted session cookies expired (~30 days). Re-run the interactive bootstrap — see `scripts/scoutbook-auth/README.md`. |
+| gcloud permission denied | `gcloud config set account jeremy@hexapax.com`, or set the impersonation env var per `docs/gcloud-admin-mode.md`. |
+| A scout consistently fails to sync | Set `syncSkip` on that scout to suppress it, then investigate. |
+| Graph queries return stale data | You forgot step 3 — re-run `graph-loader.js`. |
 
-## BSA Session Duration
+## Legacy: Chrome CDP Bulk Fetch (retired)
 
-BSA JWT tokens appear to last ~30-60 minutes. The full data fetch takes ~4 minutes (231 calls at 800ms each), so a single login is usually sufficient. If the session expires mid-run, the script will start getting 401 errors — just log in again and re-run (existing files won't be re-fetched unless they were error files).
+The original workaround (documented here until 2026-07-06) launched Chrome with `--remote-debugging-port=9222`, extracted the JWT via the Chrome DevTools Protocol, bulk-fetched ~230 JSON files with `scripts/scoutbook/fetch-all-data.mjs`, and loaded them with `scripts/mongo/load-fresh-data.mjs`. It was superseded by the token-injection sync above (single-path consolidation, 2026-05-15). The scripts remain in the tree for the API-endpoint catalog embedded in them but should not be used for refreshes; they are deletion candidates once the endpoint reference is captured in `docs/bsa-api-reference.md`.
