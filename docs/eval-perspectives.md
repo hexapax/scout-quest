@@ -1,8 +1,18 @@
 # Evaluation Perspectives: A Multi-Dimensional Test Strategy
 
+> **Status (2026-07-06):** Implemented perspectives are `knowledge` and `chain` — see
+> `scripts/perspectives/`. The chain perspective still shells out to the TypeScript
+> harness (`mcp-servers/scout-quest/test/harness.ts`); migration onto the Python
+> `EvalEngine` is pending. `adversarial` and `regression` below are design proposals,
+> **not implemented** — `eval-sets/safety-v1.yaml` exists but no perspective runs it
+> yet. Chains are selected with `--chain <name>`, not `--scenario`. The canonical
+> runner is `scripts/run-eval.py` (the `run-model-eval.py` named below was deleted
+> 2026-07-06); the canonical eval set is `scout-eval-v7.yaml` (109 questions + 25
+> chain steps), superseding the 54-question set this doc describes.
+
 ## The Two Eval Systems We Have
 
-### Perspective 1: Single-Turn Knowledge & Coaching (run-model-eval.py)
+### Perspective 1: Single-Turn Knowledge & Coaching (now `run-eval.py --perspective knowledge`)
 **What it tests:** Can the model answer a scout's question correctly, with the right coaching approach and troop awareness?
 
 **Structure:** 54 questions → model response → panel evaluation → score
@@ -165,10 +175,14 @@ All perspectives should share:
 - **Ranking** (same listwise Borda system)
 - **Eval notes / rubrics** (same YAML format, different questions)
 
-The eval runner could have a `--perspective` flag:
+The eval runner has a `--perspective` flag. Implemented today:
 ```bash
-python3 run-eval.py --perspective knowledge --eval-set scout-coach-v5.yaml
-python3 run-eval.py --perspective chain --scenario S13
-python3 run-eval.py --perspective adversarial --eval-set safety-v1.yaml
-python3 run-eval.py --perspective regression --baseline golden-responses.yaml
+python3 scripts/run-eval.py --perspective knowledge --eval-set scout-eval-v7.yaml
+python3 scripts/run-eval.py --chain chore-streak --config claude
+```
+
+Planned, not implemented:
+```bash
+# python3 scripts/run-eval.py --perspective adversarial --eval-set safety-v1.yaml
+# python3 scripts/run-eval.py --perspective regression --baseline golden-responses.yaml
 ```

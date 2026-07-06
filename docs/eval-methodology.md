@@ -123,7 +123,12 @@ Run eval → Review in viewer → Find surprising scores → Investigate →
 
 This loop should run with every eval pass. The eval viewer makes the "review" step practical by rendering responses alongside scores with voice narration.
 
-### Technique 5: Pairwise Ranking with Bradley-Terry
+### Technique 5: Ranking (implemented: listwise Borda count; Bradley-Terry planned)
+
+> **Implementation status (2026-07-06):** `scripts/run-ranking.py` implements listwise
+> ranking with Borda-count aggregation (`method="listwise_borda"`) plus embedding-based
+> response clustering. The pairwise Bradley-Terry fit described below is **not
+> implemented** — it remains the planned upgrade (adds confidence intervals).
 
 Instead of scoring responses independently, compare them head-to-head and derive a global ranking from the pairwise results.
 

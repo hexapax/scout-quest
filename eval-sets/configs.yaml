@@ -5,10 +5,9 @@
 # Use `extends` for inheritance: child overrides only what it changes.
 #
 # CLI usage:
-#   python3 run-model-eval.py --config claude
-#   python3 run-model-eval.py --config claude --layer persona-only
-#   python3 run-model-eval.py --config layer-L0,layer-L1,layer-L2,layer-L3
-#   python3 run-model-eval.py --config all
+#   python3 scripts/run-eval.py --config claude
+#   python3 scripts/run-eval.py --config layer-P,layer-PK,layer-PKT,layer-PKTW
+#   python3 scripts/run-eval.py --list
 
 configs:
   # ---------------------------------------------------------------

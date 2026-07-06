@@ -5,14 +5,14 @@ Supports multiple evaluation perspectives (knowledge, chain, safety, etc.)
 with configurable model/knowledge/layer/parameter axes.
 
 Usage:
-  # Knowledge perspective (default — same as run-model-eval.py)
+  # Knowledge perspective (default)
   python3 run-eval.py --config claude --sample 2 --budget 5.00
 
   # Chain perspective
   python3 run-eval.py --perspective chain --chain chore-streak --config claude --budget 5.00
 
   # Ablation sweep
-  python3 run-eval.py --config layer-L0,layer-L1,layer-L2,layer-L3 --sample 2 --budget 10.00
+  python3 run-eval.py --config layer-P,layer-PK,layer-PKT,layer-PKTW --sample 2 --budget 10.00
 
   # Override config axes
   python3 run-eval.py --config claude --layer persona-only --knowledge none
@@ -43,7 +43,7 @@ from eval_panel import PanelEvaluator, UsageTracker, BudgetExceeded
 import perspectives  # noqa: F401
 
 # ---------------------------------------------------------------------------
-# Key loading (reused from run-model-eval.py)
+# Key loading
 # ---------------------------------------------------------------------------
 
 LIBRECHAT_ENV = Path("/home/devuser/LibreChat/.env")

@@ -3,7 +3,8 @@
 
 For each question, clusters responses by similarity, then has multiple
 cheap AI judges rank representative responses in chunks of 5-7.
-Aggregates rankings via Borda count and implied Bradley-Terry preferences.
+Aggregates rankings via Borda count. (A Bradley-Terry fit with confidence
+intervals is a planned upgrade — not implemented; see docs/eval-methodology.md.)
 
 Usage:
   python3 run-ranking.py --question G1 [--judges gpt-nano,deepseek,grok] [--chunk-size 6] [--budget 1.00]
