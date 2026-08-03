@@ -43,12 +43,16 @@ CLOUDSDK_AUTH_IMPERSONATE_SERVICE_ACCOUNT=claude-admin@hexapax-devbox.iam.gservi
   gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=scout-assistant-487523 --tunnel-through-iap --command='…'
 ```
 
-The Scoutbook sync, for example:
+The Scoutbook sync needs **no prefix at all** — `run-token-sync-vm.sh` sets its
+own `CLOUDSDK_*` vars, defaulting the base account to the devbox compute SA:
 ```bash
-CLOUDSDK_AUTH_IMPERSONATE_SERVICE_ACCOUNT=claude-admin@hexapax-devbox.iam.gserviceaccount.com \
-SCOUTBOOK_TOKEN=eyJ... \
-  bash /opt/repos/scout-quest/scripts/run-token-sync-vm.sh
+SCOUTBOOK_TOKEN=eyJ... bash /opt/repos/scout-quest/scripts/run-token-sync-vm.sh
 ```
+It pins the base account deliberately rather than trusting `gcloud config`. The
+devbox has several credentialed accounts across two orgs, so whichever is
+"active" is arbitrary — and a Meditech identity cannot impersonate `claude-admin`,
+which fails with a `PERMISSION_DENIED` that looks a lot like a reauth error.
+Override with `GCLOUD_ACCOUNT=` / `IMPERSONATE_SA=` when you need something else.
 
 **Persistent for a shell session:**
 ```bash
@@ -109,7 +113,16 @@ purpose-specific SA rather than piling everything onto `claude-admin`.
 - **`Reauthentication failed. cannot prompt during non-interactive execution`** —
   `jeremy@hexapax.com` creds expired. Run `gcloud auth login` interactively
   (on the devbox via Claude Code, type `! gcloud auth login` so it runs in your
-  real terminal).
+  real terminal). **On the devbox, prefer avoiding this entirely**: impersonate
+  from the compute SA (`856219795903-compute@developer.gserviceaccount.com`)
+  instead of your user account. It's already a `serviceAccountTokenCreator` on
+  `claude-admin` per the table above, and its credentials come from the metadata
+  server, so they never hit the reauth challenge. This matters for anything an
+  agent or a cron job drives, since neither can answer an interactive prompt.
+- **`PERMISSION_DENIED ... Failed to impersonate`** — looks similar, different
+  cause: the *base* account is wrong. Impersonation authenticates as
+  `core/account` first, then mints a token for `claude-admin`. Read the error
+  text; it names the account it actually used. Pin `CLOUDSDK_CORE_ACCOUNT`.
 - **IAM propagation** — a freshly created SA needs ~30s before it can be added
   as an IAM member; `serviceAccountTokenCreator` bindings took ~3–5 min to go
   live. If impersonation 403s right after setup, wait and retry.

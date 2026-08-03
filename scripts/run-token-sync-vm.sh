@@ -34,6 +34,10 @@
 #         -> stale credentials; run `gcloud auth login` in a real TTY on THIS host.
 #     "PERMISSION_DENIED ... Failed to impersonate"
 #         -> wrong base account; the error text names the account it used.
+#
+# On a laptop (or anywhere that isn't a GCE instance) there is no metadata
+# server, so override the base account to your user identity:
+#   GCLOUD_ACCOUNT=jeremy@hexapax.com SCOUTBOOK_TOKEN=eyJ... bash scripts/run-token-sync-vm.sh
 set -euo pipefail
 
 TOKEN="${SCOUTBOOK_TOKEN:?SCOUTBOOK_TOKEN env var is required}"
@@ -43,7 +47,14 @@ PROJECT_ID="${PROJECT_ID:-scout-assistant-487523}"
 # with several accounts credentialed, "active" is effectively arbitrary, and
 # picking up a Meditech identity for hexapax work is both a failure mode and a
 # data-boundary problem. Override either by exporting these before the call.
-GCLOUD_ACCOUNT="${GCLOUD_ACCOUNT:-jeremy@hexapax.com}"
+#
+# The default is the devbox's own compute SA, not jeremy@hexapax.com. Both hold
+# roles/iam.serviceAccountTokenCreator on claude-admin (see docs/gcloud-admin-mode.md),
+# but the compute SA's credentials come from the GCE metadata server, so they
+# refresh themselves and never hit Google's periodic reauth challenge. User
+# credentials do, and that challenge cannot be answered non-interactively, which
+# is what breaks this sync when it's driven by an agent or a cron job.
+GCLOUD_ACCOUNT="${GCLOUD_ACCOUNT:-856219795903-compute@developer.gserviceaccount.com}"
 IMPERSONATE_SA="${IMPERSONATE_SA:-claude-admin@hexapax-devbox.iam.gserviceaccount.com}"
 
 export CLOUDSDK_CORE_ACCOUNT="$GCLOUD_ACCOUNT"
@@ -68,8 +79,17 @@ fi
 # Fail fast with a clear message rather than 14 minutes in.
 if ! gcloud auth print-access-token --account="$GCLOUD_ACCOUNT" >/dev/null 2>&1; then
   echo "ERROR: no usable credentials for $GCLOUD_ACCOUNT on this host." >&2
-  echo "       Run in a REAL TTY on this machine (not via Claude Code, not on another host):" >&2
-  echo "         gcloud auth login --no-launch-browser --account=$GCLOUD_ACCOUNT" >&2
+  case "$GCLOUD_ACCOUNT" in
+    *gserviceaccount.com)
+      echo "       That is a service account, so this host is probably not the devbox." >&2
+      echo "       Re-run pinned to your user identity:" >&2
+      echo "         GCLOUD_ACCOUNT=jeremy@hexapax.com SCOUTBOOK_TOKEN=... bash \$0" >&2
+      ;;
+    *)
+      echo "       Run in a REAL TTY on this machine (not via Claude Code, not on another host):" >&2
+      echo "         gcloud auth login --no-launch-browser --account=$GCLOUD_ACCOUNT" >&2
+      ;;
+  esac
   exit 1
 fi
 
