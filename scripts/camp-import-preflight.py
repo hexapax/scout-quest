@@ -193,6 +193,12 @@ def main() -> int:
     ap.add_argument("csv_path", type=Path, help="Scoutbook_MBRequirements_*.csv from camp")
     ap.add_argument("-o", "--out", type=Path, help="write the markdown report here")
     ap.add_argument("--cache", type=Path, help="JSON snapshot to reuse instead of querying the VM")
+    ap.add_argument(
+        "--schedule",
+        type=Path,
+        help="individual_class_schedule_byClass_*.csv. Cross-checks it against the import "
+        "file to find camp sessions that produced no importable advancement.",
+    )
     args = ap.parse_args()
 
     if not args.csv_path.exists():
@@ -399,8 +405,53 @@ def main() -> int:
         w("No partials.")
     w()
 
-    # ---- 5. reminders that are not derivable from the file ----
-    w("## 5. Before you import")
+    # ---- 5. camp sessions the import file cannot carry ----
+    if args.schedule:
+        w("## 5. Camp sessions with no importable advancement")
+        w()
+        w("The import file only carries merit badges. A scout can spend the whole week in a")
+        w("session that produces rank requirements or nothing at all, and it leaves no trace")
+        w("in the file. First-year camper programs are the usual case: they generate rank")
+        w("advancement, which **no import path in any system handles**, so it is hand entry")
+        w("or it is lost. Ask camp for the completion record before it goes stale.")
+        w()
+        if not args.schedule.exists():
+            w(f"*Schedule file not found: `{args.schedule}`*")
+        else:
+            with args.schedule.open(newline="", encoding="utf-8-sig") as fh:
+                sched = list(csv.DictReader(fh))
+            covered = {(r["member_id"], badge_key(r["badge"])) for r in camp.values()}
+            orphans = []
+            for r in sched:
+                if (r.get("Y/A?") or "").strip() != "Y":
+                    continue  # adult training is tracked separately, not scout advancement
+                name = f"{(r.get('First Name') or '').strip()} {(r.get('Last Name') or '').strip()}"
+                cls = (r.get("Class Name") or "").strip()
+                kind = (r.get("MB/Class/Event Option") or "").strip()
+                attended = (r.get("Attendance") or "").strip()
+                reqs = (r.get("Requirements Completed") or "").strip()
+                mid = next((m for m, (f, l) in people.items() if f"{f} {l}" == name), "")
+                if (mid, badge_key(cls)) in covered:
+                    continue
+                if not attended:
+                    continue  # registration artifact (fee lines, unattended options)
+                orphans.append((name, cls, kind, attended, reqs,
+                                (r.get("Completion Status") or "").strip()))
+            if orphans:
+                w("| Scout | Session | Type | Attended | Status | Requirements from camp |")
+                w("|---|---|---|---|---|---|")
+                for name, cls, kind, attended, reqs, status in sorted(orphans):
+                    w(f"| {name} | {cls} | {kind} | {attended} | {status or '-'} | "
+                      f"{reqs or '**none recorded**'} |")
+                w()
+                w(f"{len(orphans)} session(s). Anything showing **none recorded** with a full")
+                w("week of attendance is worth an email to camp.")
+            else:
+                w("None. Every attended session is represented in the import file.")
+        w()
+        w("## 6. Before you import")
+    else:
+        w("## 5. Before you import")
     w()
     w("- [ ] Use the **original download**. Excel strips the quoted header and breaks the file.")
     w("- [ ] Feature Assistant extension **v0.49.0.15 or later** (an SB+ change broke older versions).")
