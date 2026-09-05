@@ -10,20 +10,23 @@ import type {
 } from "./types.js";
 import { fromAnthropicToolCalls, type AnthropicToolUseBlock } from "./tool-format.js";
 
-const DEFAULT_MODEL = "claude-sonnet-4-6";
+/**
+ * Default Anthropic model behind the bare persona names. Single definition;
+ * registry.ts imports it. Sonnet 5 ($2/$10 per MTok) replaced Sonnet 4.6
+ * ($3/$15) on 2026-09-05: newer and cheaper.
+ */
+export const DEFAULT_MODEL = "claude-sonnet-5";
 
 /**
- * Opus 4.7 (and presumably future 4.7+) reject `temperature`/`top_p`/`top_k`
- * with a 400 error. Earlier Anthropic models accept them. This guard centralizes
- * the rule so callers can keep passing temperature naively.
- *
- * Matches `claude-opus-4-7`, `claude-opus-4-7-*`, and any future `4-8`+ Opus.
- * Update this list when newer models extend the same restriction (e.g., a future
- * Sonnet 5 release that drops sampling params).
+ * Opus 4.7+ and the whole Claude 5 generation (Sonnet 5, Opus 5, Fable 5.x)
+ * reject `temperature`/`top_p`/`top_k` with a 400 error. Earlier Anthropic
+ * models accept them. This guard centralizes the rule so callers can keep
+ * passing temperature naively.
  */
-function modelAcceptsTemperature(modelId: string): boolean {
-  // Opus 4.7+ rejects temperature/top_p/top_k entirely (returns 400).
+export function modelAcceptsTemperature(modelId: string): boolean {
   if (/^claude-opus-4-([7-9]|\d{2,})/.test(modelId)) return false;
+  if (/^claude-(sonnet|opus|haiku)-([5-9]|\d{2,})(-|$)/.test(modelId)) return false;
+  if (/^claude-(fable|mythos)-/.test(modelId)) return false;
   return true;
 }
 

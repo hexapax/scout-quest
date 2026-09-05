@@ -851,6 +851,7 @@ export function createEvalReportsRouter(): Router {
 
   // Model display names
   const MODEL_LABELS: Record<string, string> = {
+    "claude-sonnet-5": "Claude Sonnet 5",
     "claude-sonnet-4-6": "Claude Sonnet 4.6",
     "claude-opus-4-6": "Claude Opus 4.6",
     "gpt-4.1": "GPT-4.1",

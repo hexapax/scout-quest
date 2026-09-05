@@ -1,7 +1,7 @@
 /** Provider registry — resolves model names to provider instances. */
 
 import type { LLMProvider } from "./types.js";
-import { AnthropicProvider } from "./anthropic.js";
+import { AnthropicProvider, DEFAULT_MODEL as ANTHROPIC_DEFAULT_MODEL } from "./anthropic.js";
 import { OpenAICompatProvider } from "./openai-compat.js";
 import { GeminiProvider } from "./gemini.js";
 
@@ -88,7 +88,8 @@ function getGeminiProvider(): GeminiProvider {
 // Default Anthropic model
 // ---------------------------------------------------------------------------
 
-const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6";
+// Single source of truth lives in anthropic.ts; imported here so the two never drift.
+const DEFAULT_ANTHROPIC_MODEL = ANTHROPIC_DEFAULT_MODEL;
 
 // ---------------------------------------------------------------------------
 // Persona → model mapping
