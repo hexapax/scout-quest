@@ -1,6 +1,32 @@
 # Scout Quest — Development State
 
-**Last updated:** 2026-07-06 — retrospective refresh covering everything landed through 2026-05-29 (the most recent commit). The repo has been idle since then; the 2026-06-07 alpha target passed with no launch or re-plan recorded here.
+**Last updated:** 2026-09-05 (status check); previous full refresh 2026-07-06 — retrospective refresh covering everything landed through 2026-05-29 (the most recent commit). The repo has been idle since then; the 2026-06-07 alpha target passed with no launch or re-plan recorded here.
+
+## 2026-09-05 status check (deployed system)
+
+Assessed ahead of troop-operations work with other adult leaders. Everything on
+scout-coach-vm was up (20 containers, 42 days uptime, 46% disk), but:
+
+- **Anthropic account out of credits since 2026-08-09.** Every bare-persona chat
+  request (the app default) fails with a 400 "credit balance is too low". Gemini
+  and OpenAI keys on the same box work. Fix: fund the Anthropic account. Stopgap
+  added in this commit: `DEFAULT_CHAT_MODEL` env var re-points the persona default
+  (see `backend/src/providers/registry.ts`). Summaries, the safety classifier and
+  episode capture call Anthropic directly and stay broken until funded.
+- **`scout-quest.hexapax.com/` returned 404** (backend has no `/` handler). Caddy
+  template now rewrites `/` to `/app.html` like voice-chat already did.
+- **`users` collection has no adult leader docs.** Only one scout + one guide doc
+  (the guide doc uses `type: "guide"`, which is not in the AdminJS enum). Jeremy's
+  access rides the bootstrap allowlist. Any other leader who signs in gets role
+  `unknown` and an empty tool list until a `users` doc exists (add via
+  admin.hexapax.com → Users, roles `admin` + `troop: "2024"` or `adult_readonly`).
+- **Scoutbook data** last synced 2026-08-10 (39 scouts, 969 advancement records).
+- **Remote MCP for leaders:** only `mcp.hexapax.com/admin` is exposed (single
+  shared bearer token, acts as ADMIN_EMAIL). The read-only `readonly.js` knowledge
+  server is deployed to the VM's MCP dist but has no HTTP path yet.
+- **deploy-config.sh cannot run from the devbox:** claude-admin lacks
+  `storage.objects.get` on the tfstate bucket. `.env` edits must be pushed from a
+  host with bucket access.
 
 ## Active roadmap
 

@@ -17,6 +17,16 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 BACKEND_DIR="${PROJECT_ROOT}/backend"
 PROJECT_ID="${PROJECT_ID:-scout-assistant-487523}"
 
+# gcloud mode: identity, impersonation and IAP come from the shared lib (same
+# as ssh-vm.sh / deploy-mcp-dist.sh / update-caddyfile.sh). The lib exports
+# CLOUDSDK_CORE_ACCOUNT / CLOUDSDK_CORE_PROJECT / CLOUDSDK_AUTH_IMPERSONATE_
+# SERVICE_ACCOUNT, so the gcloud calls below inherit the pinned identity.
+# Bare gcloud could not reach the VM from the devbox. See docs/gcloud-admin-mode.md.
+if [ "$MODE" = "gcloud" ]; then
+  source "${SCRIPT_DIR}/lib/gcloud-identity.sh"
+  gcloud_identity_preflight || exit 1
+fi
+
 # --- Build locally ---
 echo "=== Building Scout Quest backend ==="
 cd "$BACKEND_DIR"

@@ -39,6 +39,9 @@ services:
       OPENROUTER_KEY: "${OPENROUTER_KEY}"
       OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
       DEEPSEEK_API_KEY: "${DEEPSEEK_API_KEY}"
+      # Ops override for the bare persona default (scout-coach / scoutmaster).
+      # Empty = Anthropic claude-sonnet-4-6. See backend/src/providers/registry.ts.
+      DEFAULT_CHAT_MODEL: "${DEFAULT_CHAT_MODEL:-}"
       GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
       GOOGLE_CLIENT_SECRET: "${GOOGLE_CLIENT_SECRET}"
       FALKORDB_HOST: "scout-quest-falkordb"

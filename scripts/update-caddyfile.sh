@@ -11,10 +11,19 @@
 
 set -euo pipefail
 
+# Identity, impersonation and IAP come from the shared lib, same as ssh-vm.sh,
+# deploy-mcp-dist.sh and deploy-backend.sh. Bare gcloud could not reach the VM
+# from the devbox. See docs/gcloud-admin-mode.md.
+source "$(dirname "${BASH_SOURCE[0]}")/lib/gcloud-identity.sh"
+gcloud_identity_preflight || exit 1
+
 REMOTE_SCRIPT='
 sudo tee /etc/caddy/Caddyfile > /dev/null << CADDYEOF
 # Scout Quest app — scouts, parents, leaders
 scout-quest.hexapax.com {
+    # The backend has no / handler (404 "Cannot GET /"), and this is the URL
+    # people type on a phone. Land them on the chat micro-app.
+    rewrite / /app.html
     reverse_proxy localhost:3090
 }
 
@@ -117,4 +126,4 @@ sudo systemctl reload caddy
 echo "Caddyfile updated and Caddy reloaded"
 '
 
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --project=scout-assistant-487523 --command="$REMOTE_SCRIPT"
+gcloud compute ssh "$VM_NAME" --zone="$VM_ZONE" --project="$PROJECT_ID" --account="$GCLOUD_ACCOUNT" --tunnel-through-iap --command="$REMOTE_SCRIPT"

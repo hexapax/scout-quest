@@ -17,13 +17,18 @@
 # - When the BSA auth flow comes back online, retire this script and call
 #   `node dist/scoutbook/cli.js sync-all` directly. The CLI is the canonical path.
 #
-# Prereq for cross-project SSH from the devbox:
-#   See docs/gcloud-admin-mode.md — set CLOUDSDK_AUTH_IMPERSONATE_SERVICE_ACCOUNT
-#   to claude-admin@hexapax-devbox.iam.gserviceaccount.com.
+# Cross-project SSH identity (impersonation, base account pinning, IAP) is
+# handled by scripts/lib/gcloud-identity.sh, shared with ssh-vm.sh. Read that
+# file, or docs/gcloud-admin-mode.md, before changing how auth works here.
+#
+# On a laptop (or anywhere that isn't a GCE instance) there is no metadata
+# server, so override the base account to your user identity:
+#   GCLOUD_ACCOUNT=jeremy@hexapax.com SCOUTBOOK_TOKEN=eyJ... bash scripts/run-token-sync-vm.sh
 set -euo pipefail
 
 TOKEN="${SCOUTBOOK_TOKEN:?SCOUTBOOK_TOKEN env var is required}"
-PROJECT_ID="${PROJECT_ID:-scout-assistant-487523}"
+
+source "$(dirname "${BASH_SOURCE[0]}")/lib/gcloud-identity.sh"
 
 # Collect scout IDs from args (positional) OR env var, normalize to comma-separated.
 SCOUT_IDS="${SCOUT_IDS:-}"
@@ -33,12 +38,22 @@ fi
 SCOUT_IDS="$(echo "$SCOUT_IDS" | tr ' ' ',' | tr -s ',' | sed 's/^,//;s/,$//')"
 
 echo "=== Scoutbook Token Sync ==="
+echo "Account:     $GCLOUD_ACCOUNT"
+echo "Project:     $PROJECT_ID"
+echo "Impersonate: $IMPERSONATE_SA"
 if [ -n "$SCOUT_IDS" ]; then
-  echo "Targeted: $SCOUT_IDS"
+  echo "Targeted:    $SCOUT_IDS"
 fi
 
+# Fail fast with a clear message rather than 18 minutes in.
+gcloud_identity_preflight || exit 1
+
 # Single SSH + single docker exec — no host-side temp files, no inline JS heredoc.
-gcloud compute ssh scout-coach-vm --zone=us-east4-b --project="$PROJECT_ID" --tunnel-through-iap \
+gcloud compute ssh "$VM_NAME" \
+  --zone="$VM_ZONE" \
+  --project="$PROJECT_ID" \
+  --account="$GCLOUD_ACCOUNT" \
+  --tunnel-through-iap \
   --command="
     sudo -u scoutcoach docker exec \
       -e SCOUTBOOK_TOKEN='${TOKEN}' \

@@ -1,7 +1,7 @@
 /** Provider registry — resolves model names to provider instances. */
 
 import type { LLMProvider } from "./types.js";
-import { AnthropicProvider } from "./anthropic.js";
+import { AnthropicProvider, DEFAULT_MODEL as ANTHROPIC_DEFAULT_MODEL } from "./anthropic.js";
 import { OpenAICompatProvider } from "./openai-compat.js";
 import { GeminiProvider } from "./gemini.js";
 
@@ -88,7 +88,8 @@ function getGeminiProvider(): GeminiProvider {
 // Default Anthropic model
 // ---------------------------------------------------------------------------
 
-const DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-6";
+// Single source of truth lives in anthropic.ts; imported here so the two never drift.
+const DEFAULT_ANTHROPIC_MODEL = ANTHROPIC_DEFAULT_MODEL;
 
 // ---------------------------------------------------------------------------
 // Persona → model mapping
@@ -100,6 +101,35 @@ const PERSONA_NAMES = new Set([
   "scout-guide",
   "scoutmaster",
 ]);
+
+// ---------------------------------------------------------------------------
+// Ops override for the persona default
+// ---------------------------------------------------------------------------
+
+/**
+ * DEFAULT_CHAT_MODEL lets ops re-point the bare persona names (scout-coach,
+ * scout-guide, scoutmaster) at a non-Anthropic model without touching client
+ * code. The app always sends a bare persona name unless the user picked a
+ * model in Settings, so this is the only knob that changes what "default"
+ * means for every user at once.
+ *
+ * Added 2026-09-05 when the Anthropic account ran out of credits (every
+ * default-persona request had been failing with a 400 since 2026-08-09) while
+ * the Gemini and OpenAI keys on the same box still worked. Set it to a model
+ * suffix the resolver understands, e.g. `gemini-2.5-flash` or `gpt-4.1-mini`.
+ * Leave it empty to keep the Anthropic default.
+ *
+ * Only bare persona names are rewritten. An explicit `persona:model` from the
+ * user, or a raw provider model id, is always honored as sent.
+ */
+export function applyDefaultChatModel(modelName: string): string {
+  const override = (process.env.DEFAULT_CHAT_MODEL || "").trim();
+  if (!override) return modelName;
+  if (!PERSONA_NAMES.has(modelName)) return modelName;
+  // Refuse a value that would just loop back to a persona name.
+  if (PERSONA_NAMES.has(override) || override.includes(":")) return modelName;
+  return `${modelName}:${override}`;
+}
 
 // ---------------------------------------------------------------------------
 // Public API

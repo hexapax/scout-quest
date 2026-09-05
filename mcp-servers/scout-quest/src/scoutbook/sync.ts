@@ -11,6 +11,7 @@ import type {
   ScoutbookParentDoc,
   ScoutbookAdvancementDoc,
   ScoutbookRequirementDoc,
+  ScoutbookActor,
   ScoutbookEventDoc,
   ScoutbookCalendarDoc,
   ScoutbookDashboardDoc,
@@ -27,6 +28,60 @@ import {
   scoutbookDashboards,
   scoutbookSyncLog,
 } from "./collections.js";
+
+// ---------------------------------------------------------------------------
+// BSA field normalizers.
+//
+// The two advancement endpoints disagree about types for the same concepts.
+// Rank payloads use real JSON booleans and numbers; merit badge payloads send
+// everything as strings ("True", "False", "123", ""), and empty string is how
+// BSA spells null. Mapping code should never have to remember which is which,
+// so every field goes through one of these.
+// ---------------------------------------------------------------------------
+
+/** Trimmed string, or undefined for null/empty. BSA uses "" as null. */
+function sbStr(v: unknown): string | undefined {
+  if (v === null || v === undefined) return undefined;
+  const s = String(v).trim();
+  return s === "" ? undefined : s;
+}
+
+/** Number, or undefined when absent or non-numeric (BSA sends "" and "N/A"). */
+function sbNum(v: unknown): number | undefined {
+  const s = sbStr(v);
+  if (s === undefined) return undefined;
+  const n = Number(s);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+/**
+ * Boolean across both payload dialects. Returns undefined rather than false
+ * when the field is absent, so "BSA didn't say" stays distinguishable from
+ * "BSA said no" — that distinction matters for `optional` and `required`.
+ */
+function sbBool(v: unknown): boolean | undefined {
+  if (typeof v === "boolean") return v;
+  const s = sbStr(v)?.toLowerCase();
+  if (s === undefined) return undefined;
+  if (s === "true" || s === "1" || s === "yes") return true;
+  if (s === "false" || s === "0" || s === "no") return false;
+  return undefined;
+}
+
+/**
+ * Collapse BSA's `<action>UserId` / `<action>FirstName` / `<action>LastName`
+ * triple into one actor. Returns undefined when BSA sent nothing at all, so an
+ * unattributed record stays visibly unattributed instead of becoming an empty
+ * object that looks like data.
+ */
+function sbActor(userId: unknown, firstName: unknown, lastName: unknown): ScoutbookActor | undefined {
+  const actor: ScoutbookActor = {
+    userId: sbStr(userId),
+    firstName: sbStr(firstName),
+    lastName: sbStr(lastName),
+  };
+  return actor.userId || actor.firstName || actor.lastName ? actor : undefined;
+}
 
 // ---------------------------------------------------------------------------
 // Filter helpers — SINGLE-PATH: every per-scout iteration goes through this.
@@ -378,6 +433,19 @@ export async function syncScout(
         dateStarted: rank.dateEarned || undefined,
         dateCompleted: rank.markedCompletedDate ?? undefined,
         dateAwarded: rank.awardedDate ?? undefined,
+        leaderApprovedDate: sbStr(rank.leaderApprovedDate),
+        leaderApprovedBy: sbActor(
+          rank.leaderApprovedUserId,
+          rank.leaderApprovedFirstName,
+          rank.leaderApprovedLastName,
+        ),
+        markedCompletedDate: sbStr(rank.markedCompletedDate),
+        markedCompletedBy: sbActor(
+          rank.markedCompletedUserId,
+          rank.markedCompletedFirstName,
+          rank.markedCompletedLastName,
+        ),
+        awardedBy: sbActor(rank.awardedUserId, rank.awardedFirstName, rank.awardedLastName),
         syncedAt: new Date(),
       };
       await advCol.updateOne(
@@ -406,6 +474,22 @@ export async function syncScout(
               dateStarted: req.dateStarted || undefined,
               leaderApprovedDate: req.leaderApprovedDate || undefined,
               percentCompleted: req.percentCompleted,
+              leaderApprovedBy: sbActor(
+                req.leaderApprovedUserId,
+                req.leaderApprovedFirstName,
+                req.leaderApprovedLastName,
+              ),
+              markedCompletedDate: sbStr(req.markedCompletedDate),
+              markedCompletedBy: sbActor(
+                req.markedCompletedUserId,
+                req.markedCompletedFirstName,
+                req.markedCompletedLastName,
+              ),
+              childrenRequired: sbStr(req.childrenRequired),
+              required: sbBool(req.required),
+              optional: sbBool(req.optional),
+              sortOrder: sbStr(req.sortOrder),
+              dateEarned: sbStr(req.dateEarned),
               syncedAt: new Date(),
             };
             await reqCol.updateOne(
@@ -440,6 +524,31 @@ export async function syncScout(
         counselorUserId: mb.assignedCounselorUserId
           ? String(mb.assignedCounselorUserId)
           : undefined,
+        leaderApprovedDate: sbStr(mb.leaderApprovedDate),
+        leaderApprovedBy: sbActor(
+          mb.leaderApprovedUserId,
+          mb.leaderApprovedFirstName,
+          mb.leaderApprovedLastName,
+        ),
+        markedCompletedDate: sbStr(mb.markedCompletedDate),
+        markedCompletedBy: sbActor(
+          mb.markedCompletedUserId,
+          mb.markedCompletedFirstName,
+          mb.markedCompletedLastName,
+        ),
+        counselorApprovedDate: sbStr(mb.counselorApprovedDate),
+        counselorApprovedBy: sbActor(
+          mb.counselorApprovedUserId,
+          mb.counselorApprovedFirstName,
+          mb.counselorApprovedLastName,
+        ),
+        leaderSignedDate: sbStr(mb.leaderSignedDate),
+        leaderSignedBy: sbActor(mb.leaderSignedUserId, undefined, undefined),
+        checkedRecordedDate: sbStr(mb.checkedRecordedDate),
+        checkedRecordedBy: sbActor(mb.checkedRecordedUserId, undefined, undefined),
+        awardedBy: sbActor(mb.awardedUserId, mb.awardedFirstName, mb.awardedLastName),
+        bsaNumber: sbStr(mb.bsaNumber),
+        eagleRequired: sbBool(mb.isEagleRequired),
         syncedAt: new Date(),
       };
       await advCol.updateOne(
@@ -468,6 +577,30 @@ export async function syncScout(
               dateStarted: undefined, // MB requirements don't have dateStarted
               leaderApprovedDate: req.leaderApprovedDate || undefined,
               percentCompleted: Number(req.percentCompleted) || 0,
+              leaderApprovedBy: sbActor(
+                req.leaderApprovedUserId,
+                req.leaderApprovedFirstName,
+                req.leaderApprovedLastName,
+              ),
+              markedCompletedDate: sbStr(req.markedCompletedDate),
+              markedCompletedBy: sbActor(
+                req.markedCompletedUserId,
+                req.markedCompletedFirstName,
+                req.markedCompletedLastName,
+              ),
+              counselorApprovedDate: sbStr(req.counselorApprovedDate),
+              counselorApprovedBy: sbActor(
+                req.counselorApproveUserId,
+                req.counselorApprovedFirstName,
+                req.counselorApprovedLastName,
+              ),
+              counselorApproval: sbBool(req.counselorApproval),
+              childrenRequired: sbStr(req.childrenRequired),
+              required: sbBool(req.required),
+              optional: sbBool(req.optional),
+              daysRequired: sbNum(req.daysRequired),
+              sortOrder: sbStr(req.sortOrder),
+              dateEarned: sbStr(req.dateEarned),
               syncedAt: new Date(),
             };
             await reqCol.updateOne(
@@ -502,6 +635,19 @@ export async function syncScout(
         percentCompleted: award.percentCompleted,
         dateCompleted: award.dateEarned || undefined,
         dateAwarded: award.awardedDate || undefined,
+        leaderApprovedDate: sbStr(award.leaderApprovedDate),
+        leaderApprovedBy: sbActor(
+          award.leaderApprovedUserId,
+          award.leaderApprovedFirstName,
+          award.leaderApprovedLastName,
+        ),
+        markedCompletedDate: sbStr(award.markedCompletedDate),
+        markedCompletedBy: sbActor(
+          award.markedCompletedUserId,
+          award.markedCompletedFirstName,
+          award.markedCompletedLastName,
+        ),
+        awardedBy: sbActor(award.awardedUserId, award.awardedFirstName, award.awardedLastName),
         syncedAt: new Date(),
       };
       await advCol.updateOne(

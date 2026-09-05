@@ -915,6 +915,21 @@ export interface ScoutbookParentDoc {
   syncedAt: Date;
 }
 
+/**
+ * Who performed an advancement action (marked complete, approved, signed, awarded).
+ *
+ * BSA returns these as a flat triple of `<action>UserId` / `<action>FirstName` /
+ * `<action>LastName` on every advancement and requirement payload. We group them
+ * so a doc carries "who did this" rather than a bare numeric id. All three parts
+ * are optional because BSA populates them inconsistently: bulk/legacy entries
+ * frequently have an id with no name, or a name with no id.
+ */
+export interface ScoutbookActor {
+  userId?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
 /** scoutbook_advancement — rank/MB/award progress. Upsert key: userId + type + advancementId */
 export interface ScoutbookAdvancementDoc {
   _id?: ObjectId;
@@ -928,7 +943,33 @@ export interface ScoutbookAdvancementDoc {
   dateStarted?: string;
   dateCompleted?: string;
   dateAwarded?: string;
+  /** Merit badge only: the counselor assigned to the scout, not necessarily the approver. */
   counselorUserId?: string;
+
+  // --- Provenance. Who did what, and when.
+  // Without these the data cannot be audited: an imported or bulk-entered record
+  // is indistinguishable from one a leader signed off in person.
+  /** Leader approval (Scoutmaster/advancement chair sign-off). */
+  leaderApprovedDate?: string;
+  leaderApprovedBy?: ScoutbookActor;
+  /** When the completion was *recorded*, which is often later than dateCompleted. */
+  markedCompletedDate?: string;
+  markedCompletedBy?: ScoutbookActor;
+  /** Merit badge only: counselor sign-off (the blue-card signature). */
+  counselorApprovedDate?: string;
+  counselorApprovedBy?: ScoutbookActor;
+  /** Merit badge only: unit leader signature, an intermediate before approval. */
+  leaderSignedDate?: string;
+  leaderSignedBy?: ScoutbookActor;
+  /** Merit badge only: recorded/checked at the unit level. */
+  checkedRecordedDate?: string;
+  checkedRecordedBy?: ScoutbookActor;
+  /** Who marked it awarded (e.g. at a court of honor). */
+  awardedBy?: ScoutbookActor;
+
+  /** Merit badge only: BSA catalog number, and whether it counts toward Eagle. */
+  bsaNumber?: string;
+  eagleRequired?: boolean;
   syncedAt: Date;
 }
 
@@ -948,6 +989,39 @@ export interface ScoutbookRequirementDoc {
   dateStarted?: string;
   leaderApprovedDate?: string;
   percentCompleted: number;
+
+  // --- Provenance. See ScoutbookActor.
+  leaderApprovedBy?: ScoutbookActor;
+  markedCompletedDate?: string;
+  markedCompletedBy?: ScoutbookActor;
+  /** Merit badge only: counselor sign-off on this specific requirement. */
+  counselorApprovedDate?: string;
+  counselorApprovedBy?: ScoutbookActor;
+  /** Merit badge only: whether this requirement needs counselor approval at all. */
+  counselorApproval?: boolean;
+
+  // --- Requirement-group semantics.
+  //
+  // These decide whether completing every child of a requirement is correct or
+  // wrong, and we previously dropped all three. `childrenRequired` is the number
+  // of children that must be satisfied: a parent with childrenRequired "1" is a
+  // "do ONE of the following" group, so marking every option complete is a false
+  // record, not a thorough one. `optional` and `required` disambiguate further.
+  //
+  // Real example of the failure this prevents: a Snow Sports badge in our data
+  // has all four mutually exclusive options (downhill, cross-country,
+  // snowboarding, snowshoeing) marked complete and leader-approved.
+  //
+  // Kept as the raw string BSA sends. It is not always a plain integer, and
+  // coercing it would quietly turn "unknown" into a number.
+  childrenRequired?: string;
+  required?: boolean;
+  optional?: boolean;
+  /** Merit badge only: minimum elapsed days, e.g. a 90-day fitness program. */
+  daysRequired?: number;
+  /** BSA's own display ordering; requirement numbers do not sort lexically. */
+  sortOrder?: string;
+  dateEarned?: string;
   syncedAt: Date;
 }
 

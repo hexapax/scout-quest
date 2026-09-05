@@ -20,9 +20,14 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 MCP_DIR="${REPO_DIR}/mcp-servers/scout-quest"
-PROJECT_ID="scout-assistant-487523"
-ZONE="us-east4-b"
 VM_PATH="/opt/scoutcoach/scout-quest/mcp-servers/scout-quest"
+
+# Identity, impersonation and IAP come from the shared lib, same as ssh-vm.sh
+# and run-token-sync-vm.sh. This script previously called gcloud bare, so it
+# could not reach the VM from the devbox at all. See docs/gcloud-admin-mode.md.
+source "${REPO_DIR}/scripts/lib/gcloud-identity.sh"
+gcloud_identity_preflight || exit 1
+ZONE="$VM_ZONE"
 
 # Per-invocation remote tarball name. Avoids the SCP "Permission denied"
 # trap when /tmp/scout-mcp-dist.tar.gz exists owned by a different
@@ -76,13 +81,13 @@ echo "  $(ls -lh "${TARBALL}" | awk '{print $5, $9}')"
 echo
 
 echo "→ Uploading tarball to VM (${REMOTE_TARBALL})..."
-gcloud compute scp "${TARBALL}" "scout-coach-vm:${REMOTE_TARBALL}" \
-  --zone="${ZONE}" --project="${PROJECT_ID}" --tunnel-through-iap
+gcloud compute scp "${TARBALL}" "${VM_NAME}:${REMOTE_TARBALL}" \
+  --zone="${ZONE}" --project="${PROJECT_ID}" --account="${GCLOUD_ACCOUNT}" --tunnel-through-iap
 rm -rf "${TARBALL_DIR}"
 echo
 
 echo "→ Unpacking, refreshing deps, restarting containers on VM..."
-gcloud compute ssh scout-coach-vm --zone="${ZONE}" --project="${PROJECT_ID}" --tunnel-through-iap --command="
+gcloud compute ssh "${VM_NAME}" --zone="${ZONE}" --project="${PROJECT_ID}" --account="${GCLOUD_ACCOUNT}" --tunnel-through-iap --command="
 set -e
 MCP=/opt/scoutcoach/scout-quest/mcp-servers/scout-quest
 REMOTE_TARBALL='${REMOTE_TARBALL}'

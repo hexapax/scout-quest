@@ -14,7 +14,7 @@ import { persistVoiceTurn } from "./voice-persistence.js";
 import { captureEpisode, getRecentEpisodes, type Episode } from "./episodes.js";
 import { captureSafetyEvent } from "./safety/capture.js";
 import { getScoutState } from "./scout-state.js";
-import { resolveProvider } from "./providers/registry.js";
+import { resolveProvider, applyDefaultChatModel } from "./providers/registry.js";
 import type { ProviderRequest, ProviderResponse, CanonicalMessage } from "./providers/types.js";
 import { lookupUserRole } from "./auth/role-lookup.js";
 import type { Role } from "./types.js";
@@ -128,7 +128,12 @@ export async function chatHandler(req: Request, res: Response): Promise<void> {
   })();
   const evalAdminOverride = hasApiKeyAuth && req.headers["x-eval-admin-mode"] === "true";
   const isAdminDomain = host.includes("ai-chat") || host.includes("admin") || evalAdminOverride;
-  const model = body.model || (isAdminDomain ? "scoutmaster" : "scout-coach");
+  // applyDefaultChatModel: a bare persona name (which is what the app sends
+  // unless the user chose a model in Settings) may be re-pointed by the
+  // DEFAULT_CHAT_MODEL env var. See providers/registry.ts for the why.
+  const model = applyDefaultChatModel(
+    body.model || (isAdminDomain ? "scoutmaster" : "scout-coach"),
+  );
 
   // User email: emulation header > voice context > cookie (app) > header (LibreChat)
   const cookieUser = getUserFromCookie(req);
