@@ -21,6 +21,7 @@ services:
 
   mongodb:
     container_name: ai-chat-mongodb
+    image: mongo:8.0.34
     mem_limit: 512m   # raise if WiredTiger cache grows (container-OOM alert will flag it)
     networks:
       - default
@@ -28,10 +29,15 @@ services:
 
   meilisearch:
     container_name: ai-chat-meilisearch
+    image: getmeili/meilisearch:v1.55.0
+    volumes:
+      # new data dir per meili version; LibreChat re-syncs the index from Mongo on start
+      - ./meili_data_v1.55.0:/meili_data
     mem_limit: 256m
 
   vectordb:
     container_name: ai-chat-vectordb
+    image: pgvector/pgvector:0.8.7-pg15-trixie
     mem_limit: 256m
 
   rag_api:
