@@ -21,7 +21,7 @@ services:
 
   mongodb:
     container_name: ai-chat-mongodb
-    image: mongo:8.0.34
+    image: mongo:8.0.20  # 8.0.34 refuses to start on kernel >=6.19 (SERVER-121912); VM runs 7.0
     mem_limit: 512m   # raise if WiredTiger cache grows (container-OOM alert will flag it)
     networks:
       - default
