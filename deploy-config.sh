@@ -258,7 +258,7 @@ setup_instance() {
 
   # Create data directories with correct ownership (upstream uses bind mounts)
   echo "  Ensuring data directories exist with correct ownership..."
-  for DIR in data-node meili_data_v1.35.1 images uploads logs; do
+  for DIR in data-node meili_data_v1.55.0 images uploads logs; do
     sudo mkdir -p "${APP_DIR}/${DIR}"
     sudo chown scoutcoach:scoutcoach "${APP_DIR}/${DIR}"
   done

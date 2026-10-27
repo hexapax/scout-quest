@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM node:24-slim
 WORKDIR /app
 COPY dist/ dist/
 COPY node_modules/ node_modules/
